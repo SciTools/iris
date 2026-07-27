@@ -80,6 +80,11 @@ def broadcast_to_shape(array, shape, dim_map, chunks=None):
         here will only be used along dimensions that are new on the result or
         have size 1 on the source array.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     Broadcasting an array of shape (2, 3) to the shape (5, 2, 6, 3)
@@ -94,11 +99,6 @@ def broadcast_to_shape(array, shape, dim_map, chunks=None):
 
         # a is an array of shape (48, 96)
         result = broadcast_to_shape(a, (96, 48, 12), (1, 0))
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if isinstance(array, da.Array):
@@ -220,6 +220,11 @@ def describe_diff(cube_a, cube_b, output_file=None):
         A :class:`file` or file-like object to receive output. Defaults to
         sys.stdout.
 
+    See Also
+    --------
+    iris.cube.Cube.is_compatible :
+        Check if a Cube is compatible with another.
+
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
@@ -232,11 +237,6 @@ def describe_diff(cube_a, cube_b, output_file=None):
         of the differences in metadata between two cubes. Determining whether
         two cubes will merge requires additional logic that is beyond the
         scope of this function.
-
-    See Also
-    --------
-    iris.cube.Cube.is_compatible :
-        Check if a Cube is compatible with another.
 
     """
     if output_file is None:
@@ -359,6 +359,11 @@ def rolling_window(
         Array that is a view of the original array with an added dimension
         of the size of the given window at axis + 1.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -373,11 +378,6 @@ def rolling_window(
         >>> np.mean(rolling_window(x, 3), -1)
         array([[ 1.,  2.,  3.],
                [ 6.,  7.,  8.]])
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if window < 1:
@@ -590,6 +590,11 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     rh_inclusive : bool, default=True
         Same as lh_inclusive but for right hand operator.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -602,11 +607,6 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
            print(i, between_3_and_6(i))
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if lh_inclusive and rh_inclusive:
@@ -631,6 +631,11 @@ def reverse(cube_or_array, coords_or_dims):
         numpy array, use int or a sequence of ints, as in the examples below.
         If cube_or_array is a Cube, a Coord or coordinate name (or sequence of
         these) may be specified instead.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -662,11 +667,6 @@ def reverse(cube_or_array, coords_or_dims):
          [[23 22 21 20]
           [19 18 17 16]
           [15 14 13 12]]]
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -1275,6 +1275,11 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         variables will also be given an additional dimension, associated with
         the leading dimension of the cube.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -1284,11 +1289,6 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
 
@@ -1394,6 +1394,11 @@ def squeeze(cube):
         A new :class:`iris.cube.Cube` instance without any dimensions of
         length 1.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     For example::
@@ -1403,11 +1408,6 @@ def squeeze(cube):
         >>> ncube = iris.util.squeeze(cube)
         >>> ncube.shape
         (360, 360)
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
@@ -1705,6 +1705,11 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.AuxCoord`.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     .. testsetup:: promote
@@ -1740,11 +1745,6 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
             Auxiliary coordinates:
                 forecast_period                  x              -              -
                 time                             x              -              -
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.coords import Coord, DimCoord
@@ -1824,6 +1824,11 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.DimCoord`.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     .. testsetup:: demote
@@ -1859,11 +1864,6 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
                 forecast_period                 x              -              -
                 time                            x              -              -
                 year                            x              -              -
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.coords import Coord
@@ -1939,6 +1939,11 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         This can be used as the input array for
         :func:`iris.util.mask_cube`.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -1954,10 +1959,6 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         # Plot the masked cube slice:
         iplt.pcolormesh(masked_cube_slice)
 
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     lats_and_lons = [
@@ -2286,6 +2287,12 @@ def mask_cube_from_shapefile(
     iris.Cube
         A masked version of the input cube, if in_place is False.
 
+    Warnings
+    --------
+    This function requires additional dependencies:
+    `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
+
     See Also
     --------
     :func:`~iris.util.mask_cube`
@@ -2300,12 +2307,6 @@ def mask_cube_from_shapefile(
         :func:`mask_cube_from_shapefile` function is scheduled for removal in a
         future release, being replaced by :func:`iris.util.mask_cube_from_shape`,
         which offers richer shape handling.
-
-    Warnings
-    --------
-    This function requires additional dependencies:
-    `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
-    and `affine <https://affine.readthedocs.io/en/latest/>`_.
     """
     message = (
         "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
@@ -2390,6 +2391,36 @@ def mask_cube_from_shape(
     iris.Cube
         A masked version of the input cube, if ``in_place`` is ``False``.
 
+    Warnings
+    --------
+    For best masking results, both the cube **and** masking geometry should have a
+    coordinate reference system (CRS) defined. Note that CRS of the masking geometry
+    must be provided explicitly to this function (via ``shape_crs``), whereas the
+    cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
+
+    Masking results will be most consistent when the cube and masking geometry have the same CRS.
+
+    If a CRS is **not** provided for the the masking geometry, the CRS of the cube is assumed.
+
+    This function requires additional dependencies: `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
+
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.  For shapes
+    that do cross these boundaries, this function expects the user to undertake fixes upstream
+    of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
+    `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
+
+    Notes
+    -----
+    Iris does not handle the shape loading so it is agnostic to the source type of the shape.
+    The shape can be loaded from an Esri shapefile, created using the
+    `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
+    can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
+    object, such as shapes encoded in a geoJSON or KML file.
+
     See Also
     --------
     :func:`~iris.util.mask_cube`
@@ -2446,36 +2477,6 @@ def mask_cube_from_shape(
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
     >>> wgs84 = CRS.from_epsg(4326)
     >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
-
-    Notes
-    -----
-    Iris does not handle the shape loading so it is agnostic to the source type of the shape.
-    The shape can be loaded from an Esri shapefile, created using the
-    `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
-    can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
-    object, such as shapes encoded in a geoJSON or KML file.
-
-    Warnings
-    --------
-    For best masking results, both the cube **and** masking geometry should have a
-    coordinate reference system (CRS) defined. Note that CRS of the masking geometry
-    must be provided explicitly to this function (via ``shape_crs``), whereas the
-    cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
-
-    Masking results will be most consistent when the cube and masking geometry have the same CRS.
-
-    If a CRS is **not** provided for the the masking geometry, the CRS of the cube is assumed.
-
-    This function requires additional dependencies: `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
-    and `affine <https://affine.readthedocs.io/en/latest/>`_.
-
-    Because shape vectors are inherently Cartesian in nature, they contain no inherent
-    understanding of the spherical geometry underpinning geographic coordinate systems.
-    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
-    are not supported by this function** to avoid unexpected masking behaviour.  For shapes
-    that do cross these boundaries, this function expects the user to undertake fixes upstream
-    of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
-    `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
 
     """
     from iris._shapefiles import create_shape_mask
