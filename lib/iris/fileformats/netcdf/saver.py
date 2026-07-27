@@ -1042,12 +1042,6 @@ class Saver:
             NetCDF data compression keyword arguments.
 
         """
-        from iris.mesh.components import (
-            MeshEdgeCoords,
-            MeshFaceCoords,
-            MeshNodeCoords,
-        )
-
         # Exclude any mesh coords, which are bundled in with the aux-coords.
         coords_to_add = [
             coord for coord in cube.aux_coords if not hasattr(coord, "mesh")

@@ -621,7 +621,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     show = val is not None and val is not False
                 if show:
                     if name == "attributes":
-                        val = cast(dict, val)
+                        val = cast("dict", val)
                         # Use a multi-line form for this.
                         add_output(newline_indent)
                         add_output("attributes:", section="attributes")
