@@ -176,8 +176,8 @@ class _RegularGridInterpolator:
         should only be used for passing to
         :meth:`interp_using_pre_computed_weights`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> coords = np.array([[[50.7, -3.5],
                                 [50.6, -3.5]],
                                [[50.7, -3.1],

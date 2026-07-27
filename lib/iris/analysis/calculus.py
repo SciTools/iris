@@ -149,12 +149,6 @@ def cube_delta(cube, coord):
         If a Coord instance is provided, it does not necessarily have to
         exist in the cube.
 
-    Examples
-    --------
-    ::
-
-        change_in_temperature_wrt_pressure = cube_delta(temperature_cube, 'pressure')
-
     Notes
     -----
     .. note:: Missing data support not yet implemented.
@@ -169,6 +163,12 @@ def cube_delta(cube, coord):
         be removed in ``Iris`` 4.0.0. Native :class:`~iris.cube.Cube` calculus
         will no longer be supported. Subsequently, :mod:`iris.analysis.calculus`
         is deprecated and will be removed in ``Iris`` 4.0.0.
+
+    Examples
+    --------
+    ::
+
+        change_in_temperature_wrt_pressure = cube_delta(temperature_cube, 'pressure')
 
     """
     wmsg = (

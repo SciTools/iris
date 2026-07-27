@@ -154,11 +154,6 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     :math:`\sum (src\_cube.data_{ij} * weights_{ij}) / \sum weights_{ij}`, for
     all :math:`ij` :data:`src_cube` points that are bound by that cell.
 
-    Warnings
-    --------
-    All coordinates that span the :data:`src_cube` that don't define
-    the horizontal curvilinear grid will be ignored.
-
     Parameters
     ----------
     src_cube : :class:`iris.cube.Cube`
@@ -175,6 +170,11 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     Returns
     -------
     A :class:`iris.cube.Cube` instance.
+
+    Warnings
+    --------
+    All coordinates that span the :data:`src_cube` that don't define
+    the horizontal curvilinear grid will be ignored.
 
     Notes
     -----

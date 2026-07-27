@@ -615,16 +615,16 @@ class NameConstraint(Constraint):
             A string or callable representing the UM STASH code to match
             against.
 
+        Returns
+        -------
+        bool
+
         Notes
         -----
         The default value of each of the keyword arguments is the string
         "none", rather than the singleton None, as None may be a legitimate
         value to be matched against e.g., to constrain against all cubes
         where the standard_name is not set, then use standard_name=None.
-
-        Returns
-        -------
-        bool
 
         Examples
         --------

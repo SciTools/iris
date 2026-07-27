@@ -53,8 +53,8 @@ class _LazyDerivedLoading(threading.local):
         load_lazy : bool, default False
             Sets whether references are loaded as lazy data, within the context.
 
-        Example
-        -------
+        Examples
+        --------
         >>> with _LAZY_DERIVED_LOADING.context(load_lazy=True):
         ...     <code>
         """
