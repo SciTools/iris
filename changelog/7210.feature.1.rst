@@ -1,4 +1,7 @@
 :user:`trexfeathers`, :user:`stephenworsley` added the
 :mod:`iris.experimental.mesh_coord_indexing` module, allowing the use of the
 new :class:`iris.mesh.components._MeshIndexSet` class to index meshes and
-cubes-with-meshes. Please read more and give it a try! (:issue:`6120`)
+cubes-with-meshes. The new indexed mesh can be converted to a separate
+:class:`~iris.mesh.components.MeshXY` instance - trusted reliable behaviour - OR
+as a :class:`~iris.mesh.components._MeshIndexSet` instance - for the latest
+experimental functionality. Please read more and give it a try! (:issue:`6120`)
