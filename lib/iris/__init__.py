@@ -55,7 +55,7 @@ All the load functions share very similar arguments:
 
     .. warning::
 
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
 
 * constraints:
     Either a single constraint, or an iterable of constraints.

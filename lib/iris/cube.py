@@ -1212,12 +1212,34 @@ class Cube(CFVariableMixin):
         units: Unit | str | None = None,
         attributes: Mapping | None = None,
         cell_methods: Iterable[CellMethod] | None = None,
-        dim_coords_and_dims: Iterable[tuple[DimCoord, int]] | None = None,
-        aux_coords_and_dims: Iterable[tuple[AuxCoord, int | Iterable[int]]]
+        dim_coords_and_dims: Iterable[
+            tuple[
+                DimCoord,
+                int,
+            ],
+        ]
+        | None = None,
+        aux_coords_and_dims: Iterable[
+            tuple[
+                AuxCoord | DimCoord,
+                int | Iterable[int] | None,
+            ],
+        ]
         | None = None,
         aux_factories: Iterable[AuxCoordFactory] | None = None,
-        cell_measures_and_dims: Iterable[tuple[CellMeasure, int]] | None = None,
-        ancillary_variables_and_dims: Iterable[tuple[AncillaryVariable, int]]
+        cell_measures_and_dims: Iterable[
+            tuple[
+                CellMeasure,
+                Iterable[int] | int | None,
+            ],
+        ]
+        | None = None,
+        ancillary_variables_and_dims: Iterable[
+            tuple[
+                AncillaryVariable,
+                Iterable[int] | int | None,
+            ],
+        ]
         | None = None,
         shape: tuple | None = None,
     ):
@@ -1287,10 +1309,6 @@ class Cube(CFVariableMixin):
             ...                                  (longitude, 1)])
 
         """
-        # Temporary error while we transition the API.
-        if isinstance(data, str):
-            raise TypeError("Invalid data type: {!r}.".format(data))
-
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
 
@@ -4465,15 +4483,20 @@ class Cube(CFVariableMixin):
 
             # Having checked everything else, check approximate data equality.
             if result and not dataless_equality:
-                # TODO: why do we use allclose() here, but strict equality in
-                #  _DimensionalMetadata (via util.array_equal())?
-                result = bool(
-                    np.allclose(
-                        self.core_data(),
-                        other.core_data(),
-                        equal_nan=True,
+                if self.dtype.kind in "if":
+                    # numbers
+                    # TODO: why do we use allclose() here, but strict equality in
+                    #  _DimensionalMetadata (via util.array_equal())?
+                    result = bool(
+                        np.allclose(
+                            self.core_data(),
+                            other.core_data(),
+                            equal_nan=True,
+                        )
                     )
-                )
+                else:
+                    # non-numeric: use exact equality
+                    result = bool(np.all(self.core_data() == other.core_data()))
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
