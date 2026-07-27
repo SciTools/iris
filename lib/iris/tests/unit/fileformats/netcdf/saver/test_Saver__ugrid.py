@@ -19,6 +19,7 @@ from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.mesh import Connectivity, MeshXY, save_mesh
+from iris.mesh.components import _MeshIndexSet
 from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
@@ -1381,6 +1382,15 @@ class TestSaveUgrid__mesh:
         expected_coord_names = ("unknown", "unknown_0", "unknown_1", "unknown_2")
         for expected_coord_name in expected_coord_names:
             assert expected_coord_name in vars
+
+    def test_fail_mesh_index_set(self, check_save_mesh):
+        mesh = make_mesh(n_faces=3, n_edges=2)
+        index_set = _MeshIndexSet([0, 2], mesh=mesh, location="face")
+
+        with pytest.raises(
+            ValueError, match="_MeshIndexSet saving is not yet supported"
+        ):
+            _ = check_save_mesh(index_set)
 
 
 # WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN

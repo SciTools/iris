@@ -106,7 +106,9 @@ def sample_mesh(
 
     if n_faces == 0:
         face_coords_and_axes = None
+        topology_dimension = 1
     else:
+        topology_dimension = 2
         # Define a rather arbitrary face-nodes connectivity.
         # Some nodes are left out, because n_faces*n_bounds < n_nodes.
         conns = arr.arange(n_faces * nodes_per_face, dtype=int)

@@ -42,8 +42,8 @@ from numpy.typing import ArrayLike
 from iris.common.metadata import (
     ConnectivityMetadata,
     MeshCoordMetadata,
-    MeshIndexSetMetadata,
     MeshMetadata,
+    _MeshIndexSetMetadata,
 )
 import iris.util
 
@@ -3369,6 +3369,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             Index origin; default is ``0``.
 
         """
+        if np.asanyarray(indices).ndim > 1:
+            raise ValueError(
+                f"`indices` must be 1D. Got {np.asanyarray(indices).ndim} dimensions."
+            )
+
         if not isinstance(mesh, MeshXY):
             raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
 
@@ -3376,10 +3381,16 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             msg = f"`location` must be in {_MeshXYMixin.ELEMENTS}. Got {location}"
             raise ValueError(msg)
 
+        if location == "face" and mesh.topology_dimension < 2:
+            raise ValueError(
+                f"`location` cannot be 'face' for a mesh with topology_dimension < 2. "
+                f"Got {location} and topology_dimension={mesh.topology_dimension}"
+            )
+
         if start_index not in [0, 1]:
             raise ValueError(f"`start_index must be 0 or 1. Got {start_index}")
 
-        self._metadata_manager = metadata_manager_factory(MeshIndexSetMetadata)
+        self._metadata_manager = metadata_manager_factory(_MeshIndexSetMetadata)
         # 'structure' is immutable after creation, so assign directly to the
         #  metadata manager. Desired changes should be made by creating a new
         #  instance.
@@ -3409,17 +3420,22 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             # Don't check coords or connectivities as these are
             #  fully derived using metadata.
             if result:
-                result = self.indices == other.indices
+                result = iris.util.array_equal(self.indices, other.indices)
 
         return result
 
-    def __getstate__(self) -> tuple[ArrayLike, MeshIndexSetMetadata]:
+    def __hash__(self) -> int:
+        # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
+        # See https://github.com/SciTools/iris/pull/1772
+        return hash(id(self))
+
+    def __getstate__(self) -> tuple[ArrayLike, _MeshIndexSetMetadata]:
         return (
             self.indices,
             self._metadata_manager,
         )
 
-    def __setstate__(self, state: tuple[ArrayLike, MeshIndexSetMetadata]):
+    def __setstate__(self, state: tuple[ArrayLike, _MeshIndexSetMetadata]):
         indices, metadata_manager = state
         self._values = indices
         self._metadata_manager = metadata_manager
@@ -3501,9 +3517,13 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                         and c.connected == "node"
                     )
                 ]
-                # Doesn't matter if connectivity is transposed or not in this case.
                 # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
-                conn_indices = connectivity.core_indices()[self.indices]
+                # Respect the connectivity's location_axis before selecting the
+                # requested edges/faces. This preserves the connectivity's stored
+                # orientation while still handling transposed connectivities.
+                conn_indices = connectivity.indices_by_location(
+                    connectivity.core_indices()
+                )[self.indices]
                 al = da if _lazy.is_lazy_data(conn_indices) else np
                 # Flatten and drop masked padding (ragged connectivities) by scattering
                 #  membership into a fixed-shape boolean mask.
