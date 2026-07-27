@@ -252,8 +252,8 @@ class CombineOptions(threading.local):
         * kwargs : dict
             Individual option settings, from :data:`~iris.LoadPolicy.OPTION_KEYS`.
 
-        Note
-        ----
+        Notes
+        -----
         Keyword arguments are applied after the 'options' arg, and
         so will take precedence.
 
