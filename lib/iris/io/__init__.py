@@ -16,8 +16,26 @@ from collections import OrderedDict
 import glob
 import pathlib
 import re
+from urllib.parse import urlsplit
 
 import iris.exceptions
+
+
+def _is_nczarr_fragment(fragment):
+    """Return True if a URI fragment requests NCZarr-compatible mode."""
+    if not fragment:
+        return False
+
+    # Fragments are ampersand-separated key=value pairs.
+    for item in fragment.split("&"):
+        key, sep, value = item.partition("=")
+        if sep and key.casefold() == "mode":
+            flags = {
+                token.strip().casefold() for token in value.split(",") if token.strip()
+            }
+            return bool(flags.intersection({"nczarr", "xarray"}))
+
+    return False
 
 
 # Saving routines, indexed by file extension.
@@ -83,7 +101,7 @@ def run_callback(callback, cube, field, filename):
 
 
 def decode_uri(uri, default="file"):
-    r"""Decode a single URI into scheme and scheme-specific parts.
+    r"""Decode a single URI into scheme, scheme-specific part and fragment.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
@@ -100,25 +118,28 @@ def decode_uri(uri, default="file"):
     --------
     >>> from iris.io import decode_uri
     >>> print(decode_uri('https://www.thing.com:8080/resource?id=a:b'))
-    ('https', '//www.thing.com:8080/resource?id=a:b')
+    ('https', '//www.thing.com:8080/resource?id=a:b', None)
 
     >>> print(decode_uri('file:///data/local/dataZoo/...'))
-    ('file', '///data/local/dataZoo/...')
+    ('file', '///data/local/dataZoo/...', None)
+
+    >>> print(decode_uri('file:///data/local/dataZoo/something#mode=nczarr,file'))
+    ('file', '///data/local/dataZoo/something', 'mode=nczarr,file')
 
     >>> print(decode_uri('/data/local/dataZoo/...'))
-    ('file', '/data/local/dataZoo/...')
+    ('file', '/data/local/dataZoo/...', None)
 
     >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
-    ('file', '///C:\\data\\local\\dataZoo\\...')
+    ('file', '///C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('C:\data\local\dataZoo\...'))
-    ('file', 'C:\\data\\local\\dataZoo\\...')
+    ('file', 'C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('dataZoo/...'))
-    ('file', 'dataZoo/...')
+    ('file', 'dataZoo/...', None)
 
         >>> print(decode_uri({}))
-        ('data', {})
+        ('data', {}, None)
 
     """
     if isinstance(uri, pathlib.PurePath):
@@ -136,13 +157,17 @@ def decode_uri(uri, default="file"):
             # Catch bare UNIX and Windows paths
             scheme = default
             part = uri
+        fragment = urlsplit(uri).fragment or None
+        if fragment:
+            part = part[: -len(fragment) - 1]  # remove the fragment from the part
     else:
         # We can pass things other than strings, like open files.
         # These are simply identified as 'data objects'.
         scheme = "data"
         part = uri
+        fragment = None
 
-    return scheme, part
+    return scheme, part, fragment
 
 
 def expand_filespecs(file_specs, files_expected=True):
@@ -229,9 +254,9 @@ def load_files(filenames, callback, constraints=None):
 
 
 def load_http(urls, callback):
-    """Create generator of Cubes from the given OPeNDAP URLs.
+    """Create generator of Cubes from the given OPeNDAP or NcZarr URLs.
 
-    Take a list of OPeNDAP URLs and a callback function, and returns a generator
+    Take a list of OPeNDAP or NcZarr URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
 
     Notes
@@ -384,8 +409,8 @@ def find_saver(filespec):
 def save(source, target, saver=None, **kwargs):
     """Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports three file formats for saving, which it can
-    recognise by filename extension:
+    Iris currently supports four file formats for saving. Three are
+    recognised by filename extension:
 
     * **netCDF** - the Unidata network Common Data Format,
       see :func:`iris.fileformats.netcdf.save`
@@ -393,6 +418,16 @@ def save(source, target, saver=None, **kwargs):
       see :func:`iris_grib.save_grib2`.
     * **PP** - the Met Office UM Post Processing Format,
       see :func:`iris.fileformats.pp.save`
+
+    The fourth format is recognised differently:
+
+    * **Zarr (via NcZarr)** - "The open foundation for chunked, compressed,
+      N-dimensional
+      arrays". Saved via the NcZarr utility of the NetCDF library, see
+      :func:`iris.fileformats.netcdf.save`. NcZarr recognises format via URL
+      fragments e.g. "file:///path/to/file#mode=nczarr,file". See the NcZarr
+      docs for more:
+      https://docs.unidata.ucar.edu/nug/current/nczarr_head.html.
 
     A custom saver can be provided to the function to write to a different
     file format.
@@ -467,9 +502,15 @@ def save(source, target, saver=None, **kwargs):
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
-        # Converts tilde or wildcards to absolute path
-        (target,) = expand_filespecs([str(target)], False)
-        saver = find_saver(target)
+        if _is_nczarr_fragment(urlsplit(target).fragment or None):
+            # NCZarr URLs must be passed as-is; do not expand or match by extension.
+            from iris.fileformats.netcdf.saver import save as _nc_save
+
+            saver = _nc_save
+        else:
+            # Converts tilde or wildcards to absolute path
+            (target,) = expand_filespecs([str(target)], False)
+            saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
     elif isinstance(saver, str):
