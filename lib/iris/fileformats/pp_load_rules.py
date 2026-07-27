@@ -573,7 +573,7 @@ def _epoch_date_hours_internals(epoch_hours_unit, datetime):
     return epoch_hours
 
 
-_epoch_date_hours_cache = {}
+_epoch_date_hours_cache: dict = {}
 _epoch_date_hours_cache_max_size = 128  # lru_cache default
 
 
