@@ -12,6 +12,7 @@ import pytest
 from iris.fileformats.cf import (
     CFCoordinateVariable,
     CFDataVariable,
+    CFGridMappingVariable,
     CFGroup,
     CFReader,
     CFUGridAuxiliaryCoordinateVariable,
@@ -407,3 +408,49 @@ class Test_build_cf_groups__ugrid:
 
     def test_is_cf_ugrid_group(self):
         assert isinstance(self.cf_group, CFGroup)
+
+
+class Test_build_cf_groups__nczarr_scalar_grid_mapping:
+    @pytest.fixture(autouse=True)
+    def _setup_class(self, mocker):
+        self.lat = netcdf_variable("lat", "lat", np.float64)
+        self.lon = netcdf_variable("lon", "lon", np.float64)
+        self.crs = netcdf_variable("crs", "_scalar_", np.int32)
+        self.crs.grid_mapping_name = "latitude_longitude"
+        self.temp = netcdf_variable(
+            "temp",
+            "lat lon",
+            np.float64,
+            coordinates="lat lon",
+            grid_mapping="crs",
+        )
+        self.lat.name = "lat"
+        self.lon.name = "lon"
+        self.crs.name = "crs"
+        self.temp.name = "temp"
+
+        self.variables = {
+            "lat": self.lat,
+            "lon": self.lon,
+            "crs": self.crs,
+            "temp": self.temp,
+        }
+        ncattrs = mock.Mock(return_value=[])
+        self.dataset = mock.Mock(
+            file_format="NetCDF4", variables=self.variables, ncattrs=ncattrs
+        )
+        mocker.patch("iris.fileformats.cf.CFReader._reset")
+        mocker.patch(
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
+            return_value=self.dataset,
+        )
+        self.cf_group = CFReader("dummy").cf_group
+
+    def test_nczarr_scalar_grid_mapping_retains_type(self):
+        expected_var = CFGridMappingVariable("crs", self.crs)
+        assert self.cf_group.grid_mappings == {"crs": expected_var}
+        assert "crs" not in self.cf_group.data_variables
+
+    def test_nczarr_scalar_grid_mapping_spans_data_var(self):
+        temp_cf_group = self.cf_group["temp"].cf_group
+        assert "crs" in temp_cf_group.grid_mappings

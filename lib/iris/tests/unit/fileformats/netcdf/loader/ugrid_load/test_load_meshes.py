@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :func:`iris.mesh.load_meshes` function."""
 
+from io import BufferedReader
 from pathlib import Path
 from uuid import uuid4
 
@@ -131,6 +132,11 @@ class TestLoadErrors:
         meshes = load_meshes(nc_paths)
         assert files_count == len(meshes)
 
+    def test_pathlib_path(self, tmp_path):
+        nc_path = Path(cdl_to_nc(self.ref_cdl, tmp_path))
+        meshes = load_meshes(nc_path)
+        assert 1 == len(meshes)
+
     def test_multi_meshes(self, tmp_path):
         ref_cdl, second_name = self.add_second_mesh()
         nc_path = cdl_to_nc(ref_cdl, tmp_path)
@@ -207,3 +213,31 @@ class TestsHttp:
         file_uris = [call[0][0] for call in self.format_agent_mock.call_args_list]
         for source in (url, Path(file).name):
             assert source in file_uris
+
+    def test_file_uri(self, tmp_path):
+        # 'File URLs' get converted to a file path format and interpreted differently.
+        file = tmp_path / f"{uuid4()}.nc"
+        file.touch()
+        url = f"file:///{file}"
+        _ = load_meshes(url)
+        (call,) = self.format_agent_mock.call_args_list
+        assert call.args[0] == file.name
+
+    @pytest.mark.parametrize("scheme", ["file", "http"])
+    def test_nczarr_uri(self, scheme):
+        # URL should be used regardless of file or http scheme.
+        prefix = "://"
+        if scheme == "file":
+            prefix += "/"
+        url = f"{scheme}{prefix}foo#mode=nczarr"
+        _ = load_meshes(url)
+        self.format_agent_mock.assert_called_with(url, None)
+
+    def test_non_nczarr_uri(self, tmp_path):
+        # Non-nczarr fragments are not interpreted, so this is treated as a
+        #  file path and will fail to load.
+        file = tmp_path / f"{uuid4()}.nc"
+        file.touch()
+        url = f"file:///{file}#foo=bar"
+        with pytest.raises(OSError, match="did not exist"):
+            _ = load_meshes(url)
