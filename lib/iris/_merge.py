@@ -1194,7 +1194,7 @@ class ProtoCube:
         msg = msg % (name, ", ".join(scalars))
         raise iris.exceptions.DuplicateDataError(msg)
 
-    def merge(self, unique: bool = True) -> CubeList:
+    def merge(self, unique: bool = True) -> "CubeList":
         """Return the list of cubes resulting from merging the registered source-cubes.
 
         Parameters
