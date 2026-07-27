@@ -100,7 +100,12 @@ class Options(enum.Enum):
     NEW_MESH = enum.auto()
     """Index the :attr:`~iris.mesh.MeshCoord.mesh` of the ``MeshCoord`` to
     produce a new :class:`~iris.mesh.MeshXY` instance, then return a new
-    :class:`~iris.mesh.MeshCoord` instance based on that new mesh.
+    :class:`~iris.mesh.MeshCoord` instance based on that new mesh. The returned
+    :class:`~iris.mesh.MeshXY` is generated via the experimental
+    :class:`~iris.mesh.components._MeshIndexSet` class. While
+    :class:`~iris.mesh.components._MeshIndexSet` remains experimental, the
+    properties of the returned :class:`~iris.mesh.MeshXY` instance are liable to
+    change.
     """
 
     MESH_INDEX_SET = enum.auto()
