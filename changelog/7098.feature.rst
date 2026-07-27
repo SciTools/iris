@@ -1,0 +1,5 @@
+:user:`pp-mo`, :user:`trexfeathers`, and :user:`ukmo-ccbunney` improved NetCDF
+character-array handling so Iris now supports string data in cube data arrays
+(as well as label coordinates), honours ``_Encoding`` for decode/encode, and
+saves string arrays back to ``char`` variables. (:issue:`6309`)
+
