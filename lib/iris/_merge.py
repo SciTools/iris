@@ -11,6 +11,7 @@ Typically the cube merge process is handled by
 
 from collections import OrderedDict, namedtuple
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import dask.array as da
 import numpy as np
@@ -29,6 +30,9 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util
+
+if TYPE_CHECKING:
+    from iris.cube import CubeList
 
 
 #
@@ -1190,7 +1194,7 @@ class ProtoCube:
         msg = msg % (name, ", ".join(scalars))
         raise iris.exceptions.DuplicateDataError(msg)
 
-    def merge(self, unique=True):
+    def merge(self, unique: bool = True) -> "CubeList":
         """Return the list of cubes resulting from merging the registered source-cubes.
 
         Parameters
@@ -1212,7 +1216,7 @@ class ProtoCube:
         relation_matrix = derive_relation_matrix(indexes)
         groups = derive_groups(relation_matrix)
 
-        function_matrix = {}
+        function_matrix: dict = {}
         space = derive_space(
             groups, relation_matrix, positions, function_matrix=function_matrix
         )
@@ -1223,7 +1227,7 @@ class ProtoCube:
         merged_cubes = iris.cube.CubeList()
 
         # Collate source-cubes by the nd-index.
-        group_by_nd_index = {}
+        group_by_nd_index: dict = {}
         for index, position in enumerate(positions):
             group = group_by_nd_index.setdefault(self._nd_index(position), [])
             group.append(index)
@@ -1247,8 +1251,8 @@ class ProtoCube:
             stack = np.empty(self._stack_shape, "object")
             all_have_real_data = True
             some_are_dataless = False
-            part_shape: tuple = None
-            part_dtype: np.dtype = None
+            part_shape: tuple | None = None
+            part_dtype: np.dtype | None = None
             for nd_index in nd_indexes:
                 # Get the data of the current existing or last known
                 # good source-cube

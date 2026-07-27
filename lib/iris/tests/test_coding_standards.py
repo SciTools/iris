@@ -10,7 +10,7 @@ from glob import glob
 import os
 from pathlib import Path
 import subprocess
-from typing import List, Tuple
+from typing import Iterator, List, Tuple, cast
 
 from packaging.version import Version
 import pytest
@@ -66,7 +66,7 @@ def test_netcdf4_import():
     assert set(files_including_import) == set(expected)
 
 
-def test_python_versions():
+def test_python_versions() -> None:
     """Test Python Versions.
 
     Test is designed to fail whenever Iris' supported Python versions are
@@ -128,7 +128,7 @@ def test_python_versions():
         assert search in path.read_text()
 
 
-def test_categorised_warnings():
+def test_categorised_warnings() -> None:
     r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
@@ -153,8 +153,13 @@ def test_categorised_warnings():
     for file_path in Path(IRIS_DIR).rglob("*.py"):
         file_text = file_path.read_text()
         parsed = ast.parse(source=file_text)
-        calls = filter(lambda node: hasattr(node, "func"), ast.walk(parsed))
-        warn_calls = filter(lambda c: getattr(c.func, "attr", None) == "warn", calls)
+        calls: Iterator[ast.Call] = cast(
+            Iterator[ast.Call],
+            filter(lambda node: hasattr(node, "func"), ast.walk(parsed)),
+        )
+        warn_calls: Iterator[ast.Call] = filter(
+            lambda c: getattr(c.func, "attr", None) == "warn", calls
+        )
 
         warn_call: ast.Call
         for warn_call in warn_calls:
@@ -162,7 +167,7 @@ def test_categorised_warnings():
             tmp_list.append(warn_ref)
 
             category_kwargs = filter(lambda k: k.arg == "category", warn_call.keywords)
-            category_kwarg: ast.keyword = next(category_kwargs, None)
+            category_kwarg: ast.keyword | None = next(category_kwargs, None)
 
             if category_kwarg is None:
                 warns_without_category.append(warn_ref)

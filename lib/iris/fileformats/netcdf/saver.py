@@ -967,7 +967,7 @@ class Saver:
         /,
         *,
         compression_kwargs=None,
-    ):
+    ) -> None:
         """Create a set of variables for aux-coords, ancillaries or cell-measures.
 
         Create a set of variables for aux-coords, ancillaries or cell-measures,
@@ -1017,7 +1017,7 @@ class Saver:
 
     def _add_aux_coords(
         self, cube, cf_var_cube, dimension_names, /, *, compression_kwargs=None
-    ):
+    ) -> None:
         """Add aux. coordinate to the dataset and associate with the data variable.
 
         Parameters
