@@ -178,4 +178,4 @@ class TestFileFormatPicker:
     def test_nczarr_url_without_zarr_suffix(self):
         uri = "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"
         a = iff.FORMAT_AGENT.get_spec(uri, None)
-        assert a.name == "zarr"
+        assert a.name == "NcZarr"

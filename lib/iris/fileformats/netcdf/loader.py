@@ -668,7 +668,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
 
     Also supports Zarr files in the NcZarr URL format, e.g.
     ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
-    Zarr version 2. See the
+    Zarr Storage Specification version 2. See the
     `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
     for more.
 
