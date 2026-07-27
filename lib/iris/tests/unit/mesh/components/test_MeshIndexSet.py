@@ -198,7 +198,7 @@ class Test_index_calculations:
         result = index_set._calculate_node_bool_index()
 
         expected = np.zeros(mesh_2d.node_coords.node_x.shape[0], dtype=bool)
-        expected[[0, 1, 2, 3, 8, 8, 10, 11]] = True
+        expected[[0, 1, 2, 3, 8, 9, 10, 11]] = True
         _shared_utils.assert_array_equal(result, expected)
 
     def test_calculate_edge_indices(self, meshes_locs_all):
