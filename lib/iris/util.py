@@ -2413,6 +2413,11 @@ def mask_cube_from_shape(
     of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
     `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
 
+    See Also
+    --------
+    :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
+
     Notes
     -----
     Iris does not handle the shape loading so it is agnostic to the source type of the shape.
@@ -2420,11 +2425,6 @@ def mask_cube_from_shape(
     `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
     can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
     object, such as shapes encoded in a geoJSON or KML file.
-
-    See Also
-    --------
-    :func:`~iris.util.mask_cube`
-        Mask any cells in the cube’s data array.
 
     Examples
     --------
