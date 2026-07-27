@@ -20,12 +20,13 @@ from functools import lru_cache, wraps
 import re
 from typing import TYPE_CHECKING, Any
 
-import cf_units
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
 if TYPE_CHECKING:
+    import cf_units
+
     from iris.common.mixin import CFVariableMixin
     from iris.coords import CellMethod
     from iris.util import Axis

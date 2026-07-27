@@ -45,8 +45,7 @@ import functools
 from functools import wraps
 from inspect import getfullargspec
 import itertools
-from numbers import Number
-from typing import Optional, Protocol, Union
+from typing import TYPE_CHECKING, Optional, Protocol, Union
 import warnings
 
 from cf_units import Unit
@@ -64,6 +63,9 @@ import iris.coords
 from iris.coords import AuxCoord, DimCoord, _DimensionalMetadata
 from iris.exceptions import LazyAggregatorError
 import iris.util
+
+if TYPE_CHECKING:
+    from numbers import Number
 
 __all__ = (
     "Aggregator",

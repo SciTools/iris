@@ -71,7 +71,12 @@ import iris.warnings
 
 if TYPE_CHECKING:
     from iris.cube import Cube
-    from iris.mesh.components import MeshXY
+    from iris.mesh.components import (
+        MeshEdgeCoords,
+        MeshFaceCoords,
+        MeshNodeCoords,
+        MeshXY,
+    )
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
 from . import logger
 
