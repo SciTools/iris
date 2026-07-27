@@ -967,7 +967,7 @@ class Saver:
         /,
         *,
         compression_kwargs=None,
-    ):
+    ) -> None:
         """Create a set of variables for aux-coords, ancillaries or cell-measures.
 
         Create a set of variables for aux-coords, ancillaries or cell-measures,
