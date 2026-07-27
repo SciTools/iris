@@ -747,6 +747,10 @@ def realistic_4d_w_everything(w_mesh=False):
 
     cube.long_name = "Air Potential Temperature"
     cube.var_name = "air_temp"
+    cube.coord("level_height").standard_name = "atmosphere_hybrid_height_coordinate"
+
+    for coord in [*cube.dim_coords, *cube.aux_coords]:
+        coord.var_name = coord.name()
 
     cell_method = CellMethod("mean", coords="time", intervals="1 hour")
     cube.add_cell_method(cell_method)
@@ -760,12 +764,14 @@ def realistic_4d_w_everything(w_mesh=False):
     cell_measure = CellMeasure(
         data=cell_areas,
         standard_name="cell_area",
+        var_name="cell_area",
     )
     cube.add_cell_measure(cell_measure, (lat_dim, lon_dim))
 
     ancillary_variable = AncillaryVariable(
-        data=np.remainder(cube.data.astype(int), 2),
+        data=np.remainder(np.ma.filled(cube.data, 0).astype(int), 2),
         standard_name="quality_flag",
+        var_name="quality_flag",
     )
     cube.add_ancillary_variable(ancillary_variable, np.arange(cube.ndim))
 
@@ -812,12 +818,14 @@ def realistic_4d_w_everything(w_mesh=False):
         default_points.x,
         bounds=default_bounds.x,
         standard_name="longitude",
+        var_name="longitude",
         units="degrees",
     )
     default_lat = AuxCoord(
         default_points.y,
         bounds=default_bounds.y,
         standard_name="latitude",
+        var_name="latitude",
         units="degrees",
     )
     cube.add_aux_coord(default_lon, (lat_dim, lon_dim))
@@ -973,6 +981,8 @@ def realistic_4d_w_everything(w_mesh=False):
         }
         aux_factory = aux_factory.updated(coord_mapping)
         mesh_cube.add_aux_factory(aux_factory)
+
+    cube.attributes.globals["Conventions"] = "CF-1.7"
 
     if w_mesh:
         result = mesh_cube

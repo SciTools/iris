@@ -1287,10 +1287,6 @@ class Cube(CFVariableMixin):
             ...                                  (longitude, 1)])
 
         """
-        # Temporary error while we transition the API.
-        if isinstance(data, str):
-            raise TypeError("Invalid data type: {!r}.".format(data))
-
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(CubeMetadata)
 
@@ -4469,15 +4465,20 @@ class Cube(CFVariableMixin):
 
             # Having checked everything else, check approximate data equality.
             if result and not dataless_equality:
-                # TODO: why do we use allclose() here, but strict equality in
-                #  _DimensionalMetadata (via util.array_equal())?
-                result = bool(
-                    np.allclose(
-                        self.core_data(),
-                        other.core_data(),
-                        equal_nan=True,
+                if self.dtype.kind in "if":
+                    # numbers
+                    # TODO: why do we use allclose() here, but strict equality in
+                    #  _DimensionalMetadata (via util.array_equal())?
+                    result = bool(
+                        np.allclose(
+                            self.core_data(),
+                            other.core_data(),
+                            equal_nan=True,
+                        )
                     )
-                )
+                else:
+                    # non-numeric: use exact equality
+                    result = bool(np.all(self.core_data() == other.core_data()))
         return result
 
     # Must supply __ne__, Python does not defer to __eq__ for negative equality
@@ -5244,12 +5245,12 @@ x            -               -
                 # window and the bounds are the first and last points in the
                 # window as with numeric coordinates.
                 new_points = np.apply_along_axis(lambda x: "|".join(x), -1, new_bounds)
-                new_bounds = new_bounds[:, (0, -1)]
+                new_bounds = new_bounds[:, [0, -1]]
             else:
                 # Take the first and last element of the rolled window (i.e.
                 # the bounds) and the new points are the midpoints of these
                 # bounds.
-                new_bounds = new_bounds[:, (0, -1)]
+                new_bounds = new_bounds[:, [0, -1]]
                 new_points = np.mean(new_bounds, axis=-1)
 
             # wipe the coords points and set the bounds
