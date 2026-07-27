@@ -426,64 +426,76 @@ class Test_unusual_connectivities:
         )
 
     @pytest.fixture
-    def varied_faces(self, lazy_values):
-        r"""A mesh with variable-sided faces, some sharing nodes.
+    def varied_mesh(self, lazy_values):
+        r"""A mesh with edges and variable-sided faces, some sharing nodes.
 
-        Two squares joined by a triangle, with a separate irregular pentagon:
+        Two squares joined by a triangle, with a separate irregular pentagon.
+        Edges to mirror the pentagon sides, plus an extra isolated edge.
          0 1 2 3 4
-        0* *-* * *
-           | |
-        1* *-* * *
+        0* o-o * O
+           | |   |
+        1* o-o * O
             \|
-        2* * *-* *
+        2O * o-o *
          |\  | |
-        3*-* *-* *
+        3O O o-o *
          | |
-        4*-* * * *
+        4O-O * * *
         """
-        node_x = AuxCoord(
-            [1.0, 2.0, 1.0, 2.0, 1.0, 2.0, 3.0, 0.0, 1.0, 2.0, 3.0, 0.0, 1.0],
-            standard_name="longitude",
-        )
-        # Appease the linter.
-        ys = np.concat(
-            (
-                np.array([0.0, 0.0, -1.0, -1.0, -2.0, -2.0, -2.0]),
-                np.array([-3.0, -3.0, -3.0, -3.0, -4.0, -4.0]),
-            )
-        )
-        node_y = AuxCoord(ys, standard_name="latitude")
+        nodes_xy = {
+            0: (0, -2),
+            1: (0, -3),
+            2: (0, -4),
+            3: (1, 0),
+            4: (1, -1),
+            5: (1, -3),
+            6: (1, -4),
+            7: (2, 0),
+            8: (2, -1),
+            9: (2, -2),
+            10: (2, -3),
+            11: (3, -2),
+            12: (3, -3),
+            13: (4, 0),
+            14: (4, -1),
+        }
+        face_nodes = [
+            [9, 10, 12, 11, -1],
+            [4, 9, 8, -1, -1],
+            [3, 4, 8, 7, -1],
+            [0, 1, 2, 6, 5],
+        ]
+        edge_nodes = [
+            [0, 1],
+            [1, 2],
+            [2, 6],
+            [6, 5],
+            [13, 14],
+        ]
+        node_x = AuxCoord([x for x, y in nodes_xy.values()], standard_name="longitude")
+        node_y = AuxCoord([y for x, y in nodes_xy.values()], standard_name="latitude")
+
         if lazy_values:
             node_x.points = node_x.lazy_points()
             node_y.points = node_y.lazy_points()
 
         # Face sizes vary (4/3/4/5), so unused slots are masked.
         face_node_indices = np.ma.masked_array(
-            data=[
-                [0, 1, 3, 2, -1],
-                [3, 5, 4, -1, -1],
-                [2, 4, 7, 11, 12],
-                [5, 6, 10, 9, -1],
-            ],
-            mask=[
-                [False, False, False, False, True],
-                [False, False, False, True, True],
-                [False, False, False, False, False],
-                [False, False, False, False, True],
-            ],
-            dtype=np.int64,
+            data=face_nodes,
+            mask=np.array(
+                [
+                    [0, 0, 0, 0, 1],
+                    [0, 0, 0, 1, 1],
+                    [0, 0, 0, 0, 1],
+                    [0, 0, 0, 0, 0],
+                ],
+                dtype=bool,
+            ),
         )
+        edge_node_indices = np.array(edge_nodes)
         if lazy_values:
             face_node_indices = da.from_array(face_node_indices)
-
-        face_coords = [
-            # approximate face centroids
-            (AuxCoord([1.5, 1.67, 0.75, 2.0], standard_name="longitude"), "x"),
-            (AuxCoord([-0.5, -1.67, -2.5, -2.5], standard_name="latitude"), "y"),
-        ]
-        if lazy_values:
-            for coord, _ in face_coords:
-                coord.points = coord.lazy_points()
+            edge_node_indices = da.from_array(edge_node_indices)
 
         mesh = MeshXY(
             topology_dimension=2,
@@ -492,29 +504,50 @@ class Test_unusual_connectivities:
                 Connectivity(
                     indices=face_node_indices,
                     cf_role="face_node_connectivity",
-                )
+                ),
+                Connectivity(
+                    indices=edge_node_indices,
+                    cf_role="edge_node_connectivity",
+                ),
             ],
-            face_coords_and_axes=face_coords,
         )
         return mesh
 
-    def test_varied_faces(self, varied_faces):
-        mesh = varied_faces
-        index_set = _MeshIndexSet(indices=[1, 3], mesh=mesh, location="face")
-        _shared_utils.assert_array_equal(index_set.indices, np.array([1, 3]))
+    def test_varied_faces(self, varied_mesh):
+        mesh = varied_mesh
+        index_set = _MeshIndexSet(indices=[0, 1, 3], mesh=mesh, location="face")
+        _shared_utils.assert_array_equal(index_set.indices, np.array([0, 1, 3]))
         _shared_utils.assert_array_equal(
             index_set.connectivity(cf_role="face_node_connectivity").indices,
             np.ma.masked_array(
-                data=[[0, 2, 1, -1, -1], [2, 3, 5, 4, -1]],
-                mask=[[0, 0, 0, 1, 1], [0, 0, 0, 0, 1]],
+                data=[[7, 8, 10, 9, -1], [3, 7, 6, -1, -1], [0, 1, 2, 5, 4]],
+                mask=[[0, 0, 0, 0, 1], [0, 0, 0, 1, 1], [0, 0, 0, 0, 0]],
             ),
         )
         _shared_utils.assert_array_equal(
-            index_set.node_coords[0].points, np.array([2.0, 1.0, 2.0, 3.0, 2.0, 3.0])
+            index_set.node_coords[0].points, np.array([0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3])
         )
         _shared_utils.assert_array_equal(
             index_set.node_coords[1].points,
-            np.array([-1.0, -2.0, -2.0, -2.0, -3.0, -3.0]),
+            np.array([-2, -3, -4, -1, -3, -4, -1, -2, -3, -2, -3]),
+        )
+
+    def test_varied_edges(self, varied_mesh):
+        mesh = varied_mesh
+        index_set = _MeshIndexSet(indices=[0, 1, 4], mesh=mesh, location="edge")
+        _shared_utils.assert_array_equal(index_set.indices, np.array([0, 1, 4]))
+        _shared_utils.assert_array_equal(
+            index_set.connectivity(cf_role="edge_node_connectivity").indices,
+            # Note the shared node.
+            np.array([[0, 1], [1, 2], [3, 4]]),
+        )
+        _shared_utils.assert_array_equal(
+            index_set.node_coords[0].points,
+            np.array([0, 0, 0, 4, 4]),
+        )
+        _shared_utils.assert_array_equal(
+            index_set.node_coords[1].points,
+            np.array([-2, -3, -4, 0, -1]),
         )
 
 
