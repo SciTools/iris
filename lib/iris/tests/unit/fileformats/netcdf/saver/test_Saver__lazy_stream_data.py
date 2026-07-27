@@ -30,7 +30,7 @@ class Test__lazy_stream_data:
         mock_dataset = mocker.MagicMock()
         mock_dataset_class = mocker.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
-        target1 = "iris.fileformats.netcdf.saver.bytecoding_datasets.DatasetWrapper"
+        target1 = "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
@@ -115,9 +115,11 @@ class Test__lazy_stream_data:
             assert data_form == "emulateddata"
             cf_var._data_array == mocker.sentinel.exact_data_array
 
-    def test_lazy_data_save_nczarr_uses_preclose_write_list(self, compute, mocker):
+    def test_lazy_data_save_nczarr_uses_preclose_write_list(
+        self, data_form, compute, mocker, tmp_path
+    ):
         """NCZarr lazy data should not use deferred reopen writes."""
-        saver = self.saver(compute=compute)
+        saver = self.saver(compute=compute, data_form=data_form, tmp_path=tmp_path)
         saver._is_nczarr = True
 
         data = da.from_array(np.arange(5.0))
@@ -132,9 +134,9 @@ class Test__lazy_stream_data:
         assert result_target is cf_var
         assert cf_var.__setitem__.call_count == 0
 
-    def test_exit_flushes_nczarr_writes(self, mocker):
+    def test_exit_flushes_nczarr_writes(self, data_form, mocker, tmp_path):
         """NCZarr lazy writes should be computed before file close in __exit__."""
-        saver = self.saver(compute=False)
+        saver = self.saver(compute=False, data_form=data_form, tmp_path=tmp_path)
         saver._is_nczarr = True
 
         source = mocker.sentinel.source

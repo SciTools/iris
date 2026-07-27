@@ -1463,7 +1463,7 @@ class TestNcZarr:
     def _setup(self, mocker):
         # Saver init tries to create a DatasetWrapper, but we are using dummy paths.
         self.mock_dataset = mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper"
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset"
         )
 
     def test_file_uri(self):

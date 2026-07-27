@@ -441,7 +441,7 @@ class Test_build_cf_groups__nczarr_scalar_grid_mapping:
         )
         mocker.patch("iris.fileformats.cf.CFReader._reset")
         mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=self.dataset,
         )
         self.cf_group = CFReader("dummy").cf_group
