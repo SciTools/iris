@@ -1,1 +1,1 @@
-:user:`bouweandela` enabled [Ruff type checking (TC) rules](https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc).
+:user:`bouweandela` enabled `Ruff type checking (TC) rules <https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc>`_.
