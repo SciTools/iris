@@ -3,6 +3,8 @@
 
    A lesson on writing Iris Cubes to file in various formats.
 
+.. include:: ../../common_links.inc
+
 .. _saving_iris_cubes:
 
 ==================
@@ -16,6 +18,7 @@ Iris supports the saving of cubes and cube lists to:
 * CF netCDF (version 1.7)
 * GRIB edition 2  (if `iris-grib  <https://github.com/SciTools/iris-grib>`_ is installed)
 * Met Office PP
+* Zarr (via `NcZarr`_)
 
 
 The :py:func:`iris.save` function saves one or more cubes to a file.
@@ -44,6 +47,18 @@ and the keyword argument `saver` is not required.
     In general, overwriting a file which is the source for any lazily loaded
     data can result in corruption. Users should proceed with caution when
     attempting to overwrite an existing file.
+
+.. admonition:: NcZarr saving
+
+   NcZarr provides I/O for Zarr files via the NetCDF API, allowing Iris to use
+   its existing NetCDF saving code to read Zarr files. As discussed in the
+   `NcZarr`_ docs, NcZarr receives filepaths as URLs, with the appropriate
+   ``mode`` fragments. Iris will save via NcZarr if it detects a URL with these
+   fragments. For example:
+
+   .. code-block:: python
+
+       cubes = iris.save(my_cube, "file:///path/to/file.zarr#mode=nczarr,file")
 
 
 Controlling the Save Process

@@ -83,26 +83,32 @@ def _generate_cubes(uris, callback, constraints):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
+        scheme, part, fragment = decoded
+        category = "nczarr" if iris.io._is_nczarr_fragment(fragment) else scheme
+        if fragment:
+            part = f"{part}#{fragment}"
+        return category, scheme, part
+
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names
-    uri_tuples = sorted(iris.io.decode_uri(uri) for uri in uris)
-
-    for scheme, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
+    uri_tuples = sorted(_categorise(iris.io.decode_uri(uri)) for uri in uris)
+    for category, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == "file":
-            part_names = [x[1] for x in groups]
+        if category == "file":
+            part_names = [part for _cat, _scheme, part in groups]
             for cube in iris.io.load_files(part_names, callback, constraints):
                 yield cube
-        elif scheme in ["http", "https"]:
-            urls = [":".join(x) for x in groups]
+        elif category in ["http", "https", "nczarr"]:
+            urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
-        elif scheme == "data":
-            data_objects = [x[1] for x in groups]
+        elif category == "data":
+            data_objects = [part for _cat, _scheme, part in groups]
             for cube in iris.io.load_data_objects(data_objects, callback):
                 yield cube
         else:
-            raise ValueError("Iris cannot handle the URI scheme: %s" % scheme)
+            raise ValueError("Iris cannot handle the URI scheme: %s" % category)
 
 
 class _CubeFilter:
@@ -212,7 +218,7 @@ def load(uris, constraints=None, callback=None):
     ----------
     uris : str or :class:`pathlib.PurePath`
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional
@@ -240,7 +246,7 @@ def load_cube(uris, constraint=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         A constraint.
     callback : optional
@@ -282,7 +288,7 @@ def load_cubes(uris, constraints=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional
@@ -328,7 +334,7 @@ def load_raw(uris, constraints=None, callback=None):
     ----------
     uris :
         One or more filenames/URIs, as a string or :class:`pathlib.PurePath`.
-        If supplying a URL, only OPeNDAP Data Sources are supported.
+        If supplying a URL, only OPeNDAP and NcZarr data sources are supported.
     constraints : optional
         One or more constraints.
     callback : optional

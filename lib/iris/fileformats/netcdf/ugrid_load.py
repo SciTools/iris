@@ -23,12 +23,13 @@ Extension functions for Iris NetCDF loading, to construct
 from functools import partial
 from itertools import groupby
 from pathlib import Path
+from typing import Iterable
 import warnings
 
 from iris.common.mixin import CFVariableMixin
 from iris.config import get_logger
 from iris.coords import AuxCoord
-from iris.io import decode_uri, expand_filespecs
+from iris.io import _is_nczarr_fragment, decode_uri, expand_filespecs
 from iris.loading import LoadProblems
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
@@ -96,7 +97,7 @@ def load_mesh(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP.
+        must support OpenDAP or NcZarr.
     var_name : str, optional
         Only return a :class:`~iris.mesh.MeshXY` if its
         var_name matches this value.
@@ -122,7 +123,7 @@ def load_meshes(uris, var_name=None):
     ----------
     uris : str or iterable of str
         One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP.
+        must support OpenDAP nor NcZarr.
     var_name : str, optional
         Only return :class:`~iris.mesh.MeshXY` that have
         var_names matching this value.
@@ -142,27 +143,38 @@ def load_meshes(uris, var_name=None):
     from iris.fileformats.cf import CFReader
     import iris.fileformats.netcdf.loader as nc_loader
 
-    if isinstance(uris, str):
+    if (
+        isinstance(uris, str)
+        or hasattr(uris, "fromcdl")
+        or not isinstance(uris, Iterable)
+    ):
+        # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
+
+    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
+        scheme, part, fragment = decoded
+        category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
+        if fragment:
+            part = f"{part}#{fragment}"
+        return category, scheme, part
 
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names.
-    uri_tuples = sorted(decode_uri(uri) for uri in uris)
-
+    uri_tuples = sorted(_categorise(decode_uri(uri)) for uri in uris)
     valid_sources = []
-    for scheme, groups in groupby(uri_tuples, key=lambda x: x[0]):
+    for category, groups in groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
-        if scheme == "file":
-            filenames = [x[1] for x in groups]
+        if category == "file":
+            filenames = [part for _cat, _scheme, part in groups]
             sources = expand_filespecs(filenames)
-        elif scheme in ["http", "https"]:
-            sources = [":".join(x) for x in groups]
+        elif category in ["http", "https", "nczarr"]:
+            sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
         else:
-            message = f"Iris cannot handle the URI scheme: {scheme}"
+            message = f"Iris cannot handle the URI scheme: {category}"
             raise ValueError(message)
 
         for source in sources:
-            if scheme == "file":
+            if category == "file":
                 with open(source, "rb") as fh:
                     handling_format_spec = FORMAT_AGENT.get_spec(Path(source).name, fh)
             else:

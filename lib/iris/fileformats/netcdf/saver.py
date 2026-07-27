@@ -28,6 +28,7 @@ import re
 import string
 import typing
 from typing import TYPE_CHECKING
+from urllib.parse import urlsplit
 import warnings
 
 import cf_units
@@ -321,15 +322,21 @@ CFVariable = typing.Union[bytecoding_datasets.VariableWrapper, VariableEmulator]
 
 
 class Saver:
-    """A manager for saving netcdf files."""
+    """A manager for saving NetCDF/NcZarr files."""
 
     def __init__(self, filename, netcdf_format, compute=True):
         """Manage saving netcdf files.
 
+        Also supports Zarr files in the NcZarr URL format, e.g.
+        ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+        Zarr Storage Specification version 2. See the
+        `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+        for more.
+
         Parameters
         ----------
         filename : str or netCDF4.Dataset
-            Name of the netCDF file to save the cube.
+            Name of the NetCDF file, or an NcZarr URL, to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
         netcdf_format : str
             Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
@@ -400,9 +407,15 @@ class Saver:
             None  # this line just for the API page -- value is set later
         )
 
+        #: Whether the save target is an NCZarr URL.
+        self._is_nczarr = False
         # A list of delayed writes for lazy saving
         # a list of couples (source, target).
         self._delayed_writes = []
+        # A list of pre-close writes for NCZarr lazy saving.
+        # NCZarr cannot be reopened for deferred writes, so lazy data is
+        # written before __exit__ closes the file.
+        self._nczarr_writes = []
 
         # Detect if we were passed a pre-opened dataset (or something like one)
         self._to_open_dataset = hasattr(filename, "createVariable")
@@ -430,12 +443,26 @@ class Saver:
         else:
             # Given a filepath string/path : create a dataset from that
             try:
-                self.filepath = Path(filename).absolute()
+                # Lazy import to avoid circular import overhead at module import-time.
+                from iris.io import _is_nczarr_fragment
+
+                self._is_nczarr = _is_nczarr_fragment(
+                    urlsplit(str(filename)).fragment or None
+                )
+                if self._is_nczarr:
+                    # NCZarr URLs contain a #mode= fragment; Path() strips it.
+                    # Keep as a plain string and pass directly to DatasetWrapper.
+                    self.filepath = str(filename)
+                else:
+                    filepath = Path(filename)
+                    self.filepath = filepath.absolute()
                 self._dataset = bytecoding_datasets.EncodedDataset(
                     self.filepath, mode="w", format=netcdf_format
                 )
             except RuntimeError:
-                dir_name = self.filepath.parent
+                if self._is_nczarr:
+                    raise
+                dir_name = Path(self.filepath).parent
                 if not dir_name.is_dir():
                     msg = "No such file or directory: {}".format(dir_name)
                     raise IOError(msg)
@@ -451,7 +478,12 @@ class Saver:
         return self
 
     def __exit__(self, type, value, traceback):
-        """Flush any buffered data to the CF-netCDF file before closing."""
+        """Flush any buffered data to the CF-NetCDF/NcZarr file before closing."""
+        if self._nczarr_writes:
+            # NCZarr lazy writes must be computed while the file is still open;
+            # the deferred reopen-write pattern used for netCDF is not supported.
+            sources, targets = zip(*self._nczarr_writes)
+            da.store(list(sources), list(targets))
         self._dataset.sync()
         if not self._to_open_dataset:
             # Only close if the Saver created it.
@@ -478,10 +510,16 @@ class Saver:
     ):
         """Wrap for saving cubes to a NetCDF file.
 
+        Also supports Zarr files in the NcZarr URL format, e.g.
+        ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+        Zarr Storage Specification version 2. See the
+        `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+        for more.
+
         Parameters
         ----------
         cube : :class:`iris.cube.Cube`
-            A :class:`iris.cube.Cube` to be saved to a netCDF file.
+            A :class:`iris.cube.Cube` to be saved to a NetCDF/NcZarr file.
         local_keys : iterable of str, optional
             An iterable of cube attribute keys. Any cube attributes with
             matching keys will become attributes on the data variable rather
@@ -2580,6 +2618,12 @@ class Saver:
         else:
             doing_delayed_save = is_lazy_data(data)
             if doing_delayed_save:
+                if self._is_nczarr:
+                    # NCZarr cannot be reopened for deferred writes.
+                    # Collect here; da.store() will be called in __exit__.
+                    self._nczarr_writes.append((data, cf_var))
+                    return
+
                 # save lazy data with a delayed operation.  For now, we just record the
                 # necessary information -- a single, complete delayed action is constructed
                 # later by a call to delayed_completion().
@@ -2673,7 +2717,13 @@ def save(
     fill_value=None,
     compute=True,
 ):
-    r"""Save cube(s) to a netCDF file, given the cube and the filename.
+    r"""Save cube(s) to a NetCDF file, given the cube and the filename.
+
+    Also supports Zarr files in the NcZarr URL format, e.g.
+    ``file:///path/to/file#mode=nczarr,file``. Note that NcZarr is limited to
+    Zarr Storage Specification Version 2. See the
+    `NcZarr docs <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`
+    for more.
 
     * Iris will write CF 1.7 compliant NetCDF files.
     * **If split-attribute saving is disabled**, i.e.
@@ -2699,7 +2749,7 @@ def save(
         A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or other
         iterable of cubes to be saved to a netCDF file.
     filename : str
-        Name of the netCDF file to save the cube(s).
+        Name of the NetCDF file or NcZarr URL to save the cube(s).
         **Or** an open, writeable :class:`netCDF4.Dataset`, or compatible object.
 
         .. note::
