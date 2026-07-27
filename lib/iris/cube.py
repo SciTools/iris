@@ -31,7 +31,6 @@ import warnings
 from xml.dom.minidom import Document
 
 from cf_units import Unit
-import dask.array as da
 import numpy as np
 import numpy.ma as ma
 from packaging.version import Version
@@ -45,7 +44,6 @@ from iris.analysis import _Weights
 from iris.analysis.cartography import wrap_lons
 import iris.analysis.maths
 import iris.aux_factory
-from iris.aux_factory import AuxCoordFactory
 from iris.common import CFVariableMixin, CubeMetadata, metadata_manager_factory
 from iris.common.metadata import BaseMetadata, CoordMetadata, metadata_filter
 from iris.common.mixin import LimitedAttributeDict
@@ -61,10 +59,10 @@ from iris.coords import (
 )
 
 if TYPE_CHECKING:
-    from typing import TYPE_CHECKING
-
+    import dask.array as da
     from numpy.typing import ArrayLike
 
+    from iris.aux_factory import AuxCoordFactory
     import iris.mesh
     from iris.mesh import MeshCoord
 import iris.exceptions

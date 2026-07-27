@@ -8,9 +8,8 @@ import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, NamedTuple
+from typing import Any, Callable, TYPE_CHECKING, NamedTuple
 
-from cartopy.crs import CRS
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
@@ -29,6 +28,9 @@ from ._stock_2d_latlons import (  # noqa
     make_bounds_discontiguous_at_point,
     sample_2d_latlons,
 )
+
+if TYPE_CHECKING:
+    from cartopy.crs import CRS
 
 
 def lat_lon_cube():

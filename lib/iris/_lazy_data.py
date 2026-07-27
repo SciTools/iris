@@ -9,8 +9,7 @@ To avoid replicating implementation-dependent test and conversion code.
 """
 
 from functools import lru_cache, partial, wraps
-from types import ModuleType
-from typing import Sequence
+from typing import TYPE_CHECKING, Sequence
 
 import dask
 import dask.array as da
@@ -20,6 +19,9 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.exceptions
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 MAX_CACHE_SIZE = 100
 """Maximum number of Dask arrays to cache."""
