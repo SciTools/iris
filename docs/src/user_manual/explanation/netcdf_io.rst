@@ -132,6 +132,7 @@ Iris' optimisation all together, and will take its chunksizes from Dask's behavi
     >>> print(cube.core_data().chunksize)
     (70, 37, 49)
 
+.. _char_and_string_datatypes:
 
 Character and String datatypes
 ------------------------------
