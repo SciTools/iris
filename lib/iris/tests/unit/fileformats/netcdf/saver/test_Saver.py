@@ -30,6 +30,7 @@ from iris.coord_systems import (
 from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets as ds_wrappers
 from iris.tests import _shared_utils
 from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
@@ -215,7 +216,7 @@ class Test_write:
 
     def test_zlib(self, mocker):
         cube = self._simple_cube(">f4")
-        api = mocker.patch("iris.fileformats.netcdf.saver._thread_safe_nc")
+        api = mocker.patch("iris.fileformats.netcdf.saver.bytecoding_datasets")
         # Define mocked default fill values to prevent deprecation warning (#4374).
         api.default_fillvals = collections.defaultdict(lambda: -99.0)
         # Mock the apparent dtype of mocked variables, to avoid an error.
@@ -226,7 +227,7 @@ class Test_write:
         # a fill-value report on a non-compliant variable in a non-file (!)
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
-        dataset = api.DatasetWrapper.return_value
+        dataset = api.EncodedDataset.return_value
         create_var_call = mocker.call(
             "air_pressure_anomaly",
             np.dtype("float32"),
@@ -257,9 +258,6 @@ class Test_write:
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims)
 
-        patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -269,10 +267,20 @@ class Test_write:
 
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            tgt = (
+                "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                ".EncodedDataset.createVariable"
+            )
+            createvar_spy = mocker.patch(
+                tgt,
+                # Use 'wraps' to allow the patched methods to function as normal
+                #  - the patch object just acts as a 'spy' on its calls.
+                wraps=saver._dataset.createVariable,
+            )
             saver.write(cube, **compression_kwargs)
 
-        assert 5 == patch.call_count
-        result = self._filter_compression_calls(patch, compression_kwargs)
+        assert 5 == createvar_spy.call_count
+        result = self._filter_compression_calls(createvar_spy, compression_kwargs)
         assert 3 == len(result)
         assert {cube.name(), aux_coord.name(), anc_coord.name()} == set(result)
 
@@ -290,9 +298,6 @@ class Test_write:
         )
         cube.add_ancillary_variable(anc_coord, data_dims=data_dims[1])
 
-        patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -302,11 +307,21 @@ class Test_write:
 
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            tgt = (
+                "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                ".EncodedDataset.createVariable"
+            )
+            createvar_spy = mocker.patch(
+                tgt,
+                # Use 'wraps' to allow the patched methods to function as normal
+                #  - the patch object just acts as a 'spy' on its calls.
+                wraps=saver._dataset.createVariable,
+            )
             saver.write(cube, **compression_kwargs)
 
-        assert 5 == patch.call_count
+        assert 5 == createvar_spy.call_count
         result = self._filter_compression_calls(
-            patch, compression_kwargs, mismatch=True
+            createvar_spy, compression_kwargs, mismatch=True
         )
         assert 4 == len(result)
         # the aux coord and ancil variable are not compressed due to shape, and
@@ -323,10 +338,6 @@ class Test_write:
         aux_coord = AuxCoord(data, var_name="non_compress_aux", units="1")
         cube.add_aux_coord(aux_coord, data_dims=data_dims)
 
-        patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable"
-        )
-        patch.return_value = mocker.MagicMock(dtype=np.dtype("S1"))
         compression_kwargs = {
             "complevel": 9,
             "fletcher32": True,
@@ -336,11 +347,21 @@ class Test_write:
 
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4", compute=False) as saver:
+            tgt = (
+                "iris.fileformats.netcdf.saver.bytecoding_datasets"
+                ".EncodedDataset.createVariable"
+            )
+            createvar_spy = mocker.patch(
+                tgt,
+                # Use 'wraps' to allow the patched methods to function as normal
+                #  - the patch object just acts as a 'spy' on its calls.
+                wraps=saver._dataset.createVariable,
+            )
             saver.write(cube, **compression_kwargs)
 
-        assert 4 == patch.call_count
+        assert 4 == createvar_spy.call_count
         result = self._filter_compression_calls(
-            patch, compression_kwargs, mismatch=True
+            createvar_spy, compression_kwargs, mismatch=True
         )
         assert 3 == len(result)
         # the aux coord is not compressed due to its string dtype, and
@@ -370,7 +391,7 @@ class Test_write:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         assert not ds.dimensions["dim0"].isunlimited()
         assert not ds.dimensions["dim1"].isunlimited()
         ds.close()
@@ -380,7 +401,7 @@ class Test_write:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=None)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         for dim in ds.dimensions.values():
             assert not dim.isunlimited()
         ds.close()
@@ -402,7 +423,7 @@ class Test_write:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=unlimited_dimensions)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         for dim in unlimited_dimensions:
             assert ds.dimensions[dim].isunlimited()
         ds.close()
@@ -411,7 +432,7 @@ class Test_write:
         coords = [cube.coord(dim) for dim in unlimited_dimensions]
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=coords)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         for dim in unlimited_dimensions:
             assert ds.dimensions[dim].isunlimited()
         ds.close()
@@ -422,7 +443,7 @@ class Test_write:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         res = ds.getncattr("dimensions")
         ds.close()
         assert res == "something something_else"
@@ -444,7 +465,7 @@ class Test_write:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube)
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         # Confirm that the only dimension is the one denoting the number
         #  of bounds - have successfully saved the 2D bounds array into 1D.
         assert ["bnds"] == list(ds.dimensions.keys())
@@ -484,7 +505,7 @@ class Test__create_cf_bounds(MockerMixin):
         saver._ensure_valid_dtype.return_value = self.mocker.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = self.mocker.MagicMock(spec=_thread_safe_nc.VariableWrapper)
+        var = self.mocker.MagicMock(spec=ds_wrappers.EncodedVariable)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
@@ -525,7 +546,7 @@ class Test_write__valid_x_cube_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.valid_range, vrange)
         ds.close()
 
@@ -537,7 +558,7 @@ class Test_write__valid_x_cube_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.valid_min, 1)
         ds.close()
 
@@ -549,7 +570,7 @@ class Test_write__valid_x_cube_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.valid_max, 2)
         ds.close()
 
@@ -569,7 +590,7 @@ class Test_write__valid_x_coord_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.variables["longitude"].valid_range, vrange)
         ds.close()
 
@@ -581,7 +602,7 @@ class Test_write__valid_x_coord_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.variables["longitude"].valid_min, 1)
         ds.close()
 
@@ -593,7 +614,7 @@ class Test_write__valid_x_coord_attributes:
         nc_path = tmp_path / "temp.nc"
         with Saver(nc_path, "NETCDF4") as saver:
             saver.write(cube, unlimited_dimensions=[])
-        ds = _thread_safe_nc.DatasetWrapper(nc_path)
+        ds = ds_wrappers.EncodedDataset(nc_path)
         _shared_utils.assert_array_equal(ds.variables["longitude"].valid_max, 2)
         ds.close()
 
@@ -627,7 +648,7 @@ class Test_write_fill_value:
             nc_path = tmp_path / "temp.nc"
             with Saver(nc_path, "NETCDF4") as saver:
                 saver.write(cube, **kwargs)
-            ds = _thread_safe_nc.DatasetWrapper(nc_path)
+            ds = ds_wrappers.EncodedDataset(nc_path)
             (var,) = [
                 var
                 for var in ds.variables.values()
@@ -707,7 +728,7 @@ class _Common__check_attribute_compliance:
             )
         )
         _ = mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             dataset_class,
         )
 

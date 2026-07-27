@@ -78,7 +78,7 @@ class Test_translate__global_attributes:
             getncattr=getncattr,
         )
         mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=dataset,
         )
 
@@ -141,7 +141,7 @@ class Test_translate__formula_terms:
         mocker.patch("iris.fileformats.cf.CFReader._build_cf_groups")
         mocker.patch("iris.fileformats.cf.CFReader._reset")
         mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=self.dataset,
         )
 
@@ -237,7 +237,7 @@ class Test_build_cf_groups__formula_terms:
         # and building first level cf-groups for variables.
         mocker.patch("iris.fileformats.cf.CFReader._reset")
         mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=self.dataset,
         )
 
@@ -373,7 +373,7 @@ class Test_build_cf_groups__ugrid:
         # translations and building first level cf-groups for variables.
         mocker.patch("iris.fileformats.cf.CFReader._reset")
         mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=self.dataset,
         )
         cf_reader = CFReader("dummy")
