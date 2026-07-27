@@ -81,6 +81,8 @@ def sample_mesh(
     )
     node_y = AuxCoord(1200 + arr.arange(n_nodes), standard_name="latitude")
 
+    topology_dimension = 0
+
     connectivities = []
     if n_edges == 0:
         edge_coords_and_axes = None
@@ -99,6 +101,8 @@ def sample_mesh(
         edge_x = AuxCoord(2100 + arr.arange(n_edges), standard_name="longitude")
         edge_y = AuxCoord(2200 + arr.arange(n_edges), standard_name="latitude")
         edge_coords_and_axes = [(edge_x, "x"), (edge_y, "y")]
+
+        topology_dimension = 1
 
     if n_faces == 0:
         face_coords_and_axes = None
@@ -119,6 +123,8 @@ def sample_mesh(
         face_x = AuxCoord(3100 + arr.arange(n_faces), standard_name="longitude")
         face_y = AuxCoord(3200 + arr.arange(n_faces), standard_name="latitude")
         face_coords_and_axes = [(face_x, "x"), (face_y, "y")]
+
+        topology_dimension = 2
 
     mesh = MeshXY(
         topology_dimension=topology_dimension,
