@@ -3424,6 +3424,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
 
         return result
 
+    def __hash__(self) -> int:
+        # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
+        # See https://github.com/SciTools/iris/pull/1772
+        return hash(id(self))
+
     def __getstate__(self) -> tuple[ArrayLike, _MeshIndexSetMetadata]:
         return (
             self.indices,
