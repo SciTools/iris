@@ -11,6 +11,7 @@ Typically the cube merge process is handled by
 
 from collections import OrderedDict, namedtuple
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
 import dask.array as da
 import numpy as np
@@ -29,6 +30,9 @@ import iris.coords
 import iris.cube
 import iris.exceptions
 import iris.util
+
+if TYPE_CHECKING:
+    from iris.cube import CubeList
 
 
 #
@@ -1190,7 +1194,7 @@ class ProtoCube:
         msg = msg % (name, ", ".join(scalars))
         raise iris.exceptions.DuplicateDataError(msg)
 
-    def merge(self, unique: bool = True) -> iris.cube.CubeList:
+    def merge(self, unique: bool = True) -> CubeList:
         """Return the list of cubes resulting from merging the registered source-cubes.
 
         Parameters
