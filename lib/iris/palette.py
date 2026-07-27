@@ -31,7 +31,7 @@ import iris.cube
 PIVOT_BY_UNIT = {cf_units.Unit("K"): 273.15}
 
 # Color map names by palette file metadata field value.
-CMAP_BREWER = set()
+CMAP_BREWER: set[str | Path] = set()
 _CMAP_BY_SCHEME = None
 _CMAP_BY_KEYWORD = None
 _CMAP_BY_STD_NAME = None
