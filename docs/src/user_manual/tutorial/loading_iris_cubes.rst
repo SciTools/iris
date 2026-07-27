@@ -46,7 +46,9 @@ of the given files and attempts to produce Iris Cubes from their contents.
    its existing NetCDF loading code to read Zarr files. As discussed in the
    `NcZarr`_ docs, NcZarr receives filepaths as URLs, with the appropriate
    ``mode`` fragments. Iris will load via NcZarr if it detects a URL with these
-   fragments. For example:
+   fragments. There are a `known issues <known-hdf5-warnings>`_ with NcZarr
+   causing HDF5 warnings; we have investigated and you can **safely ignore these**.
+   Code example:
 
    .. code-block:: python
 
@@ -432,3 +434,6 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
     helpers.get_names = get_names_original
     std_names.STD_NAMES["air_temperature"] = air_temperature
     iris.FUTURE.date_microseconds = False
+
+
+.. _known-hdf5-warnings: https://github.com/SciTools/iris/pull/7113#discussion_r3653044732
