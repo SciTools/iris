@@ -3,6 +3,8 @@
 
    A lesson in how Iris loading works.
 
+.. include:: ../../common_links.inc
+
 .. _loading_iris_cubes:
 
 ===================
@@ -34,9 +36,23 @@ of the given files and attempts to produce Iris Cubes from their contents.
 
 .. note::
 
-    Currently there is support for CF NetCDF, GRIB 1 & 2, PP and FieldsFiles
+    Currently there is support for CF NetCDF, GRIB 1 & 2, PP, FieldsFiles and
+    Zarr (via `NcZarr`_)
     file formats with a framework for this to be extended to custom formats.
 
+.. admonition:: NcZarr loading
+
+   NcZarr provides I/O for Zarr files via the NetCDF API, allowing Iris to use
+   its existing NetCDF loading code to read Zarr files. As discussed in the
+   `NcZarr`_ docs, NcZarr receives filepaths as URLs, with the appropriate
+   ``mode`` fragments. Iris will load via NcZarr if it detects a URL with these
+   fragments. There are a `known issues <known-hdf5-warnings>`_ with NcZarr
+   causing HDF5 warnings; we have investigated and you can **safely ignore these**.
+   Code example:
+
+   .. code-block:: python
+
+       cubes = iris.load("file:///path/to/file.zarr#mode=nczarr,file")
 
 In order to find out what has been loaded, the result can be printed:
 
@@ -418,3 +434,6 @@ API documentation for:** :class:`iris.loading.LoadProblems`.
     helpers.get_names = get_names_original
     std_names.STD_NAMES["air_temperature"] = air_temperature
     iris.FUTURE.date_microseconds = False
+
+
+.. _known-hdf5-warnings: https://github.com/SciTools/iris/pull/7113#discussion_r3653044732

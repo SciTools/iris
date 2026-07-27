@@ -360,9 +360,9 @@ class LeadingLine(FileElement):
 
 
 class UriProtocol(FileElement):
-    """Return the scheme and part from a URI, using :func:`~iris.io.decode_uri`.
+    """Return URI decode parts, using :func:`~iris.io.decode_uri`.
 
-    A :class:`FileElement` that returns the "scheme" and "part" from a URI,
+    A :class:`FileElement` that returns the "scheme", "part" and "fragment" from a URI,
     using :func:`~iris.io.decode_uri`.
 
     """
@@ -374,7 +374,7 @@ class UriProtocol(FileElement):
         # noqa: D102
         from iris.io import decode_uri
 
-        return decode_uri(basename)[0]
+        return decode_uri(basename)
 
 
 class DataSourceObjectProtocol(FileElement):
