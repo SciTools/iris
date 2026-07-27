@@ -12,13 +12,15 @@
 """
 
 from collections.abc import Sequence
-from typing import Union
+from typing import TYPE_CHECKING, Union
 
 import dask.array as da
 import numpy as np
 
-from iris.common.metadata import CoordMetadata
 from iris.cube import Cube
+
+if TYPE_CHECKING:
+    from iris.common.metadata import CoordMetadata
 
 
 def recombine_submeshes(
