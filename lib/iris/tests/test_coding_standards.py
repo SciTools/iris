@@ -154,7 +154,7 @@ def test_categorised_warnings() -> None:
         file_text = file_path.read_text()
         parsed = ast.parse(source=file_text)
         calls: Iterator[ast.Call] = cast(
-            Iterator[ast.Call],
+            "Iterator[ast.Call]",
             filter(lambda node: hasattr(node, "func"), ast.walk(parsed)),
         )
         warn_calls: Iterator[ast.Call] = filter(

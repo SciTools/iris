@@ -8,7 +8,7 @@ import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Callable, TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple
 
 from cf_units import Unit
 import numpy as np
