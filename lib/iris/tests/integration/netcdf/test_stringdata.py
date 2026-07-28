@@ -205,11 +205,6 @@ def load_problems_list():
     return [str(prob) for prob in iris.loading.LOAD_PROBLEMS.problems]
 
 
-@pytest.fixture(autouse=True)
-def tmp_path():
-    return Path("/home/users/patrick.peglar/chararray_testfiles")
-
-
 class TestReadEncodings:
     """Test loading of testfiles with encoded string data."""
 
