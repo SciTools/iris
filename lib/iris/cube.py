@@ -3600,10 +3600,6 @@ class Cube(CFVariableMixin):
         xt_min, xt_max, yt_min, yt_max : float
             Transformed bounding box in target CRS.
         """
-        import itertools
-
-        import numpy as np
-
         # Create corner points of the bounding box in source CRS
         points = np.array(
             list(itertools.product((x_min, x_max), (y_min, y_max)))
