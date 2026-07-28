@@ -3501,11 +3501,6 @@ class Cube(CFVariableMixin):
                     if not y_coord_name and coord_name in ('y', 'projection_y_coordinate'):
                         y_coord_name = coord_name
 
-                # If still not found, use the last two dimension coordinates as x/y
-                if not x_coord_name and not y_coord_name and len(dim_coords) >= 2:
-                    y_coord_name = dim_coords[-2].name()
-                    x_coord_name = dim_coords[-1].name()
-
         # Build new kwargs with transformed coordinates
         new_kwargs = {}
         has_latlon_in_kwargs = ("latitude" in kwargs or "lat" in kwargs or 
