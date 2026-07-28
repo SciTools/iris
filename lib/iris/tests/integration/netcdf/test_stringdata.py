@@ -205,6 +205,11 @@ def load_problems_list():
     return [str(prob) for prob in iris.loading.LOAD_PROBLEMS.problems]
 
 
+@pytest.fixture(autouse=True)
+def tmp_path():
+    return Path("/home/users/patrick.peglar/chararray_testfiles")
+
+
 class TestReadEncodings:
     """Test loading of testfiles with encoded string data."""
 
@@ -632,15 +637,17 @@ class TestReadParticularCases:
 
 
 class TestWriteParticularCases:
-    def test_write_unicode_no_encoding__fail(self, tmp_path):
-        cube = Cube(np.array("éclair"))
+    def test_write_unicode_no_encoding(self, tmp_path):
+        cube = Cube(np.array(["bun", "éclair"], dtype="U10"))
         filepath = tmp_path / "write_unicode_no_encoding.nc"
-        msg = (
-            "String data written to netcdf character variable 'unknown' "
-            "could not be represented in encoding 'ascii'"
-        )
-        with pytest.raises(ValueError, match=msg):
-            iris.save(cube, filepath)
+        # This now "just works", since default is UTF-8
+        iris.save(cube, filepath)
+        # check that reading back delivers the same
+        readback = iris.load_cube(filepath)
+        orig_data, rb_data = cube.data, readback.data
+        assert rb_data.dtype == orig_data.dtype
+        assert rb_data.shape == orig_data.shape
+        assert list(rb_data) == list(orig_data)
 
     def test_write_encoded_overlength__fail(self, tmp_path):
         cube = Cube(np.array("éclair"), attributes={"_Encoding": "utf8"})
