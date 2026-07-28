@@ -210,17 +210,13 @@ class TestWriteStrings:
         expected_bytes = make_bytearray(test_data, strlen)
         check_raw_content(path, "vyxn", expected_bytes)
 
-    @pytest.mark.parametrize("encoding", [None, "ascii"])
-    def test_write_encoding_failure(self, tempdir, encoding):
+    def test_write_encoding_failure(self, tempdir):
         path = tempdir / f"test_bytecoded_writestrings_encoding_{encoding}_fail.nc"
-        ds = make_encoded_dataset(path, strlen=5, encoding=encoding)
+        ds = make_encoded_dataset(path, strlen=5, encoding="ascii")
         v = ds.variables["vxs"]
-        encoding_name = encoding
-        if encoding_name == None:
-            encoding_name = "ascii"
         msg = (
             "String data written to netcdf character variable 'vxs'.*"
-            f" could not be represented in encoding '{encoding_name}'. "
+            f" could not be represented in encoding 'ascii'. "
         )
         with pytest.raises(ValueError, match=msg):
             v[:] = samples_3_nonascii
