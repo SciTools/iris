@@ -195,7 +195,7 @@ attribute will still be added to the Iris component object.
 
 When saving
 ~~~~~~~~~~~
-To save string data **does not require an ``_Encoding`` attribute**, since UTF-8 is
+To save string data **does not require** an ``_Encoding`` attribute, since UTF-8 is
 applied by default -- which, for ascii data, is also equivalent to ``"ascii"``.
 
 An ``_Encoding`` attribute can however be provided : either for clarity, or to specify a
