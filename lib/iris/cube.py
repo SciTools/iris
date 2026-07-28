@@ -1903,16 +1903,16 @@ class Cube(CFVariableMixin):
             * (b) a cell_measure instance with metadata equal to that of
               the desired cell_measures.
 
+        See Also
+        --------
+        add_cell_measure :
+            Add a CF cell measure to the cube.
+
         Notes
         -----
         If the argument given does not represent a valid cell_measure on
         the cube, an :class:`iris.exceptions.CellMeasureNotFoundError`
         is raised.
-
-        See Also
-        --------
-        add_cell_measure :
-            Add a CF cell measure to the cube.
 
         """
         cell_measure = self.cell_measure(cell_measure)
@@ -2416,17 +2416,17 @@ class Cube(CFVariableMixin):
         -------
         The coordinate that matches the provided criteria.
 
+        See Also
+        --------
+        coords :
+            For matching zero or more coordinates.
+
         Notes
         -----
          .. note::
 
             If the arguments given do not result in **precisely one** coordinate,
             then a :class:`~iris.exceptions.CoordinateNotFoundError` is raised.
-
-        See Also
-        --------
-        coords :
-            For matching zero or more coordinates.
 
         """
         coords = self.coords(
@@ -2678,14 +2678,6 @@ class Cube(CFVariableMixin):
     ) -> CellMeasure:
         """Return a single cell_measure given the same arguments as :meth:`Cube.cell_measures`.
 
-        Notes
-        -----
-        .. note::
-
-            If the arguments given do not result in precisely 1 cell_measure
-            being matched, an :class:`iris.exceptions.CellMeasureNotFoundError`
-            is raised.
-
         Returns
         -------
         CellMeasure
@@ -2695,6 +2687,14 @@ class Cube(CFVariableMixin):
         --------
         cell_measures :
             For full keyword documentation.
+
+        Notes
+        -----
+        .. note::
+
+            If the arguments given do not result in precisely 1 cell_measure
+            being matched, an :class:`iris.exceptions.CellMeasureNotFoundError`
+            is raised.
 
         """
         cell_measures = self.cell_measures(name_or_cell_measure)
@@ -2780,14 +2780,6 @@ class Cube(CFVariableMixin):
     ) -> AncillaryVariable:
         """Return a single ancillary_variable given the same arguments as :meth:`Cube.ancillary_variables`.
 
-        Notes
-        -----
-        .. note::
-
-            If the arguments given do not result in precisely 1
-            ancillary_variable being matched, an
-            :class:`iris.exceptions.AncillaryVariableNotFoundError` is raised.
-
         Returns
         -------
         AncillaryVariable
@@ -2797,6 +2789,14 @@ class Cube(CFVariableMixin):
         --------
         ancillary_variables :
             For full keyword documentation.
+
+        Notes
+        -----
+        .. note::
+
+            If the arguments given do not result in precisely 1
+            ancillary_variable being matched, an
+            :class:`iris.exceptions.AncillaryVariableNotFoundError` is raised.
 
         """
         ancillary_variables = self.ancillary_variables(name_or_ancillary_variable)
@@ -3463,15 +3463,11 @@ class Cube(CFVariableMixin):
             Minimum proportion of a bounded cell that must overlap with the
             specified range. Default 0.
 
-        Notes
-        -----
-        .. note::
-
-            For ranges defined over "circular" coordinates (i.e. those
-            where the `units` attribute has a modulus defined) the cube
-            will be "rolled" to fit where necessary.  When requesting a
-            range that covers the entire modulus, a split cell will
-            preferentially be placed at the ``minimum`` end.
+        Returns
+        -------
+        :class:`~iris.cube.Cube`
+            A new :class:`~iris.cube.Cube` giving the subset of the cube
+            which intersects with the requested coordinate intervals.
 
         Warnings
         --------
@@ -3494,11 +3490,15 @@ class Cube(CFVariableMixin):
             >>> print(subset.coord('longitude').points)
             [-7.50012207 -3.75012207  0.          3.75        7.5       ]
 
-        Returns
-        -------
-        :class:`~iris.cube.Cube`
-            A new :class:`~iris.cube.Cube` giving the subset of the cube
-            which intersects with the requested coordinate intervals.
+        Notes
+        -----
+        .. note::
+
+            For ranges defined over "circular" coordinates (i.e. those
+            where the `units` attribute has a modulus defined) the cube
+            will be "rolled" to fit where necessary.  When requesting a
+            range that covers the entire modulus, a split cell will
+            preferentially be placed at the ``minimum`` end.
 
         """
         result = self
@@ -3881,6 +3881,19 @@ class Cube(CFVariableMixin):
         -------
         An iterator of subcubes.
 
+        See Also
+        --------
+        iris.cube.Cube.slices :
+            Return an iterator of all subcubes given the coordinates or dimension indices.
+
+        Notes
+        -----
+        .. note::
+
+            The order of dimension references to slice along does not affect
+            the order of returned items in the iterator; instead the ordering
+            is based on the fastest-changing dimension.
+
         Examples
         --------
         For example, for a cube with dimensions `realization`, `time`, `latitude` and
@@ -3914,19 +3927,6 @@ class Cube(CFVariableMixin):
         ...     print(sub_cube.summary(shorten=True))
         surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
         surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
-
-        Notes
-        -----
-        .. note::
-
-            The order of dimension references to slice along does not affect
-            the order of returned items in the iterator; instead the ordering
-            is based on the fastest-changing dimension.
-
-        See Also
-        --------
-        iris.cube.Cube.slices :
-            Return an iterator of all subcubes given the coordinates or dimension indices.
 
         """  # noqa: D214, D406, D407, D410, D411
         # Required to handle a mix between types.
@@ -3986,6 +3986,12 @@ class Cube(CFVariableMixin):
         -------
         An iterator of subcubes.
 
+        See Also
+        --------
+        iris.cube.Cube.slices_over :
+            Return an iterator of all subcubes along a given coordinate or
+            dimension index.
+
         Examples
         --------
         For example, for a cube with dimensions `realization`, `time`, `latitude` and
@@ -4025,12 +4031,6 @@ class Cube(CFVariableMixin):
         ...     print(sub_cube.summary(shorten=True))
         surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
         surface_temperature / (K)           (time: 6; latitude: 145; longitude: 192)
-
-        See Also
-        --------
-        iris.cube.Cube.slices_over :
-            Return an iterator of all subcubes along a given coordinate or
-            dimension index.
 
         """  # noqa: D214, D406, D407, D410, D411
         if not isinstance(ordered, bool):
@@ -4609,31 +4609,6 @@ class Cube(CFVariableMixin):
         -------
         Collapsed cube.
 
-        Examples
-        --------
-            >>> import iris
-            >>> import iris.analysis
-            >>> path = iris.sample_data_path('ostia_monthly.nc')
-            >>> cube = iris.load_cube(path)
-            >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
-            >>> print(new_cube)
-            surface_temperature / (K)           (time: 54; latitude: 18)
-                Dimension coordinates:
-                    time                             x             -
-                    latitude                         -             x
-                Auxiliary coordinates:
-                    forecast_reference_time          x             -
-                Scalar coordinates:
-                    forecast_period             0 hours
-                    longitude                   \
-180.0 degrees, bound=(0.0, 360.0) degrees
-                Cell methods:
-                    0                           month: year: mean
-                    1                           longitude: mean
-                Attributes:
-                    Conventions                 'CF-1.5'
-                    STASH                       m01s00i024
-
         Notes
         -----
         .. note::
@@ -4662,6 +4637,32 @@ class Cube(CFVariableMixin):
 
                 cube.collapsed(['latitude', 'longitude'],
                                iris.analysis.VARIANCE)
+
+        Examples
+        --------
+            >>> import iris
+            >>> import iris.analysis
+            >>> path = iris.sample_data_path('ostia_monthly.nc')
+            >>> cube = iris.load_cube(path)
+            >>> new_cube = cube.collapsed('longitude', iris.analysis.MEAN)
+            >>> print(new_cube)
+            surface_temperature / (K)           (time: 54; latitude: 18)
+                Dimension coordinates:
+                    time                             x             -
+                    latitude                         -             x
+                Auxiliary coordinates:
+                    forecast_reference_time          x             -
+                Scalar coordinates:
+                    forecast_period             0 hours
+                    longitude                   \
+180.0 degrees, bound=(0.0, 360.0) degrees
+                Cell methods:
+                    0                           month: year: mean
+                    1                           longitude: mean
+                Attributes:
+                    Conventions                 'CF-1.5'
+                    STASH                       m01s00i024
+
         """
         # Update weights kwargs (if necessary) to handle different types of
         # weights

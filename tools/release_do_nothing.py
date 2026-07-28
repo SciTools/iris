@@ -100,7 +100,7 @@ class IrisRelease(Progress):
             shlex.split(f"git remote get-url {self.github_fork}"), text=True
         )
 
-    def analyse_remotes(self):
+    def analyse_remotes(self) -> None:
         self.print("Analysing Git remotes ...")
 
         class Remote(typing.NamedTuple):

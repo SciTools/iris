@@ -8,7 +8,7 @@ import iris.tests as tests  # isort:skip
 
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple
 
 from cf_units import Unit
 import numpy as np
@@ -720,7 +720,7 @@ def realistic_4d_w_missing_data():
     return cube
 
 
-def realistic_4d_w_everything(w_mesh=False):
+def realistic_4d_w_everything(w_mesh=False) -> Cube:
     """Returns a cube that will exercise as much of Iris as possible.
 
     Uses :func:`realistic_4d` as a basis, then modifies accordingly.
@@ -926,12 +926,15 @@ def realistic_4d_w_everything(w_mesh=False):
         cube.cell_measures(),
         cube.ancillary_variables(),
     ]
-    add_methods = {
+
+    AddMethod = Callable[..., None]
+    add_methods: dict[type[Any], AddMethod] = {
         AncillaryVariable: Cube.add_ancillary_variable,
         AuxCoord: Cube.add_aux_coord,
         CellMeasure: Cube.add_cell_measure,
         DimCoord: Cube.add_dim_coord,
     }
+
     for dim_metadata_group in dim_metadata_groups:
         for dim_metadata in dim_metadata_group:
             add_method = add_methods[type(dim_metadata)]
