@@ -1057,6 +1057,33 @@ class Test_rolling_window:
         assert res_cube.coord("val") == val_coord
         assert res_cube.coord("month") == month_coord
 
+    def test_step(self, dataless):
+        if dataless:
+            self.cube.data = None
+
+        result = self.cube.rolling_window("val", iris.analysis.MEAN, window=2, step=2)
+
+        assert result.shape == (3,)
+        expected_val = DimCoord(
+            np.array([0.5, 2.5, 4.5]),
+            bounds=np.array([[0, 1], [2, 3], [4, 5]]),
+            long_name="val",
+            units="s",
+        )
+        expected_month = AuxCoord(
+            np.array(["jan|feb", "mar|apr", "may|jun"]),
+            bounds=np.array([["jan", "feb"], ["mar", "apr"], ["may", "jun"]]),
+            long_name="month",
+        )
+        assert result.coord("val") == expected_val
+        assert result.coord("month") == expected_month
+        if not dataless:
+            _shared_utils.assert_array_equal(result.data, [0.5, 2.5, 4.5])
+
+    def test_step_too_small(self):
+        with pytest.raises(ValueError, match="`step` must be at least 1"):
+            self.cube.rolling_window("val", iris.analysis.MEAN, window=2, step=0)
+
     def test_kwargs(self):
         # Rolling window with missing data not tolerated
         window = 2

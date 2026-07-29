@@ -5103,6 +5103,7 @@ x            -              -
         coord: str | AuxCoord | DimCoord,
         aggregator: iris.analysis.Aggregator,
         window: int,
+        step: int = 1,
         **kwargs,
     ) -> Cube:
         """Perform rolling window aggregation on a cube.
@@ -5119,6 +5120,8 @@ x            -              -
             Aggregator to be applied to the data.
         window :
             Size of window to use.
+        step :
+            Size of step between windows.
         **kwargs :
             Aggregator and aggregation function keyword arguments. The weights
             argument to the aggregator, if any, should be a 1d array, cube, or
@@ -5208,6 +5211,8 @@ x            -               -
             raise ValueError(
                 "Cannot perform rolling window with a window size less than 2."
             )
+        if step < 1:
+            raise ValueError("`step` must be at least 1.")
 
         if coord.ndim > 1:
             raise iris.exceptions.CoordinateMultiDimError(coord)
@@ -5228,14 +5233,14 @@ x            -               -
         # old-to-new-coords (to avoid having to use metadata identity)?
         new_cube = iris.util._strip_metadata_from_dims(self, [dimension])
         key = [slice(None, None)] * self.ndim
-        key[dimension] = slice(None, self.shape[dimension] - window + 1)
+        key[dimension] = slice(None, self.shape[dimension] - window + 1, step)
         new_cube = new_cube[tuple(key)]
         if not dataless:
             # take a view of the original data using the rolling_window function
             # this will add an extra dimension to the data at dimension + 1 which
             # represents the rolled window (i.e. will have a length of window)
             rolling_window_data = iris.util.rolling_window(
-                self.core_data(), window=window, axis=dimension
+                self.core_data(), window=window, step=step, axis=dimension
             )
 
         # now update all of the coordinates to reflect the aggregation
@@ -5254,7 +5259,9 @@ x            -               -
                     "coordinate." % coord_.name()
                 )
 
-            new_bounds = iris.util.rolling_window(coord_.core_points(), window)
+            new_bounds = iris.util.rolling_window(
+                coord_.core_points(), window, step=step
+            )
 
             if np.issubdtype(new_bounds.dtype, np.str_):
                 # Handle case where the AuxCoord contains string. The points

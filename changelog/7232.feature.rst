@@ -1,0 +1,3 @@
+:user:`Kkkakania` added a ``step`` argument to
+:meth:`iris.cube.Cube.rolling_window` for creating strided rolling windows.
+(:issue:`7217`)
