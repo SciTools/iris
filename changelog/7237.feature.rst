@@ -1,1 +1,1 @@
-:user:`HGWright` updated the CF standard names table.
+:user:`HGWright` updated the CF standard names table to version 94.
