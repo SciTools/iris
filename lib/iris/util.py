@@ -19,6 +19,7 @@ from copy import deepcopy
 from dataclasses import dataclass
 import functools
 import inspect
+import itertools
 import os
 import os.path
 import sys
@@ -43,6 +44,7 @@ import iris.warnings
 
 if TYPE_CHECKING:
     import cartopy
+    import cartopy.crs
     from numpy.typing import ArrayLike
     import pyproj
     import shapely
@@ -3109,6 +3111,123 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
         s = "[" + ", ".join(_format(x) for x in data) + "]"
 
     return s
+
+
+def extract_region(cube: Cube, area: list | tuple | np.ndarray, 
+                   crs: cartopy.crs.CRS | None = None) -> Cube:
+    """Extract a horizontal region from a cube.
+
+    Extract a horizontal subregion from a cube by specifying a bounding box
+    in a particular coordinate reference system (CRS). This function is
+    coordinate system agnostic and will transform the specified area to the
+    cube's coordinate system before extraction.
+
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube`
+        The cube from which to extract the region.
+    area : array_like
+        An iterable containing either:
+
+        - Two elements (lon, lat) for a single point.
+        - Four elements (min_x, min_y, max_x, max_y) for a rectangular region.
+
+    crs : :class:`cartopy.crs.CRS`, optional
+        The coordinate reference system of the `area` coordinates provided.
+        If None, :class:`cartopy.crs.PlateCarree` is assumed. Default is None.
+
+    Returns
+    -------
+    :class:`iris.cube.Cube`
+        A new cube containing the extracted region.
+
+    Raises
+    ------
+    TypeError
+        If `crs` is not None and not a valid :class:`cartopy.crs.CRS`.
+    TypeError
+        If `area` is not iterable or is a string.
+    ValueError
+        If `area` does not have length 2 or 4.
+
+    Examples
+    --------
+    Extract a region specified in latitude/longitude from a cube in
+    stereographic projection:
+
+    .. code-block:: python
+
+        import cartopy.crs as ccrs
+        import iris
+        import iris.util
+
+        # Load a cube in stereographic projection
+        cube = iris.load_cube('data.nc')
+
+        # Extract region defined in lat/lon
+        area = [-30, 30, 30, 60]  # [min_lon, min_lat, max_lon, max_lat]
+        region = iris.util.extract_region(cube, area)
+
+        # Alternatively, specify the CRS explicitly
+        region = iris.util.extract_region(cube, area, crs=ccrs.PlateCarree())
+    """
+    import cartopy.crs as ccrs
+
+    import iris.coords
+    from iris.cube import Cube
+
+    if crs is None:
+        crs = ccrs.PlateCarree()
+    else:
+        if not isinstance(crs, ccrs.CRS):
+            msg = f"{crs} is not a valid coordinate reference system"
+            raise TypeError(msg)
+
+
+    cube_crs = cube.coord_system().as_cartopy_crs()
+
+    if np.ndim(area) != 1:
+        msg = f"invalid area argument: {area}"
+        raise TypeError(msg)
+
+    if len(area) == 2:
+        # Single point: (lon, lat)
+        x_t, y_t = cube_crs.transform_point(area[0], area[1], crs)
+        xt_min = xt_max = x_t
+        yt_min = yt_max = y_t
+    elif len(area) == 4:
+        # Rectangular region: (min_x, min_y, max_x, max_y)
+        x_min, y_min, x_max, y_max = area
+        points = np.array(list(itertools.product((x_min, x_max),
+                                                 (y_min, y_max))))
+        points_t = cube_crs.transform_points(crs, points[:, 0],
+                                             points[:, 1])[:, :2]
+        xt_min = points_t[:, 0].min()
+        xt_max = points_t[:, 0].max()
+        yt_min = points_t[:, 1].min()
+        yt_max = points_t[:, 1].max()
+    else:
+        msg = f"area should have length 2 or 4, but has length {len(area)}"
+        raise ValueError(msg)
+
+    for coord_name in ("x", "y"):
+        if not cube.coord(axis=coord_name).has_bounds():
+            cube.coord(axis=coord_name).guess_bounds()
+
+    x_extent = iris.coords.CoordExtent(cube.coord(axis="x"), xt_min, xt_max)
+    y_extent = iris.coords.CoordExtent(cube.coord(axis="y"), yt_min, yt_max)
+
+    try:
+        return cube.intersection(x_extent, y_extent)
+    except Exception:
+        # if coordinate does not have a modulus
+        x_name = cube.coord(axis="x").name()
+        y_name = cube.coord(axis="y").name()
+        coord_values = {x_name: lambda cell: xt_min <= cell <= xt_max,
+                        y_name: lambda cell: yt_min <= cell <= yt_max}
+        region_constraint = iris.Constraint(coord_values=coord_values)
+
+        return cube.extract(region_constraint)
 
 
 @dataclass
