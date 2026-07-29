@@ -1,0 +1,2 @@
+:user:`mo-AndrewCreswick` added the option to set the step between
+rolling windows in :meth:`iris.cube.Cube.rolling_window()`. (:issue:`7217`)
