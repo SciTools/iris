@@ -1,3 +1,0 @@
-:user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` allowed Iris'
-:ref:`ugrid`, including saving, to handle coordinates without
-:attr:`~iris.coords.AuxCoord.standard_name`. (:issue:`4863`)

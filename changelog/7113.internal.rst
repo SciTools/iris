@@ -1,4 +1,0 @@
-:user:`trexfeathers` and :user:`stephenworsley` added functionality to the NetCDF
-loader and saver to handle Zarr file I/O using the
-`NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_
-implementation. (:issue:`6967`)

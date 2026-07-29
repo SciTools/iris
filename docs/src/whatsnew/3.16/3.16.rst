@@ -1,0 +1,276 @@
+v3.16 (29 Jul 2026 [release candidate])
+=======================================
+
+.. include:: highlights.rst
+
+✨ Features
+~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`6799`: :user:`stephenworsley` introduced the function :func:`~iris.analysis.cartography.guess_2D_bounds`
+  for guessing the bounds of pairs of 2D coordinates. (:far:`circle-dot` :issue:`6097`)
+
+- :fa:`code-pull-request` :pull:`7098`: :user:`pp-mo`, :user:`trexfeathers`, :user:`ukmo-ccbunney` and :user:`pt331`
+  improved NetCDF
+  character-array handling so Iris now supports string data in cube data arrays
+  (as well as label coordinates), honours ``_Encoding`` for decode/encode, and
+  saves string arrays back to ``char`` variables. Read the detail here:
+  :ref:`char_and_string_datatypes`. (:far:`circle-dot` :issue:`6309`)
+
+- :fa:`code-pull-request` :pull:`7113`: :user:`trexfeathers` and :user:`stephenworsley` added support for loading and 
+  saving of Zarr files formatted in Zarr Storage Spec Version 2 via the
+  `NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_
+  implementation. (:far:`circle-dot` :issue:`6967`)
+
+- :fa:`code-pull-request` :pull:`7146`: :user:`bjlittle` extended the :meth:`~iris.coords.Coord.cell` and
+  :meth:`~iris.coords.Coord.cells` methods to allow users to specify that they
+  want :class:`~datetime.datetime` compatible objects returned within each
+  generated :class:`~iris.coords.Coord.Cell` from a temporal coordinate. This
+  is achieved by passing the keyword argument ``pydate=True``.
+  (:far:`circle-dot` :issue:`7112`)
+
+- :fa:`code-pull-request` :pull:`7185`: :user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` allowed Iris'
+  :ref:`ugrid`, including saving, to handle coordinates without
+  :attr:`~iris.coords.AuxCoord.standard_name`. (:far:`circle-dot` :issue:`4863`)
+
+- :fa:`code-pull-request` :pull:`7185`: :user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` improved 
+  :meth:`iris.mesh.components.MeshXY.coords` and :meth:`~iris.mesh.components.MeshXY.coord` 
+  to better detect the :attr:`~iris.mesh.components.MeshXY.AXES` of constituent coordinates.
+  It previously depended on :func:`~iris.util.guess_coord_axis`.
+
+- :fa:`code-pull-request` :pull:`7210`: :user:`trexfeathers`, :user:`stephenworsley` and :user:`pt331` implemented an
+  initial draft of the UGRID Location Index Set:
+  :class:`iris.mesh.components._MeshIndexSet`. This remains a work in progress;
+  the implementation will evolve as we keep learning, and notable current absences
+  include: I/O support, tracking of the original
+  :class:`~iris.mesh.components.MeshXY` content, and detailed documentation. But
+  we wanted to give users the earliest possible chance to try this valuable
+  addition to the Iris mesh/UGRID data model. You can track the ongoing progress
+  of this project at: :far:`circle-dot` :issue:`6120`.
+
+- :fa:`code-pull-request` :pull:`7210`: :user:`trexfeathers`, :user:`stephenworsley` added the
+  :mod:`iris.experimental.mesh_coord_indexing` module, allowing the use of the
+  new :class:`iris.mesh.components._MeshIndexSet` class to index meshes and
+  cubes-with-meshes. The new indexed mesh can be converted to a separate
+  :class:`~iris.mesh.components.MeshXY` instance - trusted reliable behaviour - OR
+  as a :class:`~iris.mesh.components._MeshIndexSet` instance - for the latest
+  experimental functionality. Please read more and give it a try! (:far:`circle-dot` :issue:`6120`)
+
+- :fa:`code-pull-request` :pull:`7237`: :user:`HGWright` updated the CF standard names table to version 94.
+
+
+
+🐛 Bugs Fixed
+~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7119`: :user:`gaoflow` fixed :func:`iris.analysis.cartography.wrap_lons` so that it
+  preserves the floating-point dtype of its input (e.g. ``float32``) instead of
+  always promoting the result to ``float64``. Integer inputs are still returned
+  as ``float64``. (:far:`circle-dot` :issue:`4119`)
+
+- :fa:`code-pull-request` :pull:`7120`: :user:`gaoflow` fixed :meth:`iris.coords.Coord.cell` so that a masked bound
+  is preserved as masked, instead of revealing the value stored underneath the
+  mask. This also corrects the cube/coordinate printout for such bounds.
+  (:far:`circle-dot` :issue:`5158`)
+
+- :fa:`code-pull-request` :pull:`7121`: :user:`gaoflow` made :class:`iris.Constraint` raise a ``TypeError`` when used
+  in a boolean context (e.g. with the ``and``/``or``/``not`` keywords) instead
+  of silently discarding one of the constraints. Use the ``&`` operator to
+  combine constraints. (:far:`circle-dot` :issue:`4337`)
+
+- :fa:`code-pull-request` :pull:`7122`: :user:`gaoflow` fixed coordinate summaries so that length-0 string and
+  date-like coordinates print as empty arrays instead of raising
+  ``ValueError``. (:far:`circle-dot` :issue:`6531`)
+
+- :fa:`code-pull-request` :pull:`7123`: :user:`gaoflow` fixed :meth:`iris.cube.Cube.rolling_window` so that it no
+  longer raises a ``TypeError`` when the cube has a lazy auxiliary coordinate
+  along the windowed dimension. (:far:`circle-dot` :issue:`6480`)
+
+- :fa:`code-pull-request` :pull:`7124`: :user:`gaoflow` fixed regridding so that horizontal coordinates of the result
+  cube are copies of, rather than references to, the target grid's coordinates.
+  Previously, modifying a result coordinate also modified the target cube's
+  coordinate, and vice versa. (:far:`circle-dot` :issue:`6844`)
+
+- :fa:`code-pull-request` :pull:`7125`: :user:`gaoflow` fixed :meth:`iris.cube.CubeList.concatenate` so that cubes
+  with string coordinates of differing width, such as dtypes ``<U1`` and
+  ``<U5``, can be concatenated. The result coordinate is promoted to the wider
+  dtype. (:far:`circle-dot` :issue:`6676`)
+
+- :fa:`code-pull-request` :pull:`7126`: :user:`gaoflow` fixed an error when computing (e.g. saving) a scalar lazy
+  cube whose units had been converted with :meth:`~iris.cube.Cube.convert_units`.
+  The unit conversion could yield a plain Python scalar for the 0-dimensional
+  block, which Dask was then unable to store. (:far:`circle-dot` :issue:`6965`)
+
+- :fa:`code-pull-request` :pull:`7197`: :user:`trexfeathers` and :user:`kwilliams-mo` fixed the saving of PP fields to now 
+  always write ``lbft`` in hours in the no-bounds forecast period case, including when 
+  ``forecast_period`` uses non-hour units such as seconds.
+
+
+
+💣 Incompatible Changes
+~~~~~~~~~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7113`: :user:`trexfeathers` altered :func:`iris.io.decode_uri` to separate out URI
+  **fragments** (the section following the ``#`` character) -
+  :func:`~iris.io.decode_uri` now returns a 3-part tuple: ``scheme``, ``path``,
+  and ``fragment``.
+
+
+
+🚀 Performance Enhancements
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7089`: :user:`trexfeathers` improved the speed of field iteration when reading PP files.
+  Up to 3x speed up has been seen, dependending on the circumstances.
+
+
+
+🔥 Deprecations
+~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7102`: :user:`bjlittle` deprecated the :mod:`iris.analysis.calculus` module containing
+  the following public functions:
+
+  * :func:`~iris.analysis.calculus.cube_delta`
+  * :func:`~iris.analysis.calculus.curl`
+  * :func:`~iris.analysis.calculus.differentiate`
+  * :func:`~iris.analysis.calculus.spatial_vectors_with_phenom_name`
+
+  Native :class:`~iris.cube.Cube` calculus functionality will not be replaced
+  and is scheduled for removal in ``Iris`` 4.0.0. (:far:`circle-dot` :issue:`6262`)
+
+
+
+🔗 Dependencies
+~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7053`: :user:`trexfeathers` and :user:`tkknight` removed the maximum pin for the
+  PyData Sphinx Theme (used in the docs). (:far:`circle-dot` :issue:`6885`)
+
+- :fa:`code-pull-request` :pull:`7060`: :user:`tkknight` added a minimum pin for the PyData Sphinx Theme as we use the
+  collapse sidebar feature introduced in 0.17.0.
+
+- :fa:`code-pull-request` :pull:`7084`: :user:`tkknight` updated a dependency in the Read The Docs configuration file to
+  use the latest python.
+
+- :fa:`code-pull-request` :pull:`7100`: :user:`tkknight` added a dependency named sphinx-sitemap to generate sitemap.xml for
+  the documentation.
+
+- :fa:`code-pull-request` :pull:`7105`: :user:`tkknight` added a dependency named sphinx-llm to generate summaries
+  that LLMs can understand, ``llms.txt`` and ``llms-full.txt``.
+
+- :fa:`code-pull-request` :pull:`7223`: :user:`trexfeathers` updated Iris to be compatible with Matplotlib version 3.11.
+
+
+
+📚 Documentation
+~~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7053`: :user:`trexfeathers` and :user:`tkknight` made the docs compatible with the latest
+  versions of PyData Sphinx Theme (>=0.16). (:far:`circle-dot` :issue:`6885`)
+
+- :fa:`code-pull-request` :pull:`7060`: :user:`tkknight` enabled the theme option to collapse the sidebar.  Note, it only
+  appears once you click on a link away from the landing page.  Also moved
+  the search box to the top navigation bar.
+
+- :fa:`code-pull-request` :pull:`7072`: :user:`trexfeathers` switched to using the official URL of the
+  `cf-checker <https://github.com/cedadev/cf-checker>`_, after our previous URL
+  of choice was taken down.
+
+- :fa:`code-pull-request` :pull:`7079`: :user:`tkknight` updated the voted table that uses datatables to not highlight the
+  sorted column or row as is uses the incorrect theme color (light). Also updated
+  the datatables version from 2.3.2 to 2.3.8.
+
+- :fa:`code-pull-request` :pull:`7096`: :user:`trexfeathers` simplified the pull request checklist and moved it directly
+  into the GitHub pull request template (read more here: :ref:`pr_check`). Also
+  updated several associated pages of more detailed guidance.
+
+- :fa:`code-pull-request` :pull:`7100`: :user:`tkknight` updated the documentation to generate a sitemap.xml files for the
+  stable version.
+
+- :fa:`code-pull-request` :pull:`7105`: :user:`tkknight` updated the documentation to generate summaries
+  that LLMs can understand, ``llms.txt`` and ``llms-full.txt``.
+
+- :fa:`code-pull-request` :pull:`7118`: :user:`trexfeathers` and :user:`hdyson` clarified that
+  :func:`iris.analysis.cartography.area_weights` requires 1-dimensional lat and lon
+  coordinates on the input :class:`~iris.cube.Cube`.
+
+- :fa:`code-pull-request` :pull:`7131`: :user:`bjlittle` Added an explanation section for :ref:`explanation-temporal-coordinates`.
+
+- :fa:`code-pull-request` :pull:`7150`, :fa:`code-pull-request` :pull:`7157`: :user:`bjlittle` and :user:`trexfeathers` Added the custom ``sphinx``
+  ``readingtime`` directive to automatically estimate the audiance reading
+  time of a page and render a branded banner in-situ.
+
+- :fa:`code-pull-request` :pull:`7159`: :user:`bjlittle` Updated the :ref:`explanation-temporal-coordinates` section.
+
+- :fa:`code-pull-request` :pull:`7166`: :user:`bjlittle` migrated to `towncrier <https://github.com/twisted/towncrier>`__
+  for changelog management.
+
+- :fa:`code-pull-request` :pull:`7175`: :user:`tkknight` Added ``AGENTS.md`` for AI-assisted development guidelines across
+  the project root, ``docs/``, ``changelog/`` and ``tests/`` directories.
+
+- :fa:`code-pull-request` :pull:`7202`: :user:`bouweandela` Fixed the type hints for the :meth:`iris.cube.Cube.__init__`.
+
+
+
+💼 Internal
+~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`6976`: :user:`ESadek-MO` and :user:`pp-mo` removed unit test reliance on all optional
+  dependencies except for mo_pack. (:far:`circle-dot` :issue:`6832`)
+
+- :fa:`code-pull-request` :pull:`7036`: :user:`trexfeathers` altered the messaging for 'stale' issues and pull requests,
+  to reduce the negative connotations. We now use ``needs-checkin`` for the
+  initial prompt, and ``not-resourced`` if the issue/PR ends up closed.
+  (:far:`circle-dot` :issue:`6993`)
+
+- :fa:`code-pull-request` :pull:`7046`: :user:`trexfeathers` fixed the benchmarking ``asv_delegated.py`` to work with
+  Nox release ``2026.04.10`` (which adds more files to the environment parent
+  directory, breaking previous assumptions).
+
+- :fa:`code-pull-request` :pull:`7087`: :user:`SgtVarmint` migrated codebase from ``os.path`` to ``pathlib.Path`` where
+  possible. (:far:`circle-dot` :issue:`4523`)
+
+- :fa:`code-pull-request` :pull:`7098`: :user:`pp-mo`, :user:`trexfeathers`, and :user:`ukmo-ccbunney` refactored
+  NetCDF character bytecoding into dedicated dataset handlers, added optional
+  load-time string decoding, and enabled saving from either string or character
+  cube content (with explicit string dimensions for ``char`` output).
+  (:far:`circle-dot` :issue:`6309`)
+
+- :fa:`code-pull-request` :pull:`7113`: :user:`trexfeathers` and :user:`stephenworsley` added functionality to the NetCDF
+  loader and saver to handle Zarr file I/O using the
+  `NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_
+  implementation. (:far:`circle-dot` :issue:`6967`)
+
+- :fa:`code-pull-request` :pull:`7134`: :user:`HGWright` changed the default of the private switch
+  :class:`~iris.loading._LAZY_DERIVED_LOADING` (formerly ``.CONCRETE_DERIVED_LOADING``)
+  for controlling laziness of coordinates from pp loading, now the switch must be
+  set to True for lazy loading to be enabled. Note: this object is temporary and
+  is likely to be replaced by a permanent solution or else be renamed.
+  (:far:`circle-dot` :issue:`7094`)
+
+- :fa:`code-pull-request` :pull:`7138`: :user:`bjlittle` and :user:`trexfeathers` added the
+  `Zizmor <https://github.com/zizmorcore/zizmor>`_ pre-commit hook to monitor for
+  security vulnerabilities in Iris' GitHub Actions workflows, and then actioned
+  Zizmor's recommendations to harden the workflows.
+
+- :fa:`code-pull-request` :pull:`7148`, :fa:`code-pull-request` :pull:`7165`: :user:`trexfeathers` set the link checking workflow to accept redirect HTTP codes,
+  as the reports were getting too noisy.
+
+- :fa:`code-pull-request` :pull:`7163`: :user:`rcomer` fixed the capitalisation of a pytest marker.
+
+- :fa:`code-pull-request` :pull:`7185`: :user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` improved type
+  hints :ref:`type_hinting` in :mod:`iris.common.metadata` and 
+  :mod:`iris.mesh.components`
+
+- :fa:`code-pull-request` :pull:`7187`: :user:`2319bli` has removed assignments to class level variables used in ``test_cell.py``. (:far:`circle-dot` :issue:`6625`)
+
+- :fa:`code-pull-request` :pull:`7188`: :user:`GitRylee` moved duplicated code in ``iris.tests.unit.analysis.trajectory.test__nearest_neighbour_indices_ndcoords``
+  to a setup fixture. (:far:`circle-dot` :issue:`6625`)
+
+- :fa:`code-pull-request` :pull:`7189`: :user:`king56180468-droid` removed redundant commented codes from ``test_CFReader``. (:far:`circle-dot` :issue:`6625`)
+
+- :fa:`code-pull-request` :pull:`7190`: :user:`2319bli` has partially improved the names of various test classes. (:far:`circle-dot` :issue:`6625`)
+
+- :fa:`code-pull-request` :pull:`7203`: :user:`bouweandela` enabled `Ruff type checking (TC) rules <https://docs.astral.sh/ruff/rules/#flake8-type-checking-tc>`_.
+
+- :fa:`code-pull-request` :pull:`7206`: :user:`tkknight` added ``CLAUDE.md`` that for now just includes ``AGENTS.md``.

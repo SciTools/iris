@@ -1,4 +1,0 @@
-:user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` improved 
-:meth:`iris.mesh.components.MeshXY.coords` and :meth:`~iris.mesh.components.MeshXY.coord` 
-to better detect the :attr:`~iris.mesh.components.MeshXY.AXES` of constituent coordinates.
-It previously depended on :func:`~iris.util.guess_coord_axis`.
