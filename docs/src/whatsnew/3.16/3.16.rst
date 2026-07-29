@@ -1,7 +1,7 @@
 v3.16 (29 Jul 2026 [release candidate])
 =======================================
 
-.. include:: highlights.rst
+.. include:: /whatsnew/3.16/highlights.rst
 
 ✨ Features
 ~~~~~~~~~~~
