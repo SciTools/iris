@@ -3113,8 +3113,10 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
     return s
 
 
-def extract_region(cube: Cube, area: list | tuple | np.ndarray, 
-                   crs: cartopy.crs.CRS | None = None) -> Cube:
+def extract_region(cube: Cube, area: list | tuple | np.ndarray,
+                   crs: cartopy.crs.CRS | None = None, ignore_bounds: bool = False,
+                   threshold: float = 0, min_inclusive: bool = True,
+                   max_inclusive: bool = True) -> Cube:
     """Extract a horizontal region from a cube.
 
     Extract a horizontal subregion from a cube by specifying a bounding box
@@ -3135,6 +3137,19 @@ def extract_region(cube: Cube, area: list | tuple | np.ndarray,
     crs : :class:`cartopy.crs.CRS`, optional
         The coordinate reference system of the `area` coordinates provided.
         If None, :class:`cartopy.crs.PlateCarree` is assumed. Default is None.
+    ignore_bounds : bool, optional
+        If True, perform extraction based on coordinate points only, ignoring
+        any cell bounds. Default is False.
+    threshold : float, optional
+        Minimum proportion of a bounded cell that must overlap with the
+        specified region for it to be included. Only used when
+        ``ignore_bounds=False``. Default is 0.
+    min_inclusive : bool, optional
+        If True, cells whose points (or bounds) are equal to the minimum of
+        the region will be included. Default is True.
+    max_inclusive : bool, optional
+        If True, cells whose points (or bounds) are equal to the maximum of
+        the region will be included. Default is True.
 
     Returns
     -------
@@ -3170,6 +3185,10 @@ def extract_region(cube: Cube, area: list | tuple | np.ndarray,
 
         # Alternatively, specify the CRS explicitly
         region = iris.util.extract_region(cube, area, crs=ccrs.PlateCarree())
+
+        # Extract using points only (ignore bounds), with exclusive maximum
+        region = iris.util.extract_region(cube, area, ignore_bounds=True,
+                                          max_inclusive=False)
     """
     import cartopy.crs as ccrs
 
@@ -3214,17 +3233,26 @@ def extract_region(cube: Cube, area: list | tuple | np.ndarray,
         if not cube.coord(axis=coord_name).has_bounds():
             cube.coord(axis=coord_name).guess_bounds()
 
-    x_extent = iris.coords.CoordExtent(cube.coord(axis="x"), xt_min, xt_max)
-    y_extent = iris.coords.CoordExtent(cube.coord(axis="y"), yt_min, yt_max)
+    x_extent = iris.coords.CoordExtent(cube.coord(axis="x"), xt_min, xt_max,
+                                       min_inclusive, max_inclusive)
+    y_extent = iris.coords.CoordExtent(cube.coord(axis="y"), yt_min, yt_max,
+                                       min_inclusive, max_inclusive)
 
     try:
-        return cube.intersection(x_extent, y_extent)
+        return cube.intersection(x_extent, y_extent, ignore_bounds=ignore_bounds,
+                                 threshold=threshold)
     except Exception:
         # if coordinate does not have a modulus
         x_name = cube.coord(axis="x").name()
         y_name = cube.coord(axis="y").name()
-        coord_values = {x_name: lambda cell: xt_min <= cell <= xt_max,
-                        y_name: lambda cell: yt_min <= cell <= yt_max}
+        x_min_op = (lambda v, b: v >= b) if min_inclusive else (lambda v, b: v > b)
+        x_max_op = (lambda v, b: v <= b) if max_inclusive else (lambda v, b: v < b)
+        y_min_op = (lambda v, b: v >= b) if min_inclusive else (lambda v, b: v > b)
+        y_max_op = (lambda v, b: v <= b) if max_inclusive else (lambda v, b: v < b)
+        coord_values = {
+            x_name: lambda cell: x_min_op(cell, xt_min) and x_max_op(cell, xt_max),
+            y_name: lambda cell: y_min_op(cell, yt_min) and y_max_op(cell, yt_max),
+        }
         region_constraint = iris.Constraint(coord_values=coord_values)
 
         return cube.extract(region_constraint)
