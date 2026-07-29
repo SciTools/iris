@@ -12,7 +12,7 @@ This document explains the changes made to Iris for this release
 
    * Introduced the function :func:`~iris.analysis.cartography.guess_2D_bounds()` for guessing the bounds of pairs of 2D coordinates.
    * Improved NetCDF character-array handling so Iris now supports string data in cube data arrays.
-   * Added support for loading and saving of Zarr files formatted in Zarr Storage Spec Version 2
+   * Added support for loading and saving of Zarr files formatted in Zarr Storage Spec Version 2 via the `NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_ implementation.
    * Improved the speed of field iteration when reading PP files. Up to 3x speed up has been seen, depending on the circumstances.
 
    * Special shoutout to :user:`pt331` for their work on the release while deployed into the core development team.
