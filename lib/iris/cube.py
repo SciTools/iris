@@ -3432,192 +3432,6 @@ class Cube(CFVariableMixin):
         constraint = iris._constraints.as_constraint(constraint)
         return constraint.extract(self)
 
-    def _transform_coord_extents(self, args, kwargs, src_crs, ignore_bounds, threshold):
-        """Transform coordinate extents from source CRS to cube's CRS.
-
-        Parameters
-        ----------
-        args : tuple
-            Positional arguments (CoordExtent or tuples).
-        kwargs : dict
-            Keyword arguments with coordinate names and ranges.
-        src_crs : cartopy.crs.CRS
-            Source coordinate reference system.
-        ignore_bounds : bool
-            Whether to ignore coordinate bounds.
-        threshold : float
-            Minimum overlap threshold.
-
-        Returns
-        -------
-        args : tuple
-            Transformed positional arguments.
-        kwargs : dict
-            Transformed keyword arguments.
-        """
-        try:
-            import cartopy.crs as ccrs
-        except ImportError:
-            msg = "cartopy is required to use src_crs parameter"
-            raise ImportError(msg)
-
-        # Get cube's CRS
-        cube_coord_system = self.coord_system()
-        if cube_coord_system is None:
-            msg = "cube does not have a coordinate system defined"
-            raise ValueError(msg)
-
-        cube_crs = cube_coord_system.as_cartopy_crs()
-        if cube_crs is None:
-            msg = "cube's coordinate system cannot be converted to cartopy CRS"
-            raise ValueError(msg)
-
-        # Try to find x and y dimension coordinates
-        x_coord_name = None
-        y_coord_name = None
-        
-        # First try by axis lookup (for standard coordinates)
-        try:
-            x_coord = self.coord(axis='x', dim_coords=True)
-            x_coord_name = x_coord.name()
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-
-        try:
-            y_coord = self.coord(axis='y', dim_coords=True)
-            y_coord_name = y_coord.name()
-        except iris.exceptions.CoordinateNotFoundError:
-            pass
-
-        # If axis lookup failed, try to find by name or by being the last two dimension coords
-        if not x_coord_name or not y_coord_name:
-            dim_coords = self.dim_coords
-            if len(dim_coords) >= 2:
-                # Try to find coordinates named x, y or similar
-                for coord in dim_coords:
-                    coord_name = coord.name()
-                    if not x_coord_name and coord_name in ('x', 'projection_x_coordinate'):
-                        x_coord_name = coord_name
-                    if not y_coord_name and coord_name in ('y', 'projection_y_coordinate'):
-                        y_coord_name = coord_name
-
-        # Build new kwargs with transformed coordinates
-        new_kwargs = {}
-        has_latlon_in_kwargs = ("latitude" in kwargs or "lat" in kwargs or 
-                                "longitude" in kwargs or "lon" in kwargs)
-        has_xy_in_kwargs = (x_coord_name and x_coord_name in kwargs) or \
-                           (y_coord_name and y_coord_name in kwargs)
-
-        # If user specified lat/lon but cube has x/y, transform and map
-        if has_latlon_in_kwargs and x_coord_name and y_coord_name:
-            # User specified lat/lon, cube has x/y
-            # Extract lat/lon ranges
-            lat_key = "latitude" if "latitude" in kwargs else "lat"
-            lon_key = "longitude" if "longitude" in kwargs else "lon"
-            
-            if lat_key in kwargs and lon_key in kwargs:
-                lat_range = kwargs[lat_key]
-                lon_range = kwargs[lon_key]
-                
-                # Extract min/max from ranges
-                lat_min, lat_max = lat_range[0], lat_range[1]
-                lon_min, lon_max = lon_range[0], lon_range[1]
-
-                # Transform the 2D bounds from lat/lon to cube's CRS
-                xt_min, xt_max, yt_min, yt_max = self._transform_2d_bounds(
-                    lon_min, lon_max, lat_min, lat_max, src_crs, cube_crs
-                )
-
-                # Preserve inclusivity flags
-                lat_min_inc = lat_range[2] if len(lat_range) > 2 else True
-                lat_max_inc = lat_range[3] if len(lat_range) > 3 else True
-                lon_min_inc = lon_range[2] if len(lon_range) > 2 else True
-                lon_max_inc = lon_range[3] if len(lon_range) > 3 else True
-
-                # Add transformed bounds using cube's x/y coordinate names
-                new_kwargs[x_coord_name] = (xt_min, xt_max, lon_min_inc, lon_max_inc)
-                new_kwargs[y_coord_name] = (yt_min, yt_max, lat_min_inc, lat_max_inc)
-                
-                # Add other kwargs that aren't lat/lon
-                for key, value in kwargs.items():
-                    if key not in (lat_key, lon_key):
-                        new_kwargs[key] = value
-            else:
-                # One of lat/lon missing, pass through all kwargs
-                new_kwargs = dict(kwargs)
-
-        elif has_xy_in_kwargs and x_coord_name and y_coord_name:
-            # User specified x/y (same as cube), transform them
-            if x_coord_name in kwargs and y_coord_name in kwargs:
-                x_range = kwargs[x_coord_name]
-                y_range = kwargs[y_coord_name]
-                
-                x_min, x_max = x_range[0], x_range[1]
-                y_min, y_max = y_range[0], y_range[1]
-
-                # Transform the 2D bounds
-                xt_min, xt_max, yt_min, yt_max = self._transform_2d_bounds(
-                    x_min, x_max, y_min, y_max, src_crs, cube_crs
-                )
-
-                # Reconstruct the ranges with transformed bounds
-                x_min_inc = x_range[2] if len(x_range) > 2 else True
-                x_max_inc = x_range[3] if len(x_range) > 3 else True
-                y_min_inc = y_range[2] if len(y_range) > 2 else True
-                y_max_inc = y_range[3] if len(y_range) > 3 else True
-
-                new_kwargs[x_coord_name] = (xt_min, xt_max, x_min_inc, x_max_inc)
-                new_kwargs[y_coord_name] = (yt_min, yt_max, y_min_inc, y_max_inc)
-                
-                # Add other kwargs that aren't x/y
-                for key, value in kwargs.items():
-                    if key not in (x_coord_name, y_coord_name):
-                        new_kwargs[key] = value
-            else:
-                new_kwargs = dict(kwargs)
-        else:
-            # No transformation applicable, pass through
-            new_kwargs = dict(kwargs)
-
-        return args, new_kwargs
-
-    def _transform_2d_bounds(self, x_min, x_max, y_min, y_max, src_crs, cube_crs):
-        """Transform 2D bounding box from src_crs to cube_crs.
-
-        Parameters
-        ----------
-        x_min, x_max : float
-            X-axis bounds in source CRS.
-        y_min, y_max : float
-            Y-axis bounds in source CRS.
-        src_crs : cartopy.crs.CRS
-            Source coordinate reference system.
-        cube_crs : cartopy.crs.CRS
-            Target coordinate reference system.
-
-        Returns
-        -------
-        xt_min, xt_max, yt_min, yt_max : float
-            Transformed bounding box in target CRS.
-        """
-        # Create corner points of the bounding box in source CRS
-        points = np.array(
-            list(itertools.product((x_min, x_max), (y_min, y_max)))
-        )
-
-        # Transform points to cube's CRS
-        points_t = cube_crs.transform_points(src_crs, points[:, 0], points[:, 1])[
-            :, :2
-        ]
-
-        # Get new bounds from transformed points
-        xt_min = points_t[:, 0].min()
-        xt_max = points_t[:, 0].max()
-        yt_min = points_t[:, 1].min()
-        yt_max = points_t[:, 1].max()
-
-        return xt_min, xt_max, yt_min, yt_max
-
     def intersection(self, *args, **kwargs) -> Cube:
         """Return the intersection of the cube with specified coordinate ranges.
 
@@ -3652,12 +3466,6 @@ class Cube(CFVariableMixin):
         threshold : optional
             Minimum proportion of a bounded cell that must overlap with the
             specified range. Default 0.
-        src_crs : optional
-            The coordinate reference system (CRS) of the input coordinate ranges.
-            If provided, the coordinate ranges will be transformed from this CRS
-            to the cube's coordinate system before intersection. Requires cartopy.
-            The cube must have a valid coordinate system. Default is None (assumes
-            input ranges are in the cube's coordinate system).
 
         Returns
         -------
@@ -3665,24 +3473,10 @@ class Cube(CFVariableMixin):
             A new :class:`~iris.cube.Cube` giving the subset of the cube
             which intersects with the requested coordinate intervals.
 
-        .. note::
-
-            When `src_crs` is provided, coordinate ranges are automatically
-            transformed from the specified source CRS to the cube's CRS using
-            cartopy. This allows extracting regions defined in one coordinate
-            system (e.g., lat/lon) from a cube in a different coordinate system
-            (e.g., rotated pole, stereographic). The transformation is applied
-            to horizontal coordinates only.
-
         Warnings
         --------
         Currently this routine only works with "circular"
         coordinates (as defined in the previous note.)
-
-        When using `src_crs`, if the intersection fails (e.g., for non-circular
-        coordinates), you can fall back to using :meth:`extract` with
-        coordinate constraints, similar to the approach shown in GitHub issue
-        #6855.
 
         For example::
 
@@ -3714,76 +3508,14 @@ class Cube(CFVariableMixin):
         result = self
         ignore_bounds = kwargs.pop("ignore_bounds", False)
         threshold = kwargs.pop("threshold", 0)
-        src_crs = kwargs.pop("src_crs", None)
-        
-        # If src_crs is provided, transform the coordinate ranges
-        if src_crs is not None:
-            args, kwargs = self._transform_coord_extents(
-                args, kwargs, src_crs, ignore_bounds, threshold
-            )
-        
-        # Try normal intersection first, fall back to extract if needed
-        try:
-            for arg in args:
-                result = result._intersect(
-                    *arg, ignore_bounds=ignore_bounds, threshold=threshold
-                )  # type: ignore[misc]
-            for name, value in kwargs.items():
-                result = result._intersect(
-                    name, *value, ignore_bounds=ignore_bounds, threshold=threshold
-                )  # type: ignore[misc]
-        except ValueError as e:
-            # If intersection fails (e.g., for non-circular coordinates)
-            # and src_crs was provided, fall back to extract with constraints
-            if src_crs is not None and "modulus" in str(e):
-                result = self._extract_from_transformed_coords(kwargs)
-            else:
-                # Re-raise if this is a different error or no src_crs
-                raise
-        
-        return result
-
-    def _extract_from_transformed_coords(self, kwargs: dict) -> Cube:
-        """Extract cube using coordinate value constraints.
-
-        Parameters
-        ----------
-        kwargs : dict
-            Dictionary with coordinate names and (min, max) ranges.
-
-        Returns
-        -------
-        :class:`~iris.cube.Cube`
-            Extracted cube subset.
-        """
-        # Build coordinate constraints from the ranges
-        coord_values = {}
-        for coord_name, value_range in kwargs.items():
-            if len(value_range) >= 2:
-                minimum, maximum = value_range[0], value_range[1]
-                
-                # Create a constraint function that handles both point and cell comparisons
-                def make_constraint(min_val, max_val):
-                    def constraint_func(cell):
-                        # For cell objects, extract the point value
-                        val = cell.point if hasattr(cell, 'point') else cell
-                        return min_val <= val <= max_val
-                    return constraint_func
-                
-                coord_values[coord_name] = make_constraint(minimum, maximum)
-        
-        if not coord_values:
-            return self
-        
-        # Create and apply constraint
-        constraint = iris.Constraint(coord_values=coord_values)
-        result = self.extract(constraint)
-        
-        # If extract returned None, no cells matched - return empty cube with same metadata
-        if result is None:
-            # Return an empty cube with the same structure
-            return self[0:0]  # Return a slice with no data along first dimension
-        
+        for arg in args:
+            result = result._intersect(
+                *arg, ignore_bounds=ignore_bounds, threshold=threshold
+            )  # type: ignore[misc]
+        for name, value in kwargs.items():
+            result = result._intersect(
+                name, *value, ignore_bounds=ignore_bounds, threshold=threshold
+            )  # type: ignore[misc]
         return result
 
     def _intersect(
