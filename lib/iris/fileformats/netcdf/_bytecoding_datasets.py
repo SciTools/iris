@@ -233,7 +233,7 @@ class NetcdfStringDecodeSetting(threading.local):
 
 DECODE_TO_STRINGS_ON_READ = NetcdfStringDecodeSetting()
 DEFAULT_READ_ENCODING = "utf-8"
-DEFAULT_WRITE_ENCODING = "ascii"
+DEFAULT_WRITE_ENCODING = "utf-8"
 
 
 @dataclasses.dataclass

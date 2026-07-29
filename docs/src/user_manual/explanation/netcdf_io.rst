@@ -167,7 +167,7 @@ When strings may include non-ascii characters, this requires a specific encoding
 adopted when translating to and from bytes, and rules for determining what the encoding
 is or was.
 
-In some cases a definite record of the byte encoding is needed (though often a default
+In some cases a definite record of the byte encoding is needed (though usually a default
 can be assumed) : An encoding name can appear in the ``_Encoding`` attribute of a file
 variable, and likewise as an attribute of the corresponding Iris component object
 (e.g. cube or coordinate) :  This is loaded and saved as a normal attribute without
@@ -180,7 +180,7 @@ Iris supports only certain specific encodings :
 * "utf16"
 * "utf32"
 
-(Though, common aliases are also allowed, those recognised by the Python ``codecs``
+(Though, common aliases are also allowed : those recognised by the Python ``codecs``
 module).
 
 When loading
@@ -195,17 +195,26 @@ attribute will still be added to the Iris component object.
 
 When saving
 ~~~~~~~~~~~
-Any string data with only ascii characters does not require an ``_Encoding`` attribute.
+To save string data **does not require** an ``_Encoding`` attribute, since UTF-8 is
+applied by default -- which, for ascii data, is also equivalent to ``"ascii"``.
 
-However if there are any non-ascii characters, and no ``_Encoding``
-attribute, then an error will be raised.
-This can be fixed by adding a suitable ``_Encoding`` attribute, for example:
-``cube.attributes["_Encoding"] = "utf8"``.
+An ``_Encoding`` attribute can however be provided : either for clarity, or to specify a
+non-default encoding (e.g. UTF-32).  This will be saved to the file.
+
+If there are characters which can not be encoded then an error will be raised.
+At present, the only *supported* encoding which this applies to is ``"ascii"``, but in
+theory it could happen with other encodings, like "ISO-8859-1".
 
 An invalid or unsupported encoding name will be ignored, with a warning, but the
 attribute will still be stored to the file.
 
-So effectively, the **default encoding is 'utf8' for load and 'ascii' for save**.
+So effectively,
+
+*   the **default encoding is 'utf8'** for both load and for save
+*   no data ever actually **requires** an ``_Encoding`` to save correctly
+*   if there **is** an ``_Encoding`` attribute, saving checks the actual data for
+    compliance
+
 
 String widths and string dimensions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
