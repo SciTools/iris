@@ -1,4 +1,0 @@
-:user:`trexfeathers` and :user:`stephenworsley` added support for loading and 
-saving of Zarr files formatted in Zarr Storage Spec Version 2 via the
-`NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_
-implementation. (:issue:`6967`)

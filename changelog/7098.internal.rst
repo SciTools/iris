@@ -1,6 +1,0 @@
-:user:`pp-mo`, :user:`trexfeathers`, and :user:`ukmo-ccbunney` refactored
-NetCDF character bytecoding into dedicated dataset handlers, added optional
-load-time string decoding, and enabled saving from either string or character
-cube content (with explicit string dimensions for ``char`` output).
-(:issue:`6309`)
-

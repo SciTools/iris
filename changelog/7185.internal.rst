@@ -1,3 +1,0 @@
-:user:`pt331` and :user:`trexfeathers` and :user:`pp-mo` improved type
-hints :ref:`type_hinting` in :mod:`iris.common.metadata` and 
-:mod:`iris.mesh.components`

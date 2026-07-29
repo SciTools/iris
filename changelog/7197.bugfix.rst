@@ -1,3 +1,0 @@
-:user:`trexfeathers` and :user:`kwilliams-mo` fixed the saving of PP fields to now 
-always write ``lbft`` in hours in the no-bounds forecast period case, including when 
-``forecast_period`` uses non-hour units such as seconds.

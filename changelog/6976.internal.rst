@@ -1,2 +1,0 @@
-:user:`ESadek-MO` and :user:`pp-mo` removed unit test reliance on all optional
-dependencies except for mo_pack. (:issue:`6832`)
