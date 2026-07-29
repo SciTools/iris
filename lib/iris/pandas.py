@@ -30,6 +30,7 @@ import iris
 from iris._deprecation import explicit_copy_checker, warn_deprecated
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 from iris.cube import Cube, CubeList
+from iris.exceptions import MonotonicityError
 from iris.util import monotonic, new_axis
 from iris.warnings import IrisIgnoringWarning
 
@@ -433,7 +434,7 @@ def as_cubes(
             "Pandas index is not monotonic. Consider using the "
             "sort_index() method before passing in."
         )
-        raise ValueError(message)
+        raise MonotonicityError(message)
 
     cube_shape = getattr(pandas_index, "levshape", (pandas_index.nunique(),))
     n_rows = len(pandas_structure)

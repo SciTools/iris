@@ -861,11 +861,16 @@ class Saver:
 
         # Do cube- or -mesh-based save
         from iris.cube import Cube
+        from iris.mesh.components import _MeshIndexSet
 
         if isinstance(cube_or_mesh, Cube):
             mesh = cube_or_mesh.mesh
         else:
             mesh = cube_or_mesh
+
+        if isinstance(mesh, _MeshIndexSet):
+            msg = "_MeshIndexSet saving is not yet supported. See https://github.com/SciTools/iris/issues/6123"
+            raise ValueError(msg)
 
         if mesh:
             cf_mesh_name = self._name_coord_map.name(mesh)

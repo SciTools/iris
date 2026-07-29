@@ -1,0 +1,9 @@
+:user:`trexfeathers`, :user:`stephenworsley` and :user:`pt331` implemented an
+initial draft of the UGRID Location Index Set:
+:class:`iris.mesh.components._MeshIndexSet`. This remains a work in progress;
+the implementation will evolve as we keep learning, and notable current absences
+include: I/O support, tracking of the original
+:class:`~iris.mesh.components.MeshXY` content, and detailed documentation. But
+we wanted to give users the earliest possible chance to try this valuable
+addition to the Iris mesh/UGRID data model. You can track the ongoing progress
+of this project at: :issue:`6120`.

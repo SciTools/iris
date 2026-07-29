@@ -26,7 +26,7 @@ from copy import deepcopy
 from functools import partial, reduce
 import itertools
 import operator
-from typing import TYPE_CHECKING, Any, Optional, TypeAlias, TypeGuard
+from typing import TYPE_CHECKING, Any, Literal, Optional, TypeAlias, TypeGuard
 import warnings
 from xml.dom.minidom import Document
 
@@ -1654,7 +1654,13 @@ class Cube(CFVariableMixin):
                             ownval=location,
                         )
                     )
-                mesh_dims = (self.mesh_dim(),)
+                mesh_dim = self.mesh_dim()
+                mesh_dims: tuple[int] | tuple[()]
+                if mesh_dim is None:
+                    # Scalar coordinate.
+                    mesh_dims = ()
+                else:
+                    mesh_dims = (mesh_dim,)
                 if data_dims != mesh_dims:
                     raise iris.exceptions.CannotAddError(
                         msg.format(
@@ -2621,7 +2627,7 @@ class Cube(CFVariableMixin):
         if coord is None:
             result = None
         else:
-            (result,) = self.coord_dims(coord)  # result is a 1-tuple
+            (result,) = self.coord_dims(coord) or (None,)
         return result
 
     def cell_measures(
@@ -3302,8 +3308,7 @@ class Cube(CFVariableMixin):
             coord_keys = tuple([full_slice[dim] for dim in self.coord_dims(coord)])
             try:
                 new_coord = coord[coord_keys]
-            except ValueError:
-                # TODO make this except more specific to catch monotonic error
+            except iris.exceptions.MonotonicityError:
                 # Attempt to slice it by converting to AuxCoord first
                 new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
             aux_coords.append((new_coord, new_coord_dims(coord)))
@@ -3328,8 +3333,7 @@ class Cube(CFVariableMixin):
                     else:
                         dim_coords.append((new_coord, new_dims))
                         shape += new_coord.core_points().shape
-                except ValueError:
-                    # TODO make this except more specific to catch monotonic error
+                except iris.exceptions.MonotonicityError:
                     # Attempt to slice it by converting to AuxCoord first
                     new_coord = iris.coords.AuxCoord.from_coord(coord)[coord_keys]
                     aux_coords.append((new_coord, new_dims))

@@ -120,6 +120,7 @@ class _NamedTupleMeta(ABCMeta):
     def __new__(mcs, name, bases, namespace):
         names = []
 
+        # "Inherit" the base classes' `_fields`
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
@@ -131,6 +132,8 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
+        # _members are fields that are specific in this NamedTuple.
+        # Add these as fields.
         if "_members" in namespace and not getattr(
             namespace["_members"], "__isabstractmethod__", False
         ):
@@ -1575,6 +1578,117 @@ class MeshMetadata(BaseMetadata):
 
         # Note that, we use "_members" not "_fields".
         values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class _MeshIndexSetMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.mesh.components._MeshIndexSet`.
+
+    **Classed as experimental until ``_MeshIndexSet`` is no longer experimental.**
+    """
+
+    _members = ("mesh", "location", "start_index")
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """Perform lenient combination of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient combination.
+
+        Returns
+        -------
+        A list of combined metadata member values.
+
+        """
+
+        # It is actually "strict" : return None except where members are equal.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """Perform lenient equality of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient comparison.
+
+        Returns
+        -------
+        bool
+
+        """
+        # Perform "strict" comparison for the _MeshIndexSet specific members
+        # 'mesh', 'location', 'start_index' : for equality, they must all match.
+        result = all(
+            [getattr(self, field) == getattr(other, field) for field in self._members]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """Perform lenient difference of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient difference.
+
+        Returns
+        -------
+        A list of different metadata member values.
+
+        """
+
+        # Perform "strict" difference for location / axis.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
         # Perform lenient difference of the other parent members.
         result = super()._difference_lenient(other)
         result.extend(values)

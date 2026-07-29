@@ -14,6 +14,7 @@ import numpy.ma as ma
 
 from iris._lazy_data import map_complete_blocks
 from iris.coords import AuxCoord, DimCoord
+from iris.exceptions import MonotonicityError
 import iris.util
 
 _DEFAULT_DTYPE = np.float16
@@ -478,7 +479,7 @@ class RectilinearInterpolator:
                 # Check monotonic.
                 if not iris.util.monotonic(coord.points, strict=True):
                     msg = "Cannot interpolate over the non-monotonic coordinate {}."
-                    raise ValueError(msg.format(coord.name()))
+                    raise MonotonicityError(msg.format(coord.name()))
 
     def _points(self, sample_points, data, data_dims=None):
         """Interpolate at the specified points.

@@ -2577,6 +2577,22 @@ class Test_mesh:
         result = self.cube.mesh
         assert result is None
 
+    def test_mesh_scalar_index(self):
+        # Test correct scalar indexing of a mesh dimension.
+        from iris.experimental.mesh_coord_indexing import SETTING, Options
+
+        cube = self.cube
+        mesh_dim = cube.mesh_dim()
+        indexing = [slice(None)] * cube.ndim
+        indexing[mesh_dim] = 0
+        with SETTING.context(Options.MESH_INDEX_SET):
+            result = cube[tuple(indexing)]
+        assert result.mesh is not None
+        assert result.mesh_dim() is None
+        mesh_coords = result.coords(mesh_coords=True)
+        for mesh_coord in mesh_coords:
+            assert mesh_coord.shape == (1,)
+
 
 class Test_location:
     @pytest.fixture(autouse=True)
@@ -3095,6 +3111,39 @@ class Test_coord_division_units:
         aux = AuxCoord(1, long_name="length", units="metres")
         cube = Cube(1, units="seconds")
         assert (aux / cube).units == "m.s-1"
+
+
+class Test__getitem_DimCoord:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        cube.add_dim_coord(x_coord, 1)
+        x_coord_aux = DimCoord(points=np.array([2, 3, 4]), long_name="x_aux")
+        cube.add_aux_coord(x_coord_aux, 1)
+        y_coord = DimCoord(points=np.array([5, 6]), long_name="y")
+        cube.add_dim_coord(y_coord, 0)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
+        cube.add_aux_coord(z_coord, [0, 1])
+        self.cube = cube
+
+    def test_dim_coords_2d(self):
+        result = self.cube[0:2, 0:2]
+        assert len(result.dim_coords) == 2
+        for ix, size in enumerate(result.shape):
+            assert result.coord(dim_coords=True, dimensions=ix).shape == (size,)
+        assert result.coord("x_aux").shape == (result.shape[0],)
+
+    def test_dim_coord_1d(self):
+        result = self.cube[0, 0:2]
+        assert len(result.dim_coords) == 1
+        assert result.dim_coords[0].shape == result.shape
+        assert result.coord("x_aux").shape == (result.shape[0],)
+
+    def test_demote(self):
+        result = self.cube[:, [0, 2, 1]]
+        assert len(result.dim_coords) == 1
+        assert result.coords(dimensions=1, dim_coords=True) == []
 
 
 class Test__getitem_CellMeasure:

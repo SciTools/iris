@@ -17,6 +17,7 @@ import copy
 from functools import lru_cache
 from itertools import zip_longest
 import operator
+from typing import cast
 import warnings
 import zlib
 
@@ -277,7 +278,18 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
     @property
     def _values(self):
         """The _DimensionalMetadata values as a NumPy array."""
-        return self._values_dm.data.view()
+
+        def data_id():
+            return id(self._values_dm.core_data())
+
+        original_id = data_id()
+        result = self._values_dm.data.view()
+        if data_id() != original_id:
+            # Realisation has occurred - potential effect on deferred mesh computations
+            #  (MeshCoord, _MeshIndexSet).
+            for timestamp in self._mesh_timestamps:
+                timestamp.update()
+        return result
 
     @_values.setter
     def _values(self, values):
@@ -319,7 +331,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
         precision=None,
         convert_dates=True,
         _section_indices=None,
-    ):
+    ) -> str:
         r"""Make a printable text summary.
 
         Parameters
@@ -609,6 +621,7 @@ class _DimensionalMetadata(CFVariableMixin, metaclass=ABCMeta):
                     show = val is not None and val is not False
                 if show:
                     if name == "attributes":
+                        val = cast("dict", val)
                         # Use a multi-line form for this.
                         add_output(newline_indent)
                         add_output("attributes:", section="attributes")
@@ -2473,7 +2486,7 @@ class Coord(_DimensionalMetadata):
         # XXX Consider moving into DimCoord
         # ensure we have monotonic points
         if not self.is_monotonic():
-            raise ValueError(
+            raise iris.exceptions.MonotonicityError(
                 "Need monotonic points to generate bounds for %s" % self.name()
             )
 
@@ -3047,7 +3060,9 @@ class DimCoord(Coord):
             raise TypeError(emsg.format(self.name(), self.__class__.__name__))
         if points.size > 1 and not iris.util.monotonic(points, strict=True):
             emsg = "The {!r} {} points array must be strictly monotonic."
-            raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+            raise iris.exceptions.MonotonicityError(
+                emsg.format(self.name(), self.__class__.__name__)
+            )
 
     @property
     def _values(self):
@@ -3127,7 +3142,7 @@ class DimCoord(Coord):
                     )
                     if not monotonic:
                         emsg = "The {!r} {} bounds array must be strictly monotonic."
-                        raise ValueError(
+                        raise iris.exceptions.MonotonicityError(
                             emsg.format(self.name(), self.__class__.__name__)
                         )
                     directions.add(direction)
@@ -3137,7 +3152,9 @@ class DimCoord(Coord):
                         "The direction of monotonicity for {!r} {} must "
                         "be consistent across all bounds."
                     )
-                    raise ValueError(emsg.format(self.name(), self.__class__.__name__))
+                    raise iris.exceptions.MonotonicityError(
+                        emsg.format(self.name(), self.__class__.__name__)
+                    )
 
                 if n_bounds == 2:
                     # Make ordering of bounds consistent with coord's direction

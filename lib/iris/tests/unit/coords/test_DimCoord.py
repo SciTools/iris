@@ -16,6 +16,7 @@ import numpy.ma as ma
 import pytest
 
 from iris.coords import DimCoord
+from iris.exceptions import MonotonicityError
 from iris.tests import _shared_utils
 from iris.tests.unit.coords import (
     CoordTestMixin,
@@ -80,7 +81,7 @@ class Test__init__(DimCoordTestMixin):
 
     def test_fail_nonmonotonic(self):
         msg = "must be strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             DimCoord([1, 2, 0, 3])
 
     def test_no_masked_pts_real(self):
@@ -512,7 +513,7 @@ class Test_points__setter(DimCoordTestMixin):
         # Setting real points requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = "strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             coord.points = np.array([3.0, 1.0, 2.0])
         _shared_utils.assert_array_equal(coord.points, self.pts_real)
 
@@ -577,7 +578,7 @@ class Test_bounds__setter(DimCoordTestMixin):
         # Setting real bounds requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = "strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             coord.bounds = np.array([[3.0, 2.0], [1.0, 0.0], [2.0, 1.0]])
         _shared_utils.assert_array_equal(coord.bounds, self.bds_real)
 

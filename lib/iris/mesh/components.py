@@ -19,20 +19,39 @@ from collections import namedtuple
 from collections.abc import Container
 from contextlib import contextmanager
 from datetime import datetime
-from typing import Iterable, Literal, Mapping, NamedTuple
+import math
+from types import NotImplementedType
+from typing import (
+    Any,
+    Generator,
+    Iterable,
+    Literal,
+    Mapping,
+    NamedTuple,
+    Optional,
+    Sequence,
+    TypedDict,
+)
 import warnings
 
 from cf_units import Unit
 from dask import array as da
 import numpy as np
+from numpy.typing import ArrayLike
 
-from iris.common.metadata import ConnectivityMetadata, MeshCoordMetadata, MeshMetadata
+from iris.common.metadata import (
+    ConnectivityMetadata,
+    MeshCoordMetadata,
+    MeshMetadata,
+    _MeshIndexSetMetadata,
+)
+import iris.util
 
 from .. import _lazy_data as _lazy
 from ..common import CFVariableMixin, metadata_filter, metadata_manager_factory
 from ..common.metadata import BaseMetadata
 from ..config import get_logger
-from ..coords import AuxCoord, _DimensionalMetadata
+from ..coords import AuxCoord, Coord, _DimensionalMetadata
 from ..exceptions import ConnectivityNotFoundError, CoordinateNotFoundError
 from ..util import array_equal, clip_string, guess_coord_axis
 from ..warnings import IrisVagueMetadataWarning
@@ -630,6 +649,7 @@ class Mesh(CFVariableMixin, ABC):
           - Move whatever is appropriate from :class:`MeshXY` into this class,
             leaving behind only those elements specific to the assumption of
             X and Y node coordinates.
+          - Set :class:`_MeshIndexSet` to subclass `Mesh` instead of `MeshXY`.
           - Remove the docstring warning, the NotImplementedError, and the uses
             of ABC/abstractmethod.
           - Add a cross-reference in the docstring for :class:`MeshXY`.
@@ -648,27 +668,21 @@ class Mesh(CFVariableMixin, ABC):
         raise NotImplementedError(message)
 
 
-class MeshXY(Mesh):
-    """A container representing the UGRID ``cf_role`` ``mesh_topology``.
+class _MeshXYMixin(Mesh, ABC):
+    """Mixin providing XY-coordinate behaviour for :class:`Mesh` subclasses.
 
-    A container representing the UGRID [1]_ ``cf_role`` ``mesh_topology``, supporting
-    1D network, 2D triangular, and 2D flexible mesh topologies.
-
-    Based on the assumption of 2 :attr:`node_coords` - one associated with the
-    X-axis (e.g. longitude) and 1 with the Y-axis (e.g. latitude). UGRID
-    describing alternative node coordinates (e.g. spherical) cannot be
-    represented.
-
-    Notes
-    -----
-    The 3D layered and fully 3D unstructured mesh topologies are not supported
-    at this time.
-
-    References
-    ----------
-    .. [1] The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    Implements the shared logic for meshes that carry explicit X and Y
+    coordinates (nodes, and optionally edges/faces).  Concrete subclasses must
+    populate :attr:`_metadata_manager`, :attr:`_connectivity_manager_attr` and
+    :attr:`_coord_manager_attr` in their ``__init__``.
 
     """
+
+    # Subclass __init__ methods must define:
+    # TODO: Impossible to type hint the return type of metadata_manager_factory().
+    _metadata_manager: Any
+    _connectivity_manager_attr: "_MeshConnectivityManagerBase"
+    _coord_manager_attr: "_MeshCoordinateManagerBase"
 
     # TBD: for volume and/or z-axis support include axis "z" and/or dimension "3"
     #: The supported mesh axes.
@@ -678,328 +692,35 @@ class MeshXY(Mesh):
     #: Valid mesh elements.
     ELEMENTS = ("edge", "node", "face")
 
-    def __init__(
-        self,
-        topology_dimension,
-        node_coords_and_axes,
-        connectivities,
-        edge_coords_and_axes=None,
-        face_coords_and_axes=None,
-        standard_name=None,
-        long_name=None,
-        var_name=None,
-        units=None,
-        attributes=None,
-        node_dimension=None,
-        edge_dimension=None,
-        face_dimension=None,
-    ):
-        """MeshXY initialise.
+    def __eq__(self, other) -> bool | NotImplementedType:
+        result: bool | NotImplementedType = NotImplemented
 
-        .. note::
+        if isinstance(other, _MeshXYMixin):
+            # Using identity speeds up several real-world equality checks
+            #  for _MeshIndexSet and MeshCoord.
+            result = self is other
 
-            The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
-            :attr:`face_dimension` properties are to preserve the original NetCDF
-            variable dimension names. Note that, only :attr:`edge_dimension` and
-            :attr:`face_dimension` are UGRID attributes, and are only present for
-            :attr:`topology_dimension` ``>=2``.
-
-        """
-        # TODO: support volumes.
-        # TODO: support (coord, "z")
-
-        self._metadata_manager = metadata_manager_factory(MeshMetadata)
-
-        # topology_dimension is read-only, so assign directly to the metadata manager
-        if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
-            emsg = f"Expected 'topology_dimension' in range {self.TOPOLOGY_DIMENSIONS!r}, got {topology_dimension!r}."
-            raise ValueError(emsg)
-        self._metadata_manager.topology_dimension = topology_dimension
-
-        self.node_dimension = node_dimension
-        self.edge_dimension = edge_dimension
-        self.face_dimension = face_dimension
-
-        # assign the metadata to the metadata manager
-        self.standard_name = standard_name
-        self.long_name = long_name
-        self.var_name = var_name
-        self.units = units
-        self.attributes = attributes
-
-        # based on the topology_dimension, create the appropriate coordinate manager
-        def normalise(element, axis):
-            result = str(axis).lower()
-            if result not in self.AXES:
-                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
-                raise ValueError(emsg)
-            return f"{element}_{result}"
-
-        if not isinstance(node_coords_and_axes, Iterable):
-            node_coords_and_axes = [node_coords_and_axes]
-
-        if not isinstance(connectivities, Iterable):
-            connectivities = [connectivities]
-
-        kwargs = {}
-        for coord, axis in node_coords_and_axes:
-            kwargs[normalise("node", axis)] = coord
-        if edge_coords_and_axes is not None:
-            for coord, axis in edge_coords_and_axes:
-                kwargs[normalise("edge", axis)] = coord
-        if face_coords_and_axes is not None:
-            for coord, axis in face_coords_and_axes:
-                kwargs[normalise("face", axis)] = coord
-
-        # check the UGRID minimum requirement for coordinates
-        if "node_x" not in kwargs:
-            emsg = "Require a node coordinate that is x-axis like to be provided."
-            raise ValueError(emsg)
-        if "node_y" not in kwargs:
-            emsg = "Require a node coordinate that is y-axis like to be provided."
-            raise ValueError(emsg)
-
-        if self.topology_dimension == 1:
-            self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh1DConnectivityManager(*connectivities)
-        elif self.topology_dimension == 2:
-            self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
-            self._connectivity_manager = _Mesh2DConnectivityManager(*connectivities)
-        else:
-            emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
-            raise NotImplementedError(emsg)
-
-    @classmethod
-    def from_coords(cls, *coords):
-        r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
-
-        The :attr:`~MeshXY.topology_dimension`, :class:`~iris.coords.Coord`
-        membership and :class:`Connectivity` membership are all determined
-        based on the shape of the first :attr:`~iris.coords.Coord.bounds`:
-
-        * ``None`` or ``(n, <2)``:
-            Not supported
-        * ``(n, 2)``:
-            :attr:`~MeshXY.topology_dimension` = ``1``.
-            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.edge_node_connectivity`
-            constructed from :attr:`~iris.coords.Coord.bounds`.
-            :attr:`~MeshXY.edge_coords` constructed from
-            :attr:`~iris.coords.Coord.points`.
-        * ``(n, >=3)``:
-            :attr:`~MeshXY.topology_dimension` = ``2``.
-            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.face_node_connectivity`
-            constructed from :attr:`~iris.coords.Coord.bounds`.
-            :attr:`~MeshXY.face_coords` constructed from
-            :attr:`~iris.coords.Coord.points`.
-
-        Parameters
-        ----------
-        *coords : Iterable of :class:`~iris.coords.Coord`
-            Coordinates to pass into the :class:`MeshXY`.
-            All :attr:`~iris.coords.Coord.points` must have the same shapes;
-            all :attr:`~iris.coords.Coord.bounds` must have the same shapes,
-            and must not be ``None``.
-
-        Returns
-        -------
-        :class:`MeshXY`
-
-        Notes
-        -----
-        .. note::
-            Any resulting duplicate nodes are not currently removed, due to the
-            computational intensity.
-
-        .. note::
-            :class:`MeshXY` currently requires ``X`` and ``Y``
-            :class:`~iris.coords.Coord` specifically.
-            :meth:`iris.util.guess_coord_axis` is therefore attempted, else the
-            first two :class:`~iris.coords.Coord` are taken.
-
-        .. testsetup::
-
-            from iris import load_cube, sample_data_path
-            from iris.mesh import (
-                MeshXY,
-                MeshCoord,
-            )
-
-            file_path = sample_data_path("mesh_C4_synthetic_float.nc")
-            cube_w_mesh = load_cube(file_path)
-
-        Examples
-        --------
-        ::
-
-            # Reconstruct a cube-with-mesh after subsetting it.
-
-            >>> print(cube_w_mesh.mesh.name())
-            Topology data of 2D unstructured mesh
-            >>> mesh_coord_names = [
-            ...     coord.name() for coord in cube_w_mesh.coords(mesh_coords=True)
-            ... ]
-            >>> print(f"MeshCoords: {mesh_coord_names}")
-            MeshCoords: ['latitude', 'longitude']
-
-            # Subsetting converts MeshCoords to AuxCoords.
-            >>> slices = [slice(None)] * cube_w_mesh.ndim
-            >>> slices[cube_w_mesh.mesh_dim()] = slice(-1)
-            >>> cube_sub = cube_w_mesh[tuple(slices)]
-            >>> print(cube_sub.mesh)
-            None
-            >>> orig_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
-            >>> for coord in orig_coords:
-            ...     print(f"{coord.name()}: {type(coord).__name__}")
-            latitude: AuxCoord
-            longitude: AuxCoord
-
-            >>> new_mesh = MeshXY.from_coords(*orig_coords)
-            >>> new_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
-
-            # Replace the AuxCoords with MeshCoords.
-            >>> for ix in range(2):
-            ...     cube_sub.remove_coord(orig_coords[ix])
-            ...     cube_sub.add_aux_coord(new_coords[ix], cube_w_mesh.mesh_dim())
-
-            >>> print(cube_sub.mesh.name())
-            Topology data of 2D unstructured mesh
-            >>> for coord_name in mesh_coord_names:
-            ...     coord = cube_sub.coord(coord_name)
-            ...     print(f"{coord_name}: {type(coord).__name__}")
-            latitude: MeshCoord
-            longitude: MeshCoord
-
-        """
-
-        # Validate points and bounds shape match.
-        def check_shape(array_name):
-            attr_name = f"core_{array_name}"
-            arrays = [getattr(coord, attr_name)() for coord in coords]
-            if any(a is None for a in arrays):
-                message = f"{array_name} missing from coords[{arrays.index(None)}] ."
-                raise ValueError(message)
-            shapes = [array.shape for array in arrays]
-            if shapes.count(shapes[0]) != len(shapes):
-                message = f"{array_name} shapes are not identical for all coords."
-                raise ValueError(message)
-
-        for array in ("points", "bounds"):
-            check_shape(array)
-
-        # Determine dimensionality, using first coord.
-        first_coord = coords[0]
-
-        ndim = first_coord.ndim
-        if ndim != 1:
-            message = f"Expected coordinate ndim == 1, got: f{ndim} ."
-            raise ValueError(message)
-
-        bounds_shape = first_coord.core_bounds().shape
-        bounds_dim1 = bounds_shape[1]
-        if bounds_dim1 < 2:
-            message = (
-                f"Expected coordinate bounds.shape (n, >=2), got: {bounds_shape} ."
-            )
-            raise ValueError(message)
-        elif bounds_dim1 == 2:
-            topology_dimension = 1
-            coord_centring = "edge"
-            conn_cf_role = "edge_node_connectivity"
-        else:
-            topology_dimension = 2
-            coord_centring = "face"
-            conn_cf_role = "face_node_connectivity"
-
-        # Create connectivity.
-        if first_coord.has_lazy_bounds():
-            array_lib = da
-        else:
-            array_lib = np
-        indices = array_lib.arange(np.prod(bounds_shape)).reshape(bounds_shape)
-        masking = array_lib.ma.getmaskarray(first_coord.core_bounds())
-        indices = array_lib.ma.masked_array(indices, masking)
-        connectivity = Connectivity(indices, conn_cf_role)
-
-        # Create coords.
-        node_coords = []
-        centre_coords = []
-        for coord in coords:
-            coord_kwargs = dict(
-                standard_name=coord.standard_name,
-                long_name=coord.long_name,
-                units=coord.units,
-                attributes=coord.attributes,
-            )
-            node_points = array_lib.ma.filled(coord.core_bounds(), 0.0).flatten()
-            node_coords.append(AuxCoord(points=node_points, **coord_kwargs))
-
-            centre_points = coord.core_points()
-            centre_coords.append(AuxCoord(points=centre_points, **coord_kwargs))
-
-        #####
-        # TODO: remove axis assignment once Mesh supports arbitrary coords.
-        # TODO: consider filtering coords as the first action in this method.
-        axes_present = [guess_coord_axis(coord) for coord in coords]
-        axes_required = ("X", "Y")
-        if all([req in axes_present for req in axes_required]):
-            axis_indices = [axes_present.index(req) for req in axes_required]
-        else:
-            message = (
-                "Unable to find 'X' and 'Y' using guess_coord_axis. Assuming "
-                "X=coords[0], Y=coords[1] ."
-            )
-            # TODO: reconsider logging level when we have consistent practice.
-            logger.info(message, extra=dict(cls=None))
-            axis_indices = range(len(axes_required))
-
-        def axes_assign(coord_list):
-            coords_sorted = [coord_list[ix] for ix in axis_indices]
-            return zip(coords_sorted, axes_required)
-
-        node_coords_and_axes = axes_assign(node_coords)
-        centre_coords_and_axes = axes_assign(centre_coords)
-        #####
-
-        # Construct the Mesh.
-        mesh_kwargs = dict(
-            topology_dimension=topology_dimension,
-            node_coords_and_axes=node_coords_and_axes,
-            connectivities=[connectivity],
-        )
-        mesh_kwargs[f"{coord_centring}_coords_and_axes"] = centre_coords_and_axes
-        return cls(**mesh_kwargs)
-
-    def __eq__(self, other):
-        result = NotImplemented
-
-        if isinstance(other, MeshXY):
-            result = self.metadata == other.metadata
-            if result:
-                result = self.all_coords == other.all_coords
-            if result:
-                result = self.all_connectivities == other.all_connectivities
+            if not result:
+                result = self.metadata == other.metadata
+                if result:
+                    result = self.all_coords == other.all_coords
+                if result:
+                    result = self.all_connectivities == other.all_connectivities
 
         return result
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
         # See https://github.com/SciTools/iris/pull/1772
         return hash(id(self))
 
-    def __getstate__(self):
-        return (
-            self._metadata_manager,
-            self._coord_manager,
-            self._connectivity_manager,
-        )
-
-    def __ne__(self, other):
+    def __ne__(self, other) -> bool | NotImplementedType:
         result = self.__eq__(other)
         if result is not NotImplemented:
             result = not result
         return result
 
-    def summary(self, shorten=False):
+    def summary(self, *args, **kwargs) -> str:
         """Return a string representation of the MeshXY.
 
         Parameters
@@ -1013,6 +734,11 @@ class MeshXY(Mesh):
         str
 
         """
+        if len(args) > 0:
+            shorten = args[0]
+        else:
+            shorten = kwargs.get("shorten", False)
+
         if shorten:
             result = self._summary_oneline()
         else:
@@ -1025,25 +751,25 @@ class MeshXY(Mesh):
     def __str__(self):
         return self.summary(shorten=False)
 
-    def _summary_oneline(self):
+    def _summary_oneline(self) -> str:
         # We use the repr output to produce short one-line identity summary,
         # similar to the object.__str__ output "<object at xxx>".
         # This form also used in other str() constructions, like MeshCoord.
         # By contrast, __str__ (below) produces a readable multi-line printout.
-        mesh_name = self.name()
+        mesh_name: str | None = self.name()
         if mesh_name in (None, "", "unknown"):
             mesh_name = None
         if mesh_name:
             # Use a more human-readable form
-            mesh_string = f"<MeshXY: '{mesh_name}'>"
+            mesh_string = f"<{self.__class__.__name__}: '{mesh_name}'>"
         else:
             # Mimic the generic object.__str__ style.
             mesh_id = id(self)
-            mesh_string = f"<MeshXY object at {hex(mesh_id)}>"
+            mesh_string = f"<{self.__class__.__name__} object at {hex(mesh_id)}>"
 
         return mesh_string
 
-    def _summary_multiline(self):
+    def _summary_multiline(self) -> str:
         # Produce a readable multi-line summary of the Mesh content.
         lines = []
         n_indent = 4
@@ -1053,33 +779,39 @@ class MeshXY(Mesh):
             indent = indent_str * i_indent
             lines.append(f"{indent}{text}")
 
-        line(f"MeshXY : '{self.name()}'")
+        line(f"{self.__class__.__name__} : '{self.name()}'")
         line(f"topology_dimension: {self.topology_dimension}", 1)
         for element in ("node", "edge", "face"):
             if element == "node":
-                element_exists = True
+                main_conn_string = None
             else:
                 main_conn_name = f"{element}_node_connectivity"
-                main_conn = getattr(self, main_conn_name, None)
-                element_exists = main_conn is not None
-            if element_exists:
-                # Include a section for this element
-                line(element, 1)
-                # Print element dimension
-                dim_name = f"{element}_dimension"
-                dim = getattr(self, dim_name)
-                line(f"{dim_name}: '{dim}'", 2)
-                # Print defining connectivity (except node)
-                if element != "node":
-                    main_conn_string = main_conn.summary(shorten=True, linewidth=0)
-                    line(f"{main_conn_name}: {main_conn_string}", 2)
-                # Print coords
-                coords = self.coords(location=element)
-                if coords:
-                    line(f"{element} coordinates", 2)
-                    for coord in coords:
+                main_conn: Connectivity | None = getattr(self, main_conn_name, None)
+                if main_conn is None:
+                    continue
+
+                main_conn_string = main_conn.summary(shorten=True, linewidth=0)
+                main_conn_string = f"{main_conn_name}: {main_conn_string}"
+
+            # Include a section for this element
+            line(element, 1)
+            # Print element dimension
+            dim_name = f"{element}_dimension"
+            dim = getattr(self, dim_name)
+            line(f"{dim_name}: '{dim}'", 2)
+            # Print defining connectivity (except node)
+            if main_conn_string:
+                line(main_conn_string, 2)
+            # Print coords
+            coords = self.coords(location=element)
+            if coords:
+                line(f"{element} coordinates", 2)
+                for coord in coords:
+                    if coord:
                         coord_string = coord.summary(shorten=True, linewidth=0)
-                        line(coord_string, 3)
+                    else:
+                        coord_string = "None"
+                    line(coord_string, 3)
 
         # Having dealt with essential info, now add any optional connectivities
         # N.B. includes boundaries: as optional connectivity, not an "element"
@@ -1089,10 +821,10 @@ class MeshXY(Mesh):
             "face_edge_connectivity",
             "edge_face_connectivity",
         )
-        optional_conns = [getattr(self, name, None) for name in optional_conn_names]
+        optional_conn_keys = [getattr(self, name, None) for name in optional_conn_names]
         optional_conns = {
             name: conn
-            for conn, name in zip(optional_conns, optional_conn_names)
+            for conn, name in zip(optional_conn_keys, optional_conn_names)
             if conn is not None
         }
         if optional_conns:
@@ -1131,60 +863,53 @@ class MeshXY(Mesh):
         result = "\n".join(lines)
         return result
 
+    @abstractmethod
+    def __getstate__(self):
+        raise NotImplementedError
+
+    @abstractmethod
     def __setstate__(self, state):
-        metadata_manager, coord_manager, connectivity_manager = state
-        self._metadata_manager = metadata_manager
-        self._coord_manager = coord_manager
-        self._connectivity_manager = connectivity_manager
-
-    def _set_dimension_names(self, node, edge, face, reset=False):
-        args = (node, edge, face)
-        currents = (
-            self.node_dimension,
-            self.edge_dimension,
-            self.face_dimension,
-        )
-        zipped = zip(args, currents)
-        if reset:
-            node, edge, face = [None if arg else current for arg, current in zipped]
-        else:
-            node, edge, face = [arg or current for arg, current in zipped]
-
-        self.node_dimension = node
-        self.edge_dimension = edge
-        self.face_dimension = face
-
-        if self.topology_dimension == 1:
-            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
-        elif self.topology_dimension == 2:
-            result = Mesh2DNames(
-                self.node_dimension, self.edge_dimension, self.face_dimension
-            )
-        else:
-            message = f"Unsupported topology_dimension: {self.topology_dimension} ."
-            raise NotImplementedError(message)
-
-        return result
+        raise NotImplementedError
 
     @property
-    def all_connectivities(self):
+    def _connectivity_manager(self) -> "_MeshConnectivityManagerBase":
+        # @property enables interruption/customisation in subclasses.
+        return self._connectivity_manager_attr
+
+    @_connectivity_manager.setter
+    def _connectivity_manager(self, manager: "_MeshConnectivityManagerBase") -> None:
+        # @property enables interruption/customisation in subclasses.
+        self._connectivity_manager_attr = manager
+
+    @property
+    def _coord_manager(self) -> "_MeshCoordinateManagerBase":
+        # @property enables interruption/customisation in subclasses.
+        return self._coord_manager_attr
+
+    @_coord_manager.setter
+    def _coord_manager(self, manager: "_MeshCoordinateManagerBase") -> None:
+        # @property enables interruption/customisation in subclasses.
+        self._coord_manager_attr = manager
+
+    @property
+    def all_connectivities(self) -> NamedTuple:
         """All the :class:`~iris.mesh.Connectivity` instances of the :class:`MeshXY`."""
         return self._connectivity_manager.all_members
 
     @property
-    def _last_modified(self):
+    def _last_modified(self) -> datetime:
         """The time and date that the mesh coordinates and or connecitivities were last edited."""
         return max(
             self._coord_manager.timestamp._dt, self._connectivity_manager.timestamp._dt
         )
 
     @property
-    def all_coords(self):
+    def all_coords(self) -> NamedTuple:
         """All the :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.all_members
 
     @property
-    def boundary_node_connectivity(self):
+    def boundary_node_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``boundary_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``boundary_node_connectivity``
@@ -1192,28 +917,20 @@ class MeshXY(Mesh):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.boundary_node
+        return self._connectivity_manager.boundary_node  # type:ignore[attr-defined]
 
     @property
-    def edge_coords(self):
+    def edge_coords(self) -> MeshEdgeCoords:
         """The *optional* UGRID ``edge`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.edge_coords
 
     @property
-    def edge_dimension(self):
-        """The *optionally required* UGRID NetCDF variable name for the ``edge`` dimension."""
-        return self._metadata_manager.edge_dimension
-
-    @edge_dimension.setter
-    def edge_dimension(self, name):
-        if not name or not isinstance(name, str):
-            edge_dimension = f"Mesh{self.topology_dimension}d_edge"
-        else:
-            edge_dimension = name
-        self._metadata_manager.edge_dimension = edge_dimension
+    @abstractmethod
+    def edge_dimension(self) -> str:
+        raise NotImplementedError()
 
     @property
-    def edge_face_connectivity(self):
+    def edge_face_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``edge_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``edge_face_connectivity``
@@ -1221,10 +938,10 @@ class MeshXY(Mesh):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.edge_face
+        return self._connectivity_manager.edge_face  # type:ignore[attr-defined]
 
     @property
-    def edge_node_connectivity(self):
+    def edge_node_connectivity(self) -> Connectivity:
         """The UGRID ``edge_node_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The UGRID ``edge_node_connectivity``
@@ -1234,37 +951,20 @@ class MeshXY(Mesh):
         :attr:`MeshXY.topology_dimension` ``>=2``.
 
         """
-        return self._connectivity_manager.edge_node
+        return self._connectivity_manager.edge_node  # type:ignore[attr-defined]
 
     @property
-    def face_coords(self):
+    def face_coords(self) -> AuxCoord:
         """The *optional* UGRID ``face`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
-        return self._coord_manager.face_coords
+        return self._coord_manager.face_coords  # type:ignore[attr-defined]
 
     @property
-    def face_dimension(self):
-        """The *optional* UGRID NetCDF variable name for the ``face`` dimension."""
-        return self._metadata_manager.face_dimension
-
-    @face_dimension.setter
-    def face_dimension(self, name):
-        if self.topology_dimension < 2:
-            face_dimension = None
-            if name:
-                # Tell the user it is not being set if they expected otherwise.
-                message = (
-                    "Not setting face_dimension (inappropriate for "
-                    f"topology_dimension={self.topology_dimension} ."
-                )
-                logger.debug(message, extra=dict(cls=self.__class__.__name__))
-        elif not name or not isinstance(name, str):
-            face_dimension = f"Mesh{self.topology_dimension}d_face"
-        else:
-            face_dimension = name
-        self._metadata_manager.face_dimension = face_dimension
+    @abstractmethod
+    def face_dimension(self) -> str:
+        raise NotImplementedError()
 
     @property
-    def face_edge_connectivity(self):
+    def face_edge_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``face_edge_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_edge_connectivity``
@@ -1273,10 +973,10 @@ class MeshXY(Mesh):
 
         """
         # optional
-        return self._connectivity_manager.face_edge
+        return self._connectivity_manager.face_edge  # type:ignore[attr-defined]
 
     @property
-    def face_face_connectivity(self):
+    def face_face_connectivity(self) -> Connectivity:
         """The *optional* UGRID ``face_face_connectivity`` :class:`~iris.mesh.Connectivity`.
 
         The *optional* UGRID ``face_face_connectivity``
@@ -1284,10 +984,10 @@ class MeshXY(Mesh):
         :class:`MeshXY`.
 
         """
-        return self._connectivity_manager.face_face
+        return self._connectivity_manager.face_face  # type:ignore[attr-defined]
 
     @property
-    def face_node_connectivity(self):
+    def face_node_connectivity(self) -> Connectivity:
         """Return ``face_node_connectivity``:class:`~iris.mesh.Connectivity`.
 
         The UGRID ``face_node_connectivity``
@@ -1297,25 +997,17 @@ class MeshXY(Mesh):
         of ``3``.
 
         """
-        return self._connectivity_manager.face_node
+        return self._connectivity_manager.face_node  # type:ignore[attr-defined]
 
     @property
-    def node_coords(self):
+    def node_coords(self) -> MeshNodeCoords:
         """The **required** UGRID ``node`` :class:`~iris.coords.AuxCoord` coordinates of the :class:`MeshXY`."""
         return self._coord_manager.node_coords
 
     @property
-    def node_dimension(self):
-        """The NetCDF variable name for the ``node`` dimension."""
-        return self._metadata_manager.node_dimension
-
-    @node_dimension.setter
-    def node_dimension(self, name):
-        if not name or not isinstance(name, str):
-            node_dimension = f"Mesh{self.topology_dimension}d_node"
-        else:
-            node_dimension = name
-        self._metadata_manager.node_dimension = node_dimension
+    @abstractmethod
+    def node_dimension(self) -> str:
+        raise NotImplementedError()
 
     def add_connectivities(self, *connectivities):
         """Add one or more :class:`~iris.mesh.Connectivity` instances to the :class:`MeshXY`.
@@ -1948,6 +1640,424 @@ class MeshXY(Mesh):
         result = [self.to_MeshCoord(location=location, axis=ax) for ax in self.AXES]
         return tuple(result)
 
+    @property
+    @abstractmethod
+    def cf_role(self) -> str:
+        raise NotImplementedError()
+
+    @property
+    @abstractmethod
+    def topology_dimension(self) -> int:
+        raise NotImplementedError()
+
+
+class MeshXY(_MeshXYMixin):
+    """A container representing the UGRID ``cf_role`` ``mesh_topology``.
+
+    A container representing the UGRID ``cf_role`` ``mesh_topology``, supporting
+    1D network, 2D triangular, and 2D flexible mesh topologies.
+
+    Based on the assumption of 2 :attr:`node_coords` - one associated with the
+    X-axis (e.g. longitude) and 1 with the Y-axis (e.g. latitude). UGRID
+    describing alternative node coordinates (e.g. spherical) cannot be
+    represented.
+
+    Notes
+    -----
+    The 3D layered and fully 3D unstructured mesh topologies are not supported
+    at this time.
+
+    References
+    ----------
+    1. The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+
+    """
+
+    def __init__(
+        self,
+        topology_dimension,
+        node_coords_and_axes,
+        connectivities,
+        edge_coords_and_axes=None,
+        face_coords_and_axes=None,
+        standard_name=None,
+        long_name=None,
+        var_name=None,
+        units=None,
+        attributes=None,
+        node_dimension=None,
+        edge_dimension=None,
+        face_dimension=None,
+    ):
+        """MeshXY initialise.
+
+        .. note::
+
+            The purpose of the :attr:`node_dimension`, :attr:`edge_dimension` and
+            :attr:`face_dimension` properties are to preserve the original NetCDF
+            variable dimension names. Note that, only :attr:`edge_dimension` and
+            :attr:`face_dimension` are UGRID attributes, and are only present for
+            :attr:`topology_dimension` ``>=2``.
+
+        """
+        # TODO: support volumes.
+        # TODO: support (coord, "z")
+
+        self._metadata_manager = metadata_manager_factory(MeshMetadata)
+
+        # topology_dimension is read-only, so assign directly to the metadata manager
+        if topology_dimension not in self.TOPOLOGY_DIMENSIONS:
+            emsg = f"Expected 'topology_dimension' in range {self.TOPOLOGY_DIMENSIONS!r}, got {topology_dimension!r}."
+            raise ValueError(emsg)
+        self._metadata_manager.topology_dimension = topology_dimension
+
+        self.node_dimension = node_dimension
+        self.edge_dimension = edge_dimension
+        self.face_dimension = face_dimension
+
+        # assign the metadata to the metadata manager
+        self.standard_name = standard_name
+        self.long_name = long_name
+        self.var_name = var_name
+        self.units = units
+        self.attributes = attributes
+
+        # based on the topology_dimension, create the appropriate coordinate manager
+        def normalise(element, axis):
+            result = str(axis).lower()
+            if result not in self.AXES:
+                emsg = f"Invalid axis specified for {element} coordinate {coord.name()!r}, got {axis!r}."
+                raise ValueError(emsg)
+            return f"{element}_{result}"
+
+        if not isinstance(node_coords_and_axes, Iterable):
+            node_coords_and_axes = [node_coords_and_axes]
+
+        if not isinstance(connectivities, Iterable):
+            connectivities = [connectivities]
+
+        kwargs = {}
+        for coord, axis in node_coords_and_axes:
+            kwargs[normalise("node", axis)] = coord
+        if edge_coords_and_axes is not None:
+            for coord, axis in edge_coords_and_axes:
+                kwargs[normalise("edge", axis)] = coord
+        if face_coords_and_axes is not None:
+            for coord, axis in face_coords_and_axes:
+                kwargs[normalise("face", axis)] = coord
+
+        # check the UGRID minimum requirement for coordinates
+        if "node_x" not in kwargs:
+            emsg = "Require a node coordinate that is x-axis like to be provided."
+            raise ValueError(emsg)
+        if "node_y" not in kwargs:
+            emsg = "Require a node coordinate that is y-axis like to be provided."
+            raise ValueError(emsg)
+
+        if self.topology_dimension == 1:
+            self._coord_manager = _Mesh1DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh1DConnectivityManager(*connectivities)
+        elif self.topology_dimension == 2:
+            self._coord_manager = _Mesh2DCoordinateManager(**kwargs)
+            self._connectivity_manager = _Mesh2DConnectivityManager(*connectivities)
+        else:
+            emsg = f"Unsupported 'topology_dimension', got {topology_dimension!r}."
+            raise NotImplementedError(emsg)
+
+    def __getstate__(self) -> tuple[Any, Any, Any]:
+        return (
+            self._metadata_manager,
+            self._coord_manager,
+            self._connectivity_manager,
+        )
+
+    def __setstate__(self, state: tuple[Any, Any, Any]):
+        metadata_manager, coord_manager, connectivity_manager = state
+        self._metadata_manager = metadata_manager
+        self._coord_manager = coord_manager
+        self._connectivity_manager = connectivity_manager
+
+    @classmethod
+    def from_coords(cls, *coords: Coord):
+        r"""Construct a :class:`MeshXY` by derivation from 1/more :class:`~iris.coords.Coord`.
+
+        The :attr:`~MeshXY.topology_dimension`, :class:`~iris.coords.Coord`
+        membership and :class:`Connectivity` membership are all determined
+        based on the shape of the first :attr:`~iris.coords.Coord.bounds`:
+
+        * ``None`` or ``(n, <2)``:
+            Not supported
+        * ``(n, 2)``:
+            :attr:`~MeshXY.topology_dimension` = ``1``.
+            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.edge_node_connectivity`
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~MeshXY.edge_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
+        * ``(n, >=3)``:
+            :attr:`~MeshXY.topology_dimension` = ``2``.
+            :attr:`~MeshXY.node_coords` and :attr:`~MeshXY.face_node_connectivity`
+            constructed from :attr:`~iris.coords.Coord.bounds`.
+            :attr:`~MeshXY.face_coords` constructed from
+            :attr:`~iris.coords.Coord.points`.
+
+        Parameters
+        ----------
+        *coords : Iterable of :class:`~iris.coords.Coord`
+            Coordinates to pass into the :class:`MeshXY`.
+            All :attr:`~iris.coords.Coord.points` must have the same shapes;
+            all :attr:`~iris.coords.Coord.bounds` must have the same shapes,
+            and must not be ``None``.
+
+        Returns
+        -------
+        :class:`MeshXY`
+
+        Notes
+        -----
+        .. note::
+            Any resulting duplicate nodes are not currently removed, due to the
+            computational intensity.
+
+        .. note::
+            :class:`MeshXY` currently requires ``X`` and ``Y``
+            :class:`~iris.coords.Coord` specifically.
+            :meth:`iris.util.guess_coord_axis` is therefore attempted, else the
+            first two :class:`~iris.coords.Coord` are taken.
+
+        .. testsetup::
+
+            from iris import load_cube, sample_data_path
+            from iris.mesh import (
+                MeshXY,
+                MeshCoord,
+            )
+
+            file_path = sample_data_path("mesh_C4_synthetic_float.nc")
+            cube_w_mesh = load_cube(file_path)
+
+        Examples
+        --------
+        ::
+
+            # Reconstruct a cube-with-mesh after subsetting it.
+
+            >>> print(cube_w_mesh.mesh.name())
+            Topology data of 2D unstructured mesh
+            >>> mesh_coord_names = [
+            ...     coord.name() for coord in cube_w_mesh.coords(mesh_coords=True)
+            ... ]
+            >>> print(f"MeshCoords: {mesh_coord_names}")
+            MeshCoords: ['latitude', 'longitude']
+
+            # Subsetting converts MeshCoords to AuxCoords.
+            >>> slices = [slice(None)] * cube_w_mesh.ndim
+            >>> slices[cube_w_mesh.mesh_dim()] = slice(-1)
+            >>> cube_sub = cube_w_mesh[tuple(slices)]
+            >>> print(cube_sub.mesh)
+            None
+            >>> orig_coords = [cube_sub.coord(c_name) for c_name in mesh_coord_names]
+            >>> for coord in orig_coords:
+            ...     print(f"{coord.name()}: {type(coord).__name__}")
+            latitude: AuxCoord
+            longitude: AuxCoord
+
+            >>> new_mesh = MeshXY.from_coords(*orig_coords)
+            >>> new_coords = new_mesh.to_MeshCoords(location=cube_w_mesh.location)
+
+            # Replace the AuxCoords with MeshCoords.
+            >>> for ix in range(2):
+            ...     cube_sub.remove_coord(orig_coords[ix])
+            ...     cube_sub.add_aux_coord(new_coords[ix], cube_w_mesh.mesh_dim())
+
+            >>> print(cube_sub.mesh.name())
+            Topology data of 2D unstructured mesh
+            >>> for coord_name in mesh_coord_names:
+            ...     coord = cube_sub.coord(coord_name)
+            ...     print(f"{coord_name}: {type(coord).__name__}")
+            latitude: MeshCoord
+            longitude: MeshCoord
+
+        """
+        if any(isinstance(coord, MeshCoord) for coord in coords):
+            msg = "Expected coords to be DimCoord or AuxCoord, got: MeshCoord."
+            raise ValueError(msg)
+
+        # Validate points and bounds shape match.
+        def check_shape(array_name):
+            attr_name = f"core_{array_name}"
+            arrays = [getattr(coord, attr_name)() for coord in coords]
+            if any(a is None for a in arrays):
+                message = f"{array_name} missing from coords[{arrays.index(None)}] ."
+                raise ValueError(message)
+            shapes = [array.shape for array in arrays]
+            if shapes.count(shapes[0]) != len(shapes):
+                message = f"{array_name} shapes are not identical for all coords."
+                raise ValueError(message)
+
+        for array in ("points", "bounds"):
+            check_shape(array)
+
+        # Determine dimensionality, using first coord.
+        first_coord = coords[0]
+
+        ndim = first_coord.ndim
+        if ndim != 1:
+            message = f"Expected coordinate ndim == 1, got: f{ndim} ."
+            raise ValueError(message)
+
+        bounds_shape = first_coord.core_bounds().shape
+        bounds_dim1 = bounds_shape[1]
+        if bounds_dim1 < 2:
+            message = (
+                f"Expected coordinate bounds.shape (n, >=2), got: {bounds_shape} ."
+            )
+            raise ValueError(message)
+        elif bounds_dim1 == 2:
+            topology_dimension = 1
+            coord_centring = "edge"
+            conn_cf_role = "edge_node_connectivity"
+        else:
+            topology_dimension = 2
+            coord_centring = "face"
+            conn_cf_role = "face_node_connectivity"
+
+        # Create connectivity.
+        if first_coord.has_lazy_bounds():
+            array_lib = da
+        else:
+            array_lib = np
+        indices = array_lib.arange(np.prod(bounds_shape)).reshape(bounds_shape)
+        masking = array_lib.ma.getmaskarray(first_coord.core_bounds())
+        indices = array_lib.ma.masked_array(indices, masking)
+        connectivity = Connectivity(indices, conn_cf_role)
+
+        # Create coords.
+        node_coords = []
+        centre_coords = []
+        for coord in coords:
+            coord_kwargs = dict(
+                standard_name=coord.standard_name,
+                long_name=coord.long_name,
+                units=coord.units,
+                attributes=coord.attributes,
+            )
+            node_points = array_lib.ma.filled(coord.core_bounds(), 0.0).flatten()
+            node_coords.append(AuxCoord(points=node_points, **coord_kwargs))
+
+            centre_points = coord.core_points()
+            centre_coords.append(AuxCoord(points=centre_points, **coord_kwargs))
+
+        #####
+        # TODO: remove axis assignment once Mesh supports arbitrary coords.
+        axes_present = [guess_coord_axis(coord) for coord in coords]
+        # Explicit for mypy
+        axes_required: tuple[Literal["X"], Literal["Y"]] = ("X", "Y")
+        axis_indices: list[int] | range
+        try:
+            axis_indices = [axes_present.index(req) for req in axes_required]
+        except ValueError:
+            message = (
+                "Unable to find 'X' and 'Y' using guess_coord_axis. Assuming "
+                "X=coords[0], Y=coords[1] ."
+            )
+            # TODO: reconsider logging level when we have consistent practice.
+            logger.info(message, extra=dict(cls=None))
+            axis_indices = range(len(axes_required))
+
+        def axes_assign(coord_list):
+            coords_sorted = [coord_list[ix] for ix in axis_indices]
+            return zip(coords_sorted, axes_required)
+
+        node_coords_and_axes = axes_assign(node_coords)
+        centre_coords_and_axes = axes_assign(centre_coords)
+        #####
+
+        # Construct the Mesh.
+        mesh_kwargs = dict(
+            topology_dimension=topology_dimension,
+            node_coords_and_axes=node_coords_and_axes,
+            connectivities=[connectivity],
+        )
+        mesh_kwargs[f"{coord_centring}_coords_and_axes"] = centre_coords_and_axes
+        return cls(**mesh_kwargs)
+
+    def _set_dimension_names(self, node, edge, face, reset=False):
+        args = (node, edge, face)
+        currents = (
+            self.node_dimension,
+            self.edge_dimension,
+            self.face_dimension,
+        )
+        zipped = zip(args, currents)
+        if reset:
+            node, edge, face = [None if arg else current for arg, current in zipped]
+        else:
+            node, edge, face = [arg or current for arg, current in zipped]
+
+        self.node_dimension = node
+        self.edge_dimension = edge
+        self.face_dimension = face
+
+        if self.topology_dimension == 1:
+            result = Mesh1DNames(self.node_dimension, self.edge_dimension)
+        elif self.topology_dimension == 2:
+            result = Mesh2DNames(
+                self.node_dimension, self.edge_dimension, self.face_dimension
+            )
+        else:
+            message = f"Unsupported topology_dimension: {self.topology_dimension} ."
+            raise NotImplementedError(message)
+
+        return result
+
+    @property
+    def edge_dimension(self):
+        """The *optionally required* UGRID NetCDF variable name for the ``edge`` dimension."""
+        return self._metadata_manager.edge_dimension
+
+    @edge_dimension.setter
+    def edge_dimension(self, name):
+        if not name or not isinstance(name, str):
+            edge_dimension = f"Mesh{self.topology_dimension}d_edge"
+        else:
+            edge_dimension = name
+        self._metadata_manager.edge_dimension = edge_dimension
+
+    @property
+    def face_dimension(self):
+        """The *optional* UGRID NetCDF variable name for the ``face`` dimension."""
+        return self._metadata_manager.face_dimension
+
+    @face_dimension.setter
+    def face_dimension(self, name):
+        if self.topology_dimension < 2:
+            face_dimension = None
+            if name:
+                # Tell the user it is not being set if they expected otherwise.
+                message = (
+                    "Not setting face_dimension (inappropriate for "
+                    f"topology_dimension={self.topology_dimension} ."
+                )
+                logger.debug(message, extra=dict(cls=self.__class__.__name__))
+        elif not name or not isinstance(name, str):
+            face_dimension = f"Mesh{self.topology_dimension}d_face"
+        else:
+            face_dimension = name
+        self._metadata_manager.face_dimension = face_dimension
+
+    @property
+    def node_dimension(self):
+        """The NetCDF variable name for the ``node`` dimension."""
+        return self._metadata_manager.node_dimension
+
+    @node_dimension.setter
+    def node_dimension(self, name):
+        if not name or not isinstance(name, str):
+            node_dimension = f"Mesh{self.topology_dimension}d_node"
+        else:
+            node_dimension = name
+        self._metadata_manager.node_dimension = node_dimension
+
     def dimension_names_reset(self, node=False, edge=False, face=False):
         """Reset the name used for the NetCDF variable.
 
@@ -2011,7 +2121,40 @@ class MeshXY(Mesh):
         return self._metadata_manager.topology_dimension
 
 
-class _Mesh1DCoordinateManager:
+class _ManagerMembers[VT](dict[str, VT]):
+    """A mutable/immutable dict backing a coordinate or connectivity manager.
+
+    Mutation can be toggled via :meth:`set_mutability`; when immutable every
+    write operation raises :class:`RuntimeError`.
+
+    """
+
+    read_only_message: str
+
+    def _readonly(self, *args, **kwargs):
+        raise RuntimeError(self.read_only_message)
+
+    def set_mutability(self, mutable: bool, message: Optional[str] = None) -> None:
+        if not mutable:
+            self.read_only_message = message or "Members of this manager are read-only."
+        for op in (
+            dict.__setitem__,
+            dict.__delitem__,
+            dict.pop,
+            dict.popitem,
+            dict.clear,
+            dict.update,
+            dict.setdefault,
+        ):
+            op_name = op.__name__
+            if mutable:
+                new_op = getattr(super(), op_name)
+            else:
+                new_op = self._readonly
+            setattr(self, op_name, new_op)
+
+
+class _MeshCoordinateManagerBase(ABC):
     """TBD: require clarity on coord_systems validation.
 
     TBD: require clarity on __eq__ support
@@ -2028,11 +2171,24 @@ class _Mesh1DCoordinateManager:
         "edge_y",
     )
 
-    def __init__(self, node_x, node_y, edge_x=None, edge_y=None):
+    def __init__(
+        self,
+        node_x: AuxCoord,
+        node_y: AuxCoord,
+        edge_x: AuxCoord | None = None,
+        edge_y: AuxCoord | None = None,
+        view: Optional[str] = None,
+    ):
         self.timestamp = _Timestamp()
+        # view = an error message informing that the coordinates of this manager
+        #  are only a 'view' onto the coordinates of another Mesh. Message should carry
+        #  useful user-level info from the calling context.
+        self._view_message = view
         # initialise all the coordinates
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = {member: None for member in self.ALL}
+        self._members_dict: _ManagerMembers[AuxCoord | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
 
         # required coordinates
         self.node_x = node_x
@@ -2051,14 +2207,16 @@ class _Mesh1DCoordinateManager:
         if self.edge_y:
             self.edge_y._mesh_timestamps.append(self.timestamp)
 
+        self._set_immutable()
+
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
         return id(self) == id(other)
 
-    def __getstate__(self):
-        return self._members
+    def __getstate__(self) -> tuple[_ManagerMembers, str | None]:
+        return (self._members, self._view_message)
 
-    def __iter__(self):
+    def __iter__(self) -> Generator[tuple[str, AuxCoord | None], None, None]:
         for item in self._members.items():
             yield item
 
@@ -2072,12 +2230,14 @@ class _Mesh1DCoordinateManager:
         args = [f"{member}={coord!r}" for member, coord in self if coord is not None]
         return f"{self.__class__.__name__}({', '.join(args)})"
 
-    def __setstate__(self, state):
+    def __setstate__(self, state: tuple[_ManagerMembers, str | None]):
         if not hasattr(self, "timestamp"):
             # Create ".timestamp" if missing, as the "._members" setter requires one.
             # Needing during unpickling, where __setstate__ replaces object __init__.
             self.timestamp = _Timestamp()
-        self._members = state
+        members, view_message = state
+        self._members = _ManagerMembers(members)
+        self._view_message = view_message
 
     def __str__(self):
         args = [f"{member}" for member, coord in self if coord is not None]
@@ -2102,6 +2262,12 @@ class _Mesh1DCoordinateManager:
 
         return result
 
+    def _set_immutable(self):
+        # Factored out to allow subclasses to set immutability after initialisation.
+        if self.is_view:
+            view_message = f"Coordinate modifications forbidden: {self._view_message}"
+            self._members_dict.set_mutability(False, message=view_message)
+
     def _setter(self, element, axis, coord, shape):
         self.timestamp.update()
         axis = axis.lower()
@@ -2117,6 +2283,15 @@ class _Mesh1DCoordinateManager:
                 emsg = f"{member!r} requires to be an 'AuxCoord', got {type(coord)}."
                 raise TypeError(emsg)
 
+            if self.is_view:
+                has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
+                if not (coord.has_lazy_points() and has_lazy_bounds):
+                    message = (
+                        f"Non-lazy coordinate detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
+
             guess_axis = guess_coord_axis(coord)
 
             if guess_axis and guess_axis.lower() != axis:
@@ -2128,10 +2303,18 @@ class _Mesh1DCoordinateManager:
                 raise TypeError(emsg)
 
             if shape is not None and coord.shape != shape:
-                emsg = (
-                    f"{member!r} requires to have shape {shape!r}, got {coord.shape!r}."
+                # NaN dimensions arise from lazy boolean-mask indexing,
+                #  where the length is not known until computed.
+                compatible = len(coord.shape) == len(shape) and all(
+                    math.isnan(x) or math.isnan(y) or x == y
+                    for x, y in zip(coord.shape, shape)
                 )
-                raise ValueError(emsg)
+                if not compatible:
+                    emsg = (
+                        f"{member!r} requires to have shape {shape!r}, "
+                        f"got {coord.shape!r}."
+                    )
+                    raise ValueError(emsg)
             # if the coordinate attached to the mesh hasn't been linked
             if self.timestamp not in coord._mesh_timestamps:
                 coord._mesh_timestamps.append(self.timestamp)
@@ -2155,11 +2338,23 @@ class _Mesh1DCoordinateManager:
         return self._shape(element="node")
 
     @property
-    def _members(self) -> dict[str, None] | dict[str, AuxCoord]:
+    def _members(self) -> _ManagerMembers[AuxCoord | None]:
+        if self.is_view:
+            # This is the appropriate moment to check for continued laziness.
+            for member, coord in [
+                (m, c) for m, c in self._members_dict.items() if c is not None
+            ]:
+                has_lazy_bounds = coord.has_lazy_bounds() or not coord.has_bounds()
+                if not (coord.has_lazy_points() and has_lazy_bounds):
+                    message = (
+                        f"Non-lazy coordinate detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
         return self._members_dict
 
     @_members.setter
-    def _members(self, value: dict[str, AuxCoord]):
+    def _members(self, value: _ManagerMembers[AuxCoord | None]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -2168,7 +2363,7 @@ class _Mesh1DCoordinateManager:
         return Mesh1DCoords(**self._members)
 
     @property
-    def edge_coords(self):
+    def edge_coords(self) -> MeshEdgeCoords:
         return MeshEdgeCoords(edge_x=self.edge_x, edge_y=self.edge_y)
 
     @property
@@ -2188,7 +2383,11 @@ class _Mesh1DCoordinateManager:
         self._setter(element="edge", axis="y", coord=coord, shape=self._edge_shape)
 
     @property
-    def node_coords(self):
+    def is_view(self):
+        return self._view_message is not None
+
+    @property
+    def node_coords(self) -> MeshNodeCoords:
         return MeshNodeCoords(node_x=self.node_x, node_y=self.node_y)
 
     @property
@@ -2350,6 +2549,75 @@ class _Mesh1DCoordinateManager:
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
+    def indexed(
+        self,
+        node_bool_index: ArrayLike,
+        edge_indices: Optional[ArrayLike],
+        face_indices: Optional[ArrayLike],
+        mesh_id: int,
+        frozen: bool = False,
+    ) -> "_MeshCoordinateManagerBase":
+        """Return an indexed copy of this coordinate manager.
+
+        Parameters
+        ----------
+        node_bool_index : :obj:`~numpy.typing.ArrayLike`
+            Array of boolean membership, over the full length of original nodes,
+            to use when indexing member node coordinates.
+        edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
+            The indices to use when indexing member edge or face
+            coordinates respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+        frozen : bool, default=False
+            If True, the returned coordinate manager will comprise indexed copies of the
+            original coordinates, which do not change if the original coordinates
+            change. If False, the returned coordinate manager will comprise coordinates
+            that are indexed 'views' of the original coordinates, which will change if
+            the original coordinates change; membership of the returned coordinate
+            manager will also be read-only.
+
+        Returns
+        -------
+        _Mesh1DCoordinateManager
+        """
+        indices_dict = {
+            "node": node_bool_index,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+        indexed_members: dict[str, AuxCoord | None] = {}
+        for key, coord in self:
+            indexed = None
+            if (
+                coord is not None
+                and (indexing := indices_dict[key.split("_")[0]]) is not None
+            ):
+                if frozen:
+                    indexed = coord.copy()[indexing]
+                else:
+                    lazy_points = coord.lazy_points()
+                    lazy_bounds = coord.lazy_bounds()
+                    points = lazy_points[indexing] if lazy_points is not None else None
+                    bounds = lazy_bounds[indexing] if lazy_bounds is not None else None
+                    # Lazy = deferred calculation. Changes to the original coordinate
+                    #  will be reflected in the indexed coordinate. Will be primarily
+                    #  used by MeshCoord, which also maintains laziness.
+                    indexed = coord.copy(points, bounds)
+            indexed_members[key] = indexed
+
+        view_message: str | None = None
+        if not frozen:
+            mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+            view_message = (
+                f"Coordinates on {mesh_index_set} are only 'views' onto the "
+                f"coordinates of an original {mesh_xy}: id={mesh_id}."
+            )
+        result = self.__class__(**indexed_members, view=view_message)  # type: ignore[arg-type]
+
+        return result
+
     def remove(
         self,
         item=None,
@@ -2371,7 +2639,12 @@ class _Mesh1DCoordinateManager:
         )
 
 
-class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
+class _Mesh1DCoordinateManager(_MeshCoordinateManagerBase):
+    # The concrete definition of this is in _MeshCoordinateManager
+    pass
+
+
+class _Mesh2DCoordinateManager(_MeshCoordinateManagerBase):
     OPTIONAL = (
         "edge_x",
         "edge_y",
@@ -2387,16 +2660,20 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         edge_y=None,
         face_x=None,
         face_y=None,
+        view: Optional[str] = None,
     ):
-        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y)
+        super().__init__(node_x, node_y, edge_x=edge_x, edge_y=edge_y, view=view)
 
         # optional coordinates
+        self._members_dict.set_mutability(True)
         self.face_x = face_x
         self.face_y = face_y
         if self.face_x:
             self.face_x._mesh_timestamps.append(self.timestamp)
         if self.face_y:
             self.face_y._mesh_timestamps.append(self.timestamp)
+
+        self._set_immutable()
 
     @property
     def _face_shape(self):
@@ -2407,7 +2684,7 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
         return Mesh2DCoords(**self._members)
 
     @property
-    def face_coords(self):
+    def face_coords(self) -> MeshFaceCoords:
         return MeshFaceCoords(face_x=self.face_x, face_y=self.face_y)
 
     @property
@@ -2486,13 +2763,70 @@ class _Mesh2DCoordinateManager(_Mesh1DCoordinateManager):
                 )
 
 
+def _index_conn_array(
+    array: np.ndarray | da.Array,
+    indexing: np.ndarray | da.Array,
+) -> np.ndarray | da.Array:
+    """Index a connectivity array, allowing for laziness and masking.
+
+    Convenience used in constructing MeshCoords and views of _MeshConnectivityManagerBase.
+
+    Parameters
+    ----------
+    array : np.ndarray or dask.array.Array
+        The array to be indexed.
+    indexing : np.ndarray or dask.array.Array
+        The array of indices to use for indexing `array`.
+
+    Returns
+    -------
+    np.ndarray or dask.array.Array
+    """
+    # Assumes indices_by_location
+    n_nodes = array.shape[0]
+    # Choose real/lazy array library, to suit array types.
+    lazy = _lazy.is_lazy_data(array) or _lazy.is_lazy_data(indexing)
+    al = da if lazy else np
+    # NOTE: Dask cannot index with a multidimensional array, so we
+    # must flatten it and restore the shape later.
+    flat_inds = indexing.flatten()
+    # NOTE: the connectivity array can have masked points, but we can't
+    # effectively index with those.  So use a non-masked index array
+    # with "safe" index values, and post-mask the results.
+    flat_inds_nomask = al.ma.filled(flat_inds, -1)
+    # Note: *also* mask any places where the index is out of range.
+    missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
+    flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
+    # Here's the core indexing operation.
+    # The comma applies all inds-array values to the *first* dimension.
+    try:
+        flat_result = array[flat_inds_safe,]
+    except NotImplementedError:
+        # Protect against Dask NotImplementedError:
+        #  "Slicing an array with unknown chunks with a dask.array of ints is
+        #  not supported"
+        if not lazy:
+            raise
+        array.compute_chunk_sizes()
+        flat_result = array[flat_inds_safe,]
+    # Fix 'missing' locations, and restore the proper shape.
+    flat_result_masked = al.ma.masked_array(flat_result, missing_inds)
+    result = flat_result_masked.reshape(indexing.shape)
+    return result
+
+
 class _MeshConnectivityManagerBase(ABC):
     # Override these in subclasses.
-    REQUIRED: tuple = NotImplemented
-    OPTIONAL: tuple = NotImplemented
+    REQUIRED: tuple[str, ...] | tuple[()] = NotImplemented
+    OPTIONAL: tuple[str, ...] | tuple[()] = NotImplemented
+    _view_message: str | None = None
 
-    def __init__(self, *connectivities):
+    def __init__(self, *connectivities, view: Optional[str] = None):
         self.timestamp = _Timestamp()
+        # view = an error message informing that the connectivities of this manager
+        #  are only a 'view' onto the connectivities of another Mesh. Message should
+        #  carry useful user-level info from the calling context.
+        self._view_message = view
         cf_roles = [c.cf_role for c in connectivities]
         for requisite in self.REQUIRED:
             if requisite not in cf_roles:
@@ -2500,8 +2834,14 @@ class _MeshConnectivityManagerBase(ABC):
                 raise ValueError(message)
 
         self.ALL = self.REQUIRED + self.OPTIONAL
-        self._members_dict = {member: None for member in self.ALL}
+        self._members_dict: _ManagerMembers[Connectivity | None] = _ManagerMembers(
+            {member: None for member in self.ALL}
+        )
         self.add(*connectivities)
+
+        if self.is_view:
+            view_message = f"Connectivity modifications forbidden: {self._view_message}"
+            self._members_dict.set_mutability(False, message=view_message)
 
     def __eq__(self, other):
         # TBD: this is a minimalist implementation and requires to be revisited
@@ -2533,7 +2873,7 @@ class _MeshConnectivityManagerBase(ABC):
             # Create ".timestamp" if missing, as the "._members" setter requires one.
             # Needing during unpickling, where __setstate__ replaces object __init__.
             self.timestamp = _Timestamp()
-        self._members = state
+        self._members = _ManagerMembers(state)
 
     def __str__(self):
         args = [
@@ -2543,15 +2883,30 @@ class _MeshConnectivityManagerBase(ABC):
 
     @property
     @abstractmethod
-    def all_members(self):
-        return NotImplemented
+    def all_members(self) -> NamedTuple:
+        raise NotImplementedError
 
     @property
-    def _members(self):
+    def is_view(self):
+        return self._view_message is not None
+
+    @property
+    def _members(self) -> _ManagerMembers[Connectivity | None]:
+        if self.is_view:
+            # This is the appropriate moment to check for continued laziness.
+            for member, connectivity in [
+                (m, c) for m, c in self._members_dict.items() if c is not None
+            ]:
+                if not connectivity.has_lazy_indices():
+                    message = (
+                        f"Non-lazy connectivity detected: {member}, which is "
+                        f"inappropriate for a view: {self._view_message}"
+                    )
+                    raise ValueError(message)
         return self._members_dict
 
     @_members.setter
-    def _members(self, value):
+    def _members(self, value: _ManagerMembers[Connectivity | None]):
         self.timestamp.update()
         self._members_dict = value
 
@@ -2567,6 +2922,14 @@ class _MeshConnectivityManagerBase(ABC):
             if not isinstance(connectivity, Connectivity):
                 message = f"Expected Connectivity, got: {type(connectivity)} ."
                 raise TypeError(message)
+
+            if self.is_view and not connectivity.has_lazy_indices():
+                message = (
+                    f"Non-lazy connectivity detected: {connectivity!r}, which is "
+                    f"inappropriate for a view: {self._view_message}"
+                )
+                raise ValueError(message)
+
             cf_role = connectivity.cf_role
             if cf_role not in self.ALL:
                 message = (
@@ -2593,7 +2956,7 @@ class _MeshConnectivityManagerBase(ABC):
                 )
                 raise ValueError(message)
 
-        self._members = proposed_members
+        self._members = _ManagerMembers(proposed_members)
         for c in self._members.values():
             if c is not None and self.timestamp not in c._mesh_timestamps:
                 c._mesh_timestamps.append(self.timestamp)
@@ -2692,6 +3055,117 @@ class _MeshConnectivityManagerBase(ABC):
         result_dict = {k: v for k, v in self._members.items() if id(v) in result_ids}
         return result_dict
 
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        """Identify appropriate Manager for a subsetted list of connectivities.
+
+        Supports :meth:`indexed`. Required because removing connectivities may
+        violate the minimum requirements for the original manager class, so
+        we might need to 'downgrade'. Should be overridden as appropriate in
+        subclasses.
+        """
+        return self.__class__
+
+    def indexed(
+        self,
+        node_bool_index: ArrayLike,
+        edge_indices: Optional[ArrayLike],
+        face_indices: Optional[ArrayLike],
+        mesh_id: int,
+        frozen: bool = False,
+    ) -> "_MeshConnectivityManagerBase":
+        """Return an indexed copy of this connectivity manager.
+
+        Parameters
+        ----------
+        node_bool_index : :obj:`~numpy.typing.ArrayLike`
+            Array of boolean membership, over the full length of original nodes,
+            to support the construction of indexed connectivities.
+        edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
+            The indices to use when indexing member connectivities with edge or
+            face :attr:`~Connectivity.location` respectively.
+        mesh_id : int
+            The ID of the mesh that these indices refer to - used to
+            produce a meaningful read-only error.
+        frozen : bool, default=False
+            If True, the returned connectivity manager will comprise indexed copies of the
+            original connectivities, which do not change if the original connectivities
+            change. If False, the returned connectivity manager will comprise connectivities
+            that are indexed 'views' of the original connectivities, which will change if
+            the original connectivities change; membership of the returned connectivity
+            manager will also be read-only.
+
+        Returns
+        -------
+        _MeshConnectivityManagerBase
+        """
+        indices_dict = {
+            "node": node_bool_index,
+            "edge": edge_indices,
+            "face": face_indices,
+        }
+
+        # Prep an inverse-lookup table (original node id -> new node id) for later
+        #  node indices remapping. ``node_bool_index`` is a fixed-shape boolean
+        #  membership array over the original nodes (see _calculate_node_bool_index).
+        node_mask = node_bool_index
+        al = da if _lazy.is_lazy_data(node_mask) else np
+        node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
+        # Mask unselected nodes - for graceful handling of unexpected scenarios;
+        #  we normally expect downstream indexing to remove these anyway.
+        node_lookup = al.ma.masked_array(node_lookup_data, ~node_mask)
+
+        indexed_members = {}
+        for key, connectivity in self:
+            indexing = None
+            indexed = None
+            if connectivity is not None:
+                indexing = indices_dict[connectivity.location]
+            if indexing is not None:
+                if frozen:
+                    connectivity = connectivity.copy()
+                    indices = connectivity.core_indices()
+                else:
+                    # Lazy = deferred calculation. Changes to the original connectivity
+                    #  will be reflected in the indexed connectivity. Will be primarily
+                    #  used by MeshCoord, which also maintains laziness.
+                    indices = connectivity.lazy_indices()
+                indices_indexed = connectivity.indices_by_location(indices)[indexing]
+
+                # Map node indices in "values" to their new zero-based positions
+                #  via the inverse-lookup table. This creates a contiguous
+                #  collection of nodes, and collapses duplicates.
+                indices_remapped = _index_conn_array(
+                    array=node_lookup,
+                    indexing=indices_indexed,
+                )
+
+                if connectivity.location_axis == 1:
+                    indices_remapped = indices_remapped.T
+                if connectivity.start_index == 1:
+                    indices_remapped += 1
+                indexed = connectivity.copy(indices_remapped)
+            indexed_members[key] = indexed
+
+        if not frozen:
+            mesh_index_set, mesh_xy = [c.__name__ for c in (_MeshIndexSet, MeshXY)]
+            view_message = (
+                f"Connectivities on {mesh_index_set} are only 'views' onto the "
+                f"connectivities of an original {mesh_xy}: id={mesh_id}."
+            )
+        else:
+            view_message = None
+
+        manager_class = self._indexed_manager(
+            [c.cf_role for c in indexed_members.values() if c is not None]
+        )
+        result = manager_class(
+            *[c for c in indexed_members.values() if c is not None], view=view_message
+        )
+
+        return result
+
     def remove(
         self,
         item=None,
@@ -2735,9 +3209,20 @@ class _MeshConnectivityManagerBase(ABC):
         return removal_dict
 
 
-class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
-    REQUIRED = ("edge_node_connectivity",)
-    OPTIONAL = ()
+class _MeshNodeConnectivityManager(_MeshConnectivityManagerBase):
+    """Manager specifically to support node-based _MeshIndexSet i.e. no connectivities."""
+
+    REQUIRED: tuple[str, ...] | tuple[()] = ()
+    OPTIONAL: tuple[str, ...] | tuple[()] = ()
+
+    @property
+    def all_members(self):
+        return ()
+
+
+class _Mesh1DConnectivityManager(_MeshNodeConnectivityManager):
+    REQUIRED: tuple[str, ...] | tuple[()] = ("edge_node_connectivity",)
+    OPTIONAL: tuple[str, ...] | tuple[()] = ()
 
     @property
     def all_members(self):
@@ -2747,10 +3232,26 @@ class _Mesh1DConnectivityManager(_MeshConnectivityManagerBase):
     def edge_node(self):
         return self._members["edge_node_connectivity"]
 
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        result: type["_MeshConnectivityManagerBase"]
+        if "edge_node_connectivity" in cf_roles:
+            result = _Mesh1DConnectivityManager
+        elif len(cf_roles) == 0:
+            result = _MeshNodeConnectivityManager
+        else:
+            message = (
+                f"Unhandled combination of connectivities: {cf_roles}. "
+                f"Cannot determine appropriate connectivity manager class."
+            )
+            raise NotImplementedError(message)
+        return result
 
-class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
-    REQUIRED = ("face_node_connectivity",)
-    OPTIONAL = (
+
+class _Mesh2DConnectivityManager(_Mesh1DConnectivityManager):
+    REQUIRED: tuple[str, ...] | tuple[()] = ("face_node_connectivity",)
+    OPTIONAL: tuple[str, ...] | tuple[()] = (
         "edge_node_connectivity",
         "face_edge_connectivity",
         "face_face_connectivity",
@@ -2793,8 +3294,392 @@ class _Mesh2DConnectivityManager(_MeshConnectivityManagerBase):
     def face_node(self):
         return self._members["face_node_connectivity"]
 
+    def _indexed_manager(
+        self, cf_roles: list[str]
+    ) -> type["_MeshConnectivityManagerBase"]:
+        result: type["_MeshConnectivityManagerBase"]
+        if "face_node_connectivity" in cf_roles:
+            result = _Mesh2DConnectivityManager
+        else:
+            result = super()._indexed_manager(cf_roles)
+        return result
+
 
 Location = Literal["edge", "node", "face"]
+
+
+class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
+    """A sub-mesh defined by an index set into a parent :class:`MeshXY`.
+
+    Represents the UGRID ``cf_role``: ``location_index_set``. This is used
+    to associate a subset of mesh elements (nodes, edges, or faces) with a
+    data variable, e.g. 3 temperature readings associated with faces 0, 4, and
+    15 from the original mesh. Rather than
+    storing its own coordinates or connectivities, a :class:`_MeshIndexSet`
+    references a parent :class:`MeshXY` (:attr:`mesh`), a :attr:`location`
+    (``node`` / ``edge`` / ``face``), and an array of :attr:`indices` that
+    select the relevant elements from that parent mesh.
+
+    Warnings
+    --------
+    This class is not yet stable, hence being marked as private.
+
+    References
+    ----------
+    1. The UGRID Conventions, https://ugrid-conventions.github.io/ugrid-conventions/
+    """
+
+    _NOT_IMPLEMENTED = "_MeshIndexSet_NotImplemented"
+
+    # TODO: implement I/O (iris#6123).
+    # TODO: update the full documentation
+    def __init__(
+        self,
+        indices: ArrayLike,
+        mesh: MeshXY,
+        location: Literal["node", "edge", "face"],
+        standard_name: Optional[str] = None,
+        long_name: Optional[str] = None,
+        var_name: Optional[str] = None,
+        units: Optional[str] = None,
+        attributes: Optional[dict] = None,
+        start_index: Literal[0, 1] = 0,
+    ):
+        """Create a :class:`_MeshIndexSet`.
+
+        Parameters
+        ----------
+        indices : :obj:`~numpy.typing.ArrayLike`
+            Indices selecting elements from ``mesh`` at ``location``.
+        mesh : MeshXY
+            The parent mesh being indexed.
+        location : "node", "edge" or "face"
+            The element type being indexed.
+        standard_name : str, optional
+            CF standard name for the index variable.
+        long_name : str, optional
+            Descriptive name.
+        var_name : str, optional
+            NetCDF variable name.
+        units : str, optional
+            Units; defaults to ``mesh.units``.
+        attributes : dict, optional
+            Arbitrary metadata attributes.
+        start_index : 0 or 1, default=0
+            Index origin; default is ``0``.
+
+        """
+        if np.asanyarray(indices).ndim > 1:
+            raise ValueError(
+                f"`indices` must be 1D. Got {np.asanyarray(indices).ndim} dimensions."
+            )
+
+        if not isinstance(mesh, MeshXY):
+            raise TypeError(f"`mesh` must be `MeshXY`. Got {type(mesh)}")
+
+        if location not in _MeshXYMixin.ELEMENTS:
+            msg = f"`location` must be in {_MeshXYMixin.ELEMENTS}. Got {location}"
+            raise ValueError(msg)
+
+        if location == "face" and mesh.topology_dimension < 2:
+            raise ValueError(
+                f"`location` cannot be 'face' for a mesh with topology_dimension < 2. "
+                f"Got {location} and topology_dimension={mesh.topology_dimension}"
+            )
+
+        if start_index not in [0, 1]:
+            raise ValueError(f"`start_index must be 0 or 1. Got {start_index}")
+
+        self._metadata_manager = metadata_manager_factory(_MeshIndexSetMetadata)
+        # 'structure' is immutable after creation, so assign directly to the
+        #  metadata manager. Desired changes should be made by creating a new
+        #  instance.
+        self._metadata_manager.mesh = mesh
+        self._metadata_manager.location = location
+        self._metadata_manager.start_index = start_index
+
+        _DimensionalMetadata.__init__(
+            self,
+            values=indices,
+            # TODO: for the reviewer: with _MeshIndexSet as its own part of the
+            #  data model, including NetCDF I/O, is it ever appropriate for the
+            #  standard metadata to be inherited from the original MeshXY, or
+            #  calling MeshCoord?
+            standard_name=standard_name,
+            long_name=long_name,
+            var_name=var_name,
+            units=units or mesh.units,
+            attributes=attributes,
+        )
+
+    def __eq__(self, other) -> bool | NotImplementedType:
+        result: bool | NotImplementedType = NotImplemented
+
+        if isinstance(other, _MeshIndexSet):
+            result = self.metadata == other.metadata
+            # Don't check coords or connectivities as these are
+            #  fully derived using metadata.
+            if result:
+                result = iris.util.array_equal(self.indices, other.indices)
+
+        return result
+
+    def __hash__(self) -> int:
+        # Allow use in sets and as dictionary keys, as is done for :class:`iris.cube.Cube`.
+        # See https://github.com/SciTools/iris/pull/1772
+        return hash(id(self))
+
+    def __getstate__(self) -> tuple[ArrayLike, _MeshIndexSetMetadata]:
+        return (
+            self.indices,
+            self._metadata_manager,
+        )
+
+    def __setstate__(self, state: tuple[ArrayLike, _MeshIndexSetMetadata]):
+        indices, metadata_manager = state
+        self._values = indices
+        self._metadata_manager = metadata_manager
+
+    @property
+    def cf_role(self) -> str:
+        return "location_index_set"
+
+    @property
+    def edge_dimension(self) -> str:
+        return self._NOT_IMPLEMENTED
+
+    @property
+    def face_dimension(self) -> str:
+        return self._NOT_IMPLEMENTED
+
+    @property
+    def node_dimension(self) -> str:
+        return self._NOT_IMPLEMENTED
+
+    @property
+    def indices(self) -> ArrayLike:
+        return self._values
+
+    @property
+    def mesh(self) -> MeshXY:
+        return self._metadata_manager.mesh
+
+    @property
+    def location(self) -> Literal["node", "edge", "face"]:
+        return self._metadata_manager.location
+
+    @property
+    def start_index(self) -> Literal[0, 1]:
+        return self._metadata_manager.start_index
+
+    @property
+    def topology_dimension(self) -> int:
+        return self.mesh.topology_dimension
+
+    def _calculate_node_bool_index(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the nodes of self.mesh.
+        # Returns a boolean membership array of fixed shape (n_original_nodes,),
+        #  True where a node is selected.
+        n_original_nodes = self.mesh.node_coords.node_x.shape[0]
+        match self.location:
+            case "node":
+                # self.indices is a user-supplied index array over the nodes; convert
+                #  it to a fixed-shape boolean membership mask.
+                if len(self.indices) > 1:  # Single value index is fine
+                    monotonic, direction = iris.util.monotonic(
+                        self.indices, strict=True, return_direction=True
+                    )
+                    if not (monotonic and direction == 1):
+                        # TODO: boolean 'mask' array precludes non-monotonic indexing,
+                        #  but is only needed to support connectivity construction, and
+                        #  only causes problems for coordinate construction. Separate
+                        #  logic to allow array of integer indices for coordinate
+                        #  construction.
+                        message = (
+                            "Indexing the nodes on a Mesh currently requires strictly "
+                            "increasing indices. Contact the Iris developers if this "
+                            "causes you problems."
+                        )
+                        raise ValueError(message)
+                indices = self.indices
+                al = da if _lazy.is_lazy_data(indices) else np
+                node_mask = al.zeros(n_original_nodes, dtype=bool)
+                node_mask[indices] = True
+                result = node_mask
+            case "edge" | "face":
+                (connectivity,) = [
+                    c
+                    for c in self.mesh.all_connectivities
+                    if (
+                        c is not None
+                        and c.location == self.location
+                        and c.connected == "node"
+                    )
+                ]
+                # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+                # Respect the connectivity's location_axis before selecting the
+                # requested edges/faces. This preserves the connectivity's stored
+                # orientation while still handling transposed connectivities.
+                conn_indices = connectivity.indices_by_location(
+                    connectivity.core_indices()
+                )[self.indices]
+                al = da if _lazy.is_lazy_data(conn_indices) else np
+                # Flatten and drop masked padding (ragged connectivities) by scattering
+                #  membership into a fixed-shape boolean mask.
+                flat = al.ma.filled(conn_indices, -1).flatten()
+                valid = flat >= 0
+                node_mask = al.zeros(n_original_nodes, dtype=bool)
+                node_mask[flat[valid]] = True
+                result = node_mask
+        return result
+
+    def _calculate_edge_indices(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the edges of self.mesh.
+        if self.location == "edge":
+            result = self.indices
+        else:
+            result = None
+        return result
+
+    def _calculate_face_indices(self):
+        # Use self.location and self.indices to work out the indices to use
+        #  when indexing the faces of self.mesh.
+        if self.location == "face":
+            result = self.indices
+        else:
+            result = None
+        return result
+
+    @property
+    def _coord_manager(self) -> _MeshCoordinateManagerBase:
+        mesh_man: _MeshCoordinateManagerBase = self.mesh._coord_manager
+        self_man: Optional[_MeshCoordinateManagerBase] = getattr(
+            self, "_coord_manager_attr", None
+        )
+        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
+        if update:
+            self._coord_manager_attr = mesh_man.indexed(
+                self._calculate_node_bool_index(),
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+                mesh_id=id(self.mesh),
+            )
+            self._coord_manager_attr.timestamp._dt = mesh_man.timestamp._dt
+        return super()._coord_manager
+
+    @_coord_manager.setter
+    def _coord_manager(self, manager):
+        message = (
+            f"Modification of {self.__class__.__name__} is forbidden - this is only a "
+            f"view onto an original MeshXY: id={id(self.mesh)}."
+        )
+        raise NotImplementedError(message)
+
+    @property
+    def _connectivity_manager(self) -> _MeshConnectivityManagerBase:
+        mesh_man: _MeshConnectivityManagerBase = self.mesh._connectivity_manager
+        self_man: Optional[_MeshConnectivityManagerBase] = getattr(
+            self, "_connectivity_manager_attr", None
+        )
+        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
+        if update:
+            self._connectivity_manager_attr = mesh_man.indexed(
+                self._calculate_node_bool_index(),
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+                mesh_id=id(self.mesh),
+            )
+            self._connectivity_manager_attr.timestamp._dt = mesh_man.timestamp._dt
+        return super()._connectivity_manager
+
+    @_connectivity_manager.setter
+    def _connectivity_manager(self, manager):
+        message = (
+            f"Modification of {self.__class__.__name__} is forbidden - this is only a "
+            f"view onto an original MeshXY: id={id(self.mesh)}."
+        )
+        raise NotImplementedError(message)
+
+    def _summary_multiline(self) -> str:
+        # Produce a readable multi-line summary of the MeshIndexSet content.
+        lines = []
+        n_indent = 4
+        indent_str = " " * n_indent
+
+        def line(text, i_indent=0):
+            indent = indent_str * i_indent
+            lines.append(f"{indent}{text}")
+
+        line(f"{self.__class__.__name__} : '{self.name()}'")
+        line(f"mesh: {self.mesh.summary(shorten=True)}", 1)
+        line(f"location: {self.location}", 1)
+        line(f"start_index: {self.start_index}", 1)
+
+        # Phrasing: because "mesh summary" would imply this is summarising a Mesh object.
+        line("mesh info summary:", 1)
+        mesh_summary = super()._summary_multiline()
+        # TODO: a test for this is important since summary stability is not guaranteed.
+        for mesh_line in mesh_summary.splitlines()[1:]:
+            line(mesh_line, 1)
+
+        result = "\n".join(lines)
+        return result
+
+    def cube_dims(self, cube):
+        raise NotImplementedError()
+
+    def as_mesh(self) -> MeshXY:
+        """Return a :class:`MeshXY` representation of this instance.
+
+        The returned instance will no longer be a view onto another
+        :class:`MeshXY`. All connectivities and coordinates will be deep-copied.
+
+        Returns
+        -------
+        MeshXY
+        """
+        indices = [
+            self._calculate_node_bool_index(),
+            self._calculate_edge_indices(),
+            self._calculate_face_indices(),
+        ]
+        Kwargs = TypedDict("Kwargs", {"mesh_id": int, "frozen": bool})
+        kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}
+        coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
+        conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
+        has_edges = hasattr(conn_man, "edge_node")
+        has_faces = hasattr(conn_man, "face_node")
+        if has_faces:
+            topology_dimension = 2
+        elif has_edges:
+            topology_dimension = 1
+        else:
+            message = (
+                f"Cannot create a MeshXY from a MeshIndexSet with no edge or face "
+                f"connectivities. This is a *{self.location}* MeshIndexSet."
+            )
+            raise NotImplementedError(message)
+
+        def _coords_and_axes(
+            location: Literal["node", "edge", "face"],
+        ) -> list[tuple[AuxCoord, str]]:
+            coords = getattr(coord_man, f"{location}_coords")
+            return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
+
+        return MeshXY(
+            topology_dimension=topology_dimension,
+            node_coords_and_axes=_coords_and_axes("node"),
+            connectivities=[conn for conn in conn_man.all_members if conn is not None],
+            edge_coords_and_axes=_coords_and_axes("edge") if has_edges else None,
+            face_coords_and_axes=_coords_and_axes("face") if has_faces else None,
+            standard_name=self.standard_name,
+            long_name=self.long_name,
+            var_name=self.var_name,
+            units=self.units,
+            attributes=self.attributes,
+        )
 
 
 class MeshCoord(AuxCoord):
@@ -2835,9 +3720,9 @@ class MeshCoord(AuxCoord):
 
     def __init__(
         self,
-        mesh,
-        location,
-        axis,
+        mesh: _MeshXYMixin,
+        location: Literal["edge", "node", "face"],
+        axis: Literal["x", "y"],
     ):
         self._last_modified = None
         self._updating = True
@@ -2847,29 +3732,32 @@ class MeshCoord(AuxCoord):
         self._metadata_manager_temp = metadata_manager_factory(MeshCoordMetadata)
 
         # Validate and record the class-specific constructor args.
-        if not isinstance(mesh, MeshXY):
+        if not isinstance(mesh, _MeshXYMixin):
             msg = (  # type: ignore[unreachable]
-                f"'mesh' must be an {MeshXY.__module__}.{MeshXY.__name__}, got {mesh}."
+                f"'mesh' must be an {_MeshXYMixin.__module__}.{_MeshXYMixin.__name__}, got {mesh}."
             )
             raise TypeError(msg)
         # Handled as a readonly ".mesh" property.
         # NOTE: currently *not* included in metadata. In future it might be.
         self._mesh = mesh
 
-        if location not in MeshXY.ELEMENTS:
+        if location not in _MeshXYMixin.ELEMENTS:
             msg = (
                 f"'location' of {location} is not a valid MeshXY location', "
-                f"must be one of {MeshXY.ELEMENTS}."
+                f"must be one of {_MeshXYMixin.ELEMENTS}."
             )
+            raise ValueError(msg)
+        elif isinstance(mesh, _MeshIndexSet) and location != mesh.location:
+            msg = f"'location' of {location} does not match the location of the mesh location: {mesh.location}"
             raise ValueError(msg)
         # Held in metadata, readable as self.location, but cannot set it.
         self._metadata_manager_temp.location = location
 
-        if axis not in MeshXY.AXES:
+        if axis not in _MeshXYMixin.AXES:
             # The valid axes are defined by the MeshXY class.
             msg = (
                 f"'axis' of {axis} is not a valid MeshXY axis', "
-                f"must be one of {MeshXY.AXES}."
+                f"must be one of {_MeshXYMixin.AXES}."
             )
             raise ValueError(msg)
         # Held in metadata, readable as self.axis, but cannot set it.
@@ -3065,17 +3953,77 @@ class MeshCoord(AuxCoord):
         return self._metadata_manager_temp
 
     def __getitem__(self, keys):
-        # Disallow any sub-indexing, permitting *only* "self[:,]".
-        # We *don't* intend here to support indexing as such : the exception is
-        # just sufficient to enable cube slicing, when it does not affect the
-        # mesh dimension.  This works because Cube.__getitem__ passes us keys
-        # "normalised" with iris.util._build_full_slice_given_keys.
-        if keys != (slice(None),):
-            msg = "Cannot index a MeshCoord."
+        if not isinstance(keys, Sequence):
+            msg = f"MeshCoord indexing expected a Slice or 1-dimensional index array. Got: {type(keys)}"
             raise ValueError(msg)
+        elif len(keys) != 1:
+            raise ValueError(
+                f"MeshCoord indexing expected a 1-dimensional index array. Got: {keys}"
+            )
+        elif type(keys[0]) == slice and keys == (slice(None),):
+            return self.copy()
 
-        # Translate "self[:,]" as "self.copy()".
-        return self.copy()
+        from ..experimental.mesh_coord_indexing import SETTING, Options
+
+        def get_index_set():
+            # Assign to help with typing.
+            mesh = self.mesh
+            match mesh:
+                case MeshXY():
+                    (length,) = self.shape
+                    kwargs = dict(
+                        mesh=mesh,
+                        location=self.location,
+                        indices=np.asanyarray(np.arange(length)[keys]),
+                    )
+                case _MeshIndexSet():
+                    # Should not base an index set on another index set - base
+                    #  on the original mesh instead.
+                    mesh_index_set = mesh
+                    kwargs = dict(
+                        mesh=mesh_index_set.mesh,
+                        location=mesh_index_set.location,
+                        # TODO: implement lazy_indices() and core_indices() for _MeshIndexSet
+                        indices=np.asanyarray(mesh_index_set.indices[keys]),
+                    )
+                case _:
+                    message = (
+                        "Unsupported mesh type for MeshCoord indexing. Expected "
+                        f"{MeshXY.__name__} or {_MeshIndexSet.__name__}, got: "
+                        f"{type(self.mesh).__name__}."
+                    )
+                    raise NotImplementedError(message)
+
+            return _MeshIndexSet(**kwargs)
+
+        match SETTING.value:
+            case Options.AUX_COORD:
+                result = AuxCoord.from_coord(self)[keys]
+
+            case Options.NEW_MESH:
+                new_mesh = get_index_set().as_mesh()
+                result = self.__class__(
+                    mesh=new_mesh,
+                    location=self.location,
+                    axis=self.axis,
+                )
+
+            case Options.MESH_INDEX_SET:
+                index_set = get_index_set()
+                result = self.__class__(
+                    mesh=index_set,
+                    location=self.location,
+                    axis=self.axis,
+                )
+
+            case _:
+                message = (
+                    "Unsupported mesh_coord_indexing setting. Expected one of: "
+                    f"{Options.__members__}, got: {SETTING.value}."
+                )
+                raise NotImplementedError(message)
+
+        return result
 
     def update_from_mesh(self):
         """Fetch and recalculate the points and bounds from the relevant coord on the mesh.
@@ -3373,25 +4321,6 @@ class MeshCoord(AuxCoord):
             indices = indices - bounds_connectivity.start_index
 
             node_points = node_coord.core_points()
-            n_nodes = node_points.shape[0]
-            # Choose real/lazy array library, to suit array types.
-            lazy = _lazy.is_lazy_data(indices) or _lazy.is_lazy_data(node_points)
-            al = da if lazy else np
-            # NOTE: Dask cannot index with a multidimensional array, so we
-            # must flatten it and restore the shape later.
-            flat_inds = indices.flatten()
-            # NOTE: the connectivity array can have masked points, but we can't
-            # effectively index with those.  So use a non-masked index array
-            # with "safe" index values, and post-mask the results.
-            flat_inds_nomask = al.ma.filled(flat_inds, -1)
-            # Note: *also* mask any places where the index is out of range.
-            missing_inds = (flat_inds_nomask < 0) | (flat_inds_nomask >= n_nodes)
-            flat_inds_safe = al.where(missing_inds, 0, flat_inds_nomask)
-            # Here's the core indexing operation.
-            # The comma applies all inds-array values to the *first* dimension.
-            bounds = node_points[flat_inds_safe,]
-            # Fix 'missing' locations, and restore the proper shape.
-            bounds = al.ma.masked_array(bounds, missing_inds)
-            bounds = bounds.reshape(indices.shape)
+            bounds = _index_conn_array(node_points, indices)
 
         return points, bounds
