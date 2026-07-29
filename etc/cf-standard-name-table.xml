@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
    <standard_name_table xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://cfconventions.org/Data/schema-files/cf-standard-name-table-2.0.xsd">
-   <version_number>92</version_number>
-   <conventions>CF-StandardNameTable-92</conventions>
-   <first_published>2025-07-24T14:20:46Z</first_published>
-   <last_modified>2025-07-24T14:20:46Z</last_modified>
+   <version_number>94</version_number>
+   <conventions>CF-StandardNameTable-94</conventions>
+   <first_published>2026-06-09T17:23:36Z</first_published>
+   <last_modified>2026-06-09T17:23:36Z</last_modified>
    <institution>Centre for Environmental Data Analysis</institution>
    <contact>support@ceda.ac.uk</contact>
 
@@ -240,7 +240,7 @@
   
    <entry id="amplitude_of_global_average_sea_level_change">
       <canonical_units>m</canonical_units>
-      <description>Global average sea level change is due to change in volume of the water in the ocean, caused by mass and/or density change, or to change in the volume of the ocean basins, caused by tectonics etc. It is sometimes called &quot;eustatic&quot;, which is a term that also has other definitions. It differs from the change in the global average sea surface height relative to the centre of the Earth by the global average vertical movement of the ocean floor. Zero sea level change is an arbitrary level. Amplitude is the magnitude of a wave modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. Because global average sea level change quantifies the change in volume of the world ocean, it is not calculated necessarily by considering local changes in mean sea level.</description>
+      <description>Global average sea level change is due to change in volume of the water in the ocean, caused by mass and/or density change, or to change in the volume of the ocean basins, caused by tectonics etc. It is sometimes called &quot;eustatic&quot;, which is a term that also has other definitions. It differs from the change in the global average sea surface height relative to the centre of the Earth by the global average vertical movement of the ocean floor. Zero sea level change is an arbitrary level. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. Because global average sea level change quantifies the change in volume of the world ocean, it is not calculated necessarily by considering local changes in mean sea level.</description>
    </entry>
   
    <entry id="angle_of_emergence">
@@ -1643,9 +1643,19 @@
       <description>The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-optical_thickness) on traversing the path. A coordinate variable of radiation_wavelength or radiation_frequency can be specified to indicate that the optical thickness applies at specific wavelengths or frequencies. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. To specify the relative humidity and temperature at which the quantity described by the standard name applies, provide scalar coordinate variables with standard names of &quot;relative_humidity&quot; and &quot;air_temperature&quot;. The specification of a physical process by the phrase due_to_process means that the quantity named is a  single term in a sum of terms which together compose the general quantity  named by omitting the phrase.</description>
    </entry>
   
+   <entry id="atmosphere_optical_thickness_due_to_ambient_aerosol_particles_assuming_clear_sky">
+      <canonical_units>1</canonical_units>
+      <description>AOD from aerosols assuming cloud free fraction of gridbox if od550aer is for all-sky. The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-&quot;optical_thickness&quot;) on traversing the path. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. A coordinate variable of radiation_wavelength or radiation_frequency can be specified to indicate that the optical thickness applies at specific wavelengths or frequencies. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. Aerosol particles take up ambient water (a process known as hygroscopic growth) depending on the relative humidity and the composition of the particles. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Phrase &quot;assuming_cloud_free&quot; means the cloud free fraction of the grid box.</description>
+   </entry>
+  
    <entry id="atmosphere_optical_thickness_due_to_ammonium_ambient_aerosol_particles">
       <canonical_units>1</canonical_units>
       <description>The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-&quot;optical_thickness&quot;) on traversing the path. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. To specify the relative humidity and temperature at which the quantity described by the standard name applies, provide scalar coordinate variables with standard names of &quot;relative_humidity&quot; and &quot;air_temperature&quot;. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
+   </entry>
+  
+   <entry id="atmosphere_optical_thickness_due_to_biomass_burning_particulate_matter_ambient_aerosol_particles">
+      <canonical_units>1</canonical_units>
+      <description>Aerosol AOD due to biomass burning aerosol at wavelength of 550 nanometers. The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-optical_thickness) on traversing the path. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. A coordinate variable of radiation_wavelength or radiation_frequency can be specified to indicate that the optical thickness applies at specific wavelengths or frequencies. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
    </entry>
   
    <entry id="atmosphere_optical_thickness_due_to_black_carbon_ambient_aerosol">
@@ -1711,6 +1721,11 @@
    <entry id="atmosphere_optical_thickness_due_to_sea_salt_ambient_aerosol_particles">
       <canonical_units>1</canonical_units>
       <description>The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-optical_thickness) on traversing the path. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. A coordinate variable of radiation_wavelength or radiation_frequency can be specified to indicate that the optical thickness applies at specific wavelengths or frequencies. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
+   </entry>
+  
+   <entry id="atmosphere_optical_thickness_due_to_secondary_particulate_organic_matter_ambient_aerosol_particles">
+      <canonical_units>1</canonical_units>
+      <description>Aerosol AOD due to secondary aerosol at wavelength of 550 nanometers. The optical thickness is the integral along the path of radiation of a volume scattering/absorption/attenuation coefficient. The radiative flux is reduced by a factor exp(-optical_thickness) on traversing the path. The atmosphere optical thickness applies to radiation passing through the entire atmosphere. A coordinate variable of radiation_wavelength or radiation_frequency can be specified to indicate that the optical thickness applies at specific wavelengths or frequencies. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
    </entry>
   
    <entry id="atmosphere_optical_thickness_due_to_stratiform_cloud">
@@ -1948,6 +1963,11 @@
       <description>Height is the vertical distance above the surface. &quot;Canopy&quot; means the vegetative covering over a surface. The canopy is often considered to be the outer surfaces of the vegetation. Plant height and the distribution, orientation and shape of plant leaves within a canopy influence the atmospheric environment and many plant processes within the canopy. Reference: AMS Glossary http://glossary.ametsoc.org/wiki/Canopy.</description>
    </entry>
   
+   <entry id="canopy_resistance_to_evapotranspiration">
+      <canonical_units>s m-1</canonical_units>
+      <description>Canopy resistance to evapotranspiration is the overall resistance to water vapor transfer from a vegetated canopy to the atmosphere. It incorporates the effects of stomatal resistance (vapor transfer from inside the leaf to its surface), leaf boundary layer resistance (vapor transfer from the leaf surface to the surrounding canopy air), and canopy structure (e.g. multiple canopy layers). &quot;Evapotranspiration&quot; means all water vapor fluxes into the atmosphere from the surface: liquid evaporation, sublimation and transpiration. The canopy is often considered to be the outer surfaces of the vegetation. Plant height and the distribution, orientation and shape of plant leaves within a canopy influence the atmospheric environment and many plant processes within the canopy. Reference: AMS Glossary http://glossary.ametsoc.org/wiki/Canopy.</description>
+   </entry>
+  
    <entry id="canopy_resistance_to_ozone_dry_deposition">
       <canonical_units>m-1 s</canonical_units>
       <description>&quot;Canopy&quot; means the plant or vegetation canopy. The &quot;canopy_resistance&quot; is the resistance of a compound to uptake by the vegetation canopy. It varies both with the surface and the chemical species or physical state (gas or particle). Canopy resistance is a function of the canopy stomatal resistance (Rstom), the canopy cuticle resistance (Rcuticle), and the soil resistance (Rsoil). In the case of ozone the uptake by the cuticle is small compared to the uptake through the stomata. Reference: Kerstiens and Lendzian, 1989. This means that the cuticle transfer pathway can be neglected in model parameterizations. Reference: Ganzeveld and Jos Lelieveld , 1995, doi/10.1029/95JD02266/pdf. &quot;Canopy&quot; means the vegetative covering over a surface. The canopy is often considered to be the outer surfaces of the vegetation. Plant height and the distribution, orientation and shape of plant leaves within a canopy influence the atmospheric environment and many plant processes within the canopy. Reference: AMS Glossary http://glossary.ametsoc.org/wiki/Canopy. The chemical formula for ozone is O3. The IUPAC name for ozone is trioxygen.</description>
@@ -2066,6 +2086,16 @@
    <entry id="change_in_sea_surface_height_due_to_change_in_air_pressure">
       <canonical_units>m</canonical_units>
       <description>Sea surface height is a time-varying quantity. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.</description>
+   </entry>
+  
+   <entry id="change_in_sea_surface_height_due_to_earth_tide">
+      <canonical_units>m</canonical_units>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; earth tide means the solid earth tide.</description>
+   </entry>
+  
+   <entry id="change_in_sea_surface_height_due_to_pole_tide">
+      <canonical_units>m</canonical_units>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; the pole tide occurs due to variations in the earth&#x27;s rotation.</description>
    </entry>
   
    <entry id="change_over_time_in_amount_of_ice_and_snow_on_land">
@@ -2258,6 +2288,11 @@
       <description>The maximum force applied as axial strain to an unconfined soil sample before failure.</description>
    </entry>
   
+   <entry id="concentration_of_colored_dissolved_organic_matter_in_sea_water">
+      <canonical_units>1</canonical_units>
+      <description>Also commonly known as Chromophoric Dissolved Organic Matter (CDOM). CDOM plays an important role in the carbon cycling and biogeochemistry of coastal waters. It occurs naturally in aquatic environments primarily as a result of matter released from decaying plant and animal matter, which can enter coastal areas in river run-off containing organic materials leached from soils. Fluorescence intensity is normalised to the integrated Raman scattering peak of pure water from excitation at 350 nm, and therefore reported in Raman Units. The wavelengths that fluorescence is measured at will depend on the sensor used and is stated as a radiation_wavelength attribute (eg. “Ex350nm Em460nm”).</description>
+   </entry>
+  
    <entry id="concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent_mass_fraction_of_quinine_sulfate_dihydrate">
       <canonical_units>1</canonical_units>
       <description>The quantity with standard name concentration_of_colored_dissolved_organic_matter_in_sea_water_expressed_as_equivalent_mass_fraction_of_quinine_sulfate_dihydrate is also commonly known as Chromophoric Dissolved Organic Matter (CDOM). CDOM plays an important role in the carbon cycling and biogeochemistry of coastal waters. It occurs naturally in aquatic environments primarily as a result of tannins released from decaying plant and animal matter, which can enter coastal areas in river run-off containing organic materials leached from soils. When present in high concentrations, it imparts a brown or yellowish color to water. Its presence can negatively impact fish populations by reducing dissolved oxygen concentrations to harmful levels and by releasing nutrients and metals that contaminate the water. Increased understanding of the role of CDOM will further our ability to manage and protect coastal ecosystems. Sensors are commonly calibrated against a 100 parts per billion (ppb) quinine sulfate dihydrate solution, a fluorescent reference standard commonly used with CDOM sensors. CDOM sensors therefore report in &quot;QSDE&quot; (quinine sulfate dihydrate equivalents). It is important to note, however, that CDOM concentrations in QSDE are not necessarily equivalent to the in situ CDOM concentrations in ppb.</description>
@@ -2441,6 +2476,11 @@
    <entry id="diameter_of_ambient_aerosol_particles">
       <canonical_units>m</canonical_units>
       <description>&quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. To specify the relative humidity and temperature at which the quantity described by the standard name applies, provide scalar coordinate variables with standard names of &quot;relative_humidity&quot; and &quot;air_temperature&quot;.</description>
+   </entry>
+  
+   <entry id="difference_between_change_in_soil_moisture_content_and_sum_of_estimated_contributions">
+      <canonical_units>kg m-2</canonical_units>
+      <description>&quot;Water&quot; means water in all phases. &quot;Content&quot; indicates a quantity per unit area. The mass content of water in soil refers to the vertical integral from the surface down to those layer of the soil model which is the lowermost hydrological active layer. For the content between specified levels in the soil, standard names including &quot;content_of_soil_layer&quot; are used. This quantity is defined by the difference between the tendency of the soil moisture content over a specific time period (left hand side of soil water equation) and the sum of the sources and sinks of soil water over the same time period (right hand side of equation). A positive value means that the soil becomes falsely wetter in a model and a negative value means the soil becomes falsely dryer. It should be noted, that the difference has to be calculated excluding climatological layers where the temperature or the soil water content is kept to a climatological value or a value given by another soil layer. It is not possible to exactly summarize all contributions, as numerical discretizations lead to small inconsistencies to the analytical description of budgets. Thus, the contributions are &quot;the best estimate of contributions&quot;.</description>
    </entry>
   
    <entry id="difference_between_sea_surface_skin_temperature_and_sea_surface_subskin_temperature">
@@ -3003,6 +3043,11 @@
       <description>&quot;Eastward&quot; indicates a vector component which is positive when directed eastward (negative westward). Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name upward_air_velocity.)</description>
    </entry>
   
+   <entry id="echo_intensity_test_quality_flag">
+      <canonical_units>1</canonical_units>
+      <description>A quality flag that reports the result of the Echo Intensity test, which checks that beams in adjacent bins do not differ by more than an operator-provided amount. The linkage between the data variable and this variable is achieved using the ancillary_variables attribute. There are standard names for other specific quality tests which take the form of X_quality_flag. Quality information that does not match any of the specific quantities should be given the more general standard name of quality_flag.</description>
+   </entry>
+  
    <entry id="effective_radius_of_cloud_condensed_water_particles_at_cloud_top">
       <canonical_units>m</canonical_units>
       <description>The effective radius of a size distribution of particles, such as aerosols, cloud droplets or ice crystals,is the area weighted mean radius of particle size. It is calculated as the ratio of the third to the second moment of the particle size distribution. &quot;cloud_top&quot; refers to the top of the  highest cloud. &quot;condensed_water&quot; means liquid and ice.</description>
@@ -3116,6 +3161,11 @@
    <entry id="equivalent_thickness_at_stp_of_atmosphere_ozone_content">
       <canonical_units>m</canonical_units>
       <description>&quot;stp&quot; means standard temperature (0 degC) and pressure (101325 Pa). &quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used. The equivalent thickness at STP of a particular constituent of the atmosphere is the thickness of the layer that the gas would occupy if it was separated from the other constituents and gathered together at STP. equivalent_thickness_at_stp_of_atmosphere_ozone_content is usually measured in Dobson Units which are equivalent to 446.2 micromoles m-2 or an equivalent thickness at STP of 10 micrometers. N.B. Data variables containing column content of ozone can be given the standard name of either equivalent_thickness_at_stp_of_atmosphere_ozone_content or atmosphere_mole_content_of_ozone. The latter name is recommended for consistency with mole content names for chemical species other than ozone.</description>
+   </entry>
+  
+   <entry id="equivalent_thickness_at_stp_of_troposphere_ozone_content">
+      <canonical_units>m</canonical_units>
+      <description>&quot;stp&quot; means standard temperature (0 degC) and pressure (101325 Pa). &quot;Content&quot; indicates a quantity per unit area. The &quot;content of troposphere&quot; of a quantity refers to the vertical integral within the atmosphere&#x27;s troposphere. The equivalent thickness at STP of a particular constituent of the atmosphere is the thickness of the layer that the gas would occupy if it was separated from the other constituents and gathered together at STP. equivalent_thickness_at_stp_of_ozone_content_of_atmosphere_layer is usually measured in Dobson Units which are equivalent to 446.2 micromoles m-2 or an equivalent thickness at STP of 10 micrometers.</description>
    </entry>
   
    <entry id="ertel_potential_vorticity">
@@ -3423,6 +3473,11 @@
       <description>Commonly known as aspect, it is the azimuth (in degrees) of a terrain slope, taken as the direction with the greatest downslope change in elevation on the ground (earth) surface. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north.</description>
    </entry>
   
+   <entry id="groundwater_amount">
+      <canonical_units>kg m-2</canonical_units>
+      <description>Groundwater is subsurface water below the depth of the water table. &quot;Water&quot; means water in all phases. &quot;Ground&quot; is either rock or soil.  &quot;Amount&quot; means mass per unit area.</description>
+   </entry>
+  
    <entry id="growth_limitation_of_calcareous_phytoplankton_due_to_solar_irradiance">
       <canonical_units>1</canonical_units>
       <description>&quot;Calcareous phytoplankton&quot; are phytoplankton that produce calcite.  Calcite is a mineral that is a polymorph of calcium carbonate. The chemical formula of calcite is CaCO3. Phytoplankton are algae that grow where there is sufficient light to support photosynthesis. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Irradiance&quot; means the power per unit area (called radiative flux in other standard names), the area being normal to the direction of flow of the radiant energy. Solar irradiance is essential to the photosynthesis reaction and its presence promotes the growth of phytoplankton populations. &quot;Growth limitation due to solar irradiance&quot; means the ratio of the growth rate of a species population in the environment (where the amount of sunlight reaching a location may be limited) to the theoretical growth rate if there were no such limit on solar irradiance.</description>
@@ -3471,6 +3526,11 @@
    <entry id="harmonic_period">
       <canonical_units>s</canonical_units>
       <description>A period is an interval of time, or the time-period of an oscillation.</description>
+   </entry>
+  
+   <entry id="healpix_index">
+      <canonical_units>1</canonical_units>
+      <description>HEALPix (Hierarchical Equal Area isoLatitude Pixelation of a sphere) indices indicate the location of HEALPix cells in latitude and longitude, including their cell bounds. The relationship between HEALPix indices and latitude and longitude is described by the grid_mapping variable with a grid_mapping_name of &quot;healpix&quot;, that must be attached to the data variable as described in Chapter 5.6 of the CF Convention. A HEALPix index variable must have an integer data type.</description>
    </entry>
   
    <entry id="heat_flux_into_sea_water_due_to_flux_adjustment">
@@ -5668,6 +5728,11 @@
       <description>X_binary_mask has 1 where condition X is met, 0 elsewhere. 1 = land, 0 = sea.</description>
    </entry>
   
+   <entry id="land_condensed_water_amount">
+      <canonical_units>kg m-2</canonical_units>
+      <description>Condensed water on land (e.g. terrestrial water storage) includes groundwater, surface water (rivers, lakes, flora, and fauna), surface snow and ice, soil moisture, and canopy water storage. The phrase &quot;condensed_water&quot; means liquid and ice. &quot;Amount&quot; means mass per unit area.</description>
+   </entry>
+  
    <entry id="land_cover_lccs">
       <canonical_units></canonical_units>
       <description>A variable with the standard name of land_cover_lccs contains strings which indicate the nature of the surface, e.g. cropland_..., tree_... . Each string should represent a land cover class constructed using the Land Cover Classification System (LCCS; Di Gregorio A., 2005, UN Land Cover Classification System (LCCS) - Classification concepts and user manual for Software version 2; available at www.fao.org/DOCREP/003/X0596E/X0596e00.htm). String values should represent the classifiers used to define each class.</description>
@@ -6223,6 +6288,11 @@
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical symbol for atomic nitrogen is N.</description>
    </entry>
   
+   <entry id="mass_concentration_of_bathypelagic_fish_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Bathypelagic fish are deep-sea fish that live at depths of about 1000-3000 m in cold and dark waters. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_benzene_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical formula for benzene is C6H6.  Benzene is the simplest aromatic hydrocarbon and has a ring structure consisting of six carbon atoms joined by alternating single and double chemical bonds. Each carbon atom is additionally bonded to one hydrogen atom. There are standard names that refer to aromatic_compounds as a group, as well as those for individual species.</description>
@@ -6261,16 +6331,6 @@
    <entry id="mass_concentration_of_biological_taxon_expressed_as_wet_weight_in_sea_water">
       <canonical_units>g m-3</canonical_units>
       <description>Total biomass or biomass per age group in years (standard birth date January 1) of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m3. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
-   </entry>
-  
-   <entry id="mass_concentration_of_biological_taxon_of_immature_individuals_expressed_as_wet_weight_in_sea_water">
-      <canonical_units>g m-3</canonical_units>
-      <description>Biomass of immature individuals of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m3. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. Immature individuals refer to individuals that have not yet reached sexual maturity.</description>
-   </entry>
-  
-   <entry id="mass_concentration_of_biological_taxon_of_mature_individuals_expressed_as_wet_weight_in_sea_water">
-      <canonical_units>g m-3</canonical_units>
-      <description>Biomass of mature individuals of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m3. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. Mature individuals refer to individuals that have reached sexual maturity.</description>
    </entry>
   
    <entry id="mass_concentration_of_biomass_burning_dry_aerosol_particles_in_air">
@@ -6483,6 +6543,11 @@
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Copper means copper in all chemical forms, commonly referred to as &quot;total copper&quot;. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
    </entry>
   
+   <entry id="mass_concentration_of_demersal_fish_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Demersal fish spend a fraction of their lives in close association with the seabed, feeding primarily on bottom organisms, they can carry out diel vertical migrations (e.g. cod). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_diadinoxanthin_in_sea_water">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula of diadinoxanthin is C40H54O3. The equivalent term in the NERC P01 Parameter Usage Vocabulary may be found at http://vocab.nerc.ac.uk/collection/P01/current/DIADXXXX/2/.</description>
@@ -6526,6 +6591,11 @@
    <entry id="mass_concentration_of_dinitrogen_pentoxide_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical formula for dinitrogen pentoxide is N2O5.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_dissolved_ope_in_sea_water">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. OPE means organophosphate esters with the general structure O=P(OR)3. OPE  is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
    </entry>
   
    <entry id="mass_concentration_of_divinyl_chlorophyll_a_in_sea_water">
@@ -6623,6 +6693,11 @@
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical symbol for mercury is Hg.</description>
    </entry>
   
+   <entry id="mass_concentration_of_gaseous_ope_in_air">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. OPE means organophosphate esters with the general structure O=P(OR)3. OPE is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_halon1202_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula for Halon1202 is CBr2F2. The IUPAC name for Halon1202 is dibromo(difluoro)methane.</description>
@@ -6713,6 +6788,11 @@
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical formula for hypochlorous acid is HOCl.</description>
    </entry>
   
+   <entry id="mass_concentration_of_immature_individuals_of_biological_taxon_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Immature individuals refer to individuals that have not yet reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_inorganic_bromine_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Inorganic bromine&quot;, sometimes referred to as Bry, describes a family of chemical species which result from the degradation of source gases containing bromine (halons, methyl bromide, VSLS) and natural inorganic bromine sources such as volcanoes, sea salt and other aerosols. &quot;Inorganic bromine&quot; is the term used in standard names for all species belonging to the family that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. Standard names that use the term &quot;brox&quot; are used for quantities that contain all inorganic bromine species except HBr and BrONO2.</description>
@@ -6736,6 +6816,11 @@
    <entry id="mass_concentration_of_isoprene_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula for isoprene is CH2=C(CH3)CH=CH2. The IUPAC name for isoprene is 2-methylbuta-1,3-diene. Isoprene is a member of the group of hydrocarbons known as terpenes. There are standard names for the terpene group as well as for some of the individual species.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_large_pelagic_fish_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Large pelagic fish (&gt;250 g) live in waters near the surface or throughout the water column (e.g., tuna, marlin, pelagic sharks). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
    </entry>
   
    <entry id="mass_concentration_of_lead_in_sea_floor_sediment">
@@ -6768,6 +6853,11 @@
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Manganese means manganese in all chemical forms, commonly referred to as &quot;total manganese&quot;. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
    </entry>
   
+   <entry id="mass_concentration_of_mature_individuals_of_biological_taxon_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Mature individuals refer to individuals that have reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_mercury_dry_aerosol_particles_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y. A chemical species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. Aerosol particles take up ambient water (a process known as hygroscopic growth) depending on the relative humidity and the composition of the particles. &quot;Dry aerosol particles&quot; means aerosol particles without any water uptake.</description>
@@ -6776,6 +6866,11 @@
    <entry id="mass_concentration_of_mercury_in_sea_floor_sediment">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Mercury means mercury in all chemical forms, commonly referred to as &quot;total mercury&quot;. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_mesopelagic_fish_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Mesopelagic fish live in the mesopelagic or “Twilight Zone” at depths of about 200-1000 m, where light is limited. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
    </entry>
   
    <entry id="mass_concentration_of_methane_in_air">
@@ -6898,6 +6993,16 @@
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. &quot;Noy&quot; describes a family of chemical species. The family usually includes atomic nitrogen (N), nitrogen monoxide (NO), nitrogen dioxide (NO2), dinitrogen pentoxide (N2O5), nitric acid (HNO3), peroxynitric acid (HNO4), bromine nitrate (BrONO2) , chlorine nitrate (ClONO2) and organic nitrates (most notably peroxyacetyl nitrate, sometimes referred to as PAN, (CH3COO2NO2)). The list of individual species that are included in a quantity having a group chemical standard name can vary between models.  Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. The phrase &#x27;expressed_as&#x27; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
    </entry>
   
+   <entry id="mass_concentration_of_ope_in_dry_aerosol_particles_in_air">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. OPE means organophosphate esters with the general structure O=P(OR)3. OPE is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. Aerosol particles take up ambient water (a process known as hygroscopic growth) depending on the relative humidity and the composition of the particles. &quot;Dry aerosol particles&quot; means aerosol particles without any water uptake.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_ope_in_particulate_organic_matter_in_sea_water">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. OPE means organophosphate esters with the general structure O=P(OR)3. OPE  is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. Particulate organic matter (also called POM) means organic matter that does not pass through a reference filter pore size. &quot;Organic matter&quot; means material which is derived from living organisms or from their biological activities. Organic matter consists of carbon-based compounds.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_organic_carbon_in_dry_aerosol_particles_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. Aerosol particles take up ambient water (a process known as hygroscopic growth) depending on the relative humidity and the composition of the particles. &quot;Dry aerosol particles&quot; means aerosol particles without any water uptake. Chemically, &quot;organic carbon aerosol&quot; refers to the carbonaceous fraction of particulate matter contained in any of the vast number of compounds where carbon is chemically combined with hydrogen and other elements like O, S, N, P, Cl, etc. In measurements of carbonaceous aerosols, organic carbon samples may also include some inorganic carbon compounds, whose mass is neglected and assumed to be distributed between the elemental and organic carbon components of the aerosol particles. Reference: Petzold, A., Ogren, J. A., Fiebig, M., Laj, P., Li, S.-M., Baltensperger, U., Holzer-Popp, T., Kinne, S., Pappalardo, G., Sugimoto, N., Wehrli, C., Wiedensohler, A., and Zhang, X.-Y.: Recommendations for reporting &quot;black carbon&quot; measurements, Atmos. Chem. Phys., 13, 8365–8379, https://doi.org/10.5194/acp-13-8365-2013, 2013.</description>
@@ -6951,6 +7056,11 @@
    <entry id="mass_concentration_of_particulate_organic_matter_dry_aerosol_particles_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y. A chemical species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. Aerosol takes up ambient water (a process known as hygroscopic growth) depending on the relative humidity and the composition of the aerosol. &quot;Dry aerosol particles&quot; means aerosol particles without any water uptake. The term &quot;particulate_organic_matter_dry_aerosol&quot; means all particulate organic matter dry aerosol except elemental carbon. It is the sum of primary_particulate_organic_matter_dry_aerosol and secondary_particulate_organic_matter_dry_aerosol.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_particulate_organic_matter_expressed_as_carbon_in_sea_water">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. Particulate means suspended solids of all sizes. Particulate organic matter (also called POM) means organic matter that does not pass through a reference filter pore size. &quot;Organic matter&quot; means material which is derived from living organisms or from their biological activities. Organic matter consists of carbon-based compounds.</description>
    </entry>
   
    <entry id="mass_concentration_of_peridinin_in_sea_water">
@@ -7163,6 +7273,11 @@
       <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Silver means silver in all chemical forms, commonly referred to as &quot;total silver&quot;. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
    </entry>
   
+   <entry id="mass_concentration_of_small_pelagic_fish_expressed_as_wet_weight_in_sea_water">
+      <canonical_units>g m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Small pelagic fish (&lt;=250 g) live in waters near the surface or throughout the water column (e.g., herring, sardines, anchovies). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="mass_concentration_of_sulfate_ambient_aerosol_particles_in_air">
       <canonical_units>kg m-3</canonical_units>
       <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y. A chemical species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles. To specify the relative humidity and temperature at which the quantity described by the standard name applies, provide scalar coordinate variables with standard names of &quot;relative_humidity&quot; and &quot;air_temperature&quot;.</description>
@@ -7180,7 +7295,17 @@
   
    <entry id="mass_concentration_of_suspended_matter_in_sea_water">
       <canonical_units>kg m-3</canonical_units>
-      <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;.</description>
+      <description>Mass concentration means mass per unit volume and is used in the construction mass_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. Suspended matter may also be called suspended sediment. Suspended sediment means undissolved solid particles.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_suspended_matter_in_sea_water_at_sea_floor">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;.  Suspended matter may also be called suspended sediment. Suspended sediment means undissolved solid particles. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. The *parameter* at the sea floor is that adjacent to the ocean bottom, which would be the deepest grid cell in an ocean model and within the benthic boundary layer for measurements.</description>
+   </entry>
+  
+   <entry id="mass_concentration_of_suspended_matter_in_sea_water_at_sea_water_surface">
+      <canonical_units>kg m-3</canonical_units>
+      <description>&quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;.  Suspended matter may also be called suspended sediment. Suspended sediment means undissolved solid particles. The phrase &quot;sea water surface&quot; means the upper boundary of the liquid portion of an ocean or sea, including the boundary to floating ice if present.</description>
    </entry>
   
    <entry id="mass_concentration_of_terpenes_in_air">
@@ -7248,21 +7373,6 @@
       <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Vegetation&quot; means any living plants e.g. trees, shrubs, grass. &quot;Litter&quot; is dead plant material in or above the soil. The &quot;soil content&quot; of a quantity refers to the vertical integral from the surface down to the bottom of the soil model. Examples of &quot;forestry and agricultural products&quot; are paper, cardboard, furniture, timber for construction, biofuels and food for both humans and livestock. Models that simulate land use changes have one or more pools of carbon that represent these products in order to conserve carbon and allow its eventual release into the atmosphere, for example, when the products decompose in landfill sites. &quot;C&quot; means the element carbon and &quot;14C&quot; is the radioactive isotope &quot;carbon-14&quot;, having six protons and eight neutrons and used in radiocarbon dating.</description>
    </entry>
   
-   <entry id="mass_content_of_biological_taxon_expressed_as_wet_weight_in_sea_water">
-      <canonical_units>g m-2</canonical_units>
-      <description>Total biomass or biomass per age group in years (standard birth date January 1) of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m2. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
-   </entry>
-  
-   <entry id="mass_content_of_biological_taxon_of_immature_individuals_expressed_as_wet_weight_in_sea_water">
-      <canonical_units>g m-2</canonical_units>
-      <description>Biomass of immature individuals of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m2. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. Immature individuals refer to individuals that have not yet reached sexual maturity.</description>
-   </entry>
-  
-   <entry id="mass_content_of_biological_taxon_of_mature_individuals_expressed_as_wet_weight_in_sea_water">
-      <canonical_units>g m-2</canonical_units>
-      <description>Biomass of mature individuals of various fish species as identified by their taxonomic name (e.g. Sardina pilchardus) in gram per m2. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. Mature individuals refer to individuals that have reached sexual maturity.</description>
-   </entry>
-  
    <entry id="mass_content_of_carbon_in_vegetation_and_litter_and_soil_and_forestry_and_agricultural_products">
       <canonical_units>kg m-2</canonical_units>
       <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Vegetation&quot; means any living plants e.g. trees, shrubs, grass. &quot;Litter&quot; is dead plant material in or above the soil. It is distinct from coarse wood debris. The precise distinction between &quot;fine&quot; and &quot;coarse&quot; is model dependent. The &quot;soil content&quot; of a quantity refers to the vertical integral from the surface down to the bottom of the soil model. For the content between specified levels in the soil, standard names including &quot;content_of_soil_layer&quot; are used. Examples of &quot;forestry and agricultural products&quot; are paper, cardboard, furniture, timber for construction, biofuels and food for both humans and livestock. Models that simulate land use changes have one or more pools of carbon that represent these products in order to conserve carbon and allow its eventual release into the atmosphere, for example, when the products decompose in landfill sites.</description>
@@ -7305,7 +7415,7 @@
   
    <entry id="mass_content_of_water_in_soil_layer_defined_by_root_depth">
       <canonical_units>kg m-2</canonical_units>
-      <description>&quot;Content&quot; indicates a quantity per unit area. The content of a soil layer is the vertical integral of the specified quantity within the layer. The quantity with standard name mass_content_of_water_in_soil_layer_defined_by_root_depth is the vertical integral between the surface and the depth to which plant roots penetrate. A coordinate variable or scalar coordinate variable with standard name root_depth can be used to specify the extent of the layer. &quot;Water&quot; means water in all phases.</description>
+      <description>&quot;Content&quot; indicates a quantity per unit area. The content of a soil layer is the vertical integral of the specified quantity within the layer. The quantity with standard name mass_content_of_water_in_soil_layer_defined_by_root_depth is the vertical integral between the surface and the depth to which plant roots penetrate (the “root zone”). A coordinate variable or scalar coordinate variable with standard name root_depth can be used to specify the extent of the layer. &quot;Water&quot; means water in all phases.</description>
    </entry>
   
    <entry id="mass_content_of_water_vapor_containing_17O_in_atmosphere_layer">
@@ -8215,7 +8325,7 @@
   
    <entry id="mass_fraction_of_water_in_soil_layer_defined_by_root_depth">
       <canonical_units>1</canonical_units>
-      <description>&quot;Mass fraction&quot; is used in the construction &quot;mass_fraction_of_X_in_Y&quot;, where X is a material constituent of Y. It means the ratio of the mass of X to the mass of Y (including X). A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Layer&quot; means any layer with upper and lower boundaries that have constant values in some vertical coordinate. The root depth is maximum depth of soil reached by plant roots, from which they can extract moisture. Depth is the vertical distance below the surface. A coordinate variable or scalar coordinate variable with standard name root_depth can be used to specify the extent of the layer. &quot;Water&quot; means water in all phases.</description>
+      <description>&quot;Mass fraction&quot; is used in the construction &quot;mass_fraction_of_X_in_Y&quot;, where X is a material constituent of Y. It means the ratio of the mass of X to the mass of Y (including X). A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Layer&quot; means any layer with upper and lower boundaries that have constant values in some vertical coordinate. The root depth is the maximum depth of soil reached by plant roots, from which they can extract moisture (the “root zone”). Depth is the vertical distance below the surface. A coordinate variable or scalar coordinate variable with standard name root_depth can be used to specify the extent of the layer. &quot;Water&quot; means water in all phases.</description>
    </entry>
   
    <entry id="mass_fraction_of_xylene_in_air">
@@ -8883,6 +8993,16 @@
       <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Organic phosphorus&quot; means phosphorus in carbon compounds. The equivalent term in the NERC P01 Parameter Usage Vocabulary may be found at http://vocab.nerc.ac.uk/collection/P01/current/ORGPDSZZ/4/.</description>
    </entry>
   
+   <entry id="mole_concentration_of_dissolved_pcb_in_sea_water">
+      <canonical_units>mol m-3</canonical_units>
+      <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. PCB means polychlorinated biphenyls with the general formula C(12)H(10-n)Cl(n), where n is a number of chlorine atoms. PCB is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
+   </entry>
+  
+   <entry id="mole_concentration_of_dissolved_pfas_in_sea_water">
+      <canonical_units>mol m-3</canonical_units>
+      <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. PFAS means per- and polyfluoroalkyl substances. For Perfluoroalkyl substances the general structure is C(n)F(2n+1)-R and for Polyfluoroalkyl substances the general structure is C(n)F(2n+1-x)H(x)-R, with R being a functional group. PFAS is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
+   </entry>
+  
    <entry id="mole_concentration_of_dissolved_phosphorus_in_sea_water">
       <canonical_units>mol m-3</canonical_units>
       <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. Phosphorus means phosphorus in all chemical forms, commonly referred to as &quot;total phosphorus&quot;. The equivalent term in the NERC P01 Parameter Usage Vocabulary may be found at http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
@@ -9308,6 +9428,11 @@
       <description>Mole concentration means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Particulate organic nitrogen&quot; means the sum of all organic nitrogen compounds that are solid, or bound to solid particles. &quot;Organic nitrogen&quot;, when measured, always refers to all nitrogen incorporated in carbon compounds in the sample. Models may use the term to refer to nitrogen contained in specific groups of organic compounds in which case the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
    </entry>
   
+   <entry id="mole_concentration_of_pcb_in_particulate_organic_matter_in_sea_water">
+      <canonical_units>mol m-3</canonical_units>
+      <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. PCB means polychlorinated biphenyls with the general formula C(12)H(10-n)Cl(n), where n is a number of chlorine atoms. PCB is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. Particulate organic matter (also called POM) means organic matter that does not pass through a reference filter pore size. &quot;Organic matter&quot; means material which is derived from living organisms or from their biological activities. Organic matter consists of carbon-based compounds.</description>
+   </entry>
+  
    <entry id="mole_concentration_of_peroxyacetyl_nitrate_in_air">
       <canonical_units>mol m-3</canonical_units>
       <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula for peroxyacetyl nitrate, sometimes referred to as PAN, is CH3COO2NO2.  The IUPAC name for peroxyacetyl nitrate is nitroethaneperoxoate.</description>
@@ -9316,6 +9441,11 @@
    <entry id="mole_concentration_of_peroxynitric_acid_in_air">
       <canonical_units>mol m-3</canonical_units>
       <description>Mole concentration means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction mole_concentration_of_X_in_Y, where X is a material constituent of Y.  A chemical species denoted by X may be described by a single term such as &#x27;nitrogen&#x27; or a phrase such as &#x27;nox_expressed_as_nitrogen&#x27;. The chemical formula for peroxynitric acid, sometimes referred to as PNA, is HO2NO2.</description>
+   </entry>
+  
+   <entry id="mole_concentration_of_pfas_in_particulate_organic_matter_in_sea_water">
+      <canonical_units>mol m-3</canonical_units>
+      <description>&quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. PFAS means per- and polyfluoroalkyl substances. For Perfluoroalkyl substances the general structure is C(n)F(2n+1)-R and for Polyfluoroalkyl substances the general structure is C(n)F(2n+1-x)H(x)-R, with R being a functional group. PFAS is the term used in standard names to describe the group of chemical species having this common structure that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. Particulate organic matter (also called POM) means organic matter that does not pass through a reference filter pore size. &quot;Organic matter&quot; means material which is derived from living organisms or from their biological activities. Organic matter consists of carbon-based compounds.</description>
    </entry>
   
    <entry id="mole_concentration_of_phosphate_in_sea_water">
@@ -9468,9 +9598,39 @@
       <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Organic carbon&quot; describes a family of chemical species and is the term used in standard names for all species belonging to the family that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
    </entry>
   
+   <entry id="mole_content_of_organic_mercury_in_macrobenthos">
+      <canonical_units>mol m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Organic mercury&quot; describes a family of chemical species in which mercury atoms covalently bonded to carbon-containing groups, forming organomercury compounds. &quot;Macrobenthos&quot; refers to benthic organisms visible to the naked eye.</description>
+   </entry>
+  
+   <entry id="mole_content_of_organic_mercury_in_sea_floor_sediment_mixed_layer">
+      <canonical_units>mol m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Organic mercury&quot; describes a family of chemical species in which mercury atoms are covalently bonded to carbon-containing groups, forming organomercury compounds. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed. The sea floor sediment mixed layer describes the uppermost layer (approximately 5-10 cm) of sediments, where sediments are likely to be resuspended.</description>
+   </entry>
+  
+   <entry id="mole_content_of_oxidized_mercury_in_macrobenthos">
+      <canonical_units>mol m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Oxidized mercury&quot; refers to mercury in its ionic form, which may be directly emitted to the environment or formed through the oxidation of elemental mercury. &quot;Macrobenthos&quot; refers to benthic organisms visible to the naked eye.</description>
+   </entry>
+  
+   <entry id="mole_content_of_oxidized_mercury_in_sea_floor_sediment_mixed_layer">
+      <canonical_units>mol m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Oxidized mercury&quot; refers to mercury in its ionic form, which may be directly emitted to the environment or formed through the oxidation of elemental mercury. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed. The sea floor sediment mixed layer describes the uppermost layer (approximately 5-10 cm) of sediments, where sediments are likely to be resuspended.</description>
+   </entry>
+  
    <entry id="mole_content_of_ozone_in_atmosphere_layer">
       <canonical_units>mol m-2</canonical_units>
       <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;content_of_X_in_atmosphere_layer&quot; refers to the vertical integral between two specified levels in the atmosphere. &quot;Layer&quot; means any layer with upper and lower boundaries that have constant values in some vertical coordinate. There must be a vertical coordinate variable indicating the extent of the layer(s). If the layers are model layers, the vertical coordinate can be model_level_number, but it is recommended to specify a physical coordinate (in a scalar or auxiliary coordinate variable) as well. For the mole content integrated from the surface to the top of the atmosphere, standard names including &quot;atmosphere_mole_content_of_X&quot; are used. The chemical formula for ozone is O3. &quot;mole_content_of_ozone_in_atmosphere_layer&quot; is usually measured in Dobson Units which are equivalent to 446.2 micromoles m-2. N.B. Data variables containing column content of ozone can be given the standard name of either equivalent_thickness_at_stp_of_atmosphere_ozone_content or atmosphere_mole_content_of_ozone. The latter name is recommended for consistency with mole content names for chemical species other than ozone.</description>
+   </entry>
+  
+   <entry id="mole_flux_of_carbon_burial_below_sea_floor_sediment">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. Burial means that the material is buried in the sediment and will not be reinjected in the ocean. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed.</description>
+   </entry>
+  
+   <entry id="mole_flux_of_nitrogen_out_of_sea_floor_sediment_due_to_denitrification">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The surface called &quot;sea floor&quot; means the lower boundary of the ocean. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Denitrification&quot; is the conversion of nitrate into gaseous compounds such as nitric oxide, nitrous oxide and molecular nitrogen which are then emitted to the atmosphere.</description>
    </entry>
   
    <entry id="mole_fraction_of_acetaldehyde_in_air">
@@ -10244,6 +10404,16 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>The construction &quot;moles_of_X_per_unit_mass_in_Y&quot; is also called &quot;molality&quot; of X in Y, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula for nitrous oxide is N2O. The chemical formula for nitrous oxide is N2O. The equivalent term in the NERC P01 Parameter Usage Vocabulary may be found at http://vocab.nerc.ac.uk/collection/P01/current/DN2OZZ01/.</description>
    </entry>
   
+   <entry id="moles_of_organic_mercury_per_unit_mass_of_phytoplankton_expressed_as_carbon">
+      <canonical_units>mol kg-1</canonical_units>
+      <description>The construction &quot;moles_of_X_per_unit_mass_in_Y&quot; is also called &quot;molality&quot; of X in Y, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Organic mercury&quot; describes a family of chemical species in which mercury atoms are covalently bonded to carbon-containing groups, forming organomercury compounds (e.g., methylmercury (MeHg), monomethylmercury (MMHg), dimethylmercury (DMHg), ethylmercury (EtHg)).  Phytoplankton are algae that grow where there is sufficient light to support photosynthesis. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="moles_of_organic_mercury_per_unit_mass_of_zooplankton_expressed_as_carbon">
+      <canonical_units>mol kg-1</canonical_units>
+      <description>The construction &quot;moles_of_X_per_unit_mass_in_Y&quot; is also called &quot;molality&quot; of X in Y, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Organic mercury&quot; describes a family of chemical species in which mercury atoms are covalently bonded to carbon-containing groups, forming organomercury compounds (e.g., methylmercury (MeHg), monomethylmercury (MMHg), dimethylmercury (DMHg), ethylmercury (EtHg)). &quot;Zooplankton&quot; means the total zooplankton population, with components such as mesozooplankton, microzooplankton and miscellaneous zooplankton. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="moles_of_oxygen_per_unit_mass_in_sea_water">
       <canonical_units>mol kg-1</canonical_units>
       <description>moles_of_X_per_unit_mass_inY is also called &quot;molality&quot; of X in Y, where X is a material constituent of Y.</description>
@@ -10342,6 +10512,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="net_downward_shortwave_flux_in_air_assuming_clear_sky">
       <canonical_units>W m-2</canonical_units>
       <description>A phrase assuming_condition indicates that the named quantity is the value which would obtain if all aspects of the system were unaltered except for the assumption of the circumstances specified by the condition. &quot;shortwave&quot; means shortwave radiation. &quot;Downward&quot; indicates a vector component which is positive when directed downward (negative upward). Net downward radiation is the difference between radiation from above (downwelling) and radiation from below (upwelling). In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.</description>
+   </entry>
+  
+   <entry id="net_ecosystem_production_expressed_as_carbon_per_unit_area">
+      <canonical_units>kg m-2 s-1</canonical_units>
+      <description>Net ecosystem production means gross primary production (the rate of synthesis of biomass from inorganic precursors) by autotrophs (&quot;producers&quot;), for example, photosynthesis in plants or phytoplankton, minus respiration of biomass by both autotrophs and heterotrophs. Reference: Lovett et al., 2006 (https://doi.org/10.1007/s10021-005-0036-3). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
    </entry>
   
    <entry id="net_primary_mole_productivity_of_biomass_expressed_as_carbon_by_calcareous_phytoplankton">
@@ -10834,6 +11009,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. &quot;Aerosol&quot; means the system of suspended liquid or solid particles in air (except cloud droplets) and their carrier gas, the air itself. &quot;Ambient_aerosol&quot; means that the aerosol is measured or modelled at the ambient state of pressure, temperature and relative humidity that exists in its immediate environment. &quot;Ambient aerosol particles&quot; are aerosol particles that have taken up ambient water through hygroscopic growth. The extent of hygroscopic growth depends on the relative humidity and the composition of the particles.</description>
    </entry>
   
+   <entry id="number_concentration_of_bathypelagic_fish_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Bathypelagic fish are deep-sea fish that live at depths of about 1000-3000 m in cold and dark waters.</description>
+   </entry>
+  
    <entry id="number_concentration_of_biological_taxon_in_sea_water">
       <canonical_units>m-3</canonical_units>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_lsid to provide a  machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
@@ -10879,6 +11059,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. The phrase &quot;convective_liquid_water_cloud_top&quot; refers to the top of the highest convective liquid water cloud. Convective cloud is that produced by the convection schemes in an atmosphere model.  &quot;Cloud liquid water&quot; refers to the liquid phase of cloud water. A diameter of 0.2 mm has been suggested as an upper limit to the size of drops that shall be regarded as cloud drops; larger drops fall rapidly enough so that only very strong updrafts can sustain them. Any such division is somewhat arbitrary, and active cumulus clouds sometimes contain cloud drops much larger than this. Reference: AMS Glossary http://glossary.ametsoc.org/wiki/Cloud_drop.</description>
    </entry>
   
+   <entry id="number_concentration_of_demersal_fish_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Demersal fish spend a fraction of their lives in close association with the seabed, feeding primarily on bottom organisms, they can carry out diel vertical migrations (e.g. cod).</description>
+   </entry>
+  
    <entry id="number_concentration_of_ice_crystals_in_air">
       <canonical_units>m-3</canonical_units>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume.</description>
@@ -10887,6 +11072,26 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="number_concentration_of_ice_crystals_in_air_at_ice_cloud_top">
       <canonical_units>m-3</canonical_units>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. cloud_top refers to the top of the highest cloud.</description>
+   </entry>
+  
+   <entry id="number_concentration_of_immature_individuals_of_biological_taxon_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Immature individuals refer to individuals that have not yet reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="number_concentration_of_large_pelagic_fish_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Large pelagic fish (&gt;250 g) live in waters near the surface or throughout the water column (e.g., tuna, marlin, pelagic sharks).</description>
+   </entry>
+  
+   <entry id="number_concentration_of_mature_individuals_of_biological_taxon_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Mature individuals refer to individuals that have reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="number_concentration_of_mesopelagic_fish_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Mesopelagic fish live in the mesopelagic or “Twilight Zone” at depths of about 200-1000 m, where light is limited.</description>
    </entry>
   
    <entry id="number_concentration_of_nucleation_mode_ambient_aerosol_particles_in_air">
@@ -10899,6 +11104,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. The chemical formula for ozone is O3. The IUPAC name for ozone is trioxygen.</description>
    </entry>
   
+   <entry id="number_concentration_of_plastic_items_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. A plastic item is a synthetic polymer item, usually originating from the fragmentation of larger plastic debris.</description>
+   </entry>
+  
    <entry id="number_concentration_of_pm10_aerosol_particles_in_air">
       <canonical_units>m-3</canonical_units>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. &quot;Pm10 aerosol&quot; means atmospheric particulate compounds with an aerodynamic diameter of less than or equal to 10 micrometers. To specify the relative humidity and temperature at which the particle size applies, provide scalar coordinate variables with the standard names of, respectively, &quot;relative_humidity&quot; and &quot;air_temperature&quot;.</description>
@@ -10907,6 +11117,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="number_concentration_of_pm2p5_aerosol_particles_in_air">
       <canonical_units>m-3</canonical_units>
       <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. &quot;Pm2p5 aerosol&quot; means atmospheric particulate compounds with an aerodynamic diameter of less than or equal to 2.5 micrometers. To specify the relative humidity and temperature at which the particle size applies, provide scalar coordinate variables with the standard names of, respectively, &quot;relative_humidity&quot; and &quot;air_temperature&quot;.</description>
+   </entry>
+  
+   <entry id="number_concentration_of_small_pelagic_fish_in_sea_water">
+      <canonical_units>m-3</canonical_units>
+      <description>&quot;Number concentration&quot; means the number of particles or other specified objects per unit volume. Small pelagic fish (&lt;=250 g) live in waters near the surface or throughout the water column (e.g., herring, sardines, anchovies).</description>
    </entry>
   
    <entry id="number_concentration_of_stratiform_cloud_liquid_water_particles_at_stratiform_liquid_water_cloud_top">
@@ -11049,6 +11264,21 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>Friction, leading to the dissipation of kinetic energy, arises in ocean models as a result of the viscosity of sea water.  Generally, the  lateral (xy) viscosity is given a large value to maintain the numerical stability of the model.  In contrast, the vertical viscosity is usually much smaller. The specification of a physical process by the phrase due_to_process means that the quantity named is a  single term in a sum of terms which together compose the general quantity  named by omitting the phrase.</description>
    </entry>
   
+   <entry id="ocean_mass_content_of_bathypelagic_fish_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Bathypelagic fish are deep-sea fish that live at depths of about 1000-3000 m in cold and dark waters. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_biological_taxon_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_demersal_fish_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Demersal fish spend a fraction of their lives in close association with the seabed, feeding primarily on bottom organisms, they can carry out diel vertical migrations (e.g. cod). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="ocean_mass_content_of_dissolved_inorganic_carbon">
       <canonical_units>kg m-2</canonical_units>
       <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;ocean content&quot; of a quantity refers to the vertical integral from the surface to the bottom of the ocean. &quot;Dissolved inorganic carbon&quot; describes a family of chemical species in solution, including carbon dioxide, carbonic acid and the carbonate and bicarbonate anions. &quot;Dissolved inorganic carbon&quot; is the term used in standard names for all species belonging to the family that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
@@ -11059,9 +11289,39 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Content&quot; indicates a quantity per unit area. Organic carbon describes a family of chemical species and is the term used in standard names for all species belonging to the family that are represented within a given model. The list of individual species that are included in a quantity having a group chemical standard name can vary between models. Where possible, the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
    </entry>
   
+   <entry id="ocean_mass_content_of_immature_individuals_of_biological_taxon_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Immature individuals refer to individuals that have not yet reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_large_pelagic_fish_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Large pelagic fish (&gt;250 g) live in waters near the surface or throughout the water column (e.g., tuna, marlin, pelagic sharks). The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_mature_individuals_of_biological_taxon_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Mature individuals refer to individuals that have reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_mesopelagic_fish_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Mesopelagic fish live in the mesopelagic or “Twilight Zone” at depths of about 200-1000 m, where light is limited. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
    <entry id="ocean_mass_content_of_particulate_organic_matter_expressed_as_carbon">
       <canonical_units>kg m-2</canonical_units>
       <description>&quot;Content&quot; indicates a quantity per unit area. The phrase &quot;expressed_as&quot; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_small_pelagic_fish_expressed_as_wet_weight">
+      <canonical_units>g m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Small pelagic fish (&lt;=250 g) live in waters near the surface or throughout the water column (e.g., herring, sardines, anchovies).  The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A.</description>
+   </entry>
+  
+   <entry id="ocean_mass_content_of_zooplankton_expressed_as_carbon">
+      <canonical_units>kg m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. The &quot;ocean content&quot; of a quantity refers to the vertical integral from the surface to the bottom of the ocean. The phrase &quot;expressed_as&quot; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. &quot;Zooplankton&quot; means the total zooplankton population, with components such as mesozooplankton, microzooplankton and miscellaneous zooplankton.</description>
    </entry>
   
    <entry id="ocean_mass_x_transport">
@@ -11167,6 +11427,51 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="ocean_montgomery_potential">
       <canonical_units>m2 s-2</canonical_units>
       <description>Montgomery potential is defined as M = ap + gz, where a = specific volume, p = pressure, g = gravity, and z=depth. It represents an exact streamfunction on specific volume anomaly surfaces.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_bathypelagic_fish">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Bathypelagic fish are deep-sea fish that live at depths of about 1000-3000 m in cold and dark waters.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_biological_taxon">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area.  &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_demersal_fish">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Demersal fish spend a fraction of their lives in close association with the seabed, feeding primarily on bottom organisms, they can carry out diel vertical migrations (e.g. cod).</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_immature_individuals_of_biological_taxon">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Immature individuals refer to individuals that have not yet reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_large_pelagic_fish">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Large pelagic fish (&gt;250 g) live in waters near the surface or throughout the water column (e.g., tuna, marlin, pelagic sharks).</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_mature_individuals_of_biological_taxon">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Mature individuals refer to individuals that have reached sexual maturity. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_mesopelagic_fish">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Mesopelagic fish live in the mesopelagic or “Twilight Zone” at depths of about 200-1000 m, where light is limited.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_plastic_items">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area.  The &quot;ocean content&quot; of a quantity refers to the vertical integral from the surface to the bottom of the ocean. A plastic item is a synthetic polymer item, usually originating from the fragmentation of larger plastic debris.</description>
+   </entry>
+  
+   <entry id="ocean_number_content_of_small_pelagic_fish">
+      <canonical_units>m-2</canonical_units>
+      <description>&quot;Content&quot; indicates a quantity per unit area. Small pelagic fish (&lt;=250 g) live in waters near the surface or throughout the water column (e.g., herring, sardines, anchovies).</description>
    </entry>
   
    <entry id="ocean_obukhov_length">
@@ -11484,6 +11789,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Photolysis&quot; is a chemical reaction in which a chemical compound is broken down by photons. The &quot;reaction rate&quot; is the rate at which the reactants of a chemical reaction form the products. The phrase &quot;atomic_singlet_oxygen&quot; means the singlet D state, an excited state, of the oxygen atom. The chemical formula for ozone is O3. The IUPAC name for ozone is trioxygen.  The combined photolysis rate of ozone to both excited and ground state oxygen atoms has the standard name photolysis_rate_of_ozone.</description>
    </entry>
   
+   <entry id="photosynthesizing_vegetation_area_fraction">
+      <canonical_units>1</canonical_units>
+      <description>Fraction of vegetation that is photosynthesizing (i.e. not dormant). Typically this will be green vegetation. Reference: Gutman &amp; Ignatov, 1998 (https://doi.org/10.1080/014311698215333). &quot;Vegetation&quot; means any living plants e.g. trees, shrubs, grass. The term &quot;plants&quot; refers to the kingdom of plants in the modern classification which excludes fungi. Plants are autotrophs i.e. &quot;producers&quot; of biomass using carbon obtained from carbon dioxide. &quot;Area fraction&quot; is the fraction of a grid cell&#x27;s horizontal area that has some characteristic of interest. It is evaluated as the area of interest divided by the grid cell area, or if the cell_methods restricts the evaluation to some portion of that grid cell (e.g. &quot;where sea_ice&quot;), then it is the area of interest divided by the area of the identified portion. It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction.</description>
+   </entry>
+  
    <entry id="physiological_equivalent_temperature">
       <canonical_units>degree_C</canonical_units>
       <description>Physiological equivalent temperature (PET) is an equivalent air temperature of the actual thermal condition. It is the air temperature of a reference condition without wind and solar radiation at which the heat budget of the human body is balanced with the same core and skin temperature. Note that PET here is not potential evapotranspiration. It is strongly recommended that a variable with this standard name should have a units_metadata attribute, with one of the values &quot;on-scale&quot; or &quot;difference&quot;, whichever is appropriate for the data, because it is essential to know whether the temperature is on-scale (meaning relative to the origin of the scale indicated by the units) or refers to temperature differences (implying that the origin of the temperature scale is irrevelant), in order to convert the units correctly (cf. https://cfconventions.org/cf-conventions/cf-conventions.html#temperature-units).</description>
@@ -11782,6 +12092,22 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="probability_distribution_of_wind_from_direction_over_time">
       <canonical_units>1</canonical_units>
       <description>The construction &quot;probability_distribution_of_X_over_Z&quot; means that the data variable is a number in the range 0.0-1.0 for each range of X, where X varies over Z. The data variable should have an axis for X. Wind is defined as a two-dimensional (horizontal) air velocity vector, with no vertical component. (Vertical motion in the atmosphere has the standard name &quot;upward_air_velocity&quot;). The phrase &quot;from_direction&quot; is used in the construction X_from_direction and indicates the direction from which the velocity vector of X is coming. The direction is a bearing in the usual geographical sense, measured positive clockwise from due north. In meteorological reports, the direction of the wind vector is usually (but not always) given as the direction from which it is blowing (&quot;wind_from_direction&quot;) (westerly, northerly, etc.). In other contexts, such as atmospheric modelling, it is often natural to give the direction in the usual manner of vectors as the heading or the direction to which it is blowing (&quot;wind_to_direction&quot;) (eastward, southward, etc.).</description>
+   </entry>
+  
+   <entry id="probability_of_mass_concentration_of_volcanic_ash_in_air_above_threshold">
+      <canonical_units>1</canonical_units>
+      <description>&quot;probability_of_X_above_threshold&quot; means the chance that X is above the threshold.
+Space and time coordinates must be used to indicate the area and time to which a probability applies. &quot;Mass concentration&quot; means mass per unit volume and is used in the construction &quot;mass_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. &quot;Volcanic ash&quot; means the fine-grained products of explosive volcanic eruptions, such as minerals or crystals, older fragmented rock (e.g. andesite) and glass. Particles within a volcanic ash cloud have diameters less than 2 mm. &quot;Volcanic ash&quot; does not include non-volcanic dust. It must have a coordinate variable or scalar coordinate variable with the standard name of mass_concentration_of_volcanic_ash_in_air to supply the threshold(s).</description>
+   </entry>
+  
+   <entry id="probability_of_occurence_of_biological_taxon">
+      <canonical_units>1</canonical_units>
+      <description>&quot;probability_of_X&quot; means the chance that X is true or of at least one occurrence of X. Space and time coordinates must be used to indicate the area and time-interval to which a probability applies. &quot;Biological taxon&quot; is a name or other label identifying an organism or a group of organisms as belonging to a unit of classification in a hierarchical taxonomy. There must be an auxiliary coordinate variable with standard name biological_taxon_name to identify the taxon in human readable format and optionally an auxiliary coordinate variable with standard name biological_taxon_identifier to provide a machine-readable identifier. See Section 6.1.2 of the CF convention (version 1.8 or later) for information about biological taxon auxiliary coordinate variables.</description>
+   </entry>
+  
+   <entry id="probability_of_sea_ice_area_fraction_above_threshold">
+      <canonical_units>1</canonical_units>
+      <description>Sea ice area fraction is area of the sea surface occupied by sea ice. It is also called &quot;sea ice concentration&quot;. The phrase &quot;probability_of_X&quot; means the chance that X is true, or of at least one occurrence of X. Space and time coordinates must be used to indicate the area and time-interval to which a probability applies. &quot;Sea ice&quot; means all ice floating in the sea which has formed from freezing sea water, rather than by other processes such as calving of land ice to form icebergs. &quot;Area fraction&quot; is the fraction of a grid cell&#x27;s horizontal area that has some characteristic of interest. It is evaluated as the area of interest divided by the grid cell area, or if the cell_methods restricts the evaluation to some portion of that grid cell (e.g. &quot;where sea_ice&quot;), then it is the area of interest divided by the area of the identified portion. It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction. The area threshold value must be specified by supplying a coordinate variable or scalar coordinate variable with the standard name of sea_ice_area_fraction.</description>
    </entry>
   
    <entry id="product_of_air_temperature_and_specific_humidity">
@@ -14164,6 +14490,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>Sea ice freeboard is the height of the sea-ice upper surface above the water surface. &quot;Sea ice&quot; means all ice floating in the sea which has formed from freezing sea water, rather than by other processes such as calving of land ice to form icebergs.</description>
    </entry>
   
+   <entry id="sea_ice_internal_pressure">
+      <canonical_units>N m-1</canonical_units>
+      <description>Sea ice internal pressure is the effective pressure associated with the internal stress field of the sea ice cover, representing the instantaneous internal mechanical state of the ice and not its material strength. &quot;Sea ice&quot; means all ice floating in the sea which has formed from freezing sea water, rather than by other processes such as calving of land ice to form icebergs.</description>
+   </entry>
+  
    <entry id="sea_ice_mass">
       <canonical_units>kg</canonical_units>
       <description>The horizontal domain over which sea ice mass is calculated is described by the associated coordinate variables and coordinate bounds or by a coordinate variable or scalar coordinate variable with the standard name of &quot;region&quot; supplied according to section 6.1.1 of the CF conventions.&quot;Sea ice&quot; means all ice floating in the sea which has formed from freezing sea water, rather than by other processes such as calving of land ice to form icebergs.</description>
@@ -14341,27 +14672,27 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
   
    <entry id="sea_surface_height_amplitude_due_to_earth_tide">
       <canonical_units>m</canonical_units>
-      <description>The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; earth tide means the solid earth tide.</description>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; earth tide means the solid earth tide.</description>
    </entry>
   
    <entry id="sea_surface_height_amplitude_due_to_equilibrium_ocean_tide">
       <canonical_units>m</canonical_units>
-      <description>The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; equilibrium ocean tide refers to the long period ocean tide.</description>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; equilibrium ocean tide refers to the long period ocean tide.</description>
    </entry>
   
    <entry id="sea_surface_height_amplitude_due_to_geocentric_ocean_tide">
       <canonical_units>m</canonical_units>
-      <description>The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; geocentric ocean tide means the sum total of ocean tide and load tide.</description>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; geocentric ocean tide means the sum total of ocean tide and load tide.</description>
    </entry>
   
    <entry id="sea_surface_height_amplitude_due_to_non_equilibrium_ocean_tide">
       <canonical_units>m</canonical_units>
-      <description>The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; non equilibrium ocean tide refers to the long period ocean tide.</description>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; non equilibrium ocean tide refers to the long period ocean tide.</description>
    </entry>
   
    <entry id="sea_surface_height_amplitude_due_to_pole_tide">
       <canonical_units>m</canonical_units>
-      <description>The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; the pole tide occurs due to variations in the earth&#x27;s rotation.</description>
+      <description>&quot;Sea surface height&quot; is a time-varying quantity. Amplitude is the magnitude of a periodic variation modelled by a sinusoidal function. A coordinate variable of harmonic_period should be used to specify the period of the sinusoidal wave. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are a significant contributor to the observed sea surface height; the pole tide occurs due to variations in the earth&#x27;s rotation.</description>
    </entry>
   
    <entry id="sea_surface_height_bias_due_to_sea_surface_roughness">
@@ -15289,6 +15620,41 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Particulate means suspended solids of all sizes.</description>
    </entry>
   
+   <entry id="sinking_mole_flux_at_sea_floor_of_calcite_expressed_as_carbon_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Calcite is a mineral that is a polymorph of calcium carbonate. The chemical formula of calcite is CaCO3. Standard names also exist for aragonite, another polymorph of calcium carbonate.</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_sea_floor_of_particulate_iron_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Iron means iron in all chemical forms, commonly referred to as &quot;total iron&quot;. Particulate iron means iron which is solid or which is bound to solid particles that does not pass through a reference filter pore size, including insoluble Fe(III).</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_sea_floor_of_particulate_organic_matter_expressed_as_carbon_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Particulate organic matter (also called POM) means organic matter that does not pass through a reference filter pore size. &quot;Organic matter&quot; means material which is derived from living organisms or from their biological activities. Organic matter consists of carbon-based compounds.</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_sea_floor_of_particulate_organic_nitrogen_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. &quot;Particulate organic nitrogen&quot; means the sum of all organic nitrogen compounds, which are solid or which are bound to solid particles. &quot;Organic nitrogen&quot;, when measured, always refers to all nitrogen incorporated in carbon compounds in the sample. Models may use the term to refer to nitrogen contained in specific groups of organic compounds in which case the data variable should be accompanied by a complete description of the species represented, for example, by using a comment attribute.</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_sea_floor_of_particulate_organic_phosphorus_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Particulate organic phosphorus means organic phosphorus that does not pass through a reference filter pore size. &quot;Organic phosphorus&quot; means phosphorus in carbon compounds.</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_sea_floor_of_particulate_silicon_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Particulate silicon means the sum of all organic (biogenic) and inorganic silicon that does not pass through a reference filter pore size.</description>
+   </entry>
+  
+   <entry id="sinking_mole_flux_at_the_sea_floor_of_aragonite_expressed_as_carbon_in_sea_water">
+      <canonical_units>mol m-2 s-1</canonical_units>
+      <description>The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. &quot;Sinking&quot; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Aragonite is a mineral that is a polymorph of calcium carbonate. The chemical formula of aragonite is CaCO3. Standard names also exist for calcite, another polymorph of calcium carbonate.</description>
+   </entry>
+  
    <entry id="sinking_mole_flux_of_aragonite_expressed_as_carbon_in_sea_water">
       <canonical_units>mol m-2 s-1</canonical_units>
       <description>The phrase &#x27;expressed_as&#x27; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics.   &#x27;Sinking&#x27; is the gravitational settling of particulate matter suspended in a liquid. A sinking flux is positive downwards and is calculated relative to the movement of the surrounding fluid. Aragonite is a mineral that is a polymorph of calcium carbonate. The chemical formula of aragonite is CaCO3. Standard names also exist for calcite, another polymorph of calcium carbonate.</description>
@@ -15762,6 +16128,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="steric_change_in_sea_surface_height">
       <canonical_units>m</canonical_units>
       <description>&quot;Sea surface height&quot; is a time-varying quantity. The steric change in sea surface height is the change in height that a water column of standard temperature zero degrees Celsius and practical salinity S=35.0 would undergo when its temperature and salinity are changed to the observed values. The sum of the quantities with standard names thermosteric_change_in_sea_surface_height and halosteric_change_in_sea_surface_height is the total steric change in the water column height, which has the standard name of steric_change_in_sea_surface_height. The sum of the quantities with standard names sea_water_mass_per_unit_area_expressed_as_thickness and steric_change_in_sea_surface_height is the total thickness of the sea water column.</description>
+   </entry>
+  
+   <entry id="stomatal_resistance_to_transpiration_assuming_fully_open">
+      <canonical_units>s m-1</canonical_units>
+      <description>The resistance to vapor flow through leaf stomata when stomata are most open. Stomata are small pores on the leaf surface that open to allow gas exchange with the atmosphere. Stomatal resistance represents the inhibition imposed by the stomata on vapor flow from inside to just outside the leaf. Reference: Shuttleworth, 2012 (https://doi.org/10.1002/9781119951933). Transpiration is the process by which liquid water in plant stomata is transferred as water vapor into the atmosphere. A phrase &quot;assuming_condition&quot; indicates that the named quantity is the value which would obtain if all aspects of the system were unaltered except for the assumption of the circumstances specified by the condition.</description>
    </entry>
   
    <entry id="storm_motion_speed">
@@ -16457,6 +16828,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="surface_net_downward_mass_flux_of_carbon_dioxide_expressed_as_14C_due_to_all_land_processes">
       <canonical_units>kg m-2 s-1</canonical_units>
       <description>The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Downward&quot; indicates a vector component which is positive when directed downward (negative upward). Net downward radiation is the difference between radiation from above (downwelling) and radiation from below (upwelling). In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The phrase &quot;expressed_as&quot; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. The chemical formula for carbon dioxide is CO2. &quot;C&quot; means the element carbon and &quot;14C&quot; is the radioactive isotope &quot;carbon-14&quot;, having six protons and eight neutrons and used in radiocarbon dating. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;All land processes&quot; means plant and soil respiration, photosynthesis, animal grazing, crop harvesting, natural fires and anthropogenic land use change.  &quot;Anthropogenic land use change&quot; means human changes to land, excluding forest regrowth. It includes fires ignited by humans for the purpose of land use change and the processes of eventual disposal and decomposition of wood products such as paper, cardboard, furniture and timber for construction.</description>
+   </entry>
+  
+   <entry id="surface_net_downward_mass_flux_of_carbon_dioxide_expressed_as_carbon">
+      <canonical_units>kg m-2 s-1</canonical_units>
+      <description>This quantity is the flux of carbon from the atmosphere to the land surface, as well as riverine carbon exported from the land to the ocean. The surface called &quot;surface&quot; means the lower boundary of the atmosphere. &quot;Downward&quot; indicates a vector component which is positive when directed downward (negative upward). Net downward mass flux is the difference between downward_mass_flux and upward_mass_flux. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. The chemical formula for carbon dioxide is CO2.</description>
    </entry>
   
    <entry id="surface_net_downward_mass_flux_of_carbon_dioxide_expressed_as_carbon_due_to_all_land_processes">
@@ -18424,6 +18800,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>A velocity is a vector quantity. &quot;y&quot; indicates a vector component along the grid y-axis, positive with increasing y. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. Tides are the rise and fall of sea levels caused by the combined effects of the gravitational forces exerted by the Moon and the Sun, and the rotation of the Earth. This rise in water level is accompanied by a horizontal movement of water called the tidal current.</description>
    </entry>
   
+   <entry id="surface_skin_temperature">
+      <canonical_units>K</canonical_units>
+      <description>The skin temperature, also called radiative temperature, is the temperature of a surface calculated as a function of emissivity and emitted (longwave) radiation using the Stefan-Boltzmann law for a gray-body. Reference: Jin et al., 1997 (https://doi.org/10.1175/1520-0442(1997)010%3C1505:ACOCBS%3E2.0.CO;2). The surface called &quot;surface&quot; means the emitting surface (the soil, snow/ice, and/or vegetation canopy).</description>
+   </entry>
+  
    <entry id="surface_snow_amount">
       <canonical_units>kg m-2</canonical_units>
       <description>&quot;Amount&quot; means mass per unit area. Surface snow amount refers to the amount on the solid ground or on surface ice cover, but excludes, for example, falling snowflakes and snow on plants.</description>
@@ -18487,6 +18868,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="surface_snow_sublimation_amount">
       <canonical_units>kg m-2</canonical_units>
       <description>Surface snow refers to the snow on the solid ground or on surface ice cover, but excludes, for example, falling snowflakes and snow on plants. &quot;Amount&quot; means mass per unit area. Sublimation is the conversion of solid into vapor.</description>
+   </entry>
+  
+   <entry id="surface_snow_sublimation_flux">
+      <canonical_units>kg m-2 s-1</canonical_units>
+      <description>Surface snow refers to the snow on the solid ground or on surface ice cover, but excludes, for example, falling snowflakes and snow on plants. Sublimation is the conversion of solid into vapor. In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The surface called &quot;surface&quot; means the lower boundary of the atmosphere.</description>
    </entry>
   
    <entry id="surface_snow_sublimation_heat_flux">
@@ -19402,6 +19788,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="tendency_of_atmosphere_mass_content_of_carbon_dioxide_expressed_as_carbon_due_to_emission_from_fossil_fuel_combustion">
       <canonical_units>kg m-2 s-1</canonical_units>
       <description>&quot;Content&quot; indicates a quantity per unit area.  The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including content_of_atmosphere_layer are used.  The phrase &#x27;expressed_as&#x27; is used in the construction A_expressed_as_B, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. The specification of a physical process by the phrase due_to_process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase.  &quot;tendency_of_X&quot; means derivative of X with respect to time.  &quot;Emission&quot; means emission from a primary source located anywhere within the atmosphere, including at the lower boundary (i.e. earth&#x27;s surface). &quot;Emission&quot; is a process entirely distinct from &quot;re-emission&quot; which is used in some standard names. The chemical formula for carbon dioxide is CO2. Fossil fuel combustion includes cement production and flaring of natural gas.</description>
+   </entry>
+  
+   <entry id="tendency_of_atmosphere_mass_content_of_carbon_dioxide_expressed_as_carbon_due_to_emissions_and_surface_fluxes">
+      <canonical_units>kg m-2 s-1</canonical_units>
+      <description>The phrase &quot;tendency_of_X&quot; means derivative of X with respect to time. &quot;Content&quot; indicates a quantity per unit area. The &quot;atmosphere content&quot; of a quantity refers to the vertical integral from the surface to the top of the atmosphere. For the content between specified levels in the atmosphere, standard names including &quot;content_of_atmosphere_layer&quot; are used. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Emission&quot; means emission from a primary source located anywhere within the atmosphere, including at the lower boundary (i.e. the surface of the earth). &quot;Emission&quot; is a process entirely distinct from &quot;re-emission&quot; which is used in some standard names.  In accordance with common usage in geophysical disciplines, &quot;flux&quot; implies per unit area, called &quot;flux density&quot; in physics. The surface called &quot;surface&quot; means the lower boundary of the atmosphere. The chemical formula for carbon dioxide is CO2.</description>
    </entry>
   
    <entry id="tendency_of_atmosphere_mass_content_of_carbon_monoxide_due_to_dry_deposition">
@@ -21427,6 +21818,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="tendency_of_atmosphere_mole_concentration_of_nitrous_oxide_due_to_chemical_destruction">
       <canonical_units>mol m-3 s-1</canonical_units>
       <description>The phrase &quot;tendency_of_X&quot; means derivative of X with respect to time. Mole concentration means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical or biological species denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The chemical formula for nitrous oxide is N2O. The specification of a physical process by the phrase &quot;due_to_&quot; process means that the quantity named is a single term in a sum of terms which together compose the general quantity named by omitting the phrase. &quot;Chemical destruction&quot; means the result of all chemical reactions within the medium (here, atmosphere) that remove a certain amount of a particular species from the medium.</description>
+   </entry>
+  
+   <entry id="tendency_of_atmosphere_mole_concentration_of_nox_expressed_as_nitrogen">
+      <canonical_units>mol m-3 s-1</canonical_units>
+      <description>The phrase &quot;tendency_of_X&quot; means derivative of X with respect to time. &quot;Mole concentration&quot; means number of moles per unit volume, also called &quot;molarity&quot;, and is used in the construction &quot;mole_concentration_of_X_in_Y&quot;, where X is a material constituent of Y. A chemical species or biological group denoted by X may be described by a single term such as &quot;nitrogen&quot; or a phrase such as &quot;nox_expressed_as_nitrogen&quot;. The phrase &quot;expressed_as&quot; is used in the construction &quot;A_expressed_as_B&quot;, where B is a chemical constituent of A. It means that the quantity indicated by the standard name is calculated solely with respect to the B contained in A, neglecting all other chemical constituents of A. &quot;Nox&quot; means a combination of two radical species containing nitrogen and oxygen NO+NO2.</description>
    </entry>
   
    <entry id="tendency_of_atmosphere_mole_concentration_of_ozone_due_to_chemical_destruction">
@@ -24444,6 +24840,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
       <description>&quot;Volume fraction&quot; is used in the construction &quot;volume_fraction_of_X_in_Y&quot;, where X is a material constituent of Y. It is evaluated as the volume of X divided by the volume of Y (including X). It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction. The phrase &quot;frozen_water&quot; means ice.</description>
    </entry>
   
+   <entry id="volume_fraction_of_liquid_water_in_soil_pores">
+      <canonical_units>1</canonical_units>
+      <description>The quantity with standard name volume_fraction_of_liquid_water_in_soil_pores is the ratio of the volume of liquid water in soil pores to the volume of the pores themselves. It represents the degree of saturation, on a scale of 0 to 1, where 0 = completely dry and 1 = saturated.</description>
+   </entry>
+  
    <entry id="volume_fraction_of_oxygen_in_sea_floor_sediment_pore_water">
       <canonical_units></canonical_units>
       <description>&quot;Volume fraction&quot; is used in the construction &quot;volume_fraction_of_X_in_Y&quot;, where X is a material constituent of Y. It is evaluated as the volume of X divided by the volume of Y (including X). It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction.  &quot;Sea floor sediment&quot; is sediment deposited at the sea bed. &quot;Water&quot; means water in all phases.</description>
@@ -24457,6 +24858,11 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
    <entry id="volume_fraction_of_pelite_in_sea_floor_sediment">
       <canonical_units>1</canonical_units>
       <description>&quot;Volume fraction&quot; is used in the construction volume_fraction_of_X_in_Y, where X is a material constituent of Y. It is evaluated as the volume of X divided by the volume of Y (including X). It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction. &quot;Sea floor sediment&quot; is sediment deposited at the sea bed. &quot;Pelite&quot; is sediment less than 0.063 millimeters in diameter.</description>
+   </entry>
+  
+   <entry id="volume_fraction_of_ridged_ice_in_sea_ice">
+      <canonical_units>1</canonical_units>
+      <description>&quot;Volume fraction&quot; is used in the construction &quot;volume_fraction_of_X_in_Y&quot;, where X is a material constituent of Y. It is evaluated as the volume of X divided by the volume of Y (including X). It may be expressed as a fraction, a percentage, or any other dimensionless representation of a fraction. Sea ice &quot;ridging&quot; occurs in rough sea conditions. The motion of the sea surface can cause areas of sea ice to deform and fold resulting in ridged upper and lower surfaces. The ridges can be as much as twenty metres thick if thick ice is deformed. &quot;Sea ice&quot; means all ice floating in the sea which has formed from freezing sea water, rather than by other processes such as calving of land ice to form icebergs. This quantity specifically refers to the volume of ice that is ridged or dynamically deformed, divided by the total volume of sea ice that yields the fraction.</description>
    </entry>
   
    <entry id="volume_fraction_of_sand_in_soil">
@@ -25043,11 +25449,6 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
   
   <alias id="grid_eastward_wind">
     <entry_id>x_wind</entry_id>
-     
-  </alias>
-  
-  <alias id="concentration_of_suspended_matter_in_sea_water">
-    <entry_id>mass_concentration_of_suspended_matter_in_sea_water</entry_id>
      
   </alias>
   
@@ -27929,6 +28330,36 @@ http://vocab.nerc.ac.uk/collection/P01/current/TPHSDSZZ/6/.</description>
   
   <alias id="vegetation_carbon_content">
     <entry_id>vegetation_mass_content_of_carbon</entry_id>
+     
+  </alias>
+  
+  <alias id="mass_concentration_of_biological_taxon_of_immature_individuals_expressed_as_wet_weight_in_sea_water">
+    <entry_id>mass_concentration_of_immature_individuals_of_biological_taxon_expressed_as_wet_weight_in_sea_water</entry_id>
+     
+  </alias>
+  
+  <alias id="mass_content_of_biological_taxon_expressed_as_wet_weight_in_sea_water">
+    <entry_id>ocean_mass_content_of_biological_taxon_expressed_as_wet_weight</entry_id>
+     
+  </alias>
+  
+  <alias id="mass_content_of_biological_taxon_of_mature_individuals_expressed_as_wet_weight_in_sea_water">
+    <entry_id>ocean_mass_content_of_mature_individuals_of_biological_taxon_expressed_as_wet_weight</entry_id>
+     
+  </alias>
+  
+  <alias id="mass_content_of_biological_taxon_of_immature_individuals_expressed_as_wet_weight_in_sea_water">
+    <entry_id>ocean_mass_content_of_immature_individuals_of_biological_taxon_expressed_as_wet_weight</entry_id>
+     
+  </alias>
+  
+  <alias id="mass_concentration_of_biological_taxon_of_mature_individuals_expressed_as_wet_weight_in_sea_water">
+    <entry_id>mass_concentration_of_mature_individuals_of_biological_taxon_expressed_as_wet_weight_in_sea_water</entry_id>
+     
+  </alias>
+  
+  <alias id="concentration_of_suspended_matter_in_sea_water">
+    <entry_id>mass_concentration_of_suspended_matter_in_sea_water</entry_id>
      
   </alias>
  
