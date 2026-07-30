@@ -203,3 +203,68 @@ class TestExtractRegionThreshold:
             self.cube, [-15, -90, 15, 90], threshold=1.0
         )
         assert result_high.shape[1] <= result_low.shape[1]
+
+
+class TestMakeCellCheck:
+    """Unit tests for the :func:`iris.util._make_cell_check` helper.
+
+    Tests the constraint-path logic independently of CRS transforms.
+    """
+
+    from iris.coords import Cell
+
+    def _cell(self, point, bound=None):
+        from iris.coords import Cell
+
+        return Cell(point=point, bound=bound)
+
+    def test_point_only_cell_inclusive(self):
+        check = iris.util._make_cell_check(0, 10, True, True, False, 0)
+        assert check(self._cell(0))
+        assert check(self._cell(5))
+        assert check(self._cell(10))
+        assert not check(self._cell(-1))
+        assert not check(self._cell(11))
+
+    def test_point_only_cell_exclusive_min(self):
+        check = iris.util._make_cell_check(0, 10, False, True, False, 0)
+        assert not check(self._cell(0))
+        assert check(self._cell(5))
+        assert check(self._cell(10))
+
+    def test_point_only_cell_exclusive_max(self):
+        check = iris.util._make_cell_check(0, 10, True, False, False, 0)
+        assert check(self._cell(0))
+        assert check(self._cell(5))
+        assert not check(self._cell(10))
+
+    def test_bounded_cell_overlaps(self):
+        # Cells whose bounds overlap the region should be included
+        check = iris.util._make_cell_check(0, 10, True, True, False, 0)
+        assert check(self._cell(5, bound=(-2, 12)))  # spans region
+        assert check(self._cell(2, bound=(0, 5)))    # lower boundary touch
+        assert check(self._cell(8, bound=(5, 10)))   # upper boundary touch
+        assert not check(self._cell(-5, bound=(-10, -1)))  # entirely below
+
+    def test_bounded_ignore_bounds_uses_point(self):
+        # With ignore_bounds=True, only the point is checked, not the bounds
+        check = iris.util._make_cell_check(0, 10, True, True, True, 0)
+        # Cell point=5, bound spanning outside region -> included (point in range)
+        assert check(self._cell(5, bound=(-20, 20)))
+        # Cell point=-5, bound spanning into region -> excluded (point out of range)
+        assert not check(self._cell(-5, bound=(-10, 5)))
+
+    def test_threshold_full_overlap_required(self):
+        # threshold=1.0 requires the cell to be fully within [0, 10]
+        check = iris.util._make_cell_check(0, 10, True, True, False, 1.0)
+        assert check(self._cell(5, bound=(2, 8)))      # fully inside
+        assert not check(self._cell(5, bound=(-2, 8))) # partially outside at min
+        assert not check(self._cell(5, bound=(2, 12))) # partially outside at max
+
+    def test_threshold_half_overlap(self):
+        # threshold=0.5: cell [−5, 5] has 5 units overlap with [0, 10],
+        # cell size is 10, fraction = 0.5 → included at threshold=0.5
+        check = iris.util._make_cell_check(0, 10, True, True, False, 0.5)
+        assert check(self._cell(0, bound=(-5, 5)))
+        # cell [−6, 4] has 4/10 = 0.4 overlap -> excluded
+        assert not check(self._cell(-1, bound=(-6, 4)))
