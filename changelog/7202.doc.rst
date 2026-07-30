@@ -1,1 +1,0 @@
-:user:`bouweandela` Fixed the type hints for the :meth:`iris.cube.Cube.__init__`.

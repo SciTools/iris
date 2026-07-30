@@ -1,2 +1,0 @@
-:user:`bjlittle` migrated to `towncrier <https://github.com/twisted/towncrier>`__
-for changelog management.

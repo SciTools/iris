@@ -10,6 +10,7 @@ What's New in Iris
    :hidden:
 
    latest.rst
+   3.16/3.16.rst
    3.15.rst
    3.14.rst
    3.13.rst

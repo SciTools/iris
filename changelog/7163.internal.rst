@@ -1,1 +1,0 @@
-:user:`rcomer` fixed the capitalisation of a pytest marker.
