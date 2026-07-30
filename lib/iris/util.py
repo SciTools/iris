@@ -3113,6 +3113,40 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
     return s
 
 
+def _make_cell_check(lower, upper, min_inclusive, max_inclusive, ignore_bounds,
+                     threshold):
+    """Return a cell-check function for use in a :class:`iris.Constraint`.
+
+    The returned function accepts a :class:`iris.coords.Cell` and returns
+    True if that cell falls within the region ``[lower, upper]``, honouring
+    the ``ignore_bounds``, ``threshold``, and inclusivity flags.
+    """
+    lower_op = (lambda a, b: a <= b) if min_inclusive else (lambda a, b: a < b)
+    upper_op = (lambda a, b: a <= b) if max_inclusive else (lambda a, b: a < b)
+
+    if ignore_bounds:
+        def check(cell):
+            p = cell.point
+            return lower_op(lower, p) and upper_op(p, upper)
+    else:
+        def check(cell):
+            if cell.bound is None:
+                return lower_op(lower, cell.point) and upper_op(cell.point, upper)
+            cb_lo, cb_hi = min(cell.bound), max(cell.bound)
+
+            # Bounds overlap check: region [lower, upper] intersects [cb_lo, cb_hi].
+            if not (lower_op(lower, cb_hi) and upper_op(cb_lo, upper)):
+                return False
+
+            # Scale threshold to an absolute overlap.
+            required_overlap = (cb_hi - cb_lo) * threshold
+            overlap = min(upper, cb_hi) - max(lower, cb_lo)
+
+            return overlap >= required_overlap
+
+    return check
+
+
 def extract_region(cube: Cube, area: list | tuple | np.ndarray,
                    crs: cartopy.crs.CRS | None = None, ignore_bounds: bool = False,
                    threshold: float = 0, min_inclusive: bool = True,
@@ -3245,13 +3279,11 @@ def extract_region(cube: Cube, area: list | tuple | np.ndarray,
         # if coordinate does not have a modulus
         x_name = cube.coord(axis="x").name()
         y_name = cube.coord(axis="y").name()
-        x_min_op = (lambda v, b: v >= b) if min_inclusive else (lambda v, b: v > b)
-        x_max_op = (lambda v, b: v <= b) if max_inclusive else (lambda v, b: v < b)
-        y_min_op = (lambda v, b: v >= b) if min_inclusive else (lambda v, b: v > b)
-        y_max_op = (lambda v, b: v <= b) if max_inclusive else (lambda v, b: v < b)
         coord_values = {
-            x_name: lambda cell: x_min_op(cell, xt_min) and x_max_op(cell, xt_max),
-            y_name: lambda cell: y_min_op(cell, yt_min) and y_max_op(cell, yt_max),
+            x_name: _make_cell_check(xt_min, xt_max, min_inclusive, max_inclusive,
+                                     ignore_bounds, threshold)
+            y_name: _make_cell_check(yt_min, yt_max, min_inclusive, max_inclusive,
+                                     ignore_bounds, threshold),
         }
         region_constraint = iris.Constraint(coord_values=coord_values)
 
