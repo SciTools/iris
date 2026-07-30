@@ -1,4 +1,0 @@
-:user:`trexfeathers` altered :func:`iris.io.decode_uri` to separate out URI
-**fragments** (the section following the ``#`` character) -
-:func:`~iris.io.decode_uri` now returns a 3-part tuple: ``scheme``, ``path``,
-and ``fragment``.

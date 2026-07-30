@@ -1,1 +1,0 @@
-:user:`bjlittle` Updated the :ref:`explanation-temporal-coordinates` section.
