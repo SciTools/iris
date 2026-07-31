@@ -4039,8 +4039,8 @@ class Test_coord_dims:
         # An auxiliary coordinate spanning multiple dimensions.
         assert self.cube.coord_dims(self.aux_2d) == (0, 1)
 
-    def test_aux_factory(self):
-        # A derived coordinate provided by an aux factory.
+    @pytest.fixture
+    def aux_factory(self):
         # Dependencies for a hybrid-height derived coordinate ("altitude").
         delta = AuxCoord(points=np.array([0, 1]), long_name="delta", units="m")
         sigma = AuxCoord(points=np.array([0, 1]), long_name="sigma")
@@ -4052,7 +4052,11 @@ class Test_coord_dims:
         self.cube.add_aux_coord(orography, (1, 2))
         factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orography)
         self.cube.add_aux_factory(factory)
-        derived_coord = factory.make_coord(self.cube.coord_dims)
+        return factory
+
+    def test_aux_factory(self, aux_factory):
+        # A derived coordinate provided by an aux factory.
+        derived_coord = aux_factory.make_coord(self.cube.coord_dims)
         assert self.cube.coord_dims(derived_coord) == (0, 1, 2)
 
     def test_equivalent_coord_not_instance(self):
