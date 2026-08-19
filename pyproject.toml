@@ -385,6 +385,9 @@ select = [
     "D212",  # Multi-line docstring summary should start at the first line
 ]
 
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = "(?i)copyright.*iris contributors"
+
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["iris"]
