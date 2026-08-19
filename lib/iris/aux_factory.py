@@ -1004,7 +1004,7 @@ class HybridLogPressureFactory(AuxCoordFactory):
 
         # Check that provided coords meet necessary conditions.
         self._check_dependencies(eta, sigma, surface_air_pressure, reference_air_pressure)
-        self.units = surface_air_pressure.units
+        self.units = reference_air_pressure.units
 
         self.eta = eta
         self.sigma = sigma
@@ -1017,7 +1017,7 @@ class HybridLogPressureFactory(AuxCoordFactory):
     @staticmethod
     def _check_dependencies(eta, sigma, surface_air_pressure, reference_air_pressure):
         # Check for sufficient coordinates.
-        if (sigma is None or surface_air_pressure is None ) and eta is None:
+        if (reference_air_pressure is None and surface_air_pressure is None) or eta is None or sigma is None:
             print( eta is not None, sigma is not None, surface_air_pressure is not None, reference_air_pressure is not None)
             msg = (
                 "Unable to construct hybrid log-pressure coordinate factory "
@@ -1072,7 +1072,7 @@ class HybridLogPressureFactory(AuxCoordFactory):
         if surface_air_pressure is not None:
             units = surface_air_pressure.units
         else:
-            units = sigma.units
+            units = reference_air_pressure.units
 
         if not units.is_convertible("Pa"):
             msg = (
