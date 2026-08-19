@@ -86,6 +86,53 @@ class TestHybridPressure:
 
 
 @_shared_utils.skip_data
+class TestHybridLogPressure:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # Modify stock cube so it is suitable to have a
+        # hybrid pressure factory added to it.
+        cube = stock.realistic_4d_no_derived()
+        cube.coord("surface_altitude").rename("surface_air_pressure")
+        cube.coord("surface_air_pressure").units = "Pa"
+        cube.coord("level_height").rename("level_pressure")
+        cube.coord("level_pressure").units = "Pa"
+
+        reference_air_pressure = iris.coords.AuxCoord(
+            cube.coord("level_pressure").points * 0,
+            standard_name="reference_air_pressure_for_atmosphere_vertical_coordinate",
+            long_name="vertical coordinate formula term: reference pressure",
+            var_name="p0",
+            units=cube.coord("level_pressure").units,
+        )
+
+        # Construct and add hybrid pressure factory.
+        factory = iris.aux_factory.HybridLogPressureFactory(
+            cube.coord("level_pressure"),
+            cube.coord("sigma"),
+            cube.coord("surface_air_pressure"),
+            reference_air_pressure,
+        )
+        cube.add_aux_factory(factory)
+        self.cube = cube
+
+    def test_save(self, request, tmp_path):
+        filename = tmp_path / "fn.nc"
+        iris.save(self.cube, filename)
+        _shared_utils.assert_CDL(request, filename)
+
+    def test_save_load_loop(self, tmp_path):
+        # Tests an issue where the variable names in the formula
+        # terms changed to the standard_names instead of the variable names
+        # when loading a previously saved cube.
+        filename = tmp_path / "fn.nc"
+        other_filename = tmp_path / "ofn.nc"
+        iris.save(self.cube, filename)
+        cube = iris.load_cube(filename, "air_potential_temperature")
+        iris.save(cube, other_filename)
+        other_cube = iris.load_cube(other_filename, "air_potential_temperature")
+        assert cube == other_cube
+
+@_shared_utils.skip_data
 class TestSaveMultipleAuxFactories:
     def test_hybrid_height_and_pressure(self, request, tmp_path):
         cube = stock.realistic_4d()
