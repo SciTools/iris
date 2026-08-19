@@ -1029,12 +1029,6 @@ class HybridLogPressureFactory(AuxCoordFactory):
             or eta is None
             or sigma is None
         ):
-            print(
-                eta is not None,
-                sigma is not None,
-                surface_air_pressure is not None,
-                reference_air_pressure is not None,
-            )
             msg = (
                 "Unable to construct hybrid log-pressure coordinate factory "
                 "due to insufficient source coordinates."
@@ -1067,7 +1061,6 @@ class HybridLogPressureFactory(AuxCoordFactory):
             eta.units = cf_units.Unit("1")
         if not eta.units.is_dimensionless():
             raise ValueError("Invalid units: eta must be dimensionless.")
-
         if sigma.units.is_unknown():
             # Be graceful, and promote unknown to dimensionless units.
             sigma.units = cf_units.Unit("1")
