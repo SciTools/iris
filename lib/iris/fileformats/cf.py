@@ -64,6 +64,7 @@ _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_fact
 reference_terms = dict(
     atmosphere_sigma_coordinate=["ps"],
     atmosphere_hybrid_sigma_pressure_coordinate=["ps"],
+    atmosphere_hybrid_sigma_ln_pressure_coordinate=["ps","p0","lev"],
     atmosphere_hybrid_height_coordinate=["orog"],
     atmosphere_sleve_coordinate=["zsurf1", "zsurf2"],
     ocean_sigma_coordinate=["eta", "depth"],
@@ -1556,6 +1557,7 @@ class CFReader:
             ) -> None:
                 """Sanity check dimensionality."""
                 var = self.cf_group[var_name]
+
                 # No span check is necessary if variable is attached to a mesh.
                 if (is_mesh_var or var.spans(cf_variable)) and not var._to_be_promoted:
                     cf_group[var_name] = var
@@ -1604,6 +1606,7 @@ class CFReader:
                     warn=False,
                     **kwargs,
                 )
+
                 # Sanity check dimensionality coverage.
                 for cf_name in match:
                     _span_check(cf_name)
@@ -1620,6 +1623,7 @@ class CFReader:
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
+
                 # Add global netCDF attributes.
                 cf_group.global_attributes.update(self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.
