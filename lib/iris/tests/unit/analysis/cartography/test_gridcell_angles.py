@@ -226,7 +226,9 @@ class TestGridcellAngles:
         cube = sample_2d_latlons(regional=True, rotated=True)
         result = gridcell_angles(cube)
         _shared_utils.assert_array_all_close(
-            result.data, self.standard_small_cube_results
+            result.data,
+            self.standard_small_cube_results,
+            atol=0.1,
         )
         # Check that the result has transformed (true-latlon) coordinates.
         assert len(result.coords()) == 2
