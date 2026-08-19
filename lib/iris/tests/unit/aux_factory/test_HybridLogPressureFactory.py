@@ -78,9 +78,7 @@ class Test___init__:
 
     def test_incompatible_surface_air_pressure_units(self):
         self.surface_air_pressure.units = cf_units.Unit("unknown")
-        msg = (
-            "Incompatible units: reference_air_pressure and surface_air_pressure must have the same units."
-        )
+        msg = "Incompatible units: reference_air_pressure and surface_air_pressure must have the same units."
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
                 eta=self.eta,
@@ -93,9 +91,9 @@ class Test___init__:
         self.reference_air_pressure.units = cf_units.Unit("hPa")
         self.surface_air_pressure.units = cf_units.Unit("Pa")
         msg = (
-                "Incompatible units: reference_air_pressure and "
-                "surface_air_pressure must have the same units."
-            )
+            "Incompatible units: reference_air_pressure and "
+            "surface_air_pressure must have the same units."
+        )
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
                 eta=self.eta,
@@ -171,7 +169,12 @@ class Test_dependencies:
 class Test_make_coord:
     @staticmethod
     def coords_dims_func(coord):
-        mapping = dict(level_pressure=(0,), sigma=(0,), surface_air_pressure=(1, 2), reference_air_pressure=(0,))
+        mapping = dict(
+            level_pressure=(0,),
+            sigma=(0,),
+            surface_air_pressure=(1, 2),
+            reference_air_pressure=(0,),
+        )
         return mapping[coord.name()]
 
     @pytest.fixture(autouse=True)
@@ -215,7 +218,11 @@ class Test_make_coord:
         expected_coord = iris.coords.AuxCoord(
             expected_points, standard_name="air_pressure", units="Pa"
         )
-        factory = HybridLogPressureFactory(eta=self.eta, sigma=self.sigma, reference_air_pressure=self.reference_air_pressure)
+        factory = HybridLogPressureFactory(
+            eta=self.eta,
+            sigma=self.sigma,
+            reference_air_pressure=self.reference_air_pressure,
+        )
         derived_coord = factory.make_coord(self.coords_dims_func)
 
         assert derived_coord == expected_coord
