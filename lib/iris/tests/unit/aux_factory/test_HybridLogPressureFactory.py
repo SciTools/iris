@@ -41,7 +41,10 @@ class Test___init__:
             HybridLogPressureFactory()
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
-                eta=None, sigma=self.sigma, surface_air_pressure=None, reference_air_pressure=None
+                eta=None,
+                sigma=self.sigma,
+                surface_air_pressure=None,
+                reference_air_pressure=None,
             )
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
@@ -53,7 +56,9 @@ class Test___init__:
 
     def test_incompatible_eta_units(self):
         self.eta.units = cf_units.Unit("m")
-        msg = "Incompatible units: eta and surface_air_pressure must have the same units."
+        msg = (
+            "Incompatible units: eta and surface_air_pressure must have the same units."
+        )
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
                 eta=self.eta,
@@ -75,7 +80,9 @@ class Test___init__:
 
     def test_incompatible_surface_air_pressure_units(self):
         self.surface_air_pressure.units = cf_units.Unit("unknown")
-        msg = "Incompatible units: eta and surface_air_pressure must have the same units."
+        msg = (
+            "Incompatible units: eta and surface_air_pressure must have the same units."
+        )
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
                 eta=self.eta,
@@ -87,7 +94,9 @@ class Test___init__:
     def test_different_pressure_units(self):
         self.eta.units = cf_units.Unit("hPa")
         self.surface_air_pressure.units = cf_units.Unit("Pa")
-        msg = "Incompatible units: eta and surface_air_pressure must have the same units."
+        msg = (
+            "Incompatible units: eta and surface_air_pressure must have the same units."
+        )
         with pytest.raises(ValueError, match=msg):
             HybridLogPressureFactory(
                 eta=self.eta,
@@ -184,7 +193,7 @@ class Test_make_coord:
         sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
         surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         ref_pts = self.surface_air_pressure.points[np.newaxis, ...]
-        expected_points = ref_pts * eta_pts * ( surf_pts / ref_pts ) **sigma_pts
+        expected_points = ref_pts * eta_pts * (surf_pts / ref_pts) ** sigma_pts
         expected_coord = iris.coords.AuxCoord(
             expected_points, standard_name="air_pressure", units="Pa"
         )
@@ -202,7 +211,7 @@ class Test_make_coord:
         sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
         surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         ref_pts = self.surface_air_pressure.points[np.newaxis, ...]
-        expected_points = ref_pts * eta_pts * ( surf_pts / ref_pts ) **sigma_pts
+        expected_points = ref_pts * eta_pts * (surf_pts / ref_pts) ** sigma_pts
         expected_coord = iris.coords.AuxCoord(
             expected_points, standard_name="air_pressure", units="Pa"
         )
@@ -219,7 +228,7 @@ class Test_make_coord:
         sigma_pts = 0
         surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         ref_pts = self.surface_air_pressure.points[np.newaxis, ...]
-        expected_points = ref_pts * eta_pts * ( surf_pts / ref_pts ) **sigma_pts
+        expected_points = ref_pts * eta_pts * (surf_pts / ref_pts) ** sigma_pts
         expected_coord = iris.coords.AuxCoord(
             expected_points, standard_name="air_pressure", units="Pa"
         )
@@ -251,12 +260,12 @@ class Test_make_coord:
         sigma_pts = self.sigma.points[..., np.newaxis, np.newaxis]
         surf_pts = self.surface_air_pressure.points[np.newaxis, ...]
         ref_pts = self.reference_air_pressure.points[np.newaxis, ...]
-        expected_points = ref_pts * eta_pts * ( surf_pts / ref_pts ) **sigma_pts
+        expected_points = ref_pts * eta_pts * (surf_pts / ref_pts) ** sigma_pts
         eta_vals = self.eta.bounds.reshape(3, 1, 1, 2)
         sigma_vals = self.sigma.bounds.reshape(3, 1, 1, 2)
         surf_vals = self.surface_air_pressure.points.reshape(1, 2, 2, 1)
         ref_vals = self.reference_air_pressure.bounds.reshape(3, 1, 1, 2)
-        expected_bounds = ref_vals * eta_vals * ( surf_vals / ref_vals ) **sigma_vals
+        expected_bounds = ref_vals * eta_vals * (surf_vals / ref_vals) ** sigma_vals
         expected_coord = iris.coords.AuxCoord(
             expected_points,
             standard_name="air_pressure",

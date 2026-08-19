@@ -30,8 +30,8 @@ from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
     HybridHeightFactory,
-    HybridPressureFactory,
     HybridLogPressureFactory,
+    HybridPressureFactory,
     OceanSFactory,
     OceanSg1Factory,
     OceanSg2Factory,
@@ -579,7 +579,7 @@ def _load_aux_factory(engine, cube):
             factory = HybridPressureFactory(delta, sigma, surface_air_pressure)
         elif formula_type == "atmosphere_hybrid_sigma_ln_pressure_coordinate":
             eta = coord_from_term("lev")
-            if eta is None:              
+            if eta is None:
                 for coord, cf_var_name in engine.cube_parts["coordinates"]:
                     if cf_var_name == "lev":
                         eta = coord
@@ -592,7 +592,9 @@ def _load_aux_factory(engine, cube):
             sigma = coord_from_term("b")
             surface_air_pressure = coord_from_term("ps")
             reference_air_pressure = coord_from_term("p0")
-            factory = HybridLogPressureFactory(eta, sigma, surface_air_pressure, reference_air_pressure)
+            factory = HybridLogPressureFactory(
+                eta, sigma, surface_air_pressure, reference_air_pressure
+            )
         elif formula_type == "ocean_sigma_z_coordinate":
             sigma = coord_from_term("sigma")
             eta = coord_from_term("eta")

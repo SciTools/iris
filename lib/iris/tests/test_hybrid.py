@@ -10,7 +10,11 @@ import numpy as np
 import pytest
 
 import iris
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory, HybridLogPressureFactory
+from iris.aux_factory import (
+    HybridHeightFactory,
+    HybridLogPressureFactory,
+    HybridPressureFactory,
+)
 from iris.tests import _shared_utils
 import iris.tests.stock
 from iris.warnings import IrisIgnoringBoundsWarning
@@ -219,7 +223,6 @@ class TestHybridPressure:
         msg = "Surface pressure.* bounds.* being disregarded"
         with pytest.warns(IrisIgnoringBoundsWarning, match=msg):
             self.cube.coord("air_pressure")
-
 
 
 @_shared_utils.skip_data

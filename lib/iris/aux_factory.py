@@ -979,7 +979,13 @@ class HybridPressureFactory(AuxCoordFactory):
 class HybridLogPressureFactory(AuxCoordFactory):
     """Define a hybrid log-pressure coordinate factory."""
 
-    def __init__(self, eta=None, sigma=None, surface_air_pressure=None, reference_air_pressure=None):
+    def __init__(
+        self,
+        eta=None,
+        sigma=None,
+        surface_air_pressure=None,
+        reference_air_pressure=None,
+    ):
         """Create a hybrid-height coordinate factory with the following formula.
 
         .. math::
@@ -997,13 +1003,14 @@ class HybridLogPressureFactory(AuxCoordFactory):
         reference_air_pressure : Coord
             The coordinate providing the `p0` term.
         """
-
         # Configure the metadata manager.
         self._metadata_manager = metadata_manager_factory(CoordMetadata)
         super().__init__()
 
         # Check that provided coords meet necessary conditions.
-        self._check_dependencies(eta, sigma, surface_air_pressure, reference_air_pressure)
+        self._check_dependencies(
+            eta, sigma, surface_air_pressure, reference_air_pressure
+        )
         self.units = reference_air_pressure.units
 
         self.eta = eta
@@ -1017,8 +1024,17 @@ class HybridLogPressureFactory(AuxCoordFactory):
     @staticmethod
     def _check_dependencies(eta, sigma, surface_air_pressure, reference_air_pressure):
         # Check for sufficient coordinates.
-        if (reference_air_pressure is None and surface_air_pressure is None) or eta is None or sigma is None:
-            print( eta is not None, sigma is not None, surface_air_pressure is not None, reference_air_pressure is not None)
+        if (
+            (reference_air_pressure is None and surface_air_pressure is None)
+            or eta is None
+            or sigma is None
+        ):
+            print(
+                eta is not None,
+                sigma is not None,
+                surface_air_pressure is not None,
+                reference_air_pressure is not None,
+            )
             msg = (
                 "Unable to construct hybrid log-pressure coordinate factory "
                 "due to insufficient source coordinates."
@@ -1027,9 +1043,7 @@ class HybridLogPressureFactory(AuxCoordFactory):
 
         # Check bounds.
         if eta.nbounds not in (0, 2):
-            raise ValueError(
-                "Invalid eta coordinate: must have either 0 or 2 bounds."
-            )
+            raise ValueError("Invalid eta coordinate: must have either 0 or 2 bounds.")
         if sigma.nbounds not in (0, 2):
             raise ValueError(
                 "Invalid sigma coordinate: must have either 0 or 2 bounds."
@@ -1061,7 +1075,8 @@ class HybridLogPressureFactory(AuxCoordFactory):
             raise ValueError("Invalid units: sigma must be dimensionless.")
 
         if (
-            surface_air_pressure and reference_air_pressure.units != surface_air_pressure.units
+            surface_air_pressure
+            and reference_air_pressure.units != surface_air_pressure.units
         ):
             msg = (
                 "Incompatible units: reference_air_pressure and "
@@ -1096,8 +1111,14 @@ class HybridLogPressureFactory(AuxCoordFactory):
             "reference_air_pressure": self.reference_air_pressure,
         }
 
-    def _calculate_array(self, eta, sigma, surface_air_pressure, reference_air_pressure):
-        return reference_air_pressure * eta * (surface_air_pressure/reference_air_pressure)**sigma
+    def _calculate_array(
+        self, eta, sigma, surface_air_pressure, reference_air_pressure
+    ):
+        return (
+            reference_air_pressure
+            * eta
+            * (surface_air_pressure / reference_air_pressure) ** sigma
+        )
 
     def make_coord(self, coord_dims_func):
         """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
@@ -1111,7 +1132,6 @@ class HybridLogPressureFactory(AuxCoordFactory):
             See :meth:`iris.cube.Cube.coord_dims()`.
 
         """
-        
         # Which dimensions are relevant?
         derived_dims = self.derived_dims(coord_dims_func)
         dependency_dims = self._dependency_dims(coord_dims_func)
@@ -1150,7 +1170,9 @@ class HybridLogPressureFactory(AuxCoordFactory):
                 bds_shape = list(surface_air_pressure_pts.shape) + [1]
                 surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
 
-            bounds = self._derive_array(eta, sigma, surface_air_pressure, reference_air_pressure)
+            bounds = self._derive_array(
+                eta, sigma, surface_air_pressure, reference_air_pressure
+            )
 
         hybrid_log_pressure = iris.coords.AuxCoord(
             points,

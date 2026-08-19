@@ -64,7 +64,7 @@ _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_fact
 reference_terms = dict(
     atmosphere_sigma_coordinate=["ps"],
     atmosphere_hybrid_sigma_pressure_coordinate=["ps"],
-    atmosphere_hybrid_sigma_ln_pressure_coordinate=["ps","p0","lev"],
+    atmosphere_hybrid_sigma_ln_pressure_coordinate=["ps", "p0", "lev"],
     atmosphere_hybrid_height_coordinate=["orog"],
     atmosphere_sleve_coordinate=["zsurf1", "zsurf2"],
     ocean_sigma_coordinate=["eta", "depth"],
@@ -1623,7 +1623,6 @@ class CFReader:
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
-
                 # Add global netCDF attributes.
                 cf_group.global_attributes.update(self.cf_group.global_attributes)
                 # Add appropriate "dimensioned" CF coordinate variables.

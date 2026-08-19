@@ -43,8 +43,8 @@ from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
     HybridHeightFactory,
-    HybridPressureFactory,
     HybridLogPressureFactory,
+    HybridPressureFactory,
     OceanSFactory,
     OceanSg1Factory,
     OceanSg2Factory,
