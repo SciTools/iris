@@ -1144,6 +1144,38 @@ class Test_rolling_window:
             _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
 
+    def test_step(self):
+        res_cube = self.cube.rolling_window("val", SUM, 3, step=2)
+        _shared_utils.assert_array_equal(res_cube.data, [3, 9])
+
+    def test_invalid_step(self):
+        with pytest.raises(ValueError, match="`step` must be at least 1."):
+            self.cube.rolling_window("val", SUM, 3, step=0)
+
+    def test_step_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
+        # Rolling window with a step applied to the coordinates.
+        res_cube = self.cube.rolling_window("val", self.mock_agg, 3, step=2)
+        val_coord = DimCoord(
+            np.array([1, 3]),
+            bounds=np.array([[0, 2], [2, 4]]),
+            long_name="val",
+            units="s",
+        )
+        month_coord = AuxCoord(
+            np.array(["jan|feb|mar", "mar|apr|may"]),
+            bounds=np.array(
+                [
+                    ["jan", "mar"],
+                    ["mar", "may"],
+                ]
+            ),
+            long_name="month",
+        )
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("month") == month_coord
+
 
 class Test_slices_dim_order:
     """Test the capability of iris.cube.Cube.slices().
