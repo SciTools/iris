@@ -3132,6 +3132,7 @@ class _MeshConnectivityManagerBase(ABC):
                     #  used by MeshCoord, which also maintains laziness.
                     indices = connectivity.lazy_indices()
                 indices_indexed = connectivity.indices_by_location(indices)[indexing]
+                indices_indexed -= connectivity.start_index
 
                 # Map node indices in "values" to their new zero-based positions
                 #  via the inverse-lookup table. This creates a contiguous
@@ -3524,6 +3525,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 conn_indices = connectivity.indices_by_location(
                     connectivity.core_indices()
                 )[self.indices]
+                conn_indices -= connectivity.start_index
                 al = da if _lazy.is_lazy_data(conn_indices) else np
                 # Flatten and drop masked padding (ragged connectivities) by scattering
                 #  membership into a fixed-shape boolean mask.
