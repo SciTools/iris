@@ -1,0 +1,2 @@
+:user:`stephenworsley` fixed a bug which caused indexing to fail when
+``start_index`` was 1. (:issue:`7246`)
