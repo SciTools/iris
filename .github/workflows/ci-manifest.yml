@@ -26,4 +26,4 @@ permissions: {}
 jobs:
   manifest:
     name: "check-manifest"
-    uses: scitools/workflows/.github/workflows/ci-manifest.yml@7c41342d8285bc7747b6f7bc4cd2639cdcbb017a
+    uses: scitools/workflows/.github/workflows/ci-manifest.yml@28aea7a3a1eb58e1bbf9b1d9c8cb2de07892b67e
