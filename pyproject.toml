@@ -385,6 +385,9 @@ select = [
     "D212",  # Multi-line docstring summary should start at the first line
 ]
 
+[tool.ruff.lint.flake8-copyright]
+notice-rgx = "(?i)copyright.*iris contributors"
+
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
 known-first-party = ["iris"]
@@ -415,6 +418,19 @@ max-complexity = 22
 
 "lib/iris/tests/__init__.py" = ["PT"]
 "lib/iris/tests/unit/tests/test_IrisTest.py" = ["PT"]
+
+# Files and directories not to be checked for a LICENSE header.
+
+"setup.py" = ["CPY001"]
+"noxfile.py" = ["CPY001"]
+"build/*" = ["CPY001"]
+"dist/*" = ["CPY001"]
+"docs/gallery_code/*/*.py" = ["CPY001"]
+"docs/src/developers_guide/documenting/*.py" = ["CPY001"]
+"docs/src/user_manual/tutorial/plotting_examples/*.py" = ["CPY001"]
+"docs/src/user_manual/tutorial/regridding_plots/*.py" = ["CPY001"]
+"docs/src/_build/*" = ["CPY001"]
+"lib/iris/analysis/_scipy_interpolate.py" = ["CPY001"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
