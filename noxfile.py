@@ -7,6 +7,7 @@ For further details, see https://nox.thea.codes/en/stable/#
 
 import hashlib
 import os
+import pathlib
 from pathlib import Path
 
 import nox
@@ -172,6 +173,12 @@ def prepare_venv(session: nox.sessions.Session) -> None:
         )
 
 
+def force_install_pint_cfpint(session: nox.sessions.Session) -> None:
+    # Install pint : N.B. *not* conda_install, as benchmark-validate has no conda.
+    # N.B. this installs direct from the repo (latest 'main').
+    session.install("git+https://github.com/SciTools/cfpint")
+
+
 @nox.session(python=PY_VER, venv_backend="conda")
 def tests(session: nox.sessions.Session):
     """Perform iris system, integration and unit tests.
@@ -188,6 +195,9 @@ def tests(session: nox.sessions.Session):
     session.install("--no-deps", "--editable", ".")
     session.install("git+https://github.com/SciTools-incubator/nothing.git")
     session.env.update(ENV)
+
+    force_install_pint_cfpint(session)
+
     run_args = [
         "pytest",
         "-n",
@@ -212,7 +222,9 @@ def doctest(session: nox.sessions.Session):
     """
     prepare_venv(session)
     session.install("--no-deps", "--editable", ".")
+    force_install_pint_cfpint(session)
     session.env.update(ENV)
+
     session.cd("docs")
     session.run(
         "make",
@@ -259,6 +271,8 @@ def wheel(session: nox.sessions.Session):
 
     """
     prepare_venv(session)
+    force_install_pint_cfpint(session)
+
     session.cd("dist")
     fname = list(Path(".").glob("scitools_iris-*.whl"))
     if len(fname) == 0:
