@@ -32,7 +32,7 @@ A FESOM mesh encoded in a NetCDF file includes:
 
 To represent the Voronoi Polygons as faces, the corner coordinates will be used
 as the **nodes** when creating the Iris
-:class:`~iris.ugrid.mesh.MeshXY`.
+:class:`~iris.mesh.MeshXY`.
 
 .. dropdown:: Code
     :icon: code
@@ -42,7 +42,7 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.ugrid import MeshXY
+        >>> from iris.mesh import MeshXY
 
 
         >>> temperature_cube = iris.load_cube("my_file.nc", "sea_surface_temperature")
@@ -124,7 +124,7 @@ An SMC grid encoded in a NetCDF file includes:
 
 From this information we can derive face corner coordinates, which will be used
 as the **nodes** when creating the Iris
-:class:`~iris.ugrid.mesh.MeshXY`.
+:class:`~iris.mesh.MeshXY`.
 
 
 .. dropdown:: Code
@@ -135,11 +135,22 @@ as the **nodes** when creating the Iris
     .. code-block:: python
 
         >>> import iris
-        >>> from iris.ugrid import MeshXY
+        >>> from iris.mesh import MeshXY
         >>> import numpy as np
 
 
         >>> wave_cube = iris.load_cube("my_file.nc", "sea_surface_wave_significant_height")
+
+        >>> # Attach the "cell size factor" variables as AuxCoords:
+        >>> for coord_name in ["longitude", "latitude"]:
+        ...     cell_factor = iris.load_cube("my_file.nc", f"{coord_name} cell size factor")
+        ...     wave_cube.add_aux_coord(
+        ...         iris.coords.AuxCoord(
+        ...             points=cell_factor.data,
+        ...             long_name=cell_factor.long_name
+        ...    ), 1
+        ... )
+
         >>> print(wave_cube)
         sea_surface_wave_significant_height / (m) (time: 7; -- : 666328)
             Dimension coordinates:
@@ -282,7 +293,7 @@ dimensions into a single mesh dimension.  Since Iris cubes don't support a "resh
         >>> import iris
         >>> from iris.coords import AuxCoord, CellMeasure
         >>> from iris.cube import Cube
-        >>> from iris.ugrid.mesh import MeshXY, Connectivity
+        >>> from iris.mesh import MeshXY, Connectivity
 
 
         >>> filepath = iris.sample_data_path('orca2_votemper.nc')
