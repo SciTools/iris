@@ -192,6 +192,8 @@ if on_rtd:
     llms_txt_build_parallel = True
     llms_txt_suffix_mode = "auto"
     llms_txt_full_build = True
+    # Keep the Sphinx Gallery timing page while omitting it from the LLM corpus.
+    llms_txt_exclude = ["sg_execution_times", "**/sg_execution_times"]
     llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
 
 # -- sphinx-sitemap ----------------------------------------------------------
@@ -497,8 +499,7 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
-    # disable the computation reports
-    "write_computation_times": False,
+    "write_computation_times": True,
 }
 
 # -----------------------------------------------------------------------------
