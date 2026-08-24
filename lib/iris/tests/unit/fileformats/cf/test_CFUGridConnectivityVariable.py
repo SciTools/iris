@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridConnectivityVariable`."""
 
-import re
 import warnings
 
 import numpy as np
@@ -12,17 +11,16 @@ import pytest
 
 from iris.fileformats.cf import CFUGridConnectivityVariable
 from iris.mesh import Connectivity
-from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 import iris.warnings
 
 
-def named_variable(name):
-    # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_variable(name, "", int)
-
-
 class TestIdentify:
-    def test_cf_identities(self):
+    @pytest.mark.parametrize(
+        "identity",
+        Connectivity.UGRID_CF_ROLES,
+        ids=Connectivity.UGRID_CF_ROLES,
+    )
+    def test_cf_identities(self, named_variable, identity):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         vars_common = {
@@ -34,14 +32,13 @@ class TestIdentify:
             subject_name: CFUGridConnectivityVariable(subject_name, ref_subject)
         }
 
-        for identity in Connectivity.UGRID_CF_ROLES:
-            ref_source = named_variable("ref_source")
-            setattr(ref_source, identity, subject_name)
-            vars_all = dict({"ref_source": ref_source}, **vars_common)
-            result = CFUGridConnectivityVariable.identify(vars_all)
-            assert expected == result
+        ref_source = named_variable("ref_source")
+        setattr(ref_source, identity, subject_name)
+        vars_all = dict({"ref_source": ref_source}, **vars_common)
+        result = CFUGridConnectivityVariable.identify(vars_all)
+        assert expected == result
 
-    def test_duplicate_refs(self):
+    def test_duplicate_refs(self, named_variable):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_vars = {
@@ -64,7 +61,7 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_cf_roles(self):
+    def test_two_cf_roles(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -87,7 +84,7 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_part_ref_ignored(self):
+    def test_two_part_ref_ignored(self, named_variable):
         # Not expected to handle more than one variable for a connectivity
         # cf role - invalid UGRID.
         subject_name = "ref_subject"
@@ -102,12 +99,12 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all)
         assert {} == result
 
-    def test_string_type_ignored(self):
+    def test_string_type_ignored(self, named_variable):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
         setattr(ref_source, Connectivity.UGRID_CF_ROLES[0], subject_name)
         vars_all = {
-            subject_name: netcdf_variable(subject_name, "", np.bytes_),
+            subject_name: named_variable(subject_name, dtype=np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
@@ -115,7 +112,7 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all)
         assert {} == result
 
-    def test_ignore(self):
+    def test_ignore(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -140,7 +137,7 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all, ignore=subject_names[1])
         assert expected == result
 
-    def test_target(self):
+    def test_target(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -164,7 +161,21 @@ class TestIdentify:
         result = CFUGridConnectivityVariable.identify(vars_all, target=source_names[0])
         assert expected == result
 
-    def test_warn(self):
+    def test_target_unknown_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
+        with pytest.raises(ValueError, match=message):
+            CFUGridConnectivityVariable.identify(vars_all, target="unknown")
+
+    def test_target_wrong_type_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Expect a target CF-netCDF variable name"
+        with pytest.raises(TypeError, match=message):
+            CFUGridConnectivityVariable.identify(vars_all, target=object())
+
+    def test_warn(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
         setattr(ref_source, Connectivity.UGRID_CF_ROLES[0], subject_name)
@@ -183,19 +194,11 @@ class TestIdentify:
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID connectivity variable {subject_name}.*"
-        with pytest.warns(iris.warnings.IrisCfMissingVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        assert_warning_gated(
+            operation, iris.warnings.IrisCfMissingVarWarning, warn_regex
+        )
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_variable(subject_name, "", np.bytes_)
-        with pytest.warns(iris.warnings.IrisCfLabelVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        vars_all[subject_name] = named_variable(subject_name, dtype=np.bytes_)
+        assert_warning_gated(operation, iris.warnings.IrisCfLabelVarWarning, warn_regex)

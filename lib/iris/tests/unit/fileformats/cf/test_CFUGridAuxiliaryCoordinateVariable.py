@@ -4,33 +4,25 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridAuxiliaryCoordinateVariable`."""
 
-import re
 import warnings
 
 import numpy as np
 import pytest
 
 from iris.fileformats.cf import CFUGridAuxiliaryCoordinateVariable
-from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 import iris.warnings
 
-
-def named_variable(name):
-    # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_variable(name, "", int)
+CF_IDENTITIES = [
+    "node_coordinates",
+    "edge_coordinates",
+    "face_coordinates",
+    "volume_coordinates",
+]
 
 
 class TestIdentify:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
-        self.cf_identities = [
-            "node_coordinates",
-            "edge_coordinates",
-            "face_coordinates",
-            "volume_coordinates",
-        ]
-
-    def test_cf_identities(self):
+    @pytest.mark.parametrize("identity", CF_IDENTITIES, ids=CF_IDENTITIES)
+    def test_cf_identities(self, named_variable, identity):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         vars_common = {
@@ -42,21 +34,20 @@ class TestIdentify:
             subject_name: CFUGridAuxiliaryCoordinateVariable(subject_name, ref_subject)
         }
 
-        for identity in self.cf_identities:
-            ref_source = named_variable("ref_source")
-            setattr(ref_source, identity, subject_name)
-            vars_all = dict({"ref_source": ref_source}, **vars_common)
-            result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
-            assert expected == result
+        ref_source = named_variable("ref_source")
+        setattr(ref_source, identity, subject_name)
+        vars_all = dict({"ref_source": ref_source}, **vars_common)
+        result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
+        assert expected == result
 
-    def test_duplicate_refs(self):
+    def test_duplicate_refs(self, named_variable):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_vars = {
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
-            setattr(var, self.cf_identities[0], subject_name)
+            setattr(var, CF_IDENTITIES[0], subject_name)
         vars_all = dict(
             {
                 subject_name: ref_subject,
@@ -72,7 +63,7 @@ class TestIdentify:
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_coords(self):
+    def test_two_coords(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -80,7 +71,7 @@ class TestIdentify:
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identities[ix], subject_names[ix])
+            setattr(var, CF_IDENTITIES[ix], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -95,12 +86,12 @@ class TestIdentify:
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_part_ref(self):
+    def test_two_part_ref(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identities[0], " ".join(subject_names))
+        setattr(ref_source, CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -114,12 +105,12 @@ class TestIdentify:
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
         assert expected == result
 
-    def test_string_type_ignored(self):
+    def test_string_type_ignored(self, named_variable):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identities[0], subject_name)
+        setattr(ref_source, CF_IDENTITIES[0], subject_name)
         vars_all = {
-            subject_name: netcdf_variable(subject_name, "", np.bytes_),
+            subject_name: named_variable(subject_name, dtype=np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
@@ -127,7 +118,7 @@ class TestIdentify:
         result = CFUGridAuxiliaryCoordinateVariable.identify(vars_all)
         assert {} == result
 
-    def test_ignore(self):
+    def test_ignore(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -135,7 +126,7 @@ class TestIdentify:
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identities[0], subject_names[ix])
+            setattr(var, CF_IDENTITIES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -154,14 +145,14 @@ class TestIdentify:
         )
         assert expected == result
 
-    def test_target(self):
+    def test_target(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identities[0], subject_names[ix])
+            setattr(var, CF_IDENTITIES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -180,10 +171,24 @@ class TestIdentify:
         )
         assert expected == result
 
-    def test_warn(self):
+    def test_target_unknown_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
+        with pytest.raises(ValueError, match=message):
+            CFUGridAuxiliaryCoordinateVariable.identify(vars_all, target="unknown")
+
+    def test_target_wrong_type_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Expect a target CF-netCDF variable name"
+        with pytest.raises(TypeError, match=message):
+            CFUGridAuxiliaryCoordinateVariable.identify(vars_all, target=object())
+
+    def test_warn(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identities[0], subject_name)
+        setattr(ref_source, CF_IDENTITIES[0], subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -201,19 +206,11 @@ class TestIdentify:
         warn_regex = (
             rf"Missing CF-netCDF auxiliary coordinate variable {subject_name}.*"
         )
-        with pytest.warns(iris.warnings.IrisCfMissingVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        assert_warning_gated(
+            operation, iris.warnings.IrisCfMissingVarWarning, warn_regex
+        )
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_variable(subject_name, "", np.bytes_)
-        with pytest.warns(iris.warnings.IrisCfLabelVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        vars_all[subject_name] = named_variable(subject_name, dtype=np.bytes_)
+        assert_warning_gated(operation, iris.warnings.IrisCfLabelVarWarning, warn_regex)

@@ -4,28 +4,19 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFUGridMeshVariable`."""
 
-import re
 import warnings
 
 import numpy as np
 import pytest
 
 from iris.fileformats.cf import CFUGridMeshVariable
-from iris.tests.unit.fileformats.cf.test_CFReader import netcdf_variable
 import iris.warnings
 
-
-def named_variable(name):
-    # Don't need to worry about dimensions or dtype for these tests.
-    return netcdf_variable(name, "", int)
+CF_IDENTITY = "mesh"
 
 
 class TestIdentify:
-    @pytest.fixture(autouse=True)
-    def _setup(self):
-        self.cf_identity = "mesh"
-
-    def test_cf_role(self):
+    def test_cf_role(self, named_variable):
         # Test that mesh variables can be identified by having `cf_role="mesh_topology"`.
         match_name = "match"
         match = named_variable(match_name)
@@ -42,13 +33,13 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert expected == result
 
-    def test_cf_identity(self):
+    def test_cf_identity(self, named_variable):
         # Test that mesh variables can be identified by being another variable's
         #  `mesh` attribute.
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        setattr(ref_source, CF_IDENTITY, subject_name)
         vars_all = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
@@ -60,7 +51,7 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert expected == result
 
-    def test_cf_role_and_identity(self):
+    def test_cf_role_and_identity(self, named_variable):
         # Test that identification can successfully handle a combination of
         #  mesh variables having `cf_role="mesh_topology"` AND being referenced as
         #  another variable's `mesh` attribute.
@@ -68,12 +59,12 @@ class TestIdentify:
         role_match = named_variable(role_match_name)
         setattr(role_match, "cf_role", "mesh_topology")
         ref_source_1 = named_variable("ref_source_1")
-        setattr(ref_source_1, self.cf_identity, role_match_name)
+        setattr(ref_source_1, CF_IDENTITY, role_match_name)
 
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_2 = named_variable("ref_source_2")
-        setattr(ref_source_2, self.cf_identity, subject_name)
+        setattr(ref_source_2, CF_IDENTITY, subject_name)
 
         vars_all = {
             role_match_name: role_match,
@@ -91,14 +82,14 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert expected == result
 
-    def test_duplicate_refs(self):
+    def test_duplicate_refs(self, named_variable):
         subject_name = "ref_subject"
         ref_subject = named_variable(subject_name)
         ref_source_vars = {
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
-            setattr(var, self.cf_identity, subject_name)
+            setattr(var, CF_IDENTITY, subject_name)
         vars_all = dict(
             {
                 subject_name: ref_subject,
@@ -112,7 +103,7 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_refs(self):
+    def test_two_refs(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -120,7 +111,7 @@ class TestIdentify:
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, CF_IDENTITY, subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -135,12 +126,12 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert expected == result
 
-    def test_two_part_ref_ignored(self):
+    def test_two_part_ref_ignored(self, named_variable):
         # Not expected to handle more than one variable for a mesh
         # cf role - invalid UGRID.
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name + " foo")
+        setattr(ref_source, CF_IDENTITY, subject_name + " foo")
         vars_all = {
             subject_name: named_variable(subject_name),
             "ref_not_subject": named_variable("ref_not_subject"),
@@ -150,12 +141,12 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert {} == result
 
-    def test_string_type_ignored(self):
+    def test_string_type_ignored(self, named_variable):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        setattr(ref_source, CF_IDENTITY, subject_name)
         vars_all = {
-            subject_name: netcdf_variable(subject_name, "", np.bytes_),
+            subject_name: named_variable(subject_name, dtype=np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
@@ -163,7 +154,7 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all)
         assert {} == result
 
-    def test_ignore(self):
+    def test_ignore(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
@@ -171,7 +162,7 @@ class TestIdentify:
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, CF_IDENTITY, subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -188,14 +179,14 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all, ignore=subject_names[1])
         assert expected == result
 
-    def test_target(self):
+    def test_target(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, self.cf_identity, subject_names[ix])
+            setattr(var, CF_IDENTITY, subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -212,10 +203,24 @@ class TestIdentify:
         result = CFUGridMeshVariable.identify(vars_all, target=source_names[0])
         assert expected == result
 
-    def test_warn(self):
+    def test_target_unknown_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
+        with pytest.raises(ValueError, match=message):
+            CFUGridMeshVariable.identify(vars_all, target="unknown")
+
+    def test_target_wrong_type_raises(self, named_variable):
+        vars_all = {"ref_source": named_variable("ref_source")}
+
+        message = "Expect a target CF-netCDF variable name"
+        with pytest.raises(TypeError, match=message):
+            CFUGridMeshVariable.identify(vars_all, target=object())
+
+    def test_warn(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.cf_identity, subject_name)
+        setattr(ref_source, CF_IDENTITY, subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -231,19 +236,11 @@ class TestIdentify:
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"
-        with pytest.warns(iris.warnings.IrisCfMissingVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        assert_warning_gated(
+            operation, iris.warnings.IrisCfMissingVarWarning, warn_regex
+        )
 
         # String variable warning.
         warn_regex = r".*is a CF-netCDF label variable.*"
-        vars_all[subject_name] = netcdf_variable(subject_name, "", np.bytes_)
-        with pytest.warns(iris.warnings.IrisCfLabelVarWarning, match=warn_regex):
-            operation(warn=True)
-        with pytest.warns() as record:
-            operation(warn=False)
-        warn_list = [str(w.message) for w in record]
-        assert list(filter(re.compile(warn_regex).match, warn_list)) == []
+        vars_all[subject_name] = named_variable(subject_name, dtype=np.bytes_)
+        assert_warning_gated(operation, iris.warnings.IrisCfLabelVarWarning, warn_regex)
