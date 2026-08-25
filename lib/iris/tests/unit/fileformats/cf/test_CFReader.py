@@ -4,11 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.cf.CFReader` class."""
 
+import contextlib
+import io
 from unittest import mock
 
 import numpy as np
 import pytest
 
+import iris
+from iris.fileformats import cf
 from iris.fileformats.cf import (
     CFCoordinateVariable,
     CFDataVariable,
@@ -454,3 +458,28 @@ class Test_build_cf_groups__nczarr_scalar_grid_mapping:
     def test_nczarr_scalar_grid_mapping_spans_data_var(self):
         temp_cf_group = self.cf_group["temp"].cf_group
         assert "crs" in temp_cf_group.grid_mappings
+
+
+def test_destructor(tmp_path):
+    """Test the destructor when reading the dataset fails.
+    Related to issue #3312: previously, the `CFReader` would
+    always call `close()` on its `_dataset` attribute, even if it
+    didn't exist because opening the dataset had failed.
+    """
+    fn = tmp_path / "tmp.nc"
+    with fn.open("wb+") as fh:
+        fh.write(b"\x89HDF\r\n\x1a\nBroken file with correct signature")
+        fh.flush()
+
+        with io.StringIO() as buf:
+            with contextlib.redirect_stderr(buf):
+                try:
+                    _ = cf.CFReader(str(fn))
+                except OSError:
+                    pass
+                try:
+                    _ = iris.load_cubes(str(fn))
+                except OSError:
+                    pass
+            buf.seek(0)
+            assert buf.read() == ""
