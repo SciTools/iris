@@ -4,15 +4,12 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFLabelVariable`."""
 
-import warnings
-
 import numpy as np
 import pytest
 
 from iris.fileformats.cf import CFDataVariable, CFLabelVariable
-import iris.warnings
 
-CF_IDENTITY = "coordinates"
+from .identify_catalogue import IdentifyByAttributeCatalog
 
 
 class _NetCDFVarWithDimensions:
@@ -31,160 +28,53 @@ class _NetCDFVarWithDimensions:
         ]
 
 
-class TestIdentify:
-    def test_string_ref_identified(self, named_variable):
-        """String-dtype variables referenced via 'coordinates' are accepted as labels."""
-        subject_name = "ref_subject"
-        ref_subject = named_variable(subject_name, dtype=np.bytes_)
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, CF_IDENTITY, subject_name)
-        vars_all = {
-            subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
+class TestIdentify(IdentifyByAttributeCatalog):
+    __test__ = True
+
+    CF_CLASS = CFLabelVariable
+    CF_IDENTITY = "coordinates"
+    MISSING_WARN_REGEX = r"Missing CF-netCDF label variable {subject!r}.*"
+
+    @classmethod
+    def _make_subject(cls, named_variable, name):
+        # Label identify expects referenced variables to be string-typed.
+        return named_variable(name, dtype=np.bytes_)
+
+    def test_two_refs(self, named_variable):
+        # Label coordinates may be listed space-delimited on a single source.
+        subject_names = ("ref_subject_1", "ref_subject_2")
+        ref_subject_vars = {
+            name: self._make_subject(named_variable, name) for name in subject_names
         }
 
-        expected = {subject_name: CFLabelVariable(subject_name, ref_subject)}
-        result = CFLabelVariable.identify(vars_all)
+        ref_source = named_variable("ref_source")
+        setattr(ref_source, self.CF_IDENTITY, " ".join(subject_names))
+        vars_all = {
+            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_source": ref_source,
+            **ref_subject_vars,
+        }
+
+        expected = {
+            name: self._expected_var(name, var)
+            for name, var in ref_subject_vars.items()
+        }
+        result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 
     def test_non_string_ref_ignored(self, named_variable):
-        """Non-string dtype variables referenced via 'coordinates' are not labels."""
+        # Label identify should reject non-string referenced variables.
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, CF_IDENTITY, subject_name)
+        self._set_ref(ref_source, subject_name)
         vars_all = {
             subject_name: named_variable(subject_name, dtype=int),
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
 
-        result = CFLabelVariable.identify(vars_all)
+        result = self.CF_CLASS.identify(vars_all)
         assert {} == result
-
-    def test_two_refs(self, named_variable):
-        """One source with two string-dtype coordinate refs yields two label vars."""
-        subject_names = ("ref_label_1", "ref_label_2")
-        ref_subject_vars = {
-            name: named_variable(name, dtype=np.bytes_) for name in subject_names
-        }
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, CF_IDENTITY, " ".join(subject_names))
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
-            **ref_subject_vars,
-        }
-
-        expected = {
-            name: CFLabelVariable(name, var) for name, var in ref_subject_vars.items()
-        }
-        result = CFLabelVariable.identify(vars_all)
-        assert expected == result
-
-    def test_duplicate_refs(self, named_variable):
-        subject_name = "ref_subject"
-        ref_subject = named_variable(subject_name, dtype=np.bytes_)
-        ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
-        }
-        for var in ref_source_vars.values():
-            setattr(var, CF_IDENTITY, subject_name)
-        vars_all = {
-            subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
-            **ref_source_vars,
-        }
-
-        expected = {subject_name: CFLabelVariable(subject_name, ref_subject)}
-        result = CFLabelVariable.identify(vars_all)
-        assert expected == result
-
-    def test_ignore(self, named_variable):
-        subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name, dtype=np.bytes_) for name in subject_names
-        }
-
-        ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
-        }
-        for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, CF_IDENTITY, subject_names[ix])
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            **ref_subject_vars,
-            **ref_source_vars,
-        }
-
-        expected_name = subject_names[0]
-        expected = {
-            expected_name: CFLabelVariable(
-                expected_name, ref_subject_vars[expected_name]
-            )
-        }
-        result = CFLabelVariable.identify(vars_all, ignore=subject_names[1])
-        assert expected == result
-
-    def test_target(self, named_variable):
-        subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: named_variable(name, dtype=np.bytes_) for name in subject_names
-        }
-
-        source_names = ("ref_source_1", "ref_source_2")
-        ref_source_vars = {name: named_variable(name) for name in source_names}
-        for ix, var in enumerate(ref_source_vars.values()):
-            setattr(var, CF_IDENTITY, subject_names[ix])
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            **ref_subject_vars,
-            **ref_source_vars,
-        }
-
-        expected_name = subject_names[0]
-        expected = {
-            expected_name: CFLabelVariable(
-                expected_name, ref_subject_vars[expected_name]
-            )
-        }
-        result = CFLabelVariable.identify(vars_all, target=source_names[0])
-        assert expected == result
-
-    def test_target_unknown_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
-
-        message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
-        with pytest.raises(ValueError, match=message):
-            CFLabelVariable.identify(vars_all, target="unknown")
-
-    def test_target_wrong_type_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
-
-        message = "Expect a target CF-netCDF variable name"
-        with pytest.raises(TypeError, match=message):
-            CFLabelVariable.identify(vars_all, target=object())
-
-    def test_warn(self, named_variable, assert_warning_gated):
-        subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, CF_IDENTITY, subject_name)
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
-        }
-
-        def operation(warn: bool):
-            warnings.warn(
-                "emit at least 1 warning",
-                category=iris.warnings.IrisUserWarning,
-            )
-            CFLabelVariable.identify(vars_all, warn=warn)
-
-        warn_regex = rf"Missing CF-netCDF label variable {subject_name!r}.*"
-        assert_warning_gated(
-            operation, iris.warnings.IrisCfMissingVarWarning, warn_regex
-        )
 
 
 class TestCfLabelDimensions:
