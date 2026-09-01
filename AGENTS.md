@@ -227,6 +227,7 @@ make lockfiles
   re-import errors (e.g. "cannot load module more than once per process"),
   run tests from an activated shell instead:
   `source /opt/conda/etc/profile.d/conda.sh && conda activate <env> && pytest ...`
+  E.g. this error appears when using pytest-cov.
 
 
 ## Getting Help
