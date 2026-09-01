@@ -160,7 +160,7 @@ v3.16 (13 Aug 2026)
 
 - :fa:`code-pull-request` :pull:`7223`: :user:`trexfeathers` updated Iris to be compatible with Matplotlib version 3.11.
 
-- :fa:`code-pull-request` :pull:`7262`: :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhas version 4.0 .
+- :fa:`code-pull-request` :pull:`7262`: :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 .
 
 
 
