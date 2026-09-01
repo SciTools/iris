@@ -668,8 +668,37 @@ class Test_translate__formula_terms_derived_bounds:
             return_value=dataset,
         )
 
+    @pytest.fixture(params=[True, False], ids=["FUTURE", "not_FUTURE"])
+    def future_context(self, request):
+        if request.param:
+            result = iris.FUTURE.context(derived_bounds=True)
+        else:
+            result = contextlib.nullcontext()
+        return result
+
+    def test_derived_bounds_term(self, mocker, future_context):
+        self._patch_encoded_dataset(mocker)
+
+        with future_context:
+            cf_group = CFReader("dummy.nc").cf_group
+
+        assert "term" in cf_group.formula_terms
+        assert isinstance(cf_group["term"], CFAuxiliaryCoordinateVariable)
+
+    def test_derived_bounds_skips_when_term_missing(self, mocker, future_context):
+        self.root_bnds.formula_terms = "a: missing_term"
+        self._patch_encoded_dataset(mocker)
+
+        with future_context:
+            cf_group = CFReader("dummy.nc").cf_group
+
+        assert "term" in cf_group.formula_terms
+        assert isinstance(cf_group["term"], CFAuxiliaryCoordinateVariable)
+
     def test_promotes_non_formula_root_bounds_to_data(self, mocker):
         self.root_bnds = netcdf_variable(mocker, "z_bnds", "_scalar_", np.float64)
+        # With valid formula terms, the variable would instead be recorded
+        #  correctly as a bounds variable.
         del self.root_bnds.formula_terms
         self.variables["z_bnds"] = self.root_bnds
         self._patch_encoded_dataset(mocker)
@@ -680,10 +709,14 @@ class Test_translate__formula_terms_derived_bounds:
         assert "z_bnds" in cf_group.promoted
         assert cf_group["z"].bounds is None
 
-    def test_reclassifies_formula_term_bounds_variable(self, mocker):
+    def test_reclassifies_formula_term_bounds_variable(self, mocker, future_context):
+        # If not referenced by any formula terms, the bounds variable is
+        #  promoted to a data variable.
+        # Referenced
         delta = netcdf_variable(
             mocker, "delta", "height", np.float64, bounds="delta_bnds"
         )
+        # Referenced
         sigma = netcdf_variable(
             mocker, "sigma", "height", np.float64, bounds="sigma_bnds"
         )
@@ -697,6 +730,7 @@ class Test_translate__formula_terms_derived_bounds:
             bounds="height_bnds",
             standard_name="atmosphere_hybrid_height_coordinate",
         )
+        # Referenced
         formula_terms_bnds = "a: delta_bnds b: sigma_bnds"
         height_bnds = netcdf_variable(
             mocker,
@@ -720,7 +754,7 @@ class Test_translate__formula_terms_derived_bounds:
         self.variables = variables
         self._patch_encoded_dataset(mocker)
 
-        with iris.FUTURE.context(derived_bounds=True):
+        with future_context:
             cf_group = CFReader("dummy.nc").cf_group
 
         assert isinstance(cf_group["delta_bnds"], CFBoundaryVariable)
@@ -728,7 +762,9 @@ class Test_translate__formula_terms_derived_bounds:
         assert cf_group["delta"].bounds == "delta_bnds"
         assert cf_group["sigma"].bounds == "sigma_bnds"
 
-    def test_formula_term_already_in_group_uses_existing_variable(self, mocker):
+    def test_formula_term_already_in_group_uses_existing_variable(
+        self, mocker, future_context
+    ):
         self.root = netcdf_variable(
             mocker,
             "z",
@@ -741,12 +777,21 @@ class Test_translate__formula_terms_derived_bounds:
         self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
         self._patch_encoded_dataset(mocker)
 
-        with iris.FUTURE.context(derived_bounds=True):
+        with future_context:
             cf_group = CFReader("dummy.nc").cf_group
 
-        assert cf_group["pressure"] is cf_group.coordinates["pressure"]
+        # When existing elsewhere, a variable referenced by a formula term is
+        #  NOT created as an aux coord as it usually would. Instead the existing
+        #  variable is re-used.
+        assert cf_group.formula_terms["pressure"] is cf_group.coordinates["pressure"]
+        assert "pressure" not in cf_group.auxiliary_coordinates
 
-    def test_derived_bounds_handles_string_reference_terms(self, mocker):
+    @pytest.mark.parametrize(
+        "standard_name", [False, True], ids=["no_standard_name", "with_standard_name"]
+    )
+    def test_derived_bounds_promotes_reference_terms(
+        self, mocker, future_context, standard_name
+    ):
         self.root = netcdf_variable(
             mocker,
             "z",
@@ -755,51 +800,32 @@ class Test_translate__formula_terms_derived_bounds:
             formula_terms="a: pressure",
             standard_name="custom_reference",
         )
+        if not standard_name:
+            if isinstance(future_context, contextlib.nullcontext):
+                pytest.skip("Test only applicable when FUTURE context is enabled.")
+            else:
+                del self.root.standard_name
         self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
         self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
         self._patch_encoded_dataset(mocker)
+        # reference_terms supports hybrid heights. Variables that are both
+        #  named in formula_terms and referenced in reference_terms - "a" in
+        #  this case - are always promoted.
         mocker.patch.dict(
             "iris.fileformats.cf.reference_terms",
+            # Real world example: {"atmosphere_sigma_coordinate": ["ps"]}
             {"custom_reference": "a"},
             clear=False,
         )
 
-        with iris.FUTURE.context(derived_bounds=True):
+        with future_context:
             cf_group = CFReader("dummy.nc").cf_group
 
-        assert "pressure" in cf_group.promoted
-
-    def test_derived_bounds_ignores_missing_standard_name(self, mocker):
-        self.root = netcdf_variable(
-            mocker, "z", "z", np.float64, formula_terms="a: pressure"
-        )
-        del self.root.standard_name
-        self.root.ncattrs = mocker.Mock(return_value=["formula_terms"])
-        self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
-        self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
-        self._patch_encoded_dataset(mocker)
-
-        with iris.FUTURE.context(derived_bounds=True):
-            cf_group = CFReader("dummy.nc").cf_group
-
-        assert "pressure" not in cf_group.promoted
-
-    def test_derived_bounds_keeps_same_term_for_bounds_as_noop(self, mocker):
-        self._patch_encoded_dataset(mocker)
-
-        with iris.FUTURE.context(derived_bounds=True):
-            cf_group = CFReader("dummy.nc").cf_group
-
-        assert "term" in cf_group.formula_terms
-
-    def test_derived_bounds_skips_when_term_bounds_mapping_is_ambiguous(self, mocker):
-        self.root_bnds.formula_terms = "a: missing_term"
-        self._patch_encoded_dataset(mocker)
-
-        with iris.FUTURE.context(derived_bounds=True):
-            cf_group = CFReader("dummy.nc").cf_group
-
-        assert not isinstance(cf_group["term"], CFBoundaryVariable)
+        if standard_name:
+            assert "pressure" in cf_group.promoted
+        else:
+            # Promotion step is skipped if standard_name is absent.
+            assert "pressure" not in cf_group.promoted
 
 
 class Test_translate__global_attributes_missing:
