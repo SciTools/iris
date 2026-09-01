@@ -21,7 +21,7 @@ class TestBytesLikeObject:
     @staticmethod
     def _ndarray(value):
         parts = str((value.shape, xxh64_hexdigest(value)))
-        return xxh64_hexdigest(parts)
+        return xxh64_hexdigest(parts.encode())
 
     @staticmethod
     def _masked(value):
@@ -32,11 +32,11 @@ class TestBytesLikeObject:
                 xxh64_hexdigest(value.mask),
             )
         )
-        return xxh64_hexdigest(parts)
+        return xxh64_hexdigest(parts.encode())
 
     def test_string(self):
         value = "hello world"
-        self.hasher.update(value)
+        self.hasher.update(value.encode())
         expected = self.hasher.hexdigest()
         assert hexdigest(value) == expected
 
@@ -111,7 +111,7 @@ class TestBytesLikeObject:
 class TestNotBytesLikeObject:
     def _expected(self, value):
         parts = str((type(value), value))
-        return xxh64_hexdigest(parts)
+        return xxh64_hexdigest(parts.encode())
 
     def test_int(self):
         value = 123

@@ -96,6 +96,10 @@ def hexdigest(item):
         parts = (item.shape, xxh64_hexdigest(item))
         item = str(parts)
 
+    # xxhash 4.0+: str is no longer accepted; encode to bytes first.
+    if isinstance(item, str):
+        item = item.encode()
+
     try:
         # Calculate single-shot hash to avoid allocating state on the heap
         result = xxh64_hexdigest(item)
@@ -104,7 +108,7 @@ def hexdigest(item):
         # string representation of the provided item instead, but
         # also fold in the object type...
         parts = (type(item), item)
-        result = xxh64_hexdigest(str(parts))
+        result = xxh64_hexdigest(str(parts).encode())
 
     return result
 
