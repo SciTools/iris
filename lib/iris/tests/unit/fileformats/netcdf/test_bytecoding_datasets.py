@@ -7,6 +7,7 @@
 from pathlib import Path
 import warnings
 
+import dask.array as da
 import netCDF4
 import numpy as np
 import pytest
@@ -18,6 +19,9 @@ from iris.fileformats.netcdf._bytecoding_datasets import (
     EncodedDataset,
     EncodedGroup,
     EncodedVariable,
+    VariableEncoder,
+    decode_bytesarray_to_stringarray,
+    encode_stringarray_as_bytearray,
 )
 from iris.fileformats.netcdf._thread_safe_nc import (
     DatasetWrapper,
@@ -25,6 +29,10 @@ from iris.fileformats.netcdf._thread_safe_nc import (
     VariableWrapper,
 )
 import iris.tests._shared_utils as testutils
+from iris.tests.integration.netcdf.test_stringdata import (
+    convert_bytearray_to_strings,
+    convert_strings_to_chararray,
+)
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 
@@ -553,3 +561,114 @@ class TestObjectTypes:
         else:
             # Just check method exists +  doesn't error.
             component.set_auto_chartostring(is_on)
+
+
+# specific tests for underlying support classes
+# (not strictly public, but possible for use by ncdata ?
+class TestEncodeDecodeFuncs:
+    # TODO: make this work with nonstandard chuhks (currently does NOT)
+
+    @pytest.fixture(params=["utf8", "ascii"])
+    def encoding(self, request):
+        return request.param
+
+    @pytest.fixture(params=["lazy", "concrete"])
+    def lazyreal(self, request):
+        return request.param
+
+    SAMPLE_STRINGS_UNICODE = [["1", "éclair", "two"]] * 2
+    SAMPLE_STRINGS_ASCII = [["1", "bun", "London"]] * 2
+
+    @pytest.fixture(params=["singlechunk", "multichunk"])
+    def chunkstyle(self, request):
+        return request.param
+
+    def test_encode(self, encoding, lazyreal, chunkstyle):
+        if encoding == "ascii":
+            strings = self.SAMPLE_STRINGS_ASCII
+        else:
+            strings = self.SAMPLE_STRINGS_UNICODE
+
+        real_stringarray = np.array(strings, dtype="U10")
+        if lazyreal == "concrete":
+            sample_stringarray = real_stringarray
+        else:
+            chunks = -1 if chunkstyle == "singlechunk" else (1, 3)
+            sample_stringarray = da.from_array(
+                real_stringarray,
+                chunks=chunks,
+            )
+            print(
+                "sample chunksize=",
+                sample_stringarray.chunksize,
+                "  : chunks=",
+                sample_stringarray.chunks,
+            )
+
+        if lazyreal == "concrete":
+            result = encode_stringarray_as_bytearray(
+                sample_stringarray,
+                encoding=encoding,
+                string_dimension_length=20,
+                var_name="xxx",
+            )
+        else:
+            # For now at least, we need to map the operation ourselves.
+            # TODO: do this in encode/decode functions, or VariableEncoder ?
+            result = da.map_blocks(
+                encode_stringarray_as_bytearray,
+                sample_stringarray,
+                encoding=encoding,
+                string_dimension_length=20,
+                var_name="xxx",
+                new_axis=2,
+                dtype="S1",
+            )
+            # run the lazy operation
+            result = result.compute()
+
+        expected = convert_strings_to_chararray(
+            string_array_1d=real_stringarray.reshape((6,)), maxlen=20, encoding=encoding
+        ).reshape((2, 3, 20))
+        assert np.all(expected == result)
+
+    def test_decode(self, encoding, lazyreal, chunkstyle):
+        if encoding == "ascii":
+            strings = self.SAMPLE_STRINGS_ASCII
+        else:
+            strings = self.SAMPLE_STRINGS_UNICODE
+
+        real_stringarray = np.array(strings, dtype="U10")
+        real_bytearray = convert_strings_to_chararray(
+            string_array_1d=real_stringarray.reshape((6,)), maxlen=20, encoding=encoding
+        ).reshape((2, 3, 20))
+        if lazyreal == "concrete":
+            sample_bytearray = real_bytearray
+        else:
+            chunks = -1 if chunkstyle == "singlechunk" else (1, 3, -1)
+            sample_bytearray = da.from_array(real_bytearray, chunks=chunks)
+
+        if lazyreal == "concrete":
+            result = decode_bytesarray_to_stringarray(
+                byte_array=sample_bytearray,
+                encoding=encoding,
+                string_width=20,
+                var_name="xxx",
+            )
+        else:
+            # For now at least, we need to map the operation ourselves.
+            # TODO: do this in encode/decode functions, or VariableEncoder ?
+            result = da.map_blocks(
+                decode_bytesarray_to_stringarray,
+                sample_bytearray,  # you **can't** make this a named keyword
+                encoding=encoding,
+                string_width=20,
+                var_name="xxx",
+                drop_axis=2,
+                dtype="U20",  # explicit, as function doesn't support empty arrays
+            )
+            # run the lazy operation
+            result = result.compute()
+
+        expected = real_stringarray.astype("U20")
+        assert np.all(expected == result)
