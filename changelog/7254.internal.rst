@@ -1,0 +1,1 @@
+:user:`trexfeathers` made CI compatible with PROJ 9.8, including known incompatibilities with Cartopy <0.26 when plotting coastlines.
