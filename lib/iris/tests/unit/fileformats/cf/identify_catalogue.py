@@ -26,6 +26,7 @@ class IdentifyByAttributeCatalog(ABC):
     CF_CLASS: type[CFVariable]
     CF_IDENTITY: str
     MISSING_WARN_REGEX: str
+    SUBJECT_DTYPE_DEFAULT = None
 
     @classmethod
     def _set_ref(cls, source_var, value):
@@ -37,7 +38,10 @@ class IdentifyByAttributeCatalog(ABC):
 
     @classmethod
     def _make_subject(cls, named_variable, name):
-        return named_variable(name)
+        if cls.SUBJECT_DTYPE_DEFAULT is None:
+            return named_variable(name)
+        else:
+            return named_variable(name, dtype=cls.SUBJECT_DTYPE_DEFAULT)
 
     def test_one_ref(self, named_variable):
         subject_name = "ref_subject"

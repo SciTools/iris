@@ -34,11 +34,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
     CF_CLASS = CFLabelVariable
     CF_IDENTITY = "coordinates"
     MISSING_WARN_REGEX = r"Missing CF-netCDF label variable {subject!r}.*"
-
-    @classmethod
-    def _make_subject(cls, named_variable, name):
-        # Label identify expects referenced variables to be string-typed.
-        return named_variable(name, dtype=np.bytes_)
+    SUBJECT_DTYPE_DEFAULT = np.bytes_
 
     def test_two_refs(self, named_variable):
         # Label coordinates may be listed space-delimited on a single source.
