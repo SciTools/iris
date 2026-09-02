@@ -15,7 +15,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
     __test__ = True
 
     CF_CLASS = CFAuxiliaryCoordinateVariable
-    CF_IDENTITY = "coordinates"
+    CF_IDENTITIES = ["coordinates"]
     MISSING_WARN_REGEX = (
         r"Missing CF-netCDF auxiliary coordinate variable {subject!r}.*"
     )
@@ -26,7 +26,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, " ".join(subject_names))
+        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -43,7 +43,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         # Coordinate-variable identify should reject label/string subjects.
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, subject_name)
+        setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             subject_name: named_variable(subject_name, dtype=np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),

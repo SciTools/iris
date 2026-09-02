@@ -32,7 +32,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
     __test__ = True
 
     CF_CLASS = CFLabelVariable
-    CF_IDENTITY = "coordinates"
+    CF_IDENTITIES = ["coordinates"]
     MISSING_WARN_REGEX = r"Missing CF-netCDF label variable {subject!r}.*"
     SUBJECT_DTYPE_DEFAULT = np.bytes_
 
@@ -44,7 +44,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         }
 
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, " ".join(subject_names))
+        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -61,7 +61,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         # Label identify should reject non-string referenced variables.
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, subject_name)
+        setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             subject_name: named_variable(subject_name, dtype=int),
             "ref_not_subject": named_variable("ref_not_subject"),

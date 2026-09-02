@@ -31,7 +31,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
     __test__ = True
 
     CF_CLASS = CFBoundaryVariable
-    CF_IDENTITY = "bounds"
+    CF_IDENTITIES = ["bounds"]
     MISSING_WARN_REGEX = r"Missing CF-netCDF boundary variable {subject!r}.*"
 
     def test_whitespace_padded_ref(self, named_variable):
@@ -39,7 +39,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         subject_name = "ref_subject"
         ref_subject = self._make_subject(named_variable, subject_name)
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, f"  {subject_name}  ")
+        setattr(ref_source, self.CF_IDENTITIES[0], f"  {subject_name}  ")
         vars_all = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),

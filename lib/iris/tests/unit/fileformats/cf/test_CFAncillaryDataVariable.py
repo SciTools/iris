@@ -13,7 +13,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
     __test__ = True
 
     CF_CLASS = CFAncillaryDataVariable
-    CF_IDENTITY = "ancillary_variables"
+    CF_IDENTITIES = ["ancillary_variables"]
     MISSING_WARN_REGEX = r"Missing CF-netCDF ancillary data variable {subject!r}.*"
 
     def test_two_refs(self, named_variable):
@@ -23,7 +23,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITY, " ".join(subject_names))
+        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
