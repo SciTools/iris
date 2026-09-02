@@ -61,7 +61,7 @@ dependencies:
   - sphinx-needs
   - sphinx-reredirects
   - sphinx_changelog >=1.6.0
-  - sphinx-llm
+  - sphinx-llm >=1.0.0
   - sphinx-sitemap
   - towncrier
 
