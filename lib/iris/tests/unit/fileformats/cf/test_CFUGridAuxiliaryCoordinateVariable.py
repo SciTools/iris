@@ -27,7 +27,7 @@ class TestIdentify(IdentifyByAttributeListCatalog):
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
+        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -35,8 +35,7 @@ class TestIdentify(IdentifyByAttributeListCatalog):
         }
 
         expected = {
-            name: self._expected_var(name, var)
-            for name, var in ref_subject_vars.items()
+            name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result

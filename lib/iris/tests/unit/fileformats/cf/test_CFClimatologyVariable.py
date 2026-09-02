@@ -39,14 +39,14 @@ class TestIdentify(IdentifyByAttributeCatalog):
         subject_name = "ref_subject"
         ref_subject = self._make_subject(named_variable, subject_name)
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, f"  {subject_name}  ")
+        setattr(ref_source, self.CF_IDENTITY, f"  {subject_name}  ")
         vars_all = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
 
-        expected = {subject_name: self._expected_var(subject_name, ref_subject)}
+        expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 

@@ -29,14 +29,6 @@ class IdentifyByAttributeCatalog(ABC):
     SUBJECT_DTYPE_DEFAULT = None
 
     @classmethod
-    def _set_ref(cls, source_var, value):
-        setattr(source_var, cls.CF_IDENTITY, value)
-
-    @classmethod
-    def _expected_var(cls, name, var):
-        return cls.CF_CLASS(name, var)
-
-    @classmethod
     def _make_subject(cls, named_variable, name):
         if cls.SUBJECT_DTYPE_DEFAULT is None:
             return named_variable(name)
@@ -47,14 +39,14 @@ class IdentifyByAttributeCatalog(ABC):
         subject_name = "ref_subject"
         ref_subject = self._make_subject(named_variable, subject_name)
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, subject_name)
+        setattr(ref_source, self.CF_IDENTITY, subject_name)
         vars_all = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
         }
 
-        expected = {subject_name: self._expected_var(subject_name, ref_subject)}
+        expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 
@@ -68,7 +60,7 @@ class IdentifyByAttributeCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, subject_names[ix])
+            setattr(var, self.CF_IDENTITY, subject_names[ix])
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             **ref_subject_vars,
@@ -76,8 +68,7 @@ class IdentifyByAttributeCatalog(ABC):
         }
 
         expected = {
-            name: self._expected_var(name, var)
-            for name, var in ref_subject_vars.items()
+            name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
@@ -89,14 +80,14 @@ class IdentifyByAttributeCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
-            self._set_ref(var, subject_name)
+            setattr(var, self.CF_IDENTITY, subject_name)
         vars_all = {
             subject_name: ref_subject,
             "ref_not_subject": named_variable("ref_not_subject"),
             **ref_source_vars,
         }
 
-        expected = {subject_name: self._expected_var(subject_name, ref_subject)}
+        expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 
@@ -110,7 +101,7 @@ class IdentifyByAttributeCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, subject_names[ix])
+            setattr(var, self.CF_IDENTITY, subject_names[ix])
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             **ref_subject_vars,
@@ -119,9 +110,7 @@ class IdentifyByAttributeCatalog(ABC):
 
         expected_name = subject_names[0]
         expected = {
-            expected_name: self._expected_var(
-                expected_name, ref_subject_vars[expected_name]
-            )
+            expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, ignore=subject_names[1])
         assert expected == result
@@ -135,7 +124,7 @@ class IdentifyByAttributeCatalog(ABC):
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, subject_names[ix])
+            setattr(var, self.CF_IDENTITY, subject_names[ix])
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             **ref_subject_vars,
@@ -144,9 +133,7 @@ class IdentifyByAttributeCatalog(ABC):
 
         expected_name = subject_names[0]
         expected = {
-            expected_name: self._expected_var(
-                expected_name, ref_subject_vars[expected_name]
-            )
+            expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, target=source_names[0])
         assert expected == result
@@ -168,7 +155,7 @@ class IdentifyByAttributeCatalog(ABC):
     def test_warn(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, subject_name)
+        setattr(ref_source, self.CF_IDENTITY, subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -197,14 +184,6 @@ class IdentifyByAttributeListCatalog(ABC):
     CF_IDENTITIES: list[str]
     MISSING_WARN_REGEX: str
 
-    @classmethod
-    def _set_ref(cls, source_var, identity, value):
-        setattr(source_var, identity, value)
-
-    @classmethod
-    def _expected_var(cls, name, var):
-        return cls.CF_CLASS(name, var)
-
     def test_cf_identities(self, named_variable):
         assert self.CF_IDENTITIES
 
@@ -215,10 +194,10 @@ class IdentifyByAttributeListCatalog(ABC):
                 subject_name: ref_subject,
                 "ref_not_subject": named_variable("ref_not_subject"),
             }
-            expected = {subject_name: self._expected_var(subject_name, ref_subject)}
+            expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
 
             ref_source = named_variable("ref_source")
-            self._set_ref(ref_source, identity, subject_name)
+            setattr(ref_source, identity, subject_name)
             vars_all = dict({"ref_source": ref_source}, **vars_common)
             result = self.CF_CLASS.identify(vars_all)
             assert expected == result
@@ -230,7 +209,7 @@ class IdentifyByAttributeListCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
-            self._set_ref(var, self.CF_IDENTITIES[0], subject_name)
+            setattr(var, self.CF_IDENTITIES[0], subject_name)
         vars_all = dict(
             {
                 subject_name: ref_subject,
@@ -239,7 +218,7 @@ class IdentifyByAttributeListCatalog(ABC):
             **ref_source_vars,
         )
 
-        expected = {subject_name: self._expected_var(subject_name, ref_subject)}
+        expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 
@@ -251,7 +230,7 @@ class IdentifyByAttributeListCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, self.CF_IDENTITIES[ix], subject_names[ix])
+            setattr(var, self.CF_IDENTITIES[ix], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -259,8 +238,7 @@ class IdentifyByAttributeListCatalog(ABC):
         )
 
         expected = {
-            name: self._expected_var(name, var)
-            for name, var in ref_subject_vars.items()
+            name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
@@ -270,7 +248,7 @@ class IdentifyByAttributeListCatalog(ABC):
         ref_subject_vars = {name: named_variable(name) for name in subject_names}
 
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
+        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -283,7 +261,7 @@ class IdentifyByAttributeListCatalog(ABC):
     def test_string_type_ignored(self, named_variable):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, self.CF_IDENTITIES[0], subject_name)
+        setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             subject_name: named_variable(subject_name, dtype=np.bytes_),
             "ref_not_subject": named_variable("ref_not_subject"),
@@ -301,7 +279,7 @@ class IdentifyByAttributeListCatalog(ABC):
             name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, self.CF_IDENTITIES[0], subject_names[ix])
+            setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -310,9 +288,7 @@ class IdentifyByAttributeListCatalog(ABC):
 
         expected_name = subject_names[0]
         expected = {
-            expected_name: self._expected_var(
-                expected_name, ref_subject_vars[expected_name]
-            )
+            expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, ignore=subject_names[1])
         assert expected == result
@@ -324,7 +300,7 @@ class IdentifyByAttributeListCatalog(ABC):
         source_names = ("ref_source_1", "ref_source_2")
         ref_source_vars = {name: named_variable(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
-            self._set_ref(var, self.CF_IDENTITIES[0], subject_names[ix])
+            setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = dict(
             {"ref_not_subject": named_variable("ref_not_subject")},
             **ref_subject_vars,
@@ -333,9 +309,7 @@ class IdentifyByAttributeListCatalog(ABC):
 
         expected_name = subject_names[0]
         expected = {
-            expected_name: self._expected_var(
-                expected_name, ref_subject_vars[expected_name]
-            )
+            expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, target=source_names[0])
         assert expected == result
@@ -357,7 +331,7 @@ class IdentifyByAttributeListCatalog(ABC):
     def test_warn(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, self.CF_IDENTITIES[0], subject_name)
+        setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
@@ -380,7 +354,7 @@ class IdentifyByAttributeListCatalog(ABC):
     def test_warn_string_type(self, named_variable, assert_warning_gated):
         subject_name = "ref_subject"
         ref_source = named_variable("ref_source")
-        self._set_ref(ref_source, self.CF_IDENTITIES[0], subject_name)
+        setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             "ref_source": ref_source,
