@@ -1024,8 +1024,9 @@ def env_bin_path(exe_name: Optional[str] = None):
     return exe_path
 
 
+# TODO: Remove this decorator once problematic versions have been phased out
 def skip_proj_9_8_incompatible(func: Callable):
-    """Return a skipper for when PROJ is >=9.8 and Cartopy is <0.26.
+    """A decorator that skips decorated tests when PROJ is >=9.8 and Cartopy is <0.26.
 
     Cartopy v0.26 addresses a known incompatibility with PROJ v9.8:
     https://github.com/SciTools/cartopy/pull/2653
