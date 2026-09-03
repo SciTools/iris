@@ -3281,7 +3281,7 @@ def extract_region(cube: Cube, area: list | tuple | np.ndarray,
         y_name = cube.coord(axis="y").name()
         coord_values = {
             x_name: _make_cell_check(xt_min, xt_max, min_inclusive, max_inclusive,
-                                     ignore_bounds, threshold)
+                                     ignore_bounds, threshold),
             y_name: _make_cell_check(yt_min, yt_max, min_inclusive, max_inclusive,
                                      ignore_bounds, threshold),
         }
