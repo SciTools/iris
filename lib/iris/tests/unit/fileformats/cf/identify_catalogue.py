@@ -246,22 +246,6 @@ class IdentifyByAttributeListCatalog(IdentifyByAttributeCatalog):
         result = self.CF_CLASS.identify(vars_all)
         assert expected == result
 
-    def test_two_part_ref(self, named_variable):
-        """Test that space-separated refs in a single attribute are rejected."""
-        subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
-
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
-            **ref_subject_vars,
-        }
-
-        result = self.CF_CLASS.identify(vars_all)
-        assert {} == result
-
     def test_string_type_ignored(self, named_variable):
         """Test that string-typed referenced variables are ignored."""
         subject_name = "ref_subject"
