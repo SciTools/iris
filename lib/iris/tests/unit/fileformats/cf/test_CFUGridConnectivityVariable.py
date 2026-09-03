@@ -15,4 +15,5 @@ class TestIdentify(IdentifyByAttributeListCatalog):
 
     CF_CLASS = CFUGridConnectivityVariable
     CF_IDENTITIES = Connectivity.UGRID_CF_ROLES
+    IDENTITY_SUPPORTS_MULTIPLE_REFS = False
     MISSING_WARN_REGEX = r"Missing CF-UGRID connectivity variable {subject}.*"

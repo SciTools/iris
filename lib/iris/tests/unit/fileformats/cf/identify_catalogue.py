@@ -32,6 +32,8 @@ class IdentifyByAttributeCatalog(ABC):
     CF_IDENTITIES: list[str]  # Always a list; use [0] as primary identity
     MISSING_WARN_REGEX: str
     SUBJECT_DTYPE_DEFAULT = None
+    # Turn this off for identities that support only a single reference
+    IDENTITY_SUPPORTS_MULTIPLE_REFS = True
 
     @classmethod
     def _make_subject(cls, named_variable, name):
@@ -58,20 +60,25 @@ class IdentifyByAttributeCatalog(ABC):
         assert expected == result
 
     def test_two_refs(self, named_variable):
+        # Check that a single "source" var may refer to multiple "subject" vars.
         subject_names = ("ref_subject_1", "ref_subject_2")
         ref_subject_vars = {
             name: self._make_subject(named_variable, name) for name in subject_names
         }
 
-        ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
-        }
-        for ix, var in enumerate(ref_source_vars.values()):
-            setattr(
-                var,
-                self.CF_IDENTITIES[min(ix, len(self.CF_IDENTITIES) - 1)],
-                subject_names[ix],
-            )
+        if self.IDENTITY_SUPPORTS_MULTIPLE_REFS:
+            # make a single source reference multiple subjects.
+            ref_source_name = "ref_source"
+            ref_source_var = named_variable(ref_source_name)
+            setattr(ref_source_var, self.CF_IDENTITIES[0], " ".join(subject_names))
+            ref_source_vars = {ref_source_name: ref_source_var}
+        else:
+            # make two source vars, each referencing a different subject.
+            ref_source_vars = {
+                name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            }
+            for ix, var in enumerate(ref_source_vars.values()):
+                setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = {
             "ref_not_subject": named_variable("ref_not_subject"),
             **ref_subject_vars,

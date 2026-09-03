@@ -32,6 +32,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
 
     CF_CLASS = CFClimatologyVariable
     CF_IDENTITIES = ["climatology"]
+    IDENTITY_SUPPORTS_MULTIPLE_REFS = False
     MISSING_WARN_REGEX = r"Missing CF-netCDF climatology variable {subject!r}.*"
 
     def test_whitespace_padded_ref(self, named_variable):

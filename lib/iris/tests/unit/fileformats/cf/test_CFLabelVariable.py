@@ -36,27 +36,6 @@ class TestIdentify(IdentifyByAttributeCatalog):
     MISSING_WARN_REGEX = r"Missing CF-netCDF label variable {subject!r}.*"
     SUBJECT_DTYPE_DEFAULT = np.bytes_
 
-    def test_two_refs(self, named_variable):
-        # Label coordinates may be listed space-delimited on a single source.
-        subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: self._make_subject(named_variable, name) for name in subject_names
-        }
-
-        ref_source = named_variable("ref_source")
-        setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
-        vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
-            "ref_source": ref_source,
-            **ref_subject_vars,
-        }
-
-        expected = {
-            name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
-        }
-        result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
-
     def test_non_string_ref_ignored(self, named_variable):
         # Label identify should reject non-string referenced variables.
         subject_name = "ref_subject"
