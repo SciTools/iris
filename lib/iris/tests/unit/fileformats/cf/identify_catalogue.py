@@ -18,6 +18,58 @@ from iris.fileformats.cf import CFVariable
 import iris.warnings
 
 
+class _NetCDFVarWithDimensions:
+    """Stub with dimensions for spans() tests."""
+
+    def __init__(self, name, dimensions, dtype=np.bytes_):
+        self.name = name
+        self.dtype = np.dtype(dtype)
+        self.dimensions = dimensions
+
+    def ncattrs(self):
+        return [
+            attr
+            for attr in self.__dict__
+            if not attr.startswith("_") and attr not in ["name", "dtype", "dimensions"]
+        ]
+
+
+class SpansCatalog(ABC):
+    """Shared spans() tests for CF variable wrappers."""
+
+    __test__ = False
+
+    CF_CLASS: type[CFVariable]
+
+    def _make_cf_var(self, name, dimensions):
+        stub = _NetCDFVarWithDimensions(name, dimensions, dtype=np.bytes_)
+        return self.CF_CLASS(name, stub)
+
+    def test_empty_dimensions_spans(self):
+        """Scalar source variable always spans the target."""
+        cf_source = self._make_cf_var("source_var", ())
+        cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert cf_source.spans(cf_target)
+
+    def test_source_trailing_subset_spans(self):
+        """source[:-1] is a subset of target dimensions => spans."""
+        cf_source = self._make_cf_var("source_var", ("x", "y", "extra"))
+        cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert cf_source.spans(cf_target)
+
+    def test_source_leading_subset_spans(self):
+        """source[1:] is a subset of target dimensions => spans."""
+        cf_source = self._make_cf_var("source_var", ("extra", "x", "y"))
+        cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert cf_source.spans(cf_target)
+
+    def test_non_spanning(self):
+        """Dimensions that don't fit either slice => does not span."""
+        cf_source = self._make_cf_var("source_var", ("x", "b", "c"))
+        cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert not cf_source.spans(cf_target)
+
+
 class IdentifyByAttributeCatalog(ABC):
     """Base catalog for CF variable identify() tests.
 
