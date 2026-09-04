@@ -7,10 +7,10 @@
 from iris.fileformats.cf import CFUGridConnectivityVariable
 from iris.mesh import Connectivity
 
-from .identify_catalogue import IdentifyByAttributeListCatalog
+from .identify_mixins import IdentifyByAttributeListMixin
 
 
-class TestIdentify(IdentifyByAttributeListCatalog):
+class TestIdentify(IdentifyByAttributeListMixin):
     __test__ = True
 
     CF_CLASS = CFUGridConnectivityVariable

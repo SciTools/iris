@@ -8,10 +8,10 @@ import numpy as np
 
 from iris.fileformats.cf import CFAuxiliaryCoordinateVariable
 
-from .identify_catalogue import IdentifyByAttributeCatalog
+from .identify_mixins import IdentifyByAttributeMixin
 
 
-class TestIdentify(IdentifyByAttributeCatalog):
+class TestIdentify(IdentifyByAttributeMixin):
     __test__ = True
 
     CF_CLASS = CFAuxiliaryCoordinateVariable

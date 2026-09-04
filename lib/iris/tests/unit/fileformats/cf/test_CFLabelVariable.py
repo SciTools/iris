@@ -9,14 +9,14 @@ import pytest
 
 from iris.fileformats.cf import CFDataVariable, CFLabelVariable
 
-from .identify_catalogue import (
-    IdentifyByAttributeCatalog,
-    SpansCatalog,
+from .identify_mixins import (
+    IdentifyByAttributeMixin,
+    SpansMixin,
     _NetCDFVarWithDimensions,
 )
 
 
-class TestIdentify(IdentifyByAttributeCatalog):
+class TestIdentify(IdentifyByAttributeMixin):
     __test__ = True
 
     CF_CLASS = CFLabelVariable
@@ -67,7 +67,7 @@ class TestCfLabelDimensions:
         assert result == ()
 
 
-class TestSpans(SpansCatalog):
+class TestSpans(SpansMixin):
     """Tests for CFLabelVariable.spans()."""
 
     __test__ = True

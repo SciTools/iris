@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Shared test catalog for CF variable identify() behaviour.
+"""Shared test mixin classes for CF variable identify() behaviour.
 
 This module provides reusable pytest test classes which concrete test modules
 can subclass and configure via class attributes.
@@ -34,7 +34,7 @@ class _NetCDFVarWithDimensions:
         ]
 
 
-class SpansCatalog(ABC):
+class SpansMixin(ABC):
     """Shared spans() tests for CF variable wrappers."""
 
     __test__ = False
@@ -70,8 +70,8 @@ class SpansCatalog(ABC):
         assert not cf_source.spans(cf_target)
 
 
-class IdentifyByAttributeCatalog(ABC):
-    """Base catalog for CF variable identify() tests.
+class IdentifyByAttributeMixin(ABC):
+    """Parent class for CF variable identify() tests.
 
     Supports both single-attribute and multi-attribute identity patterns.
     Subclasses should define CF_IDENTITIES as a list of attribute names.
@@ -247,12 +247,12 @@ class IdentifyByAttributeCatalog(ABC):
         )
 
 
-class IdentifyByAttributeListCatalog(IdentifyByAttributeCatalog):
-    """Catalog for CF variables identified by multiple possible attributes.
+class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
+    """Parent class for CF variables identified by multiple possible attributes.
 
     This class adds test methods specific to cases where CF_IDENTITIES contains
     multiple possible attribute names (typical for UGRID variables).
-    Inherits all common tests from IdentifyByAttributeCatalog.
+    Inherits all common tests from IdentifyByAttributeMixin.
     """
 
     __test__ = False

@@ -6,13 +6,13 @@
 
 from iris.fileformats.cf import CFClimatologyVariable
 
-from .identify_catalogue import (
-    IdentifyByAttributeCatalog,
-    SpansCatalog,
+from .identify_mixins import (
+    IdentifyByAttributeMixin,
+    SpansMixin,
 )
 
 
-class TestIdentify(IdentifyByAttributeCatalog):
+class TestIdentify(IdentifyByAttributeMixin):
     __test__ = True
 
     CF_CLASS = CFClimatologyVariable
@@ -37,7 +37,7 @@ class TestIdentify(IdentifyByAttributeCatalog):
         assert expected == result
 
 
-class TestSpans(SpansCatalog):
+class TestSpans(SpansMixin):
     """Tests for CFClimatologyVariable.spans()."""
 
     __test__ = True
