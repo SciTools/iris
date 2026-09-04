@@ -43,6 +43,7 @@ from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
     HybridHeightFactory,
+    HybridLogPressureFactory,
     HybridPressureFactory,
     OceanSFactory,
     OceanSg1Factory,
@@ -159,6 +160,11 @@ _FACTORY_DEFNS = {
         primary="delta",
         std_name="atmosphere_hybrid_sigma_pressure_coordinate",
         formula_terms_format="ap: {delta} b: {sigma} ps: {surface_air_pressure}",
+    ),
+    HybridLogPressureFactory: _FactoryDefn(
+        primary="eta",
+        std_name="atmosphere_hybrid_sigma_ln_pressure_coordinate",
+        formula_terms_format="eta: {eta} b: {sigma} ps: {surface_air_pressure} p0: {reference_air_pressure}",
     ),
     OceanSigmaZFactory: _FactoryDefn(
         primary="zlev",

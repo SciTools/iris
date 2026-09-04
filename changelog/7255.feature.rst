@@ -1,0 +1,1 @@
+:user:`k-a-webb` added aux_factory :func:`~iris.aux_factory.HybridLogPressureFactory`.
