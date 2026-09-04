@@ -11,18 +11,20 @@ import pytest
 from iris.fileformats.cf import _CFFormulaTermsVariable
 import iris.warnings
 
+from .identify_mixins import _NetCDFVar, assert_warning_gated
+
 CF_IDENTITY = "formula_terms"
 
 
 class TestIdentify:
-    def test_single_formula_term(self, named_variable):
+    def test_single_formula_term(self):
         subject_name = "ref_sigma"
-        ref_subject = named_variable(subject_name)
-        ref_source = named_variable("ref_source")
+        ref_subject = _NetCDFVar(subject_name)
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, CF_IDENTITY, f"sigma: {subject_name}")
         vars_all = {
             subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 
@@ -30,17 +32,17 @@ class TestIdentify:
         assert subject_name in result
         assert result[subject_name].cf_terms_by_root == {"ref_source": "sigma"}
 
-    def test_multiple_terms_one_source(self, named_variable):
+    def test_multiple_terms_one_source(self):
         subject_names = ("ref_sigma", "ref_ps")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
-        ref_source = named_variable("ref_source")
+        ref_subject_vars = {name: _NetCDFVar(name) for name in subject_names}
+        ref_source = _NetCDFVar("ref_source")
         setattr(
             ref_source,
             CF_IDENTITY,
             f"sigma: {subject_names[0]} ps: {subject_names[1]}",
         )
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
             **ref_subject_vars,
         }
@@ -50,11 +52,11 @@ class TestIdentify:
         assert result[subject_names[0]].cf_terms_by_root == {"ref_source": "sigma"}
         assert result[subject_names[1]].cf_terms_by_root == {"ref_source": "ps"}
 
-    def test_term_name_lowercased(self, named_variable):
+    def test_term_name_lowercased(self):
         """Formula term names must be normalised to lowercase."""
         subject_name = "ref_sigma"
-        ref_subject = named_variable(subject_name)
-        ref_source = named_variable("ref_source")
+        ref_subject = _NetCDFVar(subject_name)
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, CF_IDENTITY, f"SIGMA: {subject_name}")
         vars_all = {
             subject_name: ref_subject,
@@ -64,13 +66,13 @@ class TestIdentify:
         result = _CFFormulaTermsVariable.identify(vars_all)
         assert result[subject_name].cf_terms_by_root == {"ref_source": "sigma"}
 
-    def test_same_variable_multiple_roots_aggregates(self, named_variable):
+    def test_same_variable_multiple_roots_aggregates(self):
         """Same variable referenced by two roots accumulates both terms."""
         subject_name = "ref_sigma"
-        ref_subject = named_variable(subject_name)
+        ref_subject = _NetCDFVar(subject_name)
 
         source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
         }
         source_vars["ref_source_1"].formula_terms = f"sigma: {subject_name}"
         setattr(source_vars["ref_source_1"], CF_IDENTITY, f"sigma: {subject_name}")
@@ -87,17 +89,17 @@ class TestIdentify:
         assert terms.get("ref_source_1") == "sigma"
         assert terms.get("ref_source_2") == "eta"
 
-    def test_ignore(self, named_variable):
+    def test_ignore(self):
         subject_names = ("ref_sigma", "ref_ps")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
+        ref_subject_vars = {name: _NetCDFVar(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, CF_IDENTITY, f"sigma: {subject_names[ix]}")
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_subject_vars,
             **ref_source_vars,
         }
@@ -106,16 +108,16 @@ class TestIdentify:
         assert subject_names[0] in result
         assert subject_names[1] not in result
 
-    def test_target(self, named_variable):
+    def test_target(self):
         subject_names = ("ref_sigma", "ref_ps")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
+        ref_subject_vars = {name: _NetCDFVar(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
-        ref_source_vars = {name: named_variable(name) for name in source_names}
+        ref_source_vars = {name: _NetCDFVar(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, CF_IDENTITY, f"sigma: {subject_names[ix]}")
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_subject_vars,
             **ref_source_vars,
         }
@@ -124,26 +126,26 @@ class TestIdentify:
         assert subject_names[0] in result
         assert subject_names[1] not in result
 
-    def test_target_unknown_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
+    def test_target_unknown_raises(self):
+        vars_all = {"ref_source": _NetCDFVar("ref_source")}
 
         message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
         with pytest.raises(ValueError, match=message):
             _CFFormulaTermsVariable.identify(vars_all, target="unknown")
 
-    def test_target_wrong_type_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
+    def test_target_wrong_type_raises(self):
+        vars_all = {"ref_source": _NetCDFVar("ref_source")}
 
         message = "Expect a target CF-netCDF variable name"
         with pytest.raises(TypeError, match=message):
             _CFFormulaTermsVariable.identify(vars_all, target=object())
 
-    def test_warn(self, named_variable, assert_warning_gated):
+    def test_warn(self):
         subject_name = "ref_sigma"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, CF_IDENTITY, f"sigma: {subject_name}")
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 
@@ -161,10 +163,10 @@ class TestIdentify:
 
 
 class TestRepr:
-    def test_repr_contains_terms_by_root(self, named_variable):
+    def test_repr_contains_terms_by_root(self):
         subject_name = "ref_sigma"
-        ref_subject = named_variable(subject_name)
-        ref_source = named_variable("ref_source")
+        ref_subject = _NetCDFVar(subject_name)
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, CF_IDENTITY, f"sigma: {subject_name}")
         vars_all = {
             subject_name: ref_subject,

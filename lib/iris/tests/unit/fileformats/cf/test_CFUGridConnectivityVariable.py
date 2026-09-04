@@ -7,7 +7,7 @@
 from iris.fileformats.cf import CFUGridConnectivityVariable
 from iris.mesh import Connectivity
 
-from .identify_mixins import IdentifyByAttributeListMixin
+from .identify_mixins import IdentifyByAttributeListMixin, _NetCDFVar
 
 
 class TestIdentify(IdentifyByAttributeListMixin):
@@ -18,15 +18,15 @@ class TestIdentify(IdentifyByAttributeListMixin):
     IDENTITY_SUPPORTS_MULTIPLE_REFS = False
     MISSING_WARN_REGEX = r"Missing CF-UGRID connectivity variable {subject}.*"
 
-    def test_two_part_ref_forbidden(self, named_variable):
+    def test_two_part_ref_forbidden(self):
         """Test that space-separated refs in a single attribute are rejected."""
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
+        ref_subject_vars = {name: _NetCDFVar(name) for name in subject_names}
 
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], " ".join(subject_names))
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
             **ref_subject_vars,
         }

@@ -18,20 +18,48 @@ from iris.fileformats.cf import CFVariable
 import iris.warnings
 
 
-class _NetCDFVarWithDimensions:
-    """Stub with dimensions for spans() tests."""
+class _NetCDFVar:
+    """Stub NetCDF variable for identify() tests."""
 
-    def __init__(self, name, dimensions, dtype=np.bytes_):
+    ATTRS_NOT_RETURN: list[str] = ["name", "dtype"]
+
+    def __init__(self, name, dtype=int):
         self.name = name
         self.dtype = np.dtype(dtype)
-        self.dimensions = dimensions
 
     def ncattrs(self):
         return [
             attr
             for attr in self.__dict__
-            if not attr.startswith("_") and attr not in ["name", "dtype", "dimensions"]
+            if not attr.startswith("_") and attr not in self.ATTRS_NOT_RETURN
         ]
+
+
+class _NetCDFVarWithDimensions(_NetCDFVar):
+    """Stub NetCDF variable with dimensions for spans() tests."""
+
+    ATTRS_NOT_RETURN = _NetCDFVar.ATTRS_NOT_RETURN + ["dimensions"]
+
+    def __init__(self, name, dimensions, dtype=int):
+        super().__init__(name, dtype=dtype)
+        self.dimensions = dimensions
+
+
+def assert_warning_gated(operation, warning_category, warning_regex):
+    """Shared convenience for warning asserts."""
+    with pytest.warns(warning_category, match=warning_regex):
+        operation(warn=True)
+
+    try:
+        with pytest.warns(warning_category, match=warning_regex):
+            operation(warn=False)
+    except pytest.fail.Exception:
+        pass
+    else:
+        pytest.fail(
+            f"Operation {operation.__name__} raised {warning_category.__name__} "
+            "when warn=False"
+        )
 
 
 class SpansMixin(ABC):
@@ -88,22 +116,22 @@ class IdentifyByAttributeMixin(ABC):
     IDENTITY_SUPPORTS_MULTIPLE_REFS = True
 
     @classmethod
-    def _make_subject(cls, named_variable, name):
+    def _make_subject(cls, name):
         if cls.SUBJECT_DTYPE_DEFAULT is None:
-            return named_variable(name)
+            return _NetCDFVar(name)
         else:
-            return named_variable(name, dtype=cls.SUBJECT_DTYPE_DEFAULT)
+            return _NetCDFVar(name, dtype=cls.SUBJECT_DTYPE_DEFAULT)
 
     # Common test methods (work for both single and multi-identity classes)
 
-    def test_one_ref(self, named_variable):
+    def test_one_ref(self):
         subject_name = "ref_subject"
-        ref_subject = self._make_subject(named_variable, subject_name)
-        ref_source = named_variable("ref_source")
+        ref_subject = self._make_subject(subject_name)
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 
@@ -111,28 +139,26 @@ class IdentifyByAttributeMixin(ABC):
         result = self.CF_CLASS.identify(vars_all)
         assert result == expected
 
-    def test_two_refs(self, named_variable):
+    def test_two_refs(self):
         # Check that a single "source" var may refer to multiple "subject" vars.
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: self._make_subject(named_variable, name) for name in subject_names
-        }
+        ref_subject_vars = {name: self._make_subject(name) for name in subject_names}
 
         if self.IDENTITY_SUPPORTS_MULTIPLE_REFS:
             # make a single source reference multiple subjects.
             ref_source_name = "ref_source"
-            ref_source_var = named_variable(ref_source_name)
+            ref_source_var = _NetCDFVar(ref_source_name)
             setattr(ref_source_var, self.CF_IDENTITIES[0], " ".join(subject_names))
             ref_source_vars = {ref_source_name: ref_source_var}
         else:
             # make two source vars, each referencing a different subject.
             ref_source_vars = {
-                name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+                name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
             }
             for ix, var in enumerate(ref_source_vars.values()):
                 setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_subject_vars,
             **ref_source_vars,
         }
@@ -143,17 +169,17 @@ class IdentifyByAttributeMixin(ABC):
         result = self.CF_CLASS.identify(vars_all)
         assert result == expected
 
-    def test_duplicate_refs(self, named_variable):
+    def test_duplicate_refs(self):
         subject_name = "ref_subject"
-        ref_subject = self._make_subject(named_variable, subject_name)
+        ref_subject = self._make_subject(subject_name)
         ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
         }
         for var in ref_source_vars.values():
             setattr(var, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
             subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_source_vars,
         }
 
@@ -161,19 +187,17 @@ class IdentifyByAttributeMixin(ABC):
         result = self.CF_CLASS.identify(vars_all)
         assert result == expected
 
-    def test_ignore(self, named_variable):
+    def test_ignore(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: self._make_subject(named_variable, name) for name in subject_names
-        }
+        ref_subject_vars = {name: self._make_subject(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_subject_vars,
             **ref_source_vars,
         }
@@ -185,18 +209,16 @@ class IdentifyByAttributeMixin(ABC):
         result = self.CF_CLASS.identify(vars_all, ignore=subject_names[1])
         assert result == expected
 
-    def test_target(self, named_variable):
+    def test_target(self):
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {
-            name: self._make_subject(named_variable, name) for name in subject_names
-        }
+        ref_subject_vars = {name: self._make_subject(name) for name in subject_names}
 
         source_names = ("ref_source_1", "ref_source_2")
-        ref_source_vars = {name: named_variable(name) for name in source_names}
+        ref_source_vars = {name: _NetCDFVar(name) for name in source_names}
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.CF_IDENTITIES[0], subject_names[ix])
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             **ref_subject_vars,
             **ref_source_vars,
         }
@@ -208,26 +230,26 @@ class IdentifyByAttributeMixin(ABC):
         result = self.CF_CLASS.identify(vars_all, target=source_names[0])
         assert result == expected
 
-    def test_target_unknown_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
+    def test_target_unknown_raises(self):
+        vars_all = {"ref_source": _NetCDFVar("ref_source")}
 
         message = "Cannot identify unknown target CF-netCDF variable 'unknown'"
         with pytest.raises(ValueError, match=message):
             self.CF_CLASS.identify(vars_all, target="unknown")
 
-    def test_target_wrong_type_raises(self, named_variable):
-        vars_all = {"ref_source": named_variable("ref_source")}
+    def test_target_wrong_type_raises(self):
+        vars_all = {"ref_source": _NetCDFVar("ref_source")}
 
         message = "Expect a target CF-netCDF variable name"
         with pytest.raises(TypeError, match=message):
             self.CF_CLASS.identify(vars_all, target=object())
 
-    def test_warn(self, named_variable, assert_warning_gated):
+    def test_warn(self):
         subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 
@@ -257,37 +279,37 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
 
     __test__ = False
 
-    def test_cf_identities(self, named_variable):
+    def test_cf_identities(self):
         """Test that all CF_IDENTITIES attributes are recognized."""
         assert self.CF_IDENTITIES
 
         for identity in self.CF_IDENTITIES:
             subject_name = "ref_subject"
-            ref_subject = named_variable(subject_name)
+            ref_subject = _NetCDFVar(subject_name)
             vars_common = {
                 subject_name: ref_subject,
-                "ref_not_subject": named_variable("ref_not_subject"),
+                "ref_not_subject": _NetCDFVar("ref_not_subject"),
             }
             expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
 
-            ref_source = named_variable("ref_source")
+            ref_source = _NetCDFVar("ref_source")
             setattr(ref_source, identity, subject_name)
             vars_all = dict({"ref_source": ref_source}, **vars_common)
             result = self.CF_CLASS.identify(vars_all)
             assert result == expected
 
-    def test_two_identities(self, named_variable):
+    def test_two_identities(self):
         """Test using multiple different CF_IDENTITIES."""
         subject_names = ("ref_subject_1", "ref_subject_2")
-        ref_subject_vars = {name: named_variable(name) for name in subject_names}
+        ref_subject_vars = {name: _NetCDFVar(name) for name in subject_names}
 
         ref_source_vars = {
-            name: named_variable(name) for name in ("ref_source_1", "ref_source_2")
+            name: _NetCDFVar(name) for name in ("ref_source_1", "ref_source_2")
         }
         for ix, var in enumerate(ref_source_vars.values()):
             setattr(var, self.CF_IDENTITIES[ix], subject_names[ix])
         vars_all = dict(
-            {"ref_not_subject": named_variable("ref_not_subject")},
+            {"ref_not_subject": _NetCDFVar("ref_not_subject")},
             **ref_subject_vars,
             **ref_source_vars,
         )
@@ -298,29 +320,29 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
         result = self.CF_CLASS.identify(vars_all)
         assert result == expected
 
-    def test_string_type_ignored(self, named_variable):
+    def test_string_type_ignored(self):
         """Test that string-typed referenced variables are ignored."""
         subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
-            subject_name: named_variable(subject_name, dtype=np.bytes_),
-            "ref_not_subject": named_variable("ref_not_subject"),
+            subject_name: _NetCDFVar(subject_name, dtype=np.bytes_),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 
         result = self.CF_CLASS.identify(vars_all)
         assert result == {}
 
-    def test_warn_string_type(self, named_variable, assert_warning_gated):
+    def test_warn_string_type(self):
         """Test warning when string-typed var referenced by identity attribute."""
         subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
-            subject_name: named_variable(subject_name, dtype=np.bytes_),
+            subject_name: _NetCDFVar(subject_name, dtype=np.bytes_),
         }
 
         def operation(warn: bool):

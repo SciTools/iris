@@ -8,7 +8,7 @@ import numpy as np
 
 from iris.fileformats.cf import CFAuxiliaryCoordinateVariable
 
-from .identify_mixins import IdentifyByAttributeMixin
+from .identify_mixins import IdentifyByAttributeMixin, _NetCDFVar
 
 
 class TestIdentify(IdentifyByAttributeMixin):
@@ -20,14 +20,14 @@ class TestIdentify(IdentifyByAttributeMixin):
         r"Missing CF-netCDF auxiliary coordinate variable {subject!r}.*"
     )
 
-    def test_string_type_ignored(self, named_variable):
+    def test_string_type_ignored(self):
         # Coordinate-variable identify should reject label/string subjects.
         subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
-            subject_name: named_variable(subject_name, dtype=np.bytes_),
-            "ref_not_subject": named_variable("ref_not_subject"),
+            subject_name: _NetCDFVar(subject_name, dtype=np.bytes_),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 

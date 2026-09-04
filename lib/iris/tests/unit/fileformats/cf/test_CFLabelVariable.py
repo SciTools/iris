@@ -12,6 +12,7 @@ from iris.fileformats.cf import CFDataVariable, CFLabelVariable
 from .identify_mixins import (
     IdentifyByAttributeMixin,
     SpansMixin,
+    _NetCDFVar,
     _NetCDFVarWithDimensions,
 )
 
@@ -24,14 +25,14 @@ class TestIdentify(IdentifyByAttributeMixin):
     MISSING_WARN_REGEX = r"Missing CF-netCDF label variable {subject!r}.*"
     SUBJECT_DTYPE_DEFAULT = np.bytes_
 
-    def test_non_string_ref_ignored(self, named_variable):
+    def test_non_string_ref_ignored(self):
         # Label identify should reject non-string referenced variables.
         subject_name = "ref_subject"
-        ref_source = named_variable("ref_source")
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], subject_name)
         vars_all = {
-            subject_name: named_variable(subject_name, dtype=int),
-            "ref_not_subject": named_variable("ref_not_subject"),
+            subject_name: _NetCDFVar(subject_name, dtype=int),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 

@@ -9,6 +9,7 @@ from iris.fileformats.cf import CFBoundaryVariable
 from .identify_mixins import (
     IdentifyByAttributeMixin,
     SpansMixin,
+    _NetCDFVar,
 )
 
 
@@ -20,15 +21,15 @@ class TestIdentify(IdentifyByAttributeMixin):
     IDENTITY_SUPPORTS_MULTIPLE_REFS = False
     MISSING_WARN_REGEX = r"Missing CF-netCDF boundary variable {subject!r}.*"
 
-    def test_whitespace_padded_ref(self, named_variable):
+    def test_whitespace_padded_ref(self):
         # CF boundary references accept surrounding whitespace.
         subject_name = "ref_subject"
-        ref_subject = self._make_subject(named_variable, subject_name)
-        ref_source = named_variable("ref_source")
+        ref_subject = self._make_subject(subject_name)
+        ref_source = _NetCDFVar("ref_source")
         setattr(ref_source, self.CF_IDENTITIES[0], f"  {subject_name}  ")
         vars_all = {
             subject_name: ref_subject,
-            "ref_not_subject": named_variable("ref_not_subject"),
+            "ref_not_subject": _NetCDFVar("ref_not_subject"),
             "ref_source": ref_source,
         }
 

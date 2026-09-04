@@ -8,17 +8,19 @@ import pytest
 
 from iris.fileformats.cf import CFDataVariable
 
+from .identify_mixins import _NetCDFVar
+
 
 class TestIdentify:
-    def test_identify_raises_not_implemented(self, named_variable):
-        vars_all = {"data_var": named_variable("data_var")}
+    def test_identify_raises_not_implemented(self):
+        vars_all = {"data_var": _NetCDFVar("data_var")}
         with pytest.raises(NotImplementedError):
             CFDataVariable.identify(vars_all)
 
 
 class TestConstructor:
-    def test_cf_name_and_data_stored(self, named_variable):
-        nc_var = named_variable("data_var")
+    def test_cf_name_and_data_stored(self):
+        nc_var = _NetCDFVar("data_var")
         cf_var = CFDataVariable("data_var", nc_var)
         assert cf_var.cf_name == "data_var"
         assert cf_var.cf_data is nc_var
