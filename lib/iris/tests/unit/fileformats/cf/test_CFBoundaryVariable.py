@@ -34,7 +34,7 @@ class TestIdentify(IdentifyByAttributeMixin):
 
         expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
 
 class TestSpans(SpansMixin):

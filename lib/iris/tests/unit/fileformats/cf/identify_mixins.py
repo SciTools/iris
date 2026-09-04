@@ -109,7 +109,7 @@ class IdentifyByAttributeMixin(ABC):
 
         expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_two_refs(self, named_variable):
         # Check that a single "source" var may refer to multiple "subject" vars.
@@ -141,7 +141,7 @@ class IdentifyByAttributeMixin(ABC):
             name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_duplicate_refs(self, named_variable):
         subject_name = "ref_subject"
@@ -159,7 +159,7 @@ class IdentifyByAttributeMixin(ABC):
 
         expected = {subject_name: self.CF_CLASS(subject_name, ref_subject)}
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_ignore(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -183,7 +183,7 @@ class IdentifyByAttributeMixin(ABC):
             expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, ignore=subject_names[1])
-        assert expected == result
+        assert result == expected
 
     def test_target(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -206,7 +206,7 @@ class IdentifyByAttributeMixin(ABC):
             expected_name: self.CF_CLASS(expected_name, ref_subject_vars[expected_name])
         }
         result = self.CF_CLASS.identify(vars_all, target=source_names[0])
-        assert expected == result
+        assert result == expected
 
     def test_target_unknown_raises(self, named_variable):
         vars_all = {"ref_source": named_variable("ref_source")}
@@ -274,7 +274,7 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
             setattr(ref_source, identity, subject_name)
             vars_all = dict({"ref_source": ref_source}, **vars_common)
             result = self.CF_CLASS.identify(vars_all)
-            assert expected == result
+            assert result == expected
 
     def test_two_identities(self, named_variable):
         """Test using multiple different CF_IDENTITIES."""
@@ -296,7 +296,7 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
             name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_string_type_ignored(self, named_variable):
         """Test that string-typed referenced variables are ignored."""
@@ -310,7 +310,7 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
         }
 
         result = self.CF_CLASS.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_warn_string_type(self, named_variable, assert_warning_gated):
         """Test warning when string-typed var referenced by identity attribute."""
@@ -329,7 +329,7 @@ class IdentifyByAttributeListMixin(IdentifyByAttributeMixin):
                 category=iris.warnings.IrisUserWarning,
             )
             result = self.CF_CLASS.identify(vars_all, warn=warn)
-            assert {} == result
+            assert result == {}
 
         warn_regex = r".*is a CF-netCDF label variable.*"
         assert_warning_gated(operation, iris.warnings.IrisCfLabelVarWarning, warn_regex)

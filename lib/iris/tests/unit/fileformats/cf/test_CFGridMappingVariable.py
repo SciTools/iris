@@ -23,7 +23,7 @@ class TestIdentify:
         vars_all = {"crs_var": crs_var, "ref_source": ref_source}
 
         result = CFGridMappingVariable.identify(vars_all, coord_system_mappings=None)
-        assert {} == result
+        assert result == {}
 
     def test_no_mapping_entry_for_source_returns_empty(self, named_variable):
         """Data var has grid_mapping attr but no entry in coord_system_mappings."""
@@ -36,7 +36,7 @@ class TestIdentify:
         result = CFGridMappingVariable.identify(
             vars_all, coord_system_mappings={"other_var": {"crs_var": [None]}}
         )
-        assert {} == result
+        assert result == {}
 
     def test_simple_mapping_none_coord_identified(self, named_variable):
         """A mapping with coord=None (simple grid_mapping style) is accepted."""
@@ -125,7 +125,7 @@ class TestIdentify:
         result = CFGridMappingVariable.identify(
             vars_all, ignore=["crs_var"], coord_system_mappings=cs_mappings
         )
-        assert {} == result
+        assert result == {}
 
     def test_target_unknown_raises(self, named_variable):
         vars_all = {"ref_source": named_variable("ref_source")}
@@ -235,4 +235,4 @@ class TestIdentifyGroupingByCRS:
             result = CFGridMappingVariable.identify(
                 vars_all, coord_system_mappings=cs_mappings
             )
-        assert {} == result
+        assert result == {}

@@ -31,7 +31,7 @@ class TestIdentify:
         # ONLY expecting match, excluding not_match.
         expected = {match_name: CFUGridMeshVariable(match_name, match)}
         result = CFUGridMeshVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_cf_identity(self, named_variable):
         # Test that mesh variables can be identified by being another variable's
@@ -49,7 +49,7 @@ class TestIdentify:
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_cf_role_and_identity(self, named_variable):
         # Test that identification can successfully handle a combination of
@@ -80,7 +80,7 @@ class TestIdentify:
             subject_name: CFUGridMeshVariable(subject_name, ref_subject),
         }
         result = CFUGridMeshVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_duplicate_refs(self, named_variable):
         subject_name = "ref_subject"
@@ -101,7 +101,7 @@ class TestIdentify:
         # ONLY expecting ref_subject, excluding ref_not_subject.
         expected = {subject_name: CFUGridMeshVariable(subject_name, ref_subject)}
         result = CFUGridMeshVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_two_refs(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -124,7 +124,7 @@ class TestIdentify:
             for name, var in ref_subject_vars.items()
         }
         result = CFUGridMeshVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_two_part_ref_ignored(self, named_variable):
         # Not expected to handle more than one variable for a mesh
@@ -139,7 +139,7 @@ class TestIdentify:
         }
 
         result = CFUGridMeshVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_string_type_ignored(self, named_variable):
         subject_name = "ref_subject"
@@ -152,7 +152,7 @@ class TestIdentify:
         }
 
         result = CFUGridMeshVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_ignore(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -177,7 +177,7 @@ class TestIdentify:
             )
         }
         result = CFUGridMeshVariable.identify(vars_all, ignore=subject_names[1])
-        assert expected == result
+        assert result == expected
 
     def test_target(self, named_variable):
         subject_names = ("ref_subject_1", "ref_subject_2")
@@ -201,7 +201,7 @@ class TestIdentify:
             )
         }
         result = CFUGridMeshVariable.identify(vars_all, target=source_names[0])
-        assert expected == result
+        assert result == expected
 
     def test_target_unknown_raises(self, named_variable):
         vars_all = {"ref_source": named_variable("ref_source")}
@@ -232,7 +232,7 @@ class TestIdentify:
                 category=iris.warnings.IrisUserWarning,
             )
             result = CFUGridMeshVariable.identify(vars_all, warn=warn)
-            assert {} == result
+            assert result == {}
 
         # Missing warning.
         warn_regex = rf"Missing CF-UGRID mesh variable {subject_name}.*"

@@ -56,7 +56,7 @@ class TestIdentify:
         vars_all = {"lat": nc_var}
 
         result = CFCoordinateVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_ndim_not_one_rejected(self):
         stub = _CoordVariableStub(
@@ -67,7 +67,7 @@ class TestIdentify:
         vars_all = {"lat": stub}
 
         result = CFCoordinateVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_name_not_in_dimensions_rejected(self):
         stub = _CoordVariableStub(
@@ -76,14 +76,14 @@ class TestIdentify:
         vars_all = {"lat": stub}
 
         result = CFCoordinateVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_ignored_name_excluded(self):
         nc_var = _make_coord_var("lat", [1.0, 2.0, 3.0])
         vars_all = {"lat": nc_var}
 
         result = CFCoordinateVariable.identify(vars_all, ignore=["lat"])
-        assert {} == result
+        assert result == {}
 
     def test_target_filters_to_named_var(self):
         lat = _make_coord_var("lat", [1.0, 2.0])
@@ -129,7 +129,7 @@ class TestIdentifyMonotonic:
         vars_all = {"lat": nc_var}
 
         result = CFCoordinateVariable.identify(vars_all, monotonic=True)
-        assert {} == result
+        assert result == {}
 
     def test_scalar_shape_accepted(self):
         """Shape () is always accepted under monotonic mode."""
@@ -163,4 +163,4 @@ class TestIdentifyMonotonic:
         vars_all = {"lat": nc_var}
 
         result = CFCoordinateVariable.identify(vars_all, monotonic=True)
-        assert {} == result
+        assert result == {}

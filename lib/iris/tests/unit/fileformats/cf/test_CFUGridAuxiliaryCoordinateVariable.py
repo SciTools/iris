@@ -38,4 +38,4 @@ class TestIdentify(IdentifyByAttributeListMixin):
             name: self.CF_CLASS(name, var) for name, var in ref_subject_vars.items()
         }
         result = self.CF_CLASS.identify(vars_all)
-        assert expected == result
+        assert result == expected

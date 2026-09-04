@@ -28,7 +28,7 @@ class TestIdentify:
 
         expected = {subject_name: CFMeasureVariable(subject_name, ref_subject, "area")}
         result = CFMeasureVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_measure_stored_on_instance(self, named_variable):
         subject_name = "ref_subject"
@@ -84,7 +84,7 @@ class TestIdentify:
             for name, var in ref_subject_vars.items()
         }
         result = CFMeasureVariable.identify(vars_all)
-        assert expected == result
+        assert result == expected
 
     def test_self_reference_ignored(self, named_variable):
         """A variable cannot reference itself as a cell measure."""
@@ -95,7 +95,7 @@ class TestIdentify:
         }
 
         result = CFMeasureVariable.identify(vars_all)
-        assert {} == result
+        assert result == {}
 
     def test_ignore(self, named_variable):
         subject_names = ("ref_area", "ref_volume")
@@ -119,7 +119,7 @@ class TestIdentify:
             )
         }
         result = CFMeasureVariable.identify(vars_all, ignore=subject_names[1])
-        assert expected == result
+        assert result == expected
 
     def test_target(self, named_variable):
         subject_names = ("ref_area", "ref_volume")
@@ -142,7 +142,7 @@ class TestIdentify:
             )
         }
         result = CFMeasureVariable.identify(vars_all, target=source_names[0])
-        assert expected == result
+        assert result == expected
 
     def test_target_unknown_raises(self, named_variable):
         vars_all = {"ref_source": named_variable("ref_source")}

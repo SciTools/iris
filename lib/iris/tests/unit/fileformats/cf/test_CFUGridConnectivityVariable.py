@@ -32,4 +32,4 @@ class TestIdentify(IdentifyByAttributeListMixin):
         }
 
         result = self.CF_CLASS.identify(vars_all)
-        assert {} == result
+        assert result == {}
