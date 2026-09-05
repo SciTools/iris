@@ -1,0 +1,1 @@
+:user:`rcomer` updated the scipy intersphinx mapping to make documentation builds more reliable.
