@@ -24,6 +24,7 @@ import contextlib
 import datetime
 import importlib
 from importlib.metadata import version as get_version
+import inspect
 from inspect import getsource
 import ntpath
 import os
@@ -35,6 +36,10 @@ from tempfile import gettempdir
 import textwrap
 from urllib.parse import quote
 import warnings
+
+from packaging.version import parse as parse_version
+
+import iris
 
 
 # function to write  useful output to stdout, prefixing the source.
@@ -165,7 +170,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.linkcode",
     "sphinx_changelog",
     "sphinx_copybutton",
     "sphinx_design",
@@ -784,3 +789,43 @@ def setup(app: Sphinx) -> None:
 
     # register callback to generate gallery carousel
     app.connect("env-before-read-docs", gallery_carousel)
+
+
+# --  linkcode config ---------------------------------------------------------
+
+
+def linkcode_resolve(domain, info):
+    if domain != "py":
+        return None
+    if not info["module"]:
+        return None
+
+    modname = info["module"]
+    fullname = info["fullname"]
+
+    # Get hold of the python object
+    submod = sys.modules.get(modname)
+    if submod is None:
+        return None
+
+    obj = submod
+    for part in fullname.split("."):
+        try:
+            obj = getattr(obj, part)
+        except AttributeError:
+            return None
+
+    # Get the line numbers as a string
+    try:
+        source, lineno = inspect.getsourcelines(obj)
+    except (OSError, TypeError):
+        lineno = None
+
+    linespec = f"#L{lineno:d}-L{lineno + len(source) - 1:d}" if lineno else ""
+
+    # Get the version tag, or "main" if the version is unreleased
+    version = parse_version(iris.__version__)
+    tag = "main" if version.is_devrelease else f"v{version.public}"
+
+    filename = info["module"].replace(".", "/")
+    return f"https://github.com/SciTools/iris/tree/{tag}/lib/{filename}.py{linespec}"
