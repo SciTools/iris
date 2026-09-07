@@ -10,8 +10,7 @@ import importlib
 import matplotlib.pyplot as plt
 import pytest
 
-from iris.tests import _RESULT_PATH, _shared_utils
-from iris.tests.graphics import check_graphic
+from iris.tests import _shared_utils
 
 from .conftest import GALLERY_DIR
 
@@ -29,6 +28,7 @@ def test_plot_example(
     image_setup_teardown,
     import_patches,
     iris_future_defaults,
+    check_graphic_caller,
 ):
     """Test that all figures from example code match KGO."""
     if example in (
@@ -49,5 +49,4 @@ def test_plot_example(
     # will find it.
     for fig_num in plt.get_fignums():
         plt.figure(fig_num)
-        image_id = f"gallery_tests.test_{example}.{fig_num - 1}"
-        check_graphic(image_id, _RESULT_PATH)
+        check_graphic_caller()
