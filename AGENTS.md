@@ -58,7 +58,7 @@ conda environment.
 
 ```bash
 # Create and activate a development environment
-conda env create -f requirements/iris.yml
+conda env create -f environment.yml
 conda activate iris-dev
 pip install --no-build-isolation -e .
 ```
