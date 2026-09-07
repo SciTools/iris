@@ -238,6 +238,7 @@ def gallery(session: nox.sessions.Session):
 
     """
     prepare_venv(session)
+    session.install("--no-deps", "git+https://github.com/SciTools/cartopy.git")
     session.install("--no-deps", "--editable", ".")
     session.env.update(ENV)
     session.run(
