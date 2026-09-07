@@ -10,7 +10,7 @@ import importlib
 import matplotlib.pyplot as plt
 import pytest
 
-from iris.tests import _RESULT_PATH
+from iris.tests import _RESULT_PATH, _shared_utils
 from iris.tests.graphics import check_graphic
 
 from .conftest import GALLERY_DIR
@@ -31,6 +31,16 @@ def test_plot_example(
     iris_future_defaults,
 ):
     """Test that all figures from example code match KGO."""
+    if example in (
+        "plot_TEC",
+        "plot_orca_projection",
+        "plot_projections_and_annotations",
+    ):
+        proj_9_8_message = _shared_utils.proj_9_8_incompatible_message()
+        incompatible = proj_9_8_message != ""
+        if incompatible:
+            pytest.skip(proj_9_8_message)
+
     module = importlib.import_module(example)
 
     # Run example.
