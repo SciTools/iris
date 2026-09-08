@@ -144,8 +144,10 @@ jobs:
         run: |
           first_commit=${FIRST_COMMIT}
           if [ "$first_commit" == "" ]
+          # 26 hours to cope with variability in GHA start times.
           then
-            first_commit=$(git log --after="$(date -d "1 day ago" +"%Y-%m-%d") 23:00:00" --pretty=format:"%h" | tail -n 1)
+            cutoff_utc=$(date -u -d "26 hours ago" +"%Y-%m-%dT%H:%M:%SZ")
+            first_commit=$(git rev-list --since="$cutoff_utc" --reverse HEAD | head -n 1)
           fi
 
           if [ "$first_commit" != "" ]
