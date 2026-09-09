@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
+import numpy as np
 import pytest
 
 from iris.coords import AuxCoord, Coord
@@ -45,6 +46,17 @@ def cube_mesh_face():
     location = "face"
     mesh = sample_mesh(n_nodes=15, n_edges=0, n_faces=3)
     return (sample_mesh_cube(location=location, mesh=mesh), location)
+
+
+@pytest.fixture
+def cube_mesh_1_indexed(cube_mesh_from_file):
+    cube = cube_mesh_from_file[0]
+    mesh = cube.mesh
+    for con in mesh.all_connectivities:
+        if con is not None:
+            con.indices[:] += 1
+            con._metadata_manager.start_index = 1
+    return (cube, "face")
 
 
 def change_and_assert_no_change_in_right(left: Coord, right: Coord, value: int):
@@ -187,3 +199,34 @@ def test_subset_indexing_mesh_index_set(fixture, request):
     change_original_mesh_reflected_in_index_set(
         cube, indexed_cube, "longitude", location, value
     )
+
+
+@pytest.mark.parametrize(
+    "fixture",
+    ["cube_mesh_from_file", "cube_mesh_edge", "cube_mesh_face", "cube_mesh_1_indexed"],
+)
+def test_indexing_mode_equivalency(fixture, request):
+    cube: Cube
+    location: str
+    (cube, location) = request.getfixturevalue(fixture)
+
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.AUX_COORD):
+        indexed_cube_aux = cube[0, 1:-1]
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
+        indexed_cube_mesh = cube[0, 1:-1]
+    with mesh_coord_indexing.SETTING.context(
+        mesh_coord_indexing.Options.MESH_INDEX_SET
+    ):
+        indexed_cube_mis = cube[0, 1:-1]
+
+    aux_lon = indexed_cube_aux.coord("longitude")
+    aux_lat = indexed_cube_aux.coord("latitude")
+    mesh_lon = indexed_cube_mesh.coord("longitude")
+    mesh_lat = indexed_cube_mesh.coord("latitude")
+    mis_lon = indexed_cube_mis.coord("longitude")
+    mis_lat = indexed_cube_mis.coord("latitude")
+
+    assert np.array_equal(aux_lon.bounds, mesh_lon.bounds)
+    assert np.array_equal(aux_lat.bounds, mesh_lat.bounds)
+    assert np.array_equal(aux_lon.bounds, mis_lon.bounds)
+    assert np.array_equal(aux_lat.bounds, mis_lat.bounds)

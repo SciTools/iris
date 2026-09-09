@@ -513,12 +513,27 @@ class Test_unusual_connectivities:
         )
         return mesh
 
-    def test_varied_faces(self, varied_mesh):
+    @pytest.fixture
+    def varied_mesh_1_indexed(self, varied_mesh):
         mesh = varied_mesh
+        for con in mesh.all_connectivities:
+            if con is not None:
+                con.indices[:] += 1
+                con._metadata_manager.start_index = 1
+        return mesh
+
+    @pytest.mark.parametrize(
+        "fixture",
+        ["varied_mesh", "varied_mesh_1_indexed"],
+    )
+    def test_varied_faces(self, fixture, request):
+        mesh: MeshXY = request.getfixturevalue(fixture)
         index_set = _MeshIndexSet(indices=[0, 1, 3], mesh=mesh, location="face")
         _shared_utils.assert_array_equal(index_set.indices, np.array([0, 1, 3]))
+        connectivity = index_set.connectivity(cf_role="face_node_connectivity")
+        normalised_indices = connectivity.indices - connectivity.start_index
         _shared_utils.assert_array_equal(
-            index_set.connectivity(cf_role="face_node_connectivity").indices,
+            normalised_indices,
             np.ma.masked_array(
                 data=[[7, 8, 10, 9, -1], [3, 7, 6, -1, -1], [0, 1, 2, 5, 4]],
                 mask=[[0, 0, 0, 0, 1], [0, 0, 0, 1, 1], [0, 0, 0, 0, 0]],
@@ -532,12 +547,18 @@ class Test_unusual_connectivities:
             np.array([-2, -3, -4, -1, -3, -4, -1, -2, -3, -2, -3]),
         )
 
-    def test_varied_edges(self, varied_mesh):
-        mesh = varied_mesh
+    @pytest.mark.parametrize(
+        "fixture",
+        ["varied_mesh", "varied_mesh_1_indexed"],
+    )
+    def test_varied_edges(self, fixture, request):
+        mesh: MeshXY = request.getfixturevalue(fixture)
         index_set = _MeshIndexSet(indices=[0, 1, 4], mesh=mesh, location="edge")
         _shared_utils.assert_array_equal(index_set.indices, np.array([0, 1, 4]))
+        connectivity = index_set.connectivity(cf_role="edge_node_connectivity")
+        normalised_indices = connectivity.indices - connectivity.start_index
         _shared_utils.assert_array_equal(
-            index_set.connectivity(cf_role="edge_node_connectivity").indices,
+            normalised_indices,
             # Note the shared node.
             np.array([[0, 1], [1, 2], [3, 4]]),
         )
