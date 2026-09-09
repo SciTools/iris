@@ -223,6 +223,12 @@ make lockfiles
 10. **Environment Reproducibility**: Set CPU features for consistent results:
   `export NPY_DISABLE_CPU_FEATURES="AVX512F,AVX512CD,AVX512_SKX"`
 
+11. **Pytest in Conda Env**: If `conda run -n <env> pytest ...` shows NumPy
+  re-import errors (e.g. "cannot load module more than once per process"),
+  run tests from an activated shell instead:
+  `source /opt/conda/etc/profile.d/conda.sh && conda activate <env> && pytest ...`
+  E.g. this error appears when using pytest-cov.
+
 
 ## Getting Help
 
