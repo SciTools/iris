@@ -19,6 +19,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 """
 
+from abc import ABC, abstractmethod
 import codecs
 import collections
 from itertools import repeat, zip_longest
@@ -36,6 +37,7 @@ import dask
 import dask.array as da
 from dask.delayed import Delayed
 import numpy as np
+import zarr
 
 from iris import FUTURE
 from iris._deprecation import warn_deprecated
@@ -306,6 +308,352 @@ def _setncattr(variable, name, attribute):
 MESH_ELEMENTS = ("node", "edge", "face")
 
 
+class CFDataset(ABC):
+    """Backend-neutral dataset API used by Saver.
+
+    This is intentionally minimal and focused on the methods/properties that
+    :class:`iris.fileformats.netcdf.saver.Saver` currently relies on.
+    """
+
+    # Flag allows duck-typing checks without strict isinstance usage.
+    CF_DATASET_FLAG = True
+
+    # @property
+    # @abstractmethod
+    # def backend(self) -> str:
+    #     pass
+
+    # @property
+    # @abstractmethod
+    # def wrapped(self) -> Any:
+    #     pass
+
+    @property
+    @abstractmethod
+    def dimensions(self):
+        pass
+
+    @property
+    @abstractmethod
+    def variables(self):
+        pass
+
+    @property
+    @abstractmethod
+    def file_format(self):
+        pass
+
+    # @property
+    # @abstractmethod
+    # def isopen(self):
+    #     pass
+
+    @abstractmethod
+    def filepath(self):
+        pass
+
+    @abstractmethod
+    def createDimension(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def createVariable(self, *args, **kwargs):
+        pass
+
+    # @abstractmethod
+    # def sync(self):
+    #     pass
+    #
+    # @abstractmethod
+    # def close(self):
+    #     pass
+    @abstractmethod
+    def exit(self):
+        pass
+
+    @abstractmethod
+    def _setattr(self):
+        pass
+
+    @abstractmethod
+    def pre_complete(self):
+        pass
+
+    @abstractmethod
+    def get(self):
+        pass
+
+    @abstractmethod
+    def sync(self):
+        pass
+
+    @abstractmethod
+    def close(self):
+        pass
+
+    # def __getattr__(self, item):
+    #     return getattr(self.wrapped, item)
+
+
+class NetCDFDataset(CFDataset):
+    """Backend-neutral dataset API used by Saver.
+
+    This is intentionally minimal and focused on the methods/properties that
+    :class:`iris.fileformats.netcdf.saver.Saver` currently relies on.
+    """
+
+    # Flag allows duck-typing checks without strict isinstance usage.
+    CF_DATASET_FLAG = True
+
+    # def __init__(self, dataset: bytecoding_datasets.EncodedDataset):
+    def __init__(self, filename: Any, file_format: str, compute=True):
+        # Detect if we were passed a pre-opened dataset (or something like one)
+        self._to_open_dataset = hasattr(filename, "createVariable")
+        if self._to_open_dataset:
+            # We were passed a *dataset*, so we don't open (or close) one of our own.
+            self._dataset = filename
+            if compute:
+                msg = (
+                    "Cannot save to a user-provided dataset with 'compute=True'. "
+                    "Please use 'compute=False' and complete delayed saving in the "
+                    "calling code after the file is closed."
+                )
+                raise ValueError(msg)
+
+            # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
+            # Except if it already is one, since they forbid "re-wrapping".
+            if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
+                self._dataset = bytecoding_datasets.EncodedDataset.from_existing(
+                    self._dataset
+                )
+
+            # In this case the dataset gives a filepath, not the other way around.
+            self._filepath = self._dataset.filepath()
+
+        else:
+            # Given a filepath string/path : create a dataset from that
+            try:
+                # Lazy import to avoid circular import overhead at module import-time.
+                from iris.io import _is_nczarr_fragment
+
+                self._is_nczarr = _is_nczarr_fragment(
+                    urlsplit(str(filename)).fragment or None
+                )
+                if self._is_nczarr:
+                    # NCZarr URLs contain a #mode= fragment; Path() strips it.
+                    # Keep as a plain string and pass directly to DatasetWrapper.
+                    self._filepath = str(filename)
+                else:
+                    filepath = Path(filename)
+                    self._filepath = filepath.absolute()
+                self._dataset = bytecoding_datasets.EncodedDataset(
+                    self._filepath, mode="w", file_format=file_format
+                )
+            except RuntimeError:
+                if self._is_nczarr:
+                    raise
+                dir_name = Path(self.filepath).parent
+                if not dir_name.is_dir():
+                    msg = "No such file or directory: {}".format(dir_name)
+                    raise IOError(msg)
+                if not os.access(dir_name, os.R_OK | os.W_OK):
+                    msg = "Permission denied: {}".format(self.filepath)
+                    raise IOError(msg)
+                else:
+                    raise
+        self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
+        self.THREAD_SEAFE_FLAG = self._dataset.THREAD_SAFE_FLAG
+        # self._dataset = dataset
+
+    # @property
+    # @abstractmethod
+    # def wrapped(self) -> Any:
+    #     pass
+
+    @property
+    def dimensions(self):
+        return self._dataset.dimensions
+
+    @property
+    def variables(self):
+        return self._dataset.variables
+
+    @property
+    def file_format(self):
+        return self._dataset.file_format
+
+    @property
+    def filepath(self):
+        return self._filepath
+
+    def createDimension(self, *args, **kwargs):
+        return self._dataset.createDimension(*args, **kwargs)
+
+    def createVariable(self, *args, **kwargs):
+        # TODO: remove shape from args
+        return self._dataset.createVariable(*args, **kwargs)
+
+    def sync(self):
+        self._dataset.sync()
+
+    def close(self):
+        self._dataset.close()
+
+    def _setattr(self, variable, name, attribute):
+        """Put the given attribute on the given netCDF4 Data type.
+
+        Put the given attribute on the given netCDF4 Data type, casting
+        attributes as we go to bytes rather than unicode.
+
+        NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+
+        """
+        assert hasattr(variable, "THREAD_SAFE_FLAG")
+        attribute = _bytes_if_ascii(attribute)
+        return variable.setncattr(name, attribute)
+
+    def pre_complete(self):
+        if self._dataset.isopen():
+            msg = (
+                "Cannot call Saver.complete() until its dataset is closed, "
+                "i.e. the saver's context has exited."
+            )
+            raise ValueError(msg)
+
+    def get(self):
+        # TODO: ???
+        pass
+
+
+class ZarrDataset(CFDataset):
+    """Backend-neutral dataset API used by Saver.
+
+    This is intentionally minimal and focused on the methods/properties that
+    :class:`iris.fileformats.netcdf.saver.Saver` currently relies on.
+    """
+
+    # Flag allows duck-typing checks without strict isinstance usage.
+    CF_DATASET_FLAG = True
+    THREAD_SEAFE_FLAG = False
+
+    def __init__(self, filename: Any, file_format: str, compute=True):
+        self._file_format = file_format
+        zarr_format = {"ZARR2":2, "ZARR3":3}[file_format]
+        if isinstance(filename, zarr.abc.store.Store):
+            raise NotImplementedError(
+                "Saving to a pre-existing Zarr store is not yet supported."
+            )
+        #: The Zarr store to which we will write data.
+        self._store = zarr.storage.LocalStore(filename)
+        self._dataset = zarr.group(
+            store=self._store, zarr_format=zarr_format, overwrite=True
+        )
+        self._filepath = filename
+        # TODO: more stuff here
+
+    # @property
+    # @abstractmethod
+    # def wrapped(self) -> Any:
+    #     pass
+
+    @property
+    def dimensions(self):
+        return self._dataset.keys()
+
+    @property
+    def variables(self):
+        return self._dataset.__dict__ # TODO: ???
+
+    @property
+    def file_format(self):
+        return self._file_format
+
+    @property
+    def filepath(self):
+        return self._filepath
+
+    def createDimension(self, *args, **kwargs):
+        pass
+
+    def createVariable(self, *args, **kwargs):
+        return self._dataset.create_array(*args, **kwargs)
+
+    def _setattr(self, variable, name, attribute):
+        """Put the given attribute on the given zarr data type.
+        Zarr attributes are stored as JSON, so any values need to be serializable.
+        Unlike netCDF, string data is handled easily via the dtype (no extra
+        dimensions are required). However, the Zarr Spec does not officially
+        support byte strings (although it will still write them).
+
+        NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+        """
+        # TODO(chris): Do we need any thread locks in Zarr?
+        # assert hasattr(variable, "THREAD_SAFE_FLAG")
+        # Handle unserializable values:
+        if isinstance(attribute, np.ndarray):
+            # numpy arrays are not serializable to json, convert to a list first
+            attribute = attribute.tolist()
+
+        elif isinstance(attribute, np.number):
+            # get numpy scalar as standard python scalar
+            attribute = attribute.item()
+
+        elif isinstance(attribute, bytes):
+            # cast to a unicode str type
+            attribute = attribute.decode(encoding="utf-8")
+
+        variable.attrs[name] = attribute
+
+    def pre_complete(self):
+        pass
+
+    @abstractmethod
+    def get(self):
+        pass
+
+
+def _set_attr(variable, name, attribute):
+    """Put the given attribute on the given netCDF4 Data type.
+
+    Put the given attribute on the given netCDF4 Data type, casting
+    attributes as we go to bytes rather than unicode.
+
+    NOTE: variable needs to be a _thread_safe_nc._ThreadSafeWrapper subclass.
+
+    """
+    if isinstance(variable, NetCDFDataset):
+        assert hasattr(variable, "THREAD_SAFE_FLAG")
+        attribute = _bytes_if_ascii(attribute)
+        return variable.setncattr(name, attribute)
+
+    elif isinstance(variable, ZarrDataset):
+        # TODO(chris): Do we need any thread locks in Zarr?
+        # assert hasattr(variable, "THREAD_SAFE_FLAG")
+
+        # Handle unserializable values:
+        if isinstance(attribute, np.ndarray):
+            # numpy arrays are not serializable to json, convert to a list first
+            attribute = attribute.tolist()
+
+        elif isinstance(attribute, np.number):
+            # get numpy scalar as standard python scalar
+            attribute = attribute.item()
+
+        elif isinstance(attribute, bytes):
+            # cast to a unicode str type
+            attribute = attribute.decode(encoding="utf-8")
+
+        variable.attrs[name] = attribute
+    else:
+        msg = ""  # TODO: ---
+        raise ValueError(msg)
+
+
+# # NOTE : this matches :class:`iris.mesh.MeshXY.ELEMENTS`,
+# # but in the preferred order for coord/connectivity variables in the file.
+# MESH_ELEMENTS = ("node", "edge", "face")
+
+
 class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
     """Backwards compatible form of :class:`iris.warnings.IrisSaverFillValueWarning`."""
 
@@ -329,7 +677,7 @@ CFVariable = typing.Union[bytecoding_datasets.VariableWrapper, VariableEmulator]
 class Saver:
     """A manager for saving NetCDF/NcZarr files."""
 
-    def __init__(self, filename, netcdf_format, compute=True):
+    def __init__(self, filename, file_format, compute=True):
         """Manage saving netcdf files.
 
         Also supports Zarr files in the NcZarr URL format, e.g.
@@ -343,9 +691,9 @@ class Saver:
         filename : str or netCDF4.Dataset
             Name of the NetCDF file, or an NcZarr URL, to save the cube.
             OR a writeable object supporting the :class:`netCF4.Dataset` api.
-        netcdf_format : str
-            Underlying netCDF file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
-            'NETCDF3_CLASSIC' or 'NETCDF3_64BIT'. Default is 'NETCDF4' format.
+        file_format : str
+            Underlying netCDF or Zarr file format, one of 'NETCDF4', 'NETCDF4_CLASSIC',
+            'NETCDF3_CLASSIC', 'NETCDF3_64BIT', 'ZARR2' or 'ZARR3'.
         compute : bool, default=True
             If ``True``, delayed variable saves will be completed on exit from the Saver
             context (after first closing the target file), equivalent to
@@ -380,13 +728,18 @@ class Saver:
 
 
         """
-        if netcdf_format not in [
+        NETCDF_FORMATS = [
             "NETCDF4",
             "NETCDF4_CLASSIC",
             "NETCDF3_CLASSIC",
             "NETCDF3_64BIT",
-        ]:
-            raise ValueError("Unknown netCDF file format, got %r" % netcdf_format)
+        ]
+        ZARR_FORMATS = ["ZARR2", "ZARR3"]
+
+        # if netcdf_format not in NETCDF_FORMATS:
+        #     raise ValueError("Unknown netCDF file format, got %r" % netcdf_format)
+        if file_format not in NETCDF_FORMATS and format not in ZARR_FORMATS:
+            raise ValueError("Unknown file format, got %r" % file_format)
 
         # All persistent variables
         #: CF name mapping with iris coordinates
@@ -422,62 +775,69 @@ class Saver:
         # written before __exit__ closes the file.
         self._nczarr_writes = []
 
-        # Detect if we were passed a pre-opened dataset (or something like one)
-        self._to_open_dataset = hasattr(filename, "createVariable")
-        if self._to_open_dataset:
-            # We were passed a *dataset*, so we don't open (or close) one of our own.
-            self._dataset = filename
-            if compute:
-                msg = (
-                    "Cannot save to a user-provided dataset with 'compute=True'. "
-                    "Please use 'compute=False' and complete delayed saving in the "
-                    "calling code after the file is closed."
-                )
-                raise ValueError(msg)
+        self.format_type = "netcdf4" if file_format in NETCDF_FORMATS else "nczarr"
 
-            # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
-            # Except if it already is one, since they forbid "re-wrapping".
-            if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
-                self._dataset = bytecoding_datasets.EncodedDataset.from_existing(
-                    self._dataset
-                )
-
-            # In this case the dataset gives a filepath, not the other way around.
-            self.filepath = self._dataset.filepath()
-
+        if self.format_type == "netcdf4":
+            self._dataset = NetCDFDataset(filename, file_format, compute)
         else:
-            # Given a filepath string/path : create a dataset from that
-            try:
-                # Lazy import to avoid circular import overhead at module import-time.
-                from iris.io import _is_nczarr_fragment
+            self._dataset = ZarrDataset(filename, file_format, compute)
 
-                self._is_nczarr = _is_nczarr_fragment(
-                    urlsplit(str(filename)).fragment or None
-                )
-                if self._is_nczarr:
-                    # NCZarr URLs contain a #mode= fragment; Path() strips it.
-                    # Keep as a plain string and pass directly to DatasetWrapper.
-                    self.filepath = str(filename)
-                else:
-                    filepath = Path(filename)
-                    self.filepath = filepath.absolute()
-                self._dataset = bytecoding_datasets.EncodedDataset(
-                    self.filepath, mode="w", format=netcdf_format
-                )
-            except RuntimeError:
-                if self._is_nczarr:
-                    raise
-                dir_name = Path(self.filepath).parent
-                if not dir_name.is_dir():
-                    msg = "No such file or directory: {}".format(dir_name)
-                    raise IOError(msg)
-                if not os.access(dir_name, os.R_OK | os.W_OK):
-                    msg = "Permission denied: {}".format(self.filepath)
-                    raise IOError(msg)
-                else:
-                    raise
+        # # Detect if we were passed a pre-opened dataset (or something like one)
+        # self._to_open_dataset = hasattr(filename, "createVariable")
+        # if self._to_open_dataset:
+        #     # We were passed a *dataset*, so we don't open (or close) one of our own.
+        #     self._dataset = filename
+        #     if compute:
+        #         msg = (
+        #             "Cannot save to a user-provided dataset with 'compute=True'. "
+        #             "Please use 'compute=False' and complete delayed saving in the "
+        #             "calling code after the file is closed."
+        #         )
+        #         raise ValueError(msg)
+        #
+        #     # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
+        #     # Except if it already is one, since they forbid "re-wrapping".
+        #     if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
+        #         self._dataset = bytecoding_datasets.EncodedDataset.from_existing(
+        #             self._dataset
+        #         )
+        #
+        #     # In this case the dataset gives a filepath, not the other way around.
+        #     self.filepath = self._dataset.filepath()
+        #
+        # else:
+        #     # Given a filepath string/path : create a dataset from that
+        #     try:
+        #         # Lazy import to avoid circular import overhead at module import-time.
+        #         from iris.io import _is_nczarr_fragment
+        #
+        #         self._is_nczarr = _is_nczarr_fragment(
+        #             urlsplit(str(filename)).fragment or None
+        #         )
+        #         if self._is_nczarr:
+        #             # NCZarr URLs contain a #mode= fragment; Path() strips it.
+        #             # Keep as a plain string and pass directly to DatasetWrapper.
+        #             self.filepath = str(filename)
+        #         else:
+        #             filepath = Path(filename)
+        #             self.filepath = filepath.absolute()
+        #         self._dataset = bytecoding_datasets.EncodedDataset(
+        #             self.filepath, mode="w", format=format
+        #         )
+        #     except RuntimeError:
+        #         if self._is_nczarr:
+        #             raise
+        #         dir_name = Path(self.filepath).parent
+        #         if not dir_name.is_dir():
+        #             msg = "No such file or directory: {}".format(dir_name)
+        #             raise IOError(msg)
+        #         if not os.access(dir_name, os.R_OK | os.W_OK):
+        #             msg = "Permission denied: {}".format(self.filepath)
+        #             raise IOError(msg)
+        #         else:
+        #             raise
 
-        self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
+        # self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
 
     def __enter__(self):
         return self
@@ -489,8 +849,9 @@ class Saver:
             # the deferred reopen-write pattern used for netCDF is not supported.
             sources, targets = zip(*self._nczarr_writes)
             da.store(list(sources), list(targets))
+        # self._dataset.exit()
         self._dataset.sync()
-        if not self._to_open_dataset:
+        if not self._dataset._to_open_dataset:
             # Only close if the Saver created it.
             self._dataset.close()
             # Complete after closing, if required
@@ -618,7 +979,7 @@ class Saver:
         # TODO: when iris.FUTURE.save_split_attrs defaults to True, we can deprecate the
         #  "local_keys" arg, and finally remove it when we finally remove the
         #  save_split_attrs switch.
-        if unlimited_dimensions is None:
+        if unlimited_dimensions is None: # TODO: logic for zarr
             unlimited_dimensions = []
 
         cf_profile_available = iris.site_configuration.get("cf_profile") not in [
@@ -645,7 +1006,7 @@ class Saver:
             dim for dim in cube_dimensions if dim not in mesh_dimensions
         ]
         all_dimensions = mesh_dimensions + nonmesh_dimensions
-        self._create_cf_dimensions(cube, all_dimensions, unlimited_dimensions)
+        self._create_cf_dimensions(cube, all_dimensions, unlimited_dimensions) # TODO: ---
 
         # Group the generic compression keyword arguments together for
         # convenience, as they will be applied to other cube metadata
@@ -660,7 +1021,7 @@ class Saver:
         # Create the mesh components, if there is a mesh.
         # We do this before creating the data-var, so that mesh vars precede
         # data-vars in the file.
-        cf_mesh_name = self._add_mesh(cube, compression_kwargs=compression_kwargs)
+        cf_mesh_name = self._add_mesh(cube, compression_kwargs=compression_kwargs) # TODO: ---
 
         # Create the associated cube CF-netCDF data variable.
         cf_var_cube = self._create_cf_data_variable(
@@ -679,9 +1040,9 @@ class Saver:
         # Associate any mesh with the data-variable.
         # N.B. _add_mesh cannot do this, as we want to put mesh variables
         # before data-variables in the file.
-        if cf_mesh_name is not None:
-            _setncattr(cf_var_cube, "mesh", cf_mesh_name)
-            _setncattr(cf_var_cube, "location", cube.location)
+        if cf_mesh_name is not None:  # TODO: ---
+            _set_attr(cf_var_cube, "mesh", cf_mesh_name)
+            _set_attr(cf_var_cube, "location", cube.location)
 
         # Add coordinate variables.
         self._add_dim_coords(cube, cube_dimensions)
@@ -726,7 +1087,7 @@ class Saver:
             }
             self.update_global_attributes(global_attributes)
 
-        if cf_profile_available:
+        if cf_profile_available:  # TODO: ???
             cf_patch = iris.site_configuration.get("cf_patch")
             if cf_patch is not None:
                 # Perform a CF patch of the dataset.
@@ -788,10 +1149,10 @@ class Saver:
                 attributes = dict(attributes)
 
             for attr_name in sorted(attributes):
-                _setncattr(self._dataset, attr_name, attributes[attr_name])
+                _set_attr(self._dataset, attr_name, attributes[attr_name])
 
         for attr_name in sorted(kwargs):
-            _setncattr(self._dataset, attr_name, kwargs[attr_name])
+            _set_attr(self._dataset, attr_name, kwargs[attr_name])
 
     def _create_cf_dimensions(self, cube, dimension_names, unlimited_dimensions=None):
         """Create the CF-netCDF data dimensions.
@@ -809,6 +1170,7 @@ class Saver:
         None.
 
         """
+        # TODO: add logic for zarr
         unlimited_dim_names = []
         if unlimited_dimensions is not None:
             for coord in unlimited_dimensions:
@@ -1510,6 +1872,7 @@ class Saver:
     def _ensure_valid_dtype(self, values, src_name, src_object):
         # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
         # so we check if we can store them as int32 instead.
+        # TODO: add zarr support
         if (
             np.issubdtype(values.dtype, np.int64)
             or np.issubdtype(values.dtype, np.unsignedinteger)
@@ -2691,12 +3054,13 @@ class Saver:
         This requires that the Saver has closed the dataset (exited its context).
 
         """
-        if self._dataset.isopen():
-            msg = (
-                "Cannot call Saver.complete() until its dataset is closed, "
-                "i.e. the saver's context has exited."
-            )
-            raise ValueError(msg)
+        self._dataset.pre_complete()
+        # if self._dataset.isopen():
+        #     msg = (
+        #         "Cannot call Saver.complete() until its dataset is closed, "
+        #         "i.e. the saver's context has exited."
+        #     )
+        #     raise ValueError(msg)
 
         # Complete the saves now
         dask.compute(self.delayed_completion())
