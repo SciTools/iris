@@ -10,7 +10,11 @@ import numpy as np
 import pytest
 
 import iris
-from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
+from iris.aux_factory import (
+    HybridHeightFactory,
+    HybridLogPressureFactory,
+    HybridPressureFactory,
+)
 from iris.tests import _shared_utils
 import iris.tests.stock
 from iris.warnings import IrisIgnoringBoundsWarning
@@ -204,6 +208,89 @@ class TestHybridPressure:
         with pytest.warns(IrisIgnoringBoundsWarning):
             with contextlib.suppress(ValueError):
                 _ = HybridPressureFactory(sigma=sigma, surface_air_pressure=sigma)
+
+    def test_bounded_surface_pressure(self):
+        # Start with everything normal
+        surface_pressure = self.cube.coord("surface_air_pressure")
+        pressure = self.cube.coord("air_pressure")
+        assert isinstance(pressure.bounds, np.ndarray)
+
+        # Make sure pressure still works OK if surface pressure was messed
+        # with *after* pressure was created.
+        surface_pressure.bounds = np.zeros(surface_pressure.shape + (4,))
+
+        # Check that air_pressure derivation now issues a warning.
+        msg = "Surface pressure.* bounds.* being disregarded"
+        with pytest.warns(IrisIgnoringBoundsWarning, match=msg):
+            self.cube.coord("air_pressure")
+
+
+@_shared_utils.skip_data
+class TestHybridLogPressure:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # Convert the hybrid-height into hybrid-pressure...
+        cube = iris.tests.stock.realistic_4d()
+
+        # Get rid of the normal hybrid-height factory.
+        factory = cube.aux_factory(name="altitude")
+        cube.remove_aux_factory(factory)
+
+        # Mangle the height coords into pressure coords.
+        eta = cube.coord("level_height")
+        eta.rename("level_pressure")
+        eta.units = "Pa"
+        sigma = cube.coord("sigma")
+        ps = cube.coord("surface_altitude")
+        ps.rename("surface_air_pressure")
+        ps.units = "Pa"
+
+        ref = iris.coords.AuxCoord(
+            eta.points * 0,
+            standard_name="reference_air_pressure_for_atmosphere_vertical_coordinate",
+            long_name="vertical coordinate formula term: reference pressure",
+            var_name="p0",
+            units=eta.units,
+        )
+
+        factory = HybridLogPressureFactory(eta, sigma, ps, ref)
+        cube.add_aux_factory(factory)
+        self.cube = cube
+        self.air_pressure = self.cube.coord("air_pressure")
+
+    def test_metadata(self):
+        assert self.air_pressure.units == "Pa"
+        assert self.air_pressure.coord_system is None
+        assert self.air_pressure.attributes == {}
+
+    def test_points(self):
+        points = self.air_pressure.points
+        assert points.dtype == np.float32
+        assert points.min() == pytest.approx(np.float32(191.84892))
+        assert points.max() == pytest.approx(np.float32(40000))
+
+        # Convert the reference surface to float64 and check the
+        # derived coordinate becomes float64.
+        temp = self.cube.coord("surface_air_pressure").points
+        temp = temp.astype("f8")
+        self.cube.coord("surface_air_pressure").points = temp
+        points = self.cube.coord("air_pressure").points
+        assert points.dtype == np.float64
+        assert points.min() == pytest.approx(191.8489257)
+        assert points.max() == pytest.approx(40000)
+
+    def test_invalid_dependencies(self):
+        # Must have either delta or surface_air_pressure
+        with pytest.raises(ValueError, match="insufficient source coordinates"):
+            _ = HybridLogPressureFactory()
+        sigma = self.cube.coord("sigma")
+        with pytest.raises(ValueError, match="insufficient source coordinates"):
+            _ = HybridLogPressureFactory(sigma=sigma)
+
+        # Surface pressure must not have bounds
+        with pytest.warns(IrisIgnoringBoundsWarning):
+            with contextlib.suppress(ValueError):
+                _ = HybridLogPressureFactory(sigma=sigma, surface_air_pressure=sigma)
 
     def test_bounded_surface_pressure(self):
         # Start with everything normal
