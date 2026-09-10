@@ -147,16 +147,22 @@ into an otherwise focused PR. Full re-solves are left to the weekly
 make lockfiles  # python tools/update_lockfiles.py -o requirements/locks requirements/py*.yml
 ```
 
-## Pull Request Guidelines
+## Contribution Workflow
 
-- When creating a pull request a template is provided to ensure all checks are
-  considered.
-- This project is configured to use pre-commit that will ensure some checks are
-  performed automatically.
-- Keep changes focused; avoid unrelated refactors in the same PR.
-- Add or update tests for every change to production code.
-- Ensure a changelog fragment is added, see
-  [`changelog/AGENTS.md`](changelog/AGENTS.md).
+- Push development branches to `origin` (the `bjlittle/iris` fork). Raise pull
+  requests from there against the relevant **feature branch** on `upstream`
+  (`SciTools/iris`) — never against `upstream/main`. The `upstream` remote is
+  push-disabled, which enforces this.
+- **Attribute agentic work clearly.** Say in the body of every pull request and
+  issue that it is agentic, and end commit messages with the `Co-Authored-By`
+  trailer. Never let agentic work read as hand-written.
+- Label such pull requests and issues `Agentic` and `Type: Feature Branch`,
+  plus whichever `Feature: …` label fits the subject.
+- Use the pull request template; keep changes focused and avoid unrelated
+  refactors; add or update tests for every production change; ship a changelog
+  fragment (see [`changelog/AGENTS.md`](changelog/AGENTS.md)).
+- **If in doubt about anything outward-facing** — base branch, labels, whether
+  to post at all — **ask before pushing.**
 
 ## Critical Development Gotchas
 
@@ -180,12 +186,6 @@ make lockfiles  # python tools/update_lockfiles.py -o requirements/locks require
    will not affect the cube.
 10. **Environment reproducibility**: set `NPY_DISABLE_CPU_FEATURES` as above for
     consistent results.
-
-## Getting Help
-
-[GitHub Discussions](https://github.com/SciTools/iris/discussions) ·
-[Contributing Guide](.github/CONTRIBUTING.md) ·
-[Developer Guide](docs/src/developers_guide/) · [Code of Conduct](CODE_OF_CONDUCT.md)
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new

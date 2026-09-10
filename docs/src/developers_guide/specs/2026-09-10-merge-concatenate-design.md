@@ -432,6 +432,13 @@ Cross-cutting rules (apply to every row rather than one of them):
 - **Each PR cites this spec** and says which row it is, so a reviewer can see the
   shape of the programme without reading twelve descriptions, and says plainly
   that it is agentic work — {pull}`7161` is the precedent (§3).
+- **Every PR targets the `greenfield` feature branch, not `main`.** The
+  programme is long-running and deliberately incremental, so its parts land
+  together rather than trickling into `main` one at a time; `greenfield` is then
+  merged back once the tranche it carries is coherent. Each PR is labelled
+  `Feature: Merge/Concatenate`, `Type: Feature Branch` and `Agentic`, so the
+  agentic ones are filterable — both for reviewers who want them and for those
+  who would rather not.
 - **Changelog fragment ships with its PR**, typed as the Type column says, per
   `changelog/AGENTS.md`.
 - **Refactor PRs change no test expectations** (rows 1, 2, 5). Test files move and
