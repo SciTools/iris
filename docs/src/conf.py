@@ -471,6 +471,10 @@ exclude_patterns = [
     # Implementation plans are tracked in the repository but not published;
     # see developers_guide/specs/index.
     "developers_guide/plans/**",
+    # myst-parser makes ".md" a source suffix, which would otherwise pull the
+    # README of each of these non-document directories into the build.
+    "_build/**",
+    "_static/**",
 ]
 
 # -- sphinx-gallery config ----------------------------------------------------

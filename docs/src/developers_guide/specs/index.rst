@@ -12,7 +12,10 @@ documentation that is.
 
 Specs are **living documents**.  They are revised as the design evolves, so a
 spec always describes the current intent rather than a snapshot of a past
-discussion.
+discussion.  Each carries a **plan roadmap** recording the pull requests that
+deliver it and the status of each, together with the assumptions, open decisions
+and open questions the work has surfaced.  A spec is therefore the place to look
+for how far a programme of work has got, not only what it intends.
 
 Each spec declares a **citation prefix** so that its sections can be referred to
 unambiguously from issues, pull requests and other specs.  Within a spec, a bare
