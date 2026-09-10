@@ -155,7 +155,9 @@ make lockfiles  # python tools/update_lockfiles.py -o requirements/locks require
   push-disabled, which enforces this.
 - **Attribute agentic work clearly.** Say in the body of every pull request and
   issue that it is agentic, and end commit messages with the `Co-Authored-By`
-  trailer. Never let agentic work read as hand-written.
+  trailer. In changelog fragments the contributor cited is always
+  ``:user:`claude` `` — Anthropic's account — never the human raising the pull
+  request. Never let agentic work read as hand-written.
 - Label such pull requests and issues `Agentic` and `Type: Feature Branch`,
   plus whichever `Feature: …` label fits the subject.
 - Use the pull request template; keep changes focused and avoid unrelated
@@ -184,8 +186,6 @@ make lockfiles  # python tools/update_lockfiles.py -o requirements/locks require
    via `cube.metadata`.
 9. **Cube immutability**: operations return new cubes; `cube.data[...] = x`
    will not affect the cube.
-10. **Environment reproducibility**: set `NPY_DISABLE_CPU_FEATURES` as above for
-    consistent results.
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
 - **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
