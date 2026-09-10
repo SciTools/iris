@@ -168,6 +168,10 @@ sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
 Documentation lives under `docs/` and is built with Sphinx. See
 [`docs/AGENTS.md`](docs/AGENTS.md) for full rules.
 
+Agreed design specs live in `docs/superpowers/specs/` as
+`YYYY-MM-DD-<topic>-design.md`. These are working documents outside the Sphinx
+source tree, so RST conventions do not apply to them.
+
 
 ## Lock-file Maintenance
 
