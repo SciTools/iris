@@ -1,12 +1,23 @@
 # Making Iris merge and concatenate robust, efficient and configurable
 
-**Status:** design agreed, not yet implemented
-**Date:** 2026-09-10
-**Baseline:** `main` at `c508ac800`, Iris `3.17.0.dev4`
+```{readingtime}
+```
 
-Line references in this document are accurate as of the baseline commit.
+> **Living document.** This spec is updated as the design evolves; it is not a
+> point-in-time record of what was agreed on any particular day. Cite sections
+> of it as `merge spec §N.N`. A bare `§N.N` inside this document refers to this
+> document.
 
----
+- **Date:** 2026-09-10
+- **Status:** design agreed, not yet implemented
+- **Issues:** {issue}`2761`, {issue}`5375`, {issue}`6790`, {issue}`7063`,
+  {issue}`7241`
+- **Applies to:** `lib/iris/_merge.py`, `lib/iris/_concatenate.py`,
+  `lib/iris/_combine.py`
+- **Baseline:** `main` at `c508ac800`, Iris `3.17.0.dev4`. Line references in
+  this document are accurate as of that commit.
+
+(merge-spec-1)=
 
 ## 1. Summary
 
@@ -24,9 +35,11 @@ The six goals, in the requester's words, are that merging datasets into a hyper
 cube should be **more robust, efficient, configurable at the API level,
 extensible, lazy and lenient**.
 
----
+(merge-spec-2)=
 
 ## 2. Why the current design is at its limit
+
+(merge-spec-2-1)=
 
 ### 2.1 Two engines that share nothing
 
@@ -44,6 +57,8 @@ was built to be the single source of truth for cube comparison and combination
 and is used only by cube maths. Iris therefore carries three independent answers
 to "are these two cubes compatible, and how do I combine them?".
 
+(merge-spec-2-2)=
+
 ### 2.2 Merge is not lazy
 
 Merge compares live `Coord` objects and cell measures / ancillary variables with
@@ -59,36 +74,42 @@ Merge compares live `Coord` objects and cell measures / ancillary variables with
 realises lazy arrays. They run once per candidate-cube × ProtoCube pair, with no
 caching.
 
-Concatenate solved exactly this problem in PR #5926 using `xxhash` array hashing
-and a single batched `dask.compute` (`_compute_hashes`, `_concatenate.py:479`).
-Merge never received it. Reported impact on ECMWF hybrid-pressure loading is
-roughly 5×, and more than 10× worse again under `_LAZY_DERIVED_LOADING`, with
-over 90% of time in `cubes.combine → merge → coord equality → dask compute`
-(SciTools/iris#7063, #7241).
+Concatenate solved exactly this problem in {pull}`5926` using `xxhash` array
+hashing and a single batched `dask.compute` (`_compute_hashes`,
+`_concatenate.py:479`). Merge never received it. Reported impact on ECMWF
+hybrid-pressure loading is roughly 5×, and more than 10× worse again under
+`_LAZY_DERIVED_LOADING`, with over 90% of time in
+`cubes.combine → merge → coord equality → dask compute` ({issue}`7063`,
+{issue}`7241`).
+
+(merge-spec-2-3)=
 
 ### 2.3 Merge is barely configurable
 
 `concatenate()` has four escape hatches — `check_aux_coords`,
 `check_cell_measures`, `check_ancils`, `check_derived_coords`. `merge()` has one
-keyword, `unique`. This asymmetry is directly user-visible in
-SciTools/iris#6790, where cubes refuse to merge but concatenate happily after
-`new_axis`.
+keyword, `unique`. This asymmetry is directly user-visible in {issue}`6790`,
+where cubes refuse to merge but concatenate happily after `new_axis`.
+
+(merge-spec-2-4)=
 
 ### 2.4 Merge can be silently wrong
 
-SciTools/iris#2761, open since 2017. `build_indexes` (`_merge.py:585-604`)
-records, for each scalar value, the *set* of values it co-occurs with. Set
-membership discards the structure needed to decide separability, so unrelated
-candidate dimensions are judged separable. See §5.6–5.7 for the confirmed
-diagnosis and fix.
+{issue}`2761`, open since 2017. `build_indexes` (`_merge.py:585-604`) records,
+for each scalar value, the *set* of values it co-occurs with. Set membership
+discards the structure needed to decide separability, so unrelated candidate
+dimensions are judged separable. See §5.6–5.7 for the confirmed diagnosis and
+fix.
+
+(merge-spec-2-5)=
 
 ### 2.5 Leniency has been requested for a decade
 
-SciTools/iris#1987 (2016) → #4446 (merge, 2021) → #5392 (concatenate, 2023).
-Never delivered, in part because retrofitting it onto two unrelated engines means
-doing the work twice in two idioms.
+{issue}`1987` (2016) → {issue}`4446` (merge, 2021) → {issue}`5392`
+(concatenate, 2023). Never delivered, in part because retrofitting it onto two
+unrelated engines means doing the work twice in two idioms.
 
----
+(merge-spec-3)=
 
 ## 3. Constraints
 
@@ -99,11 +120,13 @@ doing the work twice in two idioms.
 2. **Backwards compatible with v3.x.** No breaking changes. The one deliberate
    behaviour change (§5.7) is a bug fix and is treated as such.
 3. **Honest labelling.** Agentic work is labelled as agentic; precedent exists in
-   SciTools/iris PR #7161.
+   {pull}`7161`.
 
----
+(merge-spec-4)=
 
 ## 4. Decisions taken
+
+(merge-spec-4-1)=
 
 ### 4.1 Where configurability is exposed
 
@@ -116,9 +139,12 @@ mechanism. `CombineOptions.OPTION_KEYS` is already a list carrying the comment
 "so we can update it in an inheriting class" (`_combine.py:182`), and dict-valued
 options are already special-cased at `_combine.py:232`.
 
-Rejected: `CombineOptions`-only, which leaves #6790 unfixed for direct callers
-and buries configuration in ambient thread-local state; and method-keywords-only,
-which leaves load-time users unable to reach the new behaviour.
+Rejected: `CombineOptions`-only, which leaves {issue}`6790` unfixed for direct
+callers and buries configuration in ambient thread-local state; and
+method-keywords-only, which leaves load-time users unable to reach the new
+behaviour.
+
+(merge-spec-4-2)=
 
 ### 4.2 How far leniency goes
 
@@ -129,19 +155,24 @@ measures and ancillary variables).
 Coercion of dtypes, units and calendars stays out of the engine, in
 `iris.util.equalise_cubes`, which is the existing extension point for it.
 
+(merge-spec-4-3)=
+
 ### 4.3 Substrate built bottom-up, not designed top-down
 
 The substrate is grown one PR at a time starting from the hashing layer, rather
 than specified in advance. The alternative — designing a unified v4.0 engine
-first — was considered and parked at <https://github.com/bjlittle/iris/issues/333>.
+first — was considered and parked at
+<https://github.com/bjlittle/iris/issues/333>.
 
 Adopting `Resolve` wholesale was also rejected as a *starting* point: it is
 pairwise and merge is N-ary, so whether it scales is unresolved research risk,
 and nothing user-visible would ship until it was answered.
 
----
+(merge-spec-5)=
 
 ## 5. Design
+
+(merge-spec-5-1)=
 
 ### 5.1 The substrate module
 
@@ -162,6 +193,8 @@ The substrate must import nothing from Iris. The hashing code's only Iris
 dependency is `iris.coords` for type hints in `array_id`, which goes behind
 `TYPE_CHECKING`. This is what makes the merge-side import risk-free.
 
+(merge-spec-5-2)=
+
 ### 5.2 What is shared, and what is not
 
 The two cube-level signatures are **not** unified. They encode different
@@ -180,6 +213,8 @@ The genuinely shared kernel sits one level down:
 3. **Comparison result** — a value carrying *why* two elements differ, which
    feeds diagnostics.
 
+(merge-spec-5-3)=
+
 ### 5.3 Merge needs a driver function
 
 Concatenate's loop lives in `iris._concatenate.concatenate()`, which is why it
@@ -194,6 +229,8 @@ the landing site for every keyword added later, which is why it comes early.
 `self[0]` with `error_on_mismatch=True` and no name grouping
 (`cube.py:364-373`). It is left alone initially and revisited when its error path
 becomes relevant.
+
+(merge-spec-5-4)=
 
 ### 5.4 Hash-based comparison in merge
 
@@ -229,6 +266,8 @@ because hashes unify numerical dtypes (`float32([1])` and `bool([1])` hash equal
 — consistent with `array_equal`, but only if ordering is unchanged); and the
 chunk-mismatch `ValueError` becomes reachable from merge for the first time.
 
+(merge-spec-5-5)=
+
 ### 5.5 Measurement
 
 `benchmarks/benchmarks/merge_concat.py::Merge` merges two cubes and explicitly
@@ -236,9 +275,11 @@ strips cell measures and ancillary variables. It cannot demonstrate this
 improvement. The benchmark is extended in a separate PR *before* the change, so
 the baseline is committed to `main` and the speedup is reproducible.
 
+(merge-spec-5-6)=
+
 ### 5.6 Separability: the diagnosis
 
-Confirmed by direct probe against the reporter's case in SciTools/iris#2761:
+Confirmed by direct probe against the reporter's case in {issue}`2761`:
 
 ```text
 A = [1, 2, 1, 2, 1, 2]
@@ -261,6 +302,8 @@ with no connection to the actual problem. That is the user experience today.
 The current predicate is `_separable_pair` (`_merge.py:607-631`): X and Y are
 separable iff every value of X co-occurs with the same *set* of Y values.
 
+(merge-spec-5-7)=
+
 ### 5.7 Separability: the fix
 
 **Replacing the set with a multiset does not work.** The multiset
@@ -281,7 +324,7 @@ Verified against five topologies:
 | topology | expected | result |
 |---|---|---|
 | 2×2 product | separable | ✓ |
-| #2761 case | only `a`–`c` separable | ✓ |
+| {issue}`2761` case | only `a`–`c` separable | ✓ |
 | 2×2×2 full product | all pairs separable (multiplicity 2, uniform) | ✓ |
 | `b = f(a)` | inseparable | ✓ |
 | incomplete 2×2 (3 cells) | inseparable | ✓ |
@@ -309,6 +352,8 @@ non-uniform, so a case that was "separable, then duplicate-detected" becomes
 "inseparable, then duplicate-detected". Probably the same user-visible outcome,
 but it must be verified rather than assumed.
 
+(merge-spec-5-8)=
+
 ### 5.8 Diagnostics
 
 `merge()` explains nothing today — it returns N cubes with no indication why they
@@ -323,6 +368,8 @@ unchanged; a separate diagnostic entry point is added alongside
 diffs. What is missing is the group-level account: these three formed one cube,
 this fourth stayed out because X.
 
+(merge-spec-5-9)=
+
 ### 5.9 Leniency
 
 The primitive already exists: every metadata class has
@@ -335,7 +382,7 @@ Merge hand-compares metadata field by field in `_CubeSignature._defn_msgs`
 (`iris/common/lenient.py:667`) is not used, so no ambient state enters the
 engine's hot path — consistent with §4.1.
 
-On SciTools/iris#5394 and #5395 the claim must be precise: this adopts the
+On {issue}`5394` and {issue}`5395` the claim must be precise: this adopts the
 lenient metadata *semantics* that `Resolve` is built on, not `Resolve` itself.
 They are partially addressed, not closed.
 
@@ -344,7 +391,7 @@ by intersection or union — is separated from the `check_*` flags, which only s
 "do not compare". It lands last among the behaviour changes because it is the one
 item with genuine semantic debate in it.
 
----
+(merge-spec-6)=
 
 ## 6. The programme
 
@@ -353,13 +400,13 @@ item with genuine semantic debate in it.
 | 1 | Hashing machinery → `_combine_common.py` | internal | — |
 | 2 | `iris._merge.merge()` driver function | internal | — |
 | 3 | Extend merge benchmark (baseline) | internal | — |
-| 4 | **Hash-based comparison in merge** | performance | #7063, #7241 |
+| 4 | **Hash-based comparison in merge** | performance | {issue}`7063`, {issue}`7241` |
 | 5 | Shared element signature + collection walk | internal | — |
 | 6 | Separability characterisation tests + doctest cleanup | internal | — |
-| 7 | **Separability fix** | bugfix | #2761, likely #5768 |
-| 8 | Structured diagnostics | feature | #5375 |
-| 9 | Metadata leniency | feature | #4446, #5392; part of #5394/#5395 |
-| 10 | `check_*` parity for merge | feature | #6790 |
+| 7 | **Separability fix** | bugfix | {issue}`2761`, likely {issue}`5768` |
+| 8 | Structured diagnostics | feature | {issue}`5375` |
+| 9 | Metadata leniency | feature | {issue}`4446`, {issue}`5392`; part of {issue}`5394` / {issue}`5395` |
+| 10 | `check_*` parity for merge | feature | {issue}`6790` |
 | 11 | Structural leniency | feature | — |
 | 12 | `CombineOptions` forwarding dicts | feature | — |
 
@@ -389,7 +436,7 @@ Notes on individual items:
   (`_combine.py:190-219`), defaulting to `None` in all four so load-time
   behaviour is unchanged.
 
----
+(merge-spec-7)=
 
 ## 7. Testing and validation
 
@@ -413,7 +460,7 @@ network.
 - Every PR carries a `changelog/<PR-number>.<type>.rst` fragment per
   `changelog/AGENTS.md`.
 
----
+(merge-spec-8)=
 
 ## 8. Risks
 
@@ -425,7 +472,7 @@ network.
 | Programme stalls after the proving tranche | PRs 1–4 are independently valuable; nothing later depends on the programme continuing |
 | Structural leniency semantics prove contentious | It is last, and nothing else depends on it |
 
----
+(merge-spec-9)=
 
 ## 9. Out of scope
 
@@ -441,18 +488,18 @@ network.
 - A v4.0 unified engine — parked at
   <https://github.com/bjlittle/iris/issues/333>.
 
----
+(merge-spec-10)=
 
 ## 10. References
 
-- SciTools/iris#2761 — Merge Problems (separability)
-- SciTools/iris#3234 — Unify merge and concatenate
-- SciTools/iris#4446, #5392 — `LENIENT` merge / concatenate
-- SciTools/iris#5375 — Various cube merge/concatenate issues
-- SciTools/iris#5394, #5395 — trial `resolve` in merge / concatenate
-- SciTools/iris#5768 — dimensions mashed together on merge
-- SciTools/iris#5926 — array hashing in concatenate
-- SciTools/iris#6383 — additional `equalise_cubes` functionality
-- SciTools/iris#6790 — merge/concatenate asymmetry
-- SciTools/iris#7063, #7241 — merge performance
-- SciTools/iris discussion #6881 — AUX-Coord minutes, 2026-01-07
+- {issue}`2761` — Merge Problems (separability)
+- {issue}`3234` — Unify merge and concatenate
+- {issue}`4446`, {issue}`5392` — `LENIENT` merge / concatenate
+- {issue}`5375` — Various cube merge/concatenate issues
+- {issue}`5394`, {issue}`5395` — trial `resolve` in merge / concatenate
+- {issue}`5768` — dimensions mashed together on merge
+- {pull}`5926` — array hashing in concatenate
+- {issue}`6383` — additional `equalise_cubes` functionality
+- {issue}`6790` — merge/concatenate asymmetry
+- {issue}`7063`, {issue}`7241` — merge performance
+- {discussion}`6881` — AUX-Coord minutes, 2026-01-07

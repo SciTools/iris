@@ -154,6 +154,7 @@ rst_epilog = f"""
 extensions = [
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "myst_parser",
     "readingtime",
     "readingtime_validator",
     "sphinx.ext.autodoc",
@@ -221,6 +222,15 @@ else:
             "either 'latest' or 'stable', skipping sitemap creation."
         )
     )
+
+# -- myst-parser extension ----------------------------------------------------
+# See https://myst-parser.readthedocs.io/en/latest/configuration.html
+# Markdown is reserved for developer design specs, see
+# developers_guide/specs/index.  All other documentation remains
+# reStructuredText.
+myst_enable_extensions = [
+    "colon_fence",
+]
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -458,6 +468,9 @@ html_css_files = [
 # list of sources to exclude from the build.
 exclude_patterns = [
     "**/highlights.rst",
+    # Implementation plans are tracked in the repository but not published;
+    # see developers_guide/specs/index.
+    "developers_guide/plans/**",
 ]
 
 # -- sphinx-gallery config ----------------------------------------------------
