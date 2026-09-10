@@ -21,6 +21,12 @@ Each spec declares a **citation prefix** so that its sections can be referred to
 unambiguously from issues, pull requests and other specs.  Within a spec, a bare
 ``§N.N`` always means that same document.
 
+Give every cited section its own ``§``, and separate a run of them with a comma
+or a solidus — ``§5.6, §5.7`` or ``§5.6 / §5.7``, never ``§5.6-5.7``.  A dashed
+range reads as a single citation with a stray suffix, so only its first section
+is unambiguously identified; spelling both out costs one character and leaves
+nothing for a reader, or a future cross-reference tool, to guess at.
+
 .. list-table::
    :header-rows: 1
    :widths: 25 75

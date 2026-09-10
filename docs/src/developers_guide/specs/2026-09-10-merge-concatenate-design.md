@@ -99,8 +99,8 @@ where cubes refuse to merge but concatenate happily after `new_axis`.
 {issue}`2761`, open since 2017. `build_indexes` (`_merge.py:585-604`) records,
 for each scalar value, the *set* of values it co-occurs with. Set membership
 discards the structure needed to decide separability, so unrelated candidate
-dimensions are judged separable. See §5.6–5.7 for the confirmed diagnosis and
-fix.
+dimensions are judged separable. See §5.6 for the confirmed diagnosis and §5.7
+for the fix.
 
 (merge-spec-2-5)=
 
