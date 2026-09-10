@@ -15,8 +15,8 @@
   {issue}`7241`
 - **Applies to:** `lib/iris/_merge.py`, `lib/iris/_concatenate.py`,
   `lib/iris/_combine.py`
-- **Baseline:** `main` at `c508ac800`, Iris `3.17.0.dev4`. Line references in
-  this document are accurate as of that commit.
+- **Baseline:** `greenfield` at `253510b37`, Iris `3.17.0.dev4`. Line references
+  in this document are accurate as of that commit.
 
 (merge-spec-1)=
 
