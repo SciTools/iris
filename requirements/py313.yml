@@ -52,6 +52,7 @@ dependencies:
   - requests
 
 # Documentation dependencies.
+  - myst-parser
   - sphinx <8.2
   - sphinxcontrib-apidoc
   - sphinx-copybutton
