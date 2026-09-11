@@ -234,7 +234,7 @@ def compute_hashes(
         return np.issubdtype(dtype, np.bool_) or np.issubdtype(dtype, np.number)
 
     def group_key(item):
-        array_id, a = item
+        _, a = item
         if is_numerical(a.dtype):
             dtype = "numerical"
         else:
@@ -260,12 +260,12 @@ def compute_hashes(
             __, rechunked_arrays = da.core.unify_chunks(*itertools.chain(*argpairs))
         else:
             rechunked_arrays = same_dtype_arrays
-        for array_id, rechunked in zip(array_ids, rechunked_arrays):
+        for key, rechunked in zip(array_ids, rechunked_arrays):
             if isinstance(rechunked, da.Array):
                 chunks = rechunked.chunks
             else:
                 chunks = tuple((i,) for i in rechunked.shape)
-            hashes[array_id] = (hash_array(rechunked), chunks)
+            hashes[key] = (hash_array(rechunked), chunks)
 
     (hashes,) = dask.compute(hashes)
     return {k: ArrayHash(*v) for k, v in hashes.items()}
