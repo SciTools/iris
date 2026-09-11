@@ -16,6 +16,22 @@ from release_do_nothing import IrisRelease, IrisVersion
 
 
 @pytest.fixture(autouse=True)
+def isolate_progress_files(monkeypatch, tmp_path) -> None:
+    """Give every test its own directory for :mod:`nothing` progress files.
+
+    :meth:`nothing.Progress._get_file_stem` resolves ``.nothing/`` against the
+    current working directory, which every ``pytest-xdist`` worker shares. Tests
+    that save progress therefore write and read back the same path, and because
+    :meth:`nothing.Progress.save` verifies by reloading what it just wrote, one
+    worker can observe the file while another has it truncated.
+
+    Isolating the working directory removes the collision, and stops the suite
+    writing into the repository as a side effect.
+    """
+    monkeypatch.chdir(tmp_path)
+
+
+@pytest.fixture(autouse=True)
 def mock_fast_print(mocker) -> None:
     """Prevent the mod:`nothing` print methods from sleeping."""
     mocker.patch.object(nothing, "sleep", return_value=None)
@@ -90,6 +106,21 @@ def assert_input_msg_regex(call: Any, expected: re.Pattern[str] | str) -> None:
     assert expected.search(message) is not None, (
         f"Expected message matching {expected!r} in {message!r}"
     )
+
+
+def test_progress_files_are_isolated(tmp_path):
+    """Two tests must never resolve a progress file to the same path.
+
+    :meth:`IrisRelease.merge_back` names the next patch's progress file after
+    that patch, so every test reaching it writes the same ``v1_1_1.json``. The
+    directory is all that distinguishes them, and
+    :meth:`nothing.Progress._get_file_stem` resolves it against the working
+    directory that all ``pytest-xdist`` workers share.
+
+    The resulting failure is scheduling-dependent, and so cannot be reproduced
+    directly; assert the isolation that prevents it instead.
+    """
+    assert IrisRelease._get_file_stem().is_relative_to(tmp_path)
 
 
 class TestIrisVersion:
