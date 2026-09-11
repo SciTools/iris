@@ -2,13 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test array hashing in :mod:`iris._concatenate`."""
+"""Test array hashing in :mod:`iris._combine_common`."""
 
 import dask.array as da
 import numpy as np
 import pytest
 
-from iris import _concatenate
+from iris import _combine_common
 from iris.tests.unit.util.test_array_equal import TEST_CASES
 from iris.util import array_equal
 
@@ -73,7 +73,7 @@ from iris.util import array_equal
     ],
 )
 def test_compute_hashes(a, b, eq):
-    hashes = _concatenate._compute_hashes({"a": a, "b": b})
+    hashes = _combine_common.compute_hashes({"a": a, "b": b})
     assert eq == (hashes["a"] == hashes["b"])
 
 
@@ -87,20 +87,20 @@ def test_compute_hashes(a, b, eq):
 )
 def test_compute_hashes_vs_array_equal(a, b):
     """Test that hashing give the same answer as `array_equal(withnans=True)`."""
-    hashes = _concatenate._compute_hashes({"a": a, "b": b})
+    hashes = _combine_common.compute_hashes({"a": a, "b": b})
     assert array_equal(a, b, withnans=True) == (hashes["a"] == hashes["b"])
 
 
 def test_arrayhash_equal_incompatible_chunks_raises():
-    hash1 = _concatenate._ArrayHash(1, chunks=((1, 1),))
-    hash2 = _concatenate._ArrayHash(1, chunks=((2,),))
+    hash1 = _combine_common.ArrayHash(1, chunks=((1, 1),))
+    hash2 = _combine_common.ArrayHash(1, chunks=((2,),))
     msg = r"Unable to compare arrays with different chunks.*"
     with pytest.raises(ValueError, match=msg):
         hash1 == hash2
 
 
 def test_arrayhash_equal_incompatible_type_raises():
-    hash = _concatenate._ArrayHash(1, chunks=(1, 1))
+    hash = _combine_common.ArrayHash(1, chunks=(1, 1))
     msg = r"Unable to compare .*"
     with pytest.raises(TypeError, match=msg):
         hash == object()
