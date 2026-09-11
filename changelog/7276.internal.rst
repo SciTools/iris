@@ -1,0 +1,4 @@
+:user:`claude` moved the array hashing machinery out of ``iris._concatenate``
+and into a new shared ``iris._combine_common``, so that cube merge can use it
+without a circular import. This is row 1 of the merge and concatenate design
+spec roadmap, per §5.1. No behaviour is changed. (:pull:`7276`)

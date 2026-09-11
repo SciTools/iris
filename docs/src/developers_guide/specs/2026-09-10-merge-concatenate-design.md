@@ -411,7 +411,7 @@ lands. Status vocabulary: **not started** · **in progress** · **✅ complete**
 
 | # | PR | Scope (spec §) | Type | Closes | Depends on | Status |
 |---|---|---|---|---|---|---|
-| 1 | Hashing machinery → `_combine_common.py` | §5.1 — move `_concatenate.py:305-541` (~237 lines) and `tests/unit/concatenate/test_hashing.py`; names lose their underscore prefix | internal | — | — | not started |
+| 1 | Hashing machinery → `_combine_common.py` | §5.1 — move `_concatenate.py:305-541` (~237 lines) and `tests/unit/concatenate/test_hashing.py`; names lose their underscore prefix | internal | — | — | in progress ({pull}`7276`) |
 | 2 | `iris._merge.merge()` driver function | §5.3 — lift the loop out of `CubeList.merge()` (`cube.py:443-467`); `CubeList.merge` delegates, mirroring `CubeList.concatenate` | internal | — | — | not started |
 | 3 | Extend merge benchmark | §5.5 — `benchmarks/benchmarks/merge_concat.py::Merge` currently strips cell measures and ancillaries, so it cannot show the PR 4 effect | internal | — | — | not started |
 | 4 | **Hash-based comparison in merge** | §5.4 — collect arrays up front, thread `hashes` through `ProtoCube.register()` to the two `==` sites of §2.2 | performance | {issue}`7063`, {issue}`7241` | 1, 2, 3 | not started |
@@ -515,14 +515,21 @@ opened.
    unified.** They encode different questions, and forcing one type on both would
    be a rewrite wearing a refactor's clothes (§5.2). {issue}`3234` therefore
    stays open; this programme narrows it rather than closing it.
-6. **Open** (PR 1) — **Whether the moved names drop their underscore prefix.**
-   Following `_lazy_data.py` makes PR 1 a move *and* a rename, which is a
-   reasonable thing for a reviewer to object to and a cheap thing to concede. The
-   location is what matters, not the name (§8).
-7. **Open** (PR 1) — **Whether the programme proceeds past the proving tranche.**
-   §3 names review capacity as the scarce resource. PR 1 is a pure move with no
-   behaviour change and its justification is PR 4, so its reception is the signal
-   for everything after it. Nothing in PRs 5–12 is load-bearing for PRs 1–4.
+6. **Open** (PR 1, put to the reviewer in {pull}`7276`) — **Whether the moved
+   names drop their underscore prefix.** Following `_lazy_data.py` makes PR 1 a
+   move *and* a rename, which is a reasonable thing for a reviewer to object to
+   and a cheap thing to concede. The location is what matters, not the name (§8).
+   Implementation added one argument against: the unprefixed `array_id` collides
+   with eight existing local bindings — five call sites in `_concatenate.py`,
+   where the shadowing would raise `UnboundLocalError`, and three inside
+   `compute_hashes` itself, where it is inert. Every one of those renames exists
+   only to clear the unprefixed name's path, so keeping `_array_id` retires them
+   all and reduces PR 1 to a pure `git mv`.
+7. **Open** (PR 1, live in {pull}`7276`) — **Whether the programme proceeds past
+   the proving tranche.** §3 names review capacity as the scarce resource. PR 1
+   is a pure move with no behaviour change and its justification is PR 4, so its
+   reception is the signal for everything after it. Nothing in PRs 5–12 is
+   load-bearing for PRs 1–4.
 8. **Open** (PR 2) — **Whether `merge_cube()` joins the driver.** §5.3 leaves it
    alone: it builds a single ProtoCube from `self[0]` with
    `error_on_mismatch=True` and no name grouping (`cube.py:364-373`). Its error
