@@ -1,4 +1,4 @@
-:user:`bjlittle` added a design spec for a programme of work to make
+:user:`claude` added a design spec for a programme of work to make
 :meth:`~iris.cube.CubeList.merge` and :meth:`~iris.cube.CubeList.concatenate`
 more robust, efficient, configurable, extensible, lazy and lenient, along with a
 new :ref:`developers_guide_specs` section of the Developers Guide to publish it

@@ -397,8 +397,9 @@ item with genuine semantic debate in it.
 ## 6. Plan roadmap
 
 Twelve pull requests deliver the design. Each gets its own implementation plan in
-`docs/src/developers_guide/plans/`, and a PR is merged before any PR that
-*depends on it* is written. The dependencies form a partial order, not a chain:
+`docs/src/developers_guide/plans/`, shipped as its own pull request ahead of the
+implementation so that the implementation PR carries only the change under
+review, and a PR is merged before any PR that *depends on it* is written. The dependencies form a partial order, not a chain:
 PRs 1, 2, 3 and 6 have no predecessors and may proceed in parallel. The ordering
 follows §5's layering — the substrate first (PR 1), then the seam that lets merge
 use it (PRs 2–3), then the payoff (PR 4), then the correctness and capability

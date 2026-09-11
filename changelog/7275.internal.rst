@@ -1,0 +1,3 @@
+:user:`claude` added the implementation plan for row 1 of the merge and
+concatenate design spec roadmap, and established that a plan ships as its own
+pull request ahead of the implementation it describes. (:pull:`7274`)
