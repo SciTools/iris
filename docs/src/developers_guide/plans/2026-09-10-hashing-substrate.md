@@ -167,7 +167,6 @@ by :data:`typing.TYPE_CHECKING`.
 from __future__ import annotations
 
 from collections import namedtuple
-from collections.abc import Mapping
 import itertools
 from typing import TYPE_CHECKING, Any
 
@@ -177,11 +176,19 @@ import numpy as np
 from xxhash import xxh3_64
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, DimCoord
 
 # Restrict the names imported from this namespace.
 __all__ = ["ArrayHash", "array_id", "compute_hashes", "hash_array"]
 ```
+
+`Mapping` is annotation-only, and `from __future__ import annotations` is what
+makes that fact visible to Ruff — so `TC003` demands it sit behind
+`TYPE_CHECKING` alongside the Iris imports.  `_concatenate.py` has no `__future__`
+import, so the rule never fires there and the original module scopes `Mapping`
+normally; copying that import across unchanged fails lint.
 
 Then append lines 305–541 of `lib/iris/_concatenate.py` **verbatim** — from
 `def _hash_ndarray(a: np.ndarray) -> np.ndarray:` through
@@ -204,6 +211,24 @@ unprefixed. Do not otherwise touch the moved code — not the docstrings, not th
 comments, not the `__eq__` that raises. Whether `ArrayHash.__eq__` should raise
 at all is an open decision owned by PR 4 (merge spec §6, decision 9); this PR
 changes nothing about it.
+
+There is one exception, forced by the `_array_id` → `array_id` rename.  Three
+lines inside `compute_hashes` already bind a *local* called `array_id`, which
+coexisted with a function called `_array_id` but shadows one called `array_id`.
+No scope in the module calls the function, so the shadowing is inert — but it is
+the same trap Step 7 defuses in `_concatenate.py`, and leaving it in the module
+that *defines* the name is worse than leaving it anywhere else.  Rename those
+three, and only those three:
+
+| Original | Becomes |
+|---|---|
+| `array_id, a = item` (in `group_key`) | `_, a = item` |
+| `for array_id, rechunked in zip(array_ids, rechunked_arrays):` | `for key, rechunked in zip(array_ids, rechunked_arrays):` |
+| `hashes[array_id] = (hash_array(rechunked), chunks)` | `hashes[key] = (hash_array(rechunked), chunks)` |
+
+`array_ids` (plural) does not collide and stays as it is.  These three lines are
+the whole of the difference between the relocated code and the original modulo
+the seven renames, which is what Verification 1 checks.
 
 - [ ] **Step 5: Run the moved tests to verify they pass**
 
@@ -532,13 +557,17 @@ Body must:
   design spec, per §5.1" — and reference `#7274` for the spec itself.
 - Confirm the change is a pure relocation with no behaviour change, and point at
   the two verification checks below.
-- Flag the `array_id` local-variable rename as the one non-mechanical part of the
-  move, so a reviewer knows where to look. Nothing else in the diff needs
-  reading closely, and saying so is what makes the rest of the review cheap.
+- Flag the `array_id` local-variable renames as the only non-mechanical part of
+  the move — the five call sites in `_concatenate.py` and the three shadowed
+  bindings inside `compute_hashes` — so a reviewer knows where to look. Nothing
+  else in the diff needs reading closely, and saying so is what makes the rest
+  of the review cheap.
 - **Put decision 6 to the reviewer explicitly**: dropping the underscore prefix
   makes this a move *and* a rename. Offer to drop the rename and keep the
   underscores if they would rather review a pure `git mv`. Conceding costs
   nothing — the module's location is what the rest of the programme depends on.
+  Note that keeping `_array_id` would also retire all eight local renames above,
+  since every one of them exists only to get out of the unprefixed name's way.
 Keep the body about the code. The plan, the register and the programme
 bookkeeping ship separately — see "How this ships" above.
 
@@ -621,16 +650,24 @@ quoted in the pull request body:
 
    ```bash
    git show upstream/greenfield:lib/iris/_concatenate.py | sed -n '305,541p' \
-     | sed -e 's/_hash_ndarray/hash_ndarray/g' -e 's/_hash_chunk/hash_chunk/g' \
-           -e 's/_hash_aggregate/hash_aggregate/g' -e 's/_hash_array/hash_array/g' \
-           -e 's/_ArrayHash/ArrayHash/g' -e 's/_array_id/array_id/g' \
-           -e 's/_compute_hashes/compute_hashes/g' > /tmp/expected.py
+     | sed -e 's/\b_hash_ndarray\b/hash_ndarray/g' -e 's/\b_hash_chunk\b/hash_chunk/g' \
+           -e 's/\b_hash_aggregate\b/hash_aggregate/g' -e 's/\b_hash_array\b/hash_array/g' \
+           -e 's/\b_ArrayHash\b/ArrayHash/g' -e 's/\b_array_id\b/array_id/g' \
+           -e 's/\b_compute_hashes\b/compute_hashes/g' > /tmp/expected.py
    sed -n '/^def hash_ndarray/,$p' lib/iris/_combine_common.py > /tmp/actual.py
-   diff /tmp/expected.py /tmp/actual.py
+   diff -u /tmp/expected.py /tmp/actual.py
    ```
 
-   Expected: no output. If `ruff format` reflowed anything, the diff shows
-   exactly what and why — inspect it rather than accepting it.
+   Expected: the three de-shadowing lines from Step 4 and nothing else — two
+   hunks, three changed lines. Anything further is unintended; if `ruff format`
+   reflowed something, the diff shows exactly what and why, so inspect it rather
+   than accepting it.
+
+   Within lines 305–541 the `\b` word boundaries change nothing, because no one
+   of the seven names is a substring of another. They are there for the moment
+   someone widens the range to take in the call sites, where `bound_array_id`
+   *does* contain `_array_id` and an unanchored substitution would quietly
+   produce `boundarray_id`.
 
 2. **The concatenate suite passes unmodified.** No test under
    `lib/iris/tests/unit/concatenate/` is edited by this pull request; only
