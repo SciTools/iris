@@ -12,6 +12,12 @@ import pytest
 import iris
 import iris.aux_factory
 from iris.coord_systems import GeogCS
+# Suppress deprecation warnings for experimental.regrid, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.regrid.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.regrid import (
     ProjectedUnstructuredLinear,
     ProjectedUnstructuredNearest,
