@@ -1,0 +1,5 @@
+:user:`claude` fixed a race between the release-tooling tests, which under
+``pytest-xdist`` could share a ``nothing`` progress file and so read one that
+another worker was part way through writing. Each test now runs in its own
+working directory, which also stops the test suite writing ``.nothing/`` into
+the working copy. (:pull:`7278`)
