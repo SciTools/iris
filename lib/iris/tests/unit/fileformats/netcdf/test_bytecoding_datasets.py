@@ -590,6 +590,9 @@ class TestEncodeDecodeFuncs:
             strings = self.SAMPLE_STRINGS_UNICODE
 
         real_stringarray = np.array(strings, dtype="U10")
+        print(
+            f"original string data: {real_stringarray!r}, shape={real_stringarray.shape}"
+        )
         if lazyreal == "concrete":
             sample_stringarray = real_stringarray
         else:
@@ -599,9 +602,10 @@ class TestEncodeDecodeFuncs:
                 chunks=chunks,
             )
             print(
-                "sample chunksize=",
+                f"sample={sample_stringarray!r}",
+                "\n  sample chunksize=",
                 sample_stringarray.chunksize,
-                "  : chunks=",
+                "\n  chunks=",
                 sample_stringarray.chunks,
             )
 
@@ -642,6 +646,7 @@ class TestEncodeDecodeFuncs:
         real_bytearray = convert_strings_to_chararray(
             string_array_1d=real_stringarray.reshape((6,)), maxlen=20, encoding=encoding
         ).reshape((2, 3, 20))
+        print(f"original bytes: {real_bytearray!r}, shape={real_bytearray.shape}")
         if lazyreal == "concrete":
             sample_bytearray = real_bytearray
         else:
