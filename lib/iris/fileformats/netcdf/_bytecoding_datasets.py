@@ -47,8 +47,10 @@ import threading
 from typing import Any, Callable
 import warnings
 
+import dask.array as da
 import numpy as np
 
+from iris._lazy_data import is_lazy_data
 from iris.fileformats.netcdf._thread_safe_nc import (
     DatasetWrapper,
     GroupWrapper,
@@ -189,26 +191,62 @@ class VariableEncoder:
         return n_chars
 
     def decode_bytes_to_stringarray(self, data: np.ndarray) -> np.ndarray:
-        if self.is_chardata:
+        if not self.is_chardata:
+            result = data
+        else:
             # N.B. read encoding default is UTF-8 --> a "usually safe" choice
             encoding = self.read_encoding
             strlen = self.string_width
-            data = decode_bytesarray_to_stringarray(
-                data, encoding, strlen, self.varname
-            )
+            # We need to support both real+lazy arrays here
+            if not is_lazy_data(data):
+                result = decode_bytesarray_to_stringarray(
+                    data, encoding, strlen, self.varname
+                )
+            else:
+                # decoding operation can't be done lazily, so map over chunks
+                result = da.map_blocks(
+                    decode_bytesarray_to_stringarray,
+                    data,  # you **can't** make this a named keyword
+                    encoding=encoding,
+                    string_width=strlen,
+                    var_name=self.varname,
+                    # avoid a 'trial' call with empty array (which we can't handle) ...
+                    dtype=f"U{strlen}",  # wrapped function changes type
+                    drop_axis=data.ndim - 1,  # wrapped function drops last dimension
+                )
 
-        return data
+        return result
 
     def encode_strings_as_bytearray(self, data: np.ndarray) -> np.ndarray:
-        if self.is_chardata and data.dtype.kind == "U":
+        if not self.is_chardata or data.dtype.kind != "U":
+            result = data
+        else:
             # N.B. it is also possible to pass a byte array (dtype "S1"),
             #  to be written directly, without processing.
             # N.B. write encoding *default* is "ascii" --> fails bad content
             encoding = self.write_encoding
             strlen = self.n_chars_dim
-            data = encode_stringarray_as_bytearray(data, encoding, strlen, self.varname)
+            # NB must support operation on both real and lazy data
+            if not is_lazy_data(data):
+                result = encode_stringarray_as_bytearray(
+                    data, encoding, strlen, self.varname
+                )
+            else:
+                # encoding operation can't be done lazily, so map over chunks
+                result = da.map_blocks(
+                    encode_stringarray_as_bytearray,
+                    data,
+                    encoding=encoding,
+                    string_dimension_length=strlen,
+                    var_name=self.varname,
+                    # avoid a 'trial' call with empty array (which we can't handle) ...
+                    dtype="S1",  # wrapped function changes type
+                    new_axis=data.ndim,  # wrapped function adds final dimension
+                    chunks=data.chunks
+                    + (strlen,),  # wrapped function extends data shape
+                )
 
-        return data
+        return result
 
 
 class NetcdfStringDecodeSetting(threading.local):
