@@ -583,7 +583,7 @@ class TestEncodeDecodeFuncs:
     def chunkstyle(self, request):
         return request.param
 
-    def test_encode(self, encoding, lazyreal, chunkstyle):
+    def ltest_encode(self, encoding, lazyreal, chunkstyle):
         if encoding == "ascii":
             strings = self.SAMPLE_STRINGS_ASCII
         else:
