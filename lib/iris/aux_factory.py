@@ -976,6 +976,210 @@ class HybridPressureFactory(AuxCoordFactory):
         return hybrid_pressure
 
 
+class HybridLogPressureFactory(AuxCoordFactory):
+    """Define a hybrid log-pressure coordinate factory."""
+
+    def __init__(
+        self,
+        eta=None,
+        sigma=None,
+        surface_air_pressure=None,
+        reference_air_pressure=None,
+    ):
+        """Create a hybrid-height coordinate factory with the following formula.
+
+        .. math::
+            p = p0 * eta * (ps/p0)**b
+
+
+        Parameters
+        ----------
+        eta : Coord
+            The coordinate providing the `eta`, hybrid sigma log-pressure coordinate, term.
+        sigma : Coord
+            The coordinate providing the `b` term.
+        surface_air_pressure : Coord
+            The coordinate providing the `ps` term.
+        reference_air_pressure : Coord
+            The coordinate providing the `p0` term.
+        """
+        # Configure the metadata manager.
+        self._metadata_manager = metadata_manager_factory(CoordMetadata)
+        super().__init__()
+
+        # Check that provided coords meet necessary conditions.
+        self._check_dependencies(
+            eta, sigma, surface_air_pressure, reference_air_pressure
+        )
+        self.units = reference_air_pressure.units
+
+        self.eta = eta
+        self.sigma = sigma
+        self.surface_air_pressure = surface_air_pressure
+        self.reference_air_pressure = reference_air_pressure
+
+        self.standard_name = "air_pressure"
+        self.attributes = {}
+
+    @staticmethod
+    def _check_dependencies(eta, sigma, surface_air_pressure, reference_air_pressure):
+        # Check for sufficient coordinates.
+        if (
+            (reference_air_pressure is None and surface_air_pressure is None)
+            or eta is None
+            or sigma is None
+        ):
+            msg = (
+                "Unable to construct hybrid log-pressure coordinate factory "
+                "due to insufficient source coordinates."
+            )
+            raise ValueError(msg)
+
+        # Check bounds.
+        if eta.nbounds not in (0, 2):
+            raise ValueError("Invalid eta coordinate: must have either 0 or 2 bounds.")
+        if sigma.nbounds not in (0, 2):
+            raise ValueError(
+                "Invalid sigma coordinate: must have either 0 or 2 bounds."
+            )
+        if surface_air_pressure and surface_air_pressure.nbounds:
+            msg = (
+                "Surface pressure coordinate {!r} has bounds. These will"
+                " be disregarded.".format(surface_air_pressure.name())
+            )
+            warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacketael=2)
+        if reference_air_pressure and reference_air_pressure.nbounds:
+            msg = (
+                "Reference pressure coordinate {!r} has bounds. These will"
+                " be disregarded.".format(reference_air_pressure.name())
+            )
+            warnings.warn(msg, category=IrisIgnoringBoundsWarning, stacketael=2)
+
+        # Check units.
+        if eta.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            eta.units = cf_units.Unit("1")
+        if not eta.units.is_dimensionless():
+            raise ValueError("Invalid units: eta must be dimensionless.")
+        if sigma.units.is_unknown():
+            # Be graceful, and promote unknown to dimensionless units.
+            sigma.units = cf_units.Unit("1")
+        if not sigma.units.is_dimensionless():
+            raise ValueError("Invalid units: sigma must be dimensionless.")
+
+        if (
+            surface_air_pressure
+            and reference_air_pressure.units != surface_air_pressure.units
+        ):
+            msg = (
+                "Incompatible units: reference_air_pressure and "
+                "surface_air_pressure must have the same units."
+            )
+            raise ValueError(msg)
+
+        if surface_air_pressure is not None:
+            units = surface_air_pressure.units
+        else:
+            units = reference_air_pressure.units
+
+        if not units.is_convertible("Pa"):
+            msg = (
+                "Invalid units: reference_air_pressure and "
+                "surface_air_pressure must have units of pressure."
+            )
+            raise ValueError(msg)
+
+    @property
+    def dependencies(self):
+        """Return a dict mapping from constructor arg names to coordinates.
+
+        Returns a dictionary mapping from constructor argument names to
+        the corresponding coordinates.
+
+        """
+        return {
+            "eta": self.eta,
+            "sigma": self.sigma,
+            "surface_air_pressure": self.surface_air_pressure,
+            "reference_air_pressure": self.reference_air_pressure,
+        }
+
+    def _calculate_array(
+        self, eta, sigma, surface_air_pressure, reference_air_pressure
+    ):
+        return (
+            reference_air_pressure
+            * eta
+            * (surface_air_pressure / reference_air_pressure) ** sigma
+        )
+
+    def make_coord(self, coord_dims_func):
+        """Return a new :class:`iris.coords.AuxCoord` as defined by this factory.
+
+        Parameters
+        ----------
+        coord_dims_func :
+            A callable which can return the list of dimensions relevant
+            to a given coordinate.
+
+            See :meth:`iris.cube.Cube.coord_dims()`.
+
+        """
+        # Which dimensions are relevant?
+        derived_dims = self.derived_dims(coord_dims_func)
+        dependency_dims = self._dependency_dims(coord_dims_func)
+
+        # Build the points array.
+        nd_points_by_key = self._remap(dependency_dims, derived_dims)
+        points = self._derive_array(
+            nd_points_by_key["eta"],
+            nd_points_by_key["sigma"],
+            nd_points_by_key["surface_air_pressure"],
+            nd_points_by_key["reference_air_pressure"],
+        )
+
+        bounds = None
+        if (self.eta.nbounds) or (self.sigma.nbounds):
+            # Build the bounds array.
+            nd_values_by_key = self._remap_with_bounds(dependency_dims, derived_dims)
+            eta = nd_values_by_key["eta"]
+            sigma = nd_values_by_key["sigma"]
+            surface_air_pressure = nd_values_by_key["surface_air_pressure"]
+            reference_air_pressure = nd_values_by_key["reference_air_pressure"]
+            ok_bound_shapes = [(), (1,), (2,)]
+            if eta.shape[-1:] not in ok_bound_shapes:
+                raise ValueError("Invalid eta coordinate bounds.")
+            if sigma.shape[-1:] not in ok_bound_shapes:
+                raise ValueError("Invalid sigma coordinate bounds.")
+            if reference_air_pressure.shape[-1:] not in ok_bound_shapes:
+                raise ValueError("Invalid reference_air_pressure coordinate bounds.")
+            if surface_air_pressure.shape[-1:] not in [(), (1,)]:
+                warnings.warn(
+                    "Surface pressure coordinate has bounds. "
+                    "These are being disregarded.",
+                    category=IrisIgnoringBoundsWarning,
+                )
+                surface_air_pressure_pts = nd_points_by_key["surface_air_pressure"]
+                bds_shape = list(surface_air_pressure_pts.shape) + [1]
+                surface_air_pressure = surface_air_pressure_pts.reshape(bds_shape)
+
+            bounds = self._derive_array(
+                eta, sigma, surface_air_pressure, reference_air_pressure
+            )
+
+        hybrid_log_pressure = iris.coords.AuxCoord(
+            points,
+            standard_name=self.standard_name,
+            long_name=self.long_name,
+            var_name=self.var_name,
+            units=self.units,
+            bounds=bounds,
+            attributes=self.attributes,
+            coord_system=self.coord_system,
+        )
+        return hybrid_log_pressure
+
+
 class OceanSigmaZFactory(AuxCoordFactory):
     """Defines an ocean sigma over z coordinate factory."""
 
