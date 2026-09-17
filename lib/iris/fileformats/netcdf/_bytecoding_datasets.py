@@ -79,7 +79,7 @@ def decode_bytesarray_to_stringarray(
     result = np.empty(var_shape, dtype=string_dtype)
     for ndindex in np.ndindex(var_shape):
         element_bytes = byte_array[ndindex]
-        bytes = b"".join([b or b"\0" for b in element_bytes])
+        bytes = b"".join([b or b"\0" for b in element_bytes.flat])
         try:
             string = bytes.decode(encoding)
         except UnicodeDecodeError as err:
@@ -204,6 +204,10 @@ class VariableEncoder:
                 )
             else:
                 # decoding operation can't be done lazily, so map over chunks
+                if not data.shape:
+                    # If data is scalar, give it a dim for the operation to 'remove'.
+                    # I.E. equivalent to a final dimension "string1 = 1"
+                    data = data.reshape((1,))
                 result = da.map_blocks(
                     decode_bytesarray_to_stringarray,
                     data,  # you **can't** make this a named keyword
