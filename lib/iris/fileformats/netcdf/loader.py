@@ -257,7 +257,7 @@ def _get_cf_var_data(cf_var):
             #  'set_auto_chartostring(True)'.
             #  Therefore, do here what an EncodedVariable.__getitem__ would do : ..
             # .. get details based on the file (type 'char') variable  ..
-            encoder = VariableEncoder(cf_var.cf_data)
+            encoder = VariableEncoder.from_var(cf_var.cf_data)
             # .. convert byte array to strings.
             result = encoder.decode_bytes_to_stringarray(result)
     else:

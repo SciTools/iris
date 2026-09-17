@@ -2626,7 +2626,7 @@ class Saver:
                 #  'set_auto_chartostring(True)'.
                 # Therefore, do here what an EncodedVariable.__setitem__ would do : ..
                 #  .. get details from the file (char) variable to be written ..
-                encoder = VariableEncoder(cf_var._contained_instance)
+                encoder = VariableEncoder.from_var(cf_var._contained_instance)
                 #  .. apply encoding to get the bytes to write.
                 data = encoder.encode_strings_as_bytearray(data)
 
