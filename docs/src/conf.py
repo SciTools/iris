@@ -313,7 +313,13 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    # For scipy, get the inventory from the static site because it can be slow and
+    # sometimes times out when fetching from the docs site.
+    # https://github.com/scipy/docs.scipy.org/issues/102
+    "scipy": (
+        "https://docs.scipy.org/doc/scipy/",
+        "https://static.scipy.org/doc/scipy/objects.inv",
+    ),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
