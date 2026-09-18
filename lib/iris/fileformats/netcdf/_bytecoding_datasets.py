@@ -201,8 +201,11 @@ class VariableEncoder:
             encoding = self.read_encoding
             strlen = self.string_width
             if not data.shape:
-                # If data is scalar, give it a dim for the operation to 'remove'.
-                # I.E. equivalent to a final dimension "string1 = 1"
+                # If the data array is scalar, add an extra dimension so the decoding
+                #  operation can always remove "the last dimension".  E.G.:
+                #  2-D: array([[b'a', b'b'], [b'c', b'd']]) -> (1-D) array(['ab', 'cd'])
+                #  1-D: array([b'a', b'b', b'c']) -> (scalar) array('abc')
+                #  *scalar* : array(b'a'), reshape=array([b'a']) -> (scalar) array('a')
                 data = data.reshape((1,))
             # We need to support both real+lazy arrays here
             if not is_lazy_data(data):
