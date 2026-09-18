@@ -54,6 +54,7 @@ include INSTALL
 include LICENSE
 exclude Makefile
 exclude codecov.yml
+include environment.yml
 include noxfile.py
 include tox.ini
 exclude pixi.lock
