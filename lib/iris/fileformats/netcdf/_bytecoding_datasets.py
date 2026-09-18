@@ -200,6 +200,10 @@ class VariableEncoder:
             # N.B. read encoding default is UTF-8 --> a "usually safe" choice
             encoding = self.read_encoding
             strlen = self.string_width
+            if not data.shape:
+                # If data is scalar, give it a dim for the operation to 'remove'.
+                # I.E. equivalent to a final dimension "string1 = 1"
+                data = data.reshape((1,))
             # We need to support both real+lazy arrays here
             if not is_lazy_data(data):
                 result = decode_bytesarray_to_stringarray(
@@ -207,10 +211,6 @@ class VariableEncoder:
                 )
             else:
                 # decoding operation can't be done lazily, so map over chunks
-                if not data.shape:
-                    # If data is scalar, give it a dim for the operation to 'remove'.
-                    # I.E. equivalent to a final dimension "string1 = 1"
-                    data = data.reshape((1,))
                 result = da.map_blocks(
                     decode_bytesarray_to_stringarray,
                     data,  # you **can't** make this a named keyword
