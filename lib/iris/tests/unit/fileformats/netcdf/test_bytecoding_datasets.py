@@ -646,7 +646,6 @@ class TestEncodeDecodeFuncs:
         real_bytearray = convert_strings_to_chararray(
             string_array_1d=real_stringarray.reshape((6,)), maxlen=20, encoding=encoding
         ).reshape((2, 3, 20))
-        print(f"original bytes: {real_bytearray!r}, shape={real_bytearray.shape}")
         if lazyreal == "concrete":
             sample_bytearray = real_bytearray
         else:
