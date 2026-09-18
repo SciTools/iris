@@ -25,10 +25,11 @@ class Test__get_cf_var_data(MockerMixin):
         self.expected_chunks = _optimum_chunksize(self.shape, self.shape)
 
     def _make(self, chunksizes=None, shape=None, dtype="i4", **extra_properties):
-        mock = self.mocker.Mock
         if shape is None:
             shape = self.shape
-        dimensions_dict = {"dim_" + str(x): mock(size=x) for x in range(len(shape))}
+        dimensions_dict = {
+            "dim_" + str(x): self.mocker.Mock(size=x) for x in range(len(shape))
+        }
         dimension_names = list(dimensions_dict.keys())
         cf_data = self.mocker.MagicMock(
             _FillValue=None,
