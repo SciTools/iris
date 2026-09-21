@@ -3,6 +3,8 @@ v3.16 (13 Aug 2026)
 
 .. include:: /whatsnew/3.16/highlights.rst
 
+.. include:: /whatsnew/3.16/3.16.1.rst
+
 ✨ Features
 ~~~~~~~~~~~
 

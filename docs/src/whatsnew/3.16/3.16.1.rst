@@ -1,0 +1,23 @@
+v3.16.1 (21 Sep 2026)
+=====================
+
+.. dropdown:: v3.16.1 Patches
+   :color: primary
+   :icon: alert
+   :animate: fade-in
+   :open:
+
+   The patches in this release of Iris include:
+
+- :user:`pp-mo` fixed the chardata support to allow correct operation with
+ncdata 'shortcut' data transfers. (:issue:`7283`).
+
+- :user:`trexfeathers` updated Iris' metadata handling to be compatible with
+python-xxhash version 4.0 .
+
+- :user:`stephenworsley` fixed a bug which caused indexing to fail when
+``start_index`` was 1. (:issue:`7246`)
+
+- :user:`pp-mo`, :user:`trexfeathers`, :user:`ukmo-ccbunney` and :user:`pt331` changed the internal logic by which string dtypes are recognised to be more consistent.
+This means that some string type variables which would previously have loaded as coordinates now load as cubes.
+:ref:`char_and_string_datatypes`. (:far:`circle-dot` :issue:`6309`)
