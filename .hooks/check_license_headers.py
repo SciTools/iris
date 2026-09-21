@@ -22,7 +22,6 @@ from pathlib import Path
 import subprocess
 import sys
 
-
 LICENSE_TEMPLATE = """# Copyright Iris contributors
 #
 # This file is part of Iris and is released under the BSD license.
@@ -72,22 +71,23 @@ def _get_license_header_content(path: Path) -> str:
 
 def check_file(path: Path, repo_root: Path | None = None) -> list[str]:
     """Return a list of violation strings for *path*, empty if clean.
-    
+
     Args:
         path: Path to check (can be relative or absolute).
         repo_root: Repository root. If None, will be inferred.
-    
-    Returns:
+
+    Returns
+    -------
         List of violation strings.
     """
     # Ensure path is absolute for consistent comparison
     path = path.resolve()
-    
+
     if repo_root is None:
         repo_root = _find_repo_root(path)
         if not repo_root:
             repo_root = path.parents[2] if len(path.parents) > 2 else path.parent
-    
+
     repo_root = repo_root.resolve()
 
     try:
@@ -113,7 +113,7 @@ def check_file(path: Path, repo_root: Path | None = None) -> list[str]:
 
 def _get_all_tracked_files(repo_root: Path) -> list[Path]:
     """Get all Python files tracked by git using git ls-files.
-    
+
     This is much faster than recursive glob for checking entire repo.
     """
     try:
@@ -122,7 +122,9 @@ def _get_all_tracked_files(repo_root: Path) -> list[Path]:
             cwd=repo_root,
             text=True,
         )
-        return [repo_root / line.strip() for line in output.splitlines() if line.strip()]
+        return [
+            repo_root / line.strip() for line in output.splitlines() if line.strip()
+        ]
     except (subprocess.CalledProcessError, FileNotFoundError):
         # git not available or not a git repo; fall back to glob
         return list(repo_root.rglob("*.py"))
@@ -132,14 +134,17 @@ def main(argv: list[str] | None = None) -> int:
     if argv is None:
         argv = sys.argv[1:]
 
+    all_violations: list[str] = []
+
     # If files provided, check only those files (pre-commit mode)
     if argv:
         paths = [Path(p) for p in argv]
         repo_root = _find_repo_root(paths[0])
         if not repo_root:
-            repo_root = paths[0].parents[2] if len(paths[0].parents) > 2 else paths[0].parent
+            repo_root = (
+                paths[0].parents[2] if len(paths[0].parents) > 2 else paths[0].parent
+            )
 
-        all_violations: list[str] = []
         for path in paths:
             all_violations.extend(check_file(path, repo_root))
     else:
@@ -155,12 +160,11 @@ def main(argv: list[str] | None = None) -> int:
                     repo_root = current
                     break
                 current = current.parent
-        
+
         if not repo_root:
             print("Error: Could not find git repository root")
             return 1
 
-        all_violations: list[str] = []
         for path in _get_all_tracked_files(repo_root):
             all_violations.extend(check_file(path, repo_root))
 

@@ -21,9 +21,9 @@ Exit codes:
 """
 
 from pathlib import Path
-from packaging.version import Version
 import sys
 
+from packaging.version import Version
 
 # Files that contain Python version information
 _VERSION_CONFIG_FILES = {
@@ -47,7 +47,7 @@ def _find_repo_root(start_path: Path) -> Path:
 
 def _extract_supported_versions(root_dir: Path) -> list[str] | None:
     """Extract supported Python versions from pyproject.toml.
-    
+
     Returns None if versions cannot be determined.
     """
     pyproject = root_dir / "pyproject.toml"
@@ -58,10 +58,8 @@ def _extract_supported_versions(root_dir: Path) -> list[str] | None:
         content = pyproject.read_text()
         # Look for "Programming Language :: Python :: 3.X" entries
         import re
-        matches = re.findall(
-            r'"Programming Language :: Python :: (3\.\d+)"',
-            content
-        )
+
+        matches = re.findall(r'"Programming Language :: Python :: (3\.\d+)"', content)
         if matches:
             return sorted(set(matches))
     except (OSError, UnicodeDecodeError):
@@ -72,7 +70,7 @@ def _extract_supported_versions(root_dir: Path) -> list[str] | None:
 
 def check_consistency(root_dir: Path) -> list[str]:
     """Check that Python versions are consistent across all config files.
-    
+
     Returns a list of violation strings, empty if all consistent.
     """
     # Get the authoritative version list from pyproject.toml
@@ -93,18 +91,24 @@ def check_consistency(root_dir: Path) -> list[str]:
         expected = "\n    ".join(
             [f'"Programming Language :: Python :: {ver}",' for ver in all_supported]
         )
-        checks.append((pyproject_toml_file, expected, "pyproject.toml version classifiers"))
+        checks.append(
+            (pyproject_toml_file, expected, "pyproject.toml version classifiers")
+        )
 
     # noxfile.py - _PY_VERSIONS_ALL
     nox_file = root_dir / "noxfile.py"
     if nox_file.exists():
-        expected = "_PY_VERSIONS_ALL = [" + ", ".join([f'"{ver}"' for ver in all_supported])
+        expected = "_PY_VERSIONS_ALL = [" + ", ".join(
+            [f'"{ver}"' for ver in all_supported]
+        )
         checks.append((nox_file, expected, "noxfile.py _PY_VERSIONS_ALL"))
 
     # CI workflows
     ci_wheels_file = root_dir / ".github" / "workflows" / "ci-wheels.yml"
     if ci_wheels_file.exists():
-        expected = "python-version: [" + ", ".join([f'"{ver}"' for ver in all_supported])
+        expected = "python-version: [" + ", ".join(
+            [f'"{ver}"' for ver in all_supported]
+        )
         checks.append((ci_wheels_file, expected, "ci-wheels.yml python-version"))
 
     ci_tests_file = root_dir / ".github" / "workflows" / "ci-tests.yml"
@@ -128,7 +132,9 @@ def check_consistency(root_dir: Path) -> list[str]:
             req_yaml = requirements_dir / f"py{ver.replace('.', '')}.yml"
             if req_yaml.exists():
                 expected = f"- python ={ver}"
-                checks.append((req_yaml, expected, f"requirements/py{ver.replace('.', '')}.yml"))
+                checks.append(
+                    (req_yaml, expected, f"requirements/py{ver.replace('.', '')}.yml")
+                )
 
     # CI tests file version entries
     if ci_tests_file.exists():
