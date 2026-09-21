@@ -345,9 +345,9 @@ class CFDataset(ABC):
     def createVariable(self, *args, **kwargs):
         pass
 
-    @abstractmethod
-    def exit(self):
-        pass
+    # @abstractmethod
+    # def exit(self):
+    #     pass
 
     @abstractmethod
     def _setattr(self):
