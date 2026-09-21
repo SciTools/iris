@@ -9,7 +9,11 @@ built around CF-compliant multi-dimensional arrays ("Cubes").
 Subdirectory AGENTS.md files take precedence for their subtrees:
 - [`changelog/AGENTS.md`](changelog/AGENTS.md) — documentation on changelog
 - [`docs/AGENTS.md`](docs/AGENTS.md) — documentation-specific rules
+- [`lib/iris/AGENTS.md`](lib/iris/AGENTS.md) — how to write library source code
 - [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific rules
+
+For a map of where code lives and how data flows, see
+[`lib/iris/ARCHITECTURE.md`](lib/iris/ARCHITECTURE.md).
 
 
 ## Project Overview
@@ -90,23 +94,28 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 - [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
 
-- Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. This keeps deterministic checks in place for all agents and helps catch formatting, lint, and policy violations before review.
+- Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. (This is expected to encode a growing number of preferred coding practices, to enable productive collaboration with non-deterministic LLM agents).
 
 ## Code Style
 
+Linting and formatting are driven by pre-commit, not by invoking tools
+directly. Run pre-commit from a conda environment named `pre-commit`.
+
 ```bash
-# Lint
-ruff check lib/iris
+# Check and auto-fix the files you changed (preferred while iterating)
+pre-commit run --files <paths>
 
-# Auto-fix safe lint issues
-ruff check --fix lib/iris
+# Check and auto-fix everything
+pre-commit run --all-files
 
-# Format
-ruff format lib/iris
-
-# Check formatting without writing
-ruff format --check lib/iris
+# Run a single hook, e.g. after a formatting-only change
+pre-commit run ruff-format --all-files
 ```
+
+Pre-commit hooks rewrite files in place, so re-stage and re-run until it
+passes cleanly. Only fall back to `ruff check` / `ruff format` directly when
+pre-commit is unavailable — the hook config is the source of truth for
+versions and arguments.
 
 - **Line length**: 88 characters (Ruff default).
 - **Docstrings**: NumPy style; strictly validated.
@@ -119,8 +128,12 @@ ruff format --check lib/iris
   # See LICENSE in the root of the repository for full licensing details.
   ```
 
-- **Imports**: Ruff-managed ordering. No direct `import netCDF4` — always use
-  `iris.fileformats.netcdf._thread_safe_nc` for thread safety.
+- **Imports**: Ruff-managed ordering, applied by pre-commit. No direct
+  `import netCDF4` — always use `iris.fileformats.netcdf._thread_safe_nc` for
+  thread safety.
+- **Readability for humans and agents**: see
+  [`lib/iris/AGENTS.md`](lib/iris/AGENTS.md) for the house style on locality,
+  greppability, explicitness and comment hygiene.
 
 
 ## Development Conventions
