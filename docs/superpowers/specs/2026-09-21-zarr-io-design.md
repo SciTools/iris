@@ -1,15 +1,25 @@
 # Native Zarr I/O for Iris
 
-**Status:** design proposed, awaiting review
-**Date:** 2026-09-21
+> **This is a living document.** §12 is the single progress record for the
+> programme — pull request states, open questions and the decision log. Update
+> §12 as work lands; do not track status anywhere else.
+
+| | |
+|---|---|
+| **Phase** | Design, awaiting approval |
+| **Progress** | 0 of 7 pull requests raised — see §12.1 |
+| **Next action** | Spec approval, then the implementation plan |
+| **Blocked on** | Nothing |
+| **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
+| **Closes** | SciTools/iris#6977, #6979, #6980 (sub-issues of #6961) |
+
+**Created:** 2026-09-21 · **Last updated:** 2026-09-21 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13
 
 Line references in this document are accurate as of the baseline commit.
 Claims marked **[verified]** were checked by running code against the versions
 above; everything else is read from source or specification.
-
-Closes SciTools/iris#6977, #6979, #6980 (sub-issues of #6961).
 
 ---
 
@@ -641,8 +651,8 @@ variable carrying `crs_wkt`. Licensed CC BY 4.0; the attribution string and
 DOI 10.5281/zenodo.18777399 travel with the data.
 
 **This endpoint is documented as closing on 30 September 2026.** The subset has
-therefore already been cut, ahead of the rest of the programme, and is held at
-`~/projects/iris-zarr-testdata/gfs_forecast_sample.zarr`: 1.4 MB, 35 files, 12
+therefore already been cut, ahead of the rest of the programme; §12.5 holds its
+current location. It is 1.4 MB, 35 files, 12
 members, 2 forecast initialisations x 8 lead times x 120 x 120 points, for
 `temperature_2m`, `wind_u_10m`, `wind_v_10m` and `precipitation_surface`. It
 keeps the sharding codec, the scalar `spatial_ref` grid mapping, the
@@ -718,21 +728,12 @@ preserved because that is what is being tested.
 
 ---
 
-## 10. Decisions taken at review, and what is still parked
+## 10. The parked question: the CF attribute model on JSON
 
-**Settled.**
+Everything else raised at review is settled and recorded in the decision log
+at §12.4. This one is not, and it is left open deliberately.
 
-1. **Module layout** — `iris.fileformats.cf` becomes a package. §4.1 rewritten;
-   PR 1 does the move on its own, with no behaviour change.
-2. **Cross-reader testing** — xarray is added as a test-only dependency. The
-   cost was measured at exactly one extra conda package, so the `skip_gdal`
-   fallback pattern is not needed. §6.
-3. **EOPF's role** — confirmed Zarr version 2 by reading the store, so it keeps
-   its role as the version 2 and deep-group fixture. §7.
-
-**Parked for a dedicated discussion: the CF attribute model on JSON.**
-
-This is one question with two faces, and the design currently answers both
+It is one question with two faces, and the design currently answers both
 provisionally:
 
 - *Writing* (§4.5): JSON-native conversion, losing the NumPy dtype of
@@ -766,3 +767,120 @@ variable") and the two real-world examples from §4.4.
 - CF conventions for Zarr: https://github.com/zarr-conventions/CF
 - NCZarr: https://docs.unidata.ucar.edu/nug/current/ncZarr_head.html
 - NOAA GFS archive: https://data.dynamical.org/noaa/gfs/forecast/
+
+---
+
+## 12. Progress
+
+The live record for the programme. Everything with a state belongs here;
+the rest of this document describes the design and should change only when
+the design changes.
+
+### 12.1 Pull requests
+
+Scope for each is in §5. Dependencies are strictly sequential within the
+`cf`/`netcdf` refactor chain (1 → 2 → 3 → 5); the Zarr features (4, 6) depend
+on the relocation before them, and PR 7 depends on everything.
+
+| # | Title | Closes | State | Link |
+|---|---|---|---|---|
+| 1 | `iris.fileformats.cf` becomes a package, with tests first | — | Not started | — |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | #6977 | Not started | — |
+| 3 | Relocate the CF loader | — | Not started | — |
+| 4 | Zarr loading | #6979 | Not started | — |
+| 5 | Relocate the CF saver | — | Not started | — |
+| 6 | Zarr saving | #6980 | Not started | — |
+| 7 | Real-world test data and benchmarks | — | Not started | — |
+
+Companion work outside `SciTools/iris`:
+
+| Repository | Purpose | State | Link |
+|---|---|---|---|
+| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) and ESA EOPF (v2) fixtures for PR 7 | Not started | — |
+
+States are `Not started`, `Drafted`, `In review`, `Changes requested`,
+`Merged` or `Abandoned`. Record the pull request number and its state as soon
+as it is opened, not when it merges.
+
+### 12.2 Issues
+
+| Issue | Title | Role | State |
+|---|---|---|---|
+| [#6961](https://github.com/SciTools/iris/issues/6961) | Zarr I/O | Parent issue; the programme closes its three children | Open |
+| [#6977](https://github.com/SciTools/iris/issues/6977) | Extend `CFReader` to read Zarr files | Closed by PR 2 | Open |
+| [#6979](https://github.com/SciTools/iris/issues/6979) | Extend NetCDF loader to read Zarr files | Closed by PR 4 | Open |
+| [#6980](https://github.com/SciTools/iris/issues/6980) | Extend NetCDF saver to write Zarr files | Closed by PR 6 | Open |
+| [#7288](https://github.com/SciTools/iris/issues/7288) | How should the CF attribute model map onto JSON? | Raised by this design; §10 | Open |
+
+Pull requests this programme depends on but does not own:
+
+| PR | Author | Role | State |
+|---|---|---|---|
+| [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers | Unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643). Carried into PR 1 with credit; post a courtesy comment before opening PR 1 | Open |
+
+### 12.3 Open questions
+
+| # | Question | Provisional answer | Tracked | Blocks |
+|---|---|---|---|---|
+| Q1 | How should the CF attribute model map onto JSON, on write and on read? | JSON-native both ways (§4.4, §4.5) | #7288, §10 | Nothing. Changing it touches only the attribute conversion in `zarr/_dataset.py` |
+| Q2 | Are `<U7`-style fixed-length unicode dtypes, which #6961 notes are not strictly Zarr-supported and which the EOPF store contains, readable as-is? | Unverified — read them before PR 4 | §7 | PR 4 |
+| Q3 | Does the `dimension_names`-absent error in §4.4 need an escape hatch for stores that are otherwise loadable? | No; synthesising names produces silently wrong cubes | §4.4 | Nothing |
+
+Close a question by moving it to §12.4 with the date and the answer. Do not
+delete it.
+
+### 12.4 Decision log
+
+Append-only. Each entry is the decision, not the discussion.
+
+**2026-09-21 — before design, agreed with @bjlittle**
+
+- `zarr` is an optional, lazily imported dependency.
+- Extract the format-agnostic CF machinery out of `iris.fileformats.netcdf`,
+  with warn-on-use deprecation aliases at the old public names.
+- Write Zarr version 3 only, shaped so version 2 write is a later small change.
+- Read both version 2 and version 3.
+- Pass remote URLs straight to zarr-python; add no fsspec/s3fs dependency and
+  handle no credentials.
+- Load and save the root group by default, with a `group=` keyword.
+- Source real-world test data from NOAA GFS (dynamical.org) and the ESA EOPF
+  Sentinel samples.
+- Carry the test modules from #7259 into the programme, with credit.
+
+**2026-09-21 — at review of the first draft, agreed with @bjlittle**
+
+- **Module layout:** `iris.fileformats.cf` becomes a package, not three flat
+  sibling modules. §4.1. The move became PR 1, on its own, so the programme
+  went from six pull requests to seven.
+- **Cross-reader testing:** xarray is added as a test-only dependency. Measured
+  at exactly one extra conda package in `iris-dev`, so no `skip_gdal`-style
+  guard is needed. §6.
+- **EOPF's role:** confirmed Zarr version 2 by reading `.zgroup`, so it keeps
+  its role as the version 2 and deep-group fixture. §7.
+- **Attribute model:** parked rather than decided; JSON-native is provisional.
+  Q1 above, issue #7288, §10.
+- **Method:** behaviour is justified from the Zarr and CF specifications, and a
+  real file is cited only as evidence that a code path gets exercised. Two
+  earlier claims credited to "real data" were re-examined under this rule: the
+  base64 `_FillValue` turned out to be a publisher's CF violation, and nested
+  JSON attributes turned out to be already in the Zarr specification. Now
+  recorded in `lib/iris/AGENTS.md`.
+
+### 12.5 Artefacts
+
+| Artefact | Location | State |
+|---|---|---|
+| Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `~/projects/iris-zarr-testdata/gfs_forecast_sample.zarr` | Cut, not yet contributed to `iris-test-data` |
+| Cut-down ESA EOPF fixture, Zarr v2 | — | Not started |
+
+The GFS subset was cut ahead of the rest of the programme because its source
+endpoint is documented as closing on **30 September 2026** (§8).
+
+### 12.6 Document history
+
+| Date | Change |
+|---|---|
+| 2026-09-21 | First draft: design, six-pull-request programme, four open decisions. |
+| 2026-09-21 | Grounded against the real NOAA GFS store. |
+| 2026-09-21 | Package layout adopted; programme grew to seven pull requests; the two "real data" findings re-framed as one specification fact and one publisher malformation; EOPF confirmed version 2; three decisions settled and the attribute-model question parked to #7288. |
+| 2026-09-21 | Added this progress record (§12). |
