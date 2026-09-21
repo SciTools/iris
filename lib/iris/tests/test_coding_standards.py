@@ -3,132 +3,86 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-import ast
-from datetime import datetime
-from fnmatch import fnmatch
-from glob import glob
+import importlib.util
 import os
 from pathlib import Path
-import subprocess
-from typing import Iterator, List, Tuple, cast
 
-from packaging.version import Version
 import pytest
 
 import iris
-from iris.tests import system_test
-from iris.tests.unit.fileformats.netcdf import test_bytecoding_datasets
-
-LICENSE_TEMPLATE = """# Copyright Iris contributors
-#
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details."""
 
 # Guess iris repo directory of Iris - realpath is used to mitigate against
 # Python finding the iris package via a symlink.
-IRIS_DIR = Path(iris.__file__).parent.resolve()
-IRIS_INSTALL_DIR = Path(IRIS_DIR).parent.parent
-DOCS_DIR = Path(IRIS_INSTALL_DIR) / "docs" / "iris"
-DOCS_DIR = iris.config.get_option("Resources", "doc_dir", default=str(DOCS_DIR))
-exclusion = ["Makefile", "build"]
-DOCS_DIRS = glob(str(Path(DOCS_DIR) / "*"))
-DOCS_DIRS = [DOC_DIR for DOC_DIR in DOCS_DIRS if Path(DOC_DIR).name not in exclusion]
-
+IRIS_DIR = os.path.realpath(os.path.dirname(iris.__file__))
+IRIS_INSTALL_DIR = os.path.dirname(os.path.dirname(IRIS_DIR))
 # Get a dirpath to the git repository : allow setting with an environment
 # variable, so Travis can test for headers in the repo, not the installation.
 IRIS_REPO_DIRPATH = os.environ.get("IRIS_REPO_DIR", IRIS_INSTALL_DIR)
 
 
+def _load_hook(hook_name: str):
+    """Load a hook module from .hooks/.
+
+    Args:
+        hook_name: Name of the hook module (without .py extension).
+
+    Returns
+    -------
+        The loaded module.
+
+    Raises
+    ------
+        RuntimeError: If the hook module cannot be loaded.
+    """
+    hook_path = Path(__file__).parents[3] / ".hooks" / f"{hook_name}.py"
+    spec = importlib.util.spec_from_file_location(hook_name, hook_path)
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"Failed to load hook: {hook_name}")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
 def test_netcdf4_import():
     """Use of netCDF4 must be via iris.fileformats.netcdf._thread_safe_nc ."""
-    # Please avoid including these phrases in any comments/strings throughout
-    #  Iris (e.g. use "from the netCDF4 library" instead) - this allows the
-    #  below search to remain quick and simple.
-    from iris.fileformats.netcdf import _thread_safe_nc
-    from iris.tests.unit.fileformats.netcdf._thread_safe_nc import test_NetCDFWriteProxy
+    # Logic lives in .hooks/check_netcdf4_imports.py (also used as a pre-commit hook).
+    check_netcdf4_imports = _load_hook("check_netcdf4_imports")
+    check_file = check_netcdf4_imports.check_file
 
-    import_strings = ("import netCDF4", "from netCDF4")
-
-    files_including_import = []
+    all_violations = []
     for file_path in Path(IRIS_DIR).rglob("*.py"):
-        file_text = file_path.read_text()
+        all_violations.extend(check_file(file_path))
 
-        if any([i in file_text for i in import_strings]):
-            files_including_import.append(file_path)
-
-    expected = [
-        Path(_thread_safe_nc.__file__),
-        Path(test_NetCDFWriteProxy.__file__),
-        Path(system_test.__file__),
-        Path(__file__),
-        Path(test_bytecoding_datasets.__file__),
-    ]
-    assert set(files_including_import) == set(expected)
+    message = (
+        "The following files import netCDF4 directly, which is not allowed:\n"
+        + "\n".join(all_violations)
+        + "\nAll netCDF4 imports must be via iris.fileformats.netcdf._thread_safe_nc."
+    )
+    assert not all_violations, message
 
 
-def test_python_versions() -> None:
+def test_python_versions():
     """Test Python Versions.
 
     Test is designed to fail whenever Iris' supported Python versions are
     updated, insisting that versions are updated EVERYWHERE in-sync.
+
+    Logic lives in .hooks/check_python_versions.py (also used as a pre-commit hook).
     """
-    all_supported = ["3.12", "3.13", "3.14"]
-    _parsed = [Version(v) for v in all_supported]
-    latest_supported = str(max(_parsed))
+    check_python_versions = _load_hook("check_python_versions")
+    repo_root = Path(IRIS_REPO_DIRPATH)
 
-    root_dir = Path(__file__).parents[3]
-    workflows_dir = root_dir / ".github" / "workflows"
-    benchmarks_dir = root_dir / "benchmarks"
+    violations = check_python_versions.check_consistency(repo_root)
 
-    # Places that are checked:
-    pyproject_toml_file = root_dir / "pyproject.toml"
-    requirements_dir = root_dir / "requirements"
-    nox_file = root_dir / "noxfile.py"
-    ci_wheels_file = workflows_dir / "ci-wheels.yml"
-    ci_tests_file = workflows_dir / "ci-tests.yml"
-    benchmark_runner_file = benchmarks_dir / "bm_runner.py"
-
-    text_searches: List[Tuple[Path, str]] = [
-        (
-            pyproject_toml_file,
-            "\n    ".join(
-                [f'"Programming Language :: Python :: {ver}",' for ver in all_supported]
-            ),
-        ),
-        (
-            nox_file,
-            "_PY_VERSIONS_ALL = [" + ", ".join([f'"{ver}"' for ver in all_supported]),
-        ),
-        (
-            ci_wheels_file,
-            "python-version: [" + ", ".join([f'"{ver}"' for ver in all_supported]),
-        ),
-        (
-            ci_tests_file,
-            (
-                f'python-version: ["{latest_supported}"]\n'
-                f'{" " * 8}session: ["doctest", "gallery"]'
-            ),
-        ),
-        (benchmark_runner_file, f'python_version = "{latest_supported}"'),
-    ]
-
-    for ver in all_supported:
-        req_yaml = requirements_dir / f"py{ver.replace('.', '')}.yml"
-        text_searches.append((req_yaml, f"- python ={ver}"))
-
-        text_searches.append(
-            (
-                ci_tests_file,
-                f'python-version: "{ver}"\n{" " * 12}session: "tests"',
-            )
-        )
-
-    for path, search in text_searches:
-        assert search in path.read_text()
+    message = (
+        "Python version consistency check failed.\n"
+        "Python versions must be updated consistently across all config files.\n"
+        + "\n".join(violations)
+    )
+    assert not violations, message
 
 
-def test_categorised_warnings() -> None:
+def test_categorised_warnings():
     r"""To ensure that all UserWarnings raised by Iris are categorised, for ease of use.
 
     No obvious category? Use the parent:
@@ -145,151 +99,35 @@ def test_categorised_warnings() -> None:
             \"\"\"
             pass
 
+    Logic lives in .hooks/check_categorised_warnings.py (also used as a pre-commit hook).
     """
-    warns_without_category = []
-    warns_with_user_warning = []
-    tmp_list = []
+    check_categorised_warnings = _load_hook("check_categorised_warnings")
+    check_file = check_categorised_warnings.check_file
 
+    all_violations = []
     for file_path in Path(IRIS_DIR).rglob("*.py"):
-        file_text = file_path.read_text()
-        parsed = ast.parse(source=file_text)
-        calls: Iterator[ast.Call] = cast(
-            "Iterator[ast.Call]",
-            filter(lambda node: hasattr(node, "func"), ast.walk(parsed)),
-        )
-        warn_calls: Iterator[ast.Call] = filter(
-            lambda c: getattr(c.func, "attr", None) == "warn", calls
-        )
+        all_violations.extend(check_file(file_path))
 
-        warn_call: ast.Call
-        for warn_call in warn_calls:
-            warn_ref = f"{file_path}:{warn_call.lineno}"
-            tmp_list.append(warn_ref)
-
-            category_kwargs = filter(lambda k: k.arg == "category", warn_call.keywords)
-            category_kwarg: ast.keyword | None = next(category_kwargs, None)
-
-            if category_kwarg is None:
-                warns_without_category.append(warn_ref)
-            # Work with Attribute or Name instances.
-            elif (
-                getattr(category_kwarg.value, "attr", None)
-                or getattr(category_kwarg.value, "id", None)
-            ) == "UserWarning":
-                warns_with_user_warning.append(warn_ref)
-
-    # This avoids UserWarnings being raised by unwritten default behaviour.
-    assert warns_without_category == [], (
-        "All warnings raised by Iris must be raised with the category kwarg."
+    message = "The following files have warning categorisation issues:\n" + "\n".join(
+        all_violations
     )
+    assert not all_violations, message
 
-    assert warns_with_user_warning == [], (
-        "No warnings raised by Iris can be the base UserWarning class."
+
+def test_license_headers():
+    """Check that all Python files have the required license header.
+
+    Logic lives in .hooks/check_license_headers.py (also used as a pre-commit hook).
+    """
+    check_license_headers = _load_hook("check_license_headers")
+    repo_root = Path(IRIS_REPO_DIRPATH)
+
+    all_violations: list[str] = []
+    for file_path in check_license_headers._get_all_tracked_files(repo_root):
+        all_violations.extend(check_license_headers.check_file(file_path, repo_root))
+
+    message = (
+        "The following files are missing or have incorrect license headers:\n"
+        + "\n".join(all_violations)
     )
-
-
-class TestLicenseHeaders:
-    @staticmethod
-    def whatchanged_parse(whatchanged_output):
-        r"""Returns a generator of tuples of data parsed from
-        "git whatchanged --pretty='TIME:%at". The tuples are of the form
-        ``(filename, last_commit_datetime)``.
-
-        Sample input::
-
-            ['TIME:1366884020', '',
-             ':000000 100644 0000000... 5862ced... A\tlib/iris/cube.py']
-
-        """
-        dt = None
-        for line in whatchanged_output:
-            if not line.strip():
-                continue
-            elif line.startswith("TIME:"):
-                dt = datetime.fromtimestamp(int(line[5:]))
-            else:
-                # Non blank, non date, line -> must be the lines
-                # containing the file info.
-                fname = " ".join(line.split("\t")[1:])
-                yield fname, dt
-
-    @staticmethod
-    def last_change_by_fname():
-        """Return a dictionary of all the files under git which maps to
-        the datetime of their last modification in the git history.
-
-        .. note::
-
-            This function raises a ValueError if the repo root does
-            not have a ".git" folder. If git is not installed on the system,
-            or cannot be found by subprocess, an IOError may also be raised.
-
-        """
-        # Check the ".git" folder exists at the repo dir.
-        if not (Path(IRIS_REPO_DIRPATH) / ".git").is_dir():
-            msg = "{} is not a git repository."
-            raise ValueError(msg.format(IRIS_REPO_DIRPATH))
-
-        # Call "git log" to get the details of all the files and when
-        # they were last changed.
-        output = subprocess.check_output(
-            ["git", "log", "--name-status", "--pretty=TIME:%ct"],
-            cwd=IRIS_REPO_DIRPATH,
-        )
-
-        output = output.decode().split("\n")
-        res = {}
-        for fname, dt in TestLicenseHeaders.whatchanged_parse(output):
-            if fname not in res or dt > res[fname]:
-                res[fname] = dt
-
-        return res
-
-    def test_license_headers(self):
-        exclude_patterns = (
-            "setup.py",
-            "noxfile.py",
-            "build/*",
-            "dist/*",
-            "docs/gallery_code/*/*.py",
-            "docs/src/developers_guide/documenting/*.py",
-            "docs/src/user_manual/tutorial/plotting_examples/*.py",
-            "docs/src/user_manual/tutorial/regridding_plots/*.py",
-            "docs/src/_build/*",
-            "lib/iris/analysis/_scipy_interpolate.py",
-        )
-
-        try:
-            last_change_by_fname = self.last_change_by_fname()
-        except ValueError as err:
-            # Caught the case where this is not a git repo.
-            msg = "Iris installation did not look like a git repo?\nERR = {}\n\n"
-            return pytest.skip(msg.format(str(err)))
-
-        failed = False
-        for fname, last_change in sorted(last_change_by_fname.items()):
-            full_fname = Path(IRIS_REPO_DIRPATH) / fname
-            is_file = full_fname.is_file()
-            full_fname = str(full_fname)
-
-            if (
-                full_fname.endswith(".py")
-                and is_file
-                and not any(fnmatch(fname, pat) for pat in exclude_patterns)
-            ):
-                with open(full_fname) as fh:
-                    content = fh.read()
-                    if content.startswith("#!"):
-                        # account for files with leading shebang directives
-                        # i.e., first strip out the shebang line before
-                        # then performing license header compliance checking
-                        content = "\n".join(content.split("\n")[1:])
-                    if not content.startswith(LICENSE_TEMPLATE):
-                        print(
-                            "The file {} does not start with the required "
-                            "license header.".format(fname)
-                        )
-                        failed = True
-
-        if failed:
-            raise ValueError("There were license header failures. See stdout.")
+    assert not all_violations, message

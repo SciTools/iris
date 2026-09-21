@@ -14,6 +14,7 @@ ci:
 files: |
     (?x)(
         .github\/workflows\/.*|
+        .hooks\/.+\.py|
         benchmarks\/.+\.py|
         docs\/.+\.py|
         lib\/.+\.py|
@@ -25,6 +26,37 @@ files: |
 minimum_pre_commit_version: 1.21.0
 
 repos:
+-   repo: local
+    hooks:
+    -   id: check-netcdf4-imports
+        name: Check netCDF4 imports are via _thread_safe_nc
+        language: python
+        entry: python .hooks/check_netcdf4_imports.py
+        types: [python]
+    -   id: check-license-headers
+        name: Check license headers
+        language: python
+        entry: python .hooks/check_license_headers.py
+        types: [python]
+    -   id: check-categorised-warnings
+        name: Check warnings are categorised
+        language: python
+        entry: python .hooks/check_categorised_warnings.py
+        types: [python]
+    -   id: check-python-versions
+        name: Check Python version consistency
+        language: python
+        entry: python .hooks/check_python_versions.py
+        additional_dependencies: [packaging]
+        files: |
+            (?x)(
+                pyproject\.toml|
+                noxfile\.py|
+                \.github/workflows/(ci-tests|ci-wheels)\.yml|
+                benchmarks/bm_runner\.py|
+                requirements/py\d+\.yml
+            )
+
 
 # Hook for pre-commit's  built-in checks
 -   repo: https://github.com/pre-commit/pre-commit-hooks

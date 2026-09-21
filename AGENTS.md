@@ -90,6 +90,7 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 - [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
 
+- Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. This keeps deterministic checks in place for all agents and helps catch formatting, lint, and policy violations before review.
 
 ## Code Style
 
