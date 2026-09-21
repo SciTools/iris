@@ -13,13 +13,11 @@ It is an orientation map only; algorithm detail belongs in module docstrings.
 ## Why This File Exists
 
 Iris will be maintained by humans and agents together for the foreseeable
-future. Agents read code through a narrow context window using text search,
-and cannot run the code to find out what it does. Humans read with intuition
-and experience, but limited patience.
-
-These two readers want mostly the same things: explicit names, local
-reasoning, small units. This file records that shared style, plus the few
-places where the two genuinely diverge and which way to resolve them.
+future. Agents read through a narrow context window using text search and
+cannot run the code; humans read with intuition but limited patience. Both
+want the same things — explicit names, local reasoning, small units. This
+file records that shared style, plus the few places the two diverge and which
+way to resolve them.
 
 Note that models are trained to imitate human code and to please human diff
 reviewers — not to produce code that is cheap to navigate later. Default
@@ -84,6 +82,20 @@ does not exist.
   depends on an argument's value. Iris has some legacy examples; add no more.
 - State laziness in the docstring: whether the result is lazy, and whether
   the call realises data.
+
+
+## Conform to the Specification, Not to the Sample File
+
+Iris implements published conventions — CF, UGRID, Zarr, netCDF. Sample files
+are evidence that a code path gets exercised, not authority for what it should
+do. Derive behaviour from the convention's text and cite the section; before
+claiming a file taught you something general, check whether the convention
+already says it.
+
+When a real file disagrees with the convention, the file is wrong: warn
+(`iris.warnings`) naming the variable and the offending value, and carry on.
+Do not reshape the reader around one publisher's output. Raise only where the
+data cannot be interpreted at all.
 
 
 ## Comments and Docstrings
@@ -157,7 +169,6 @@ but do not opportunistically split them either.
 
 | Tension | Resolution |
 |---|---|
-| Verbosity vs concision | Favour explicit. But never narrate line by line. |
 | Abstraction vs duplication | Duplicate up to ~3 occurrences; abstract only once the shape is proven. |
 | Clever idiom vs plain code | Plain. No nested comprehensions beyond two levels, no walrus inside complex expressions, no metaclass tricks. |
 | Small files vs cohesion | Cohesion wins. Do not fragment into micro-modules purely to shrink files. |
