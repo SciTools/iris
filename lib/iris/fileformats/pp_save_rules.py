@@ -169,7 +169,7 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ib = 1
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
         pp.t2 = time_coord.units.num2date(time_coord.points[0] - fp_coord.points[0])
-        pp.lbft = fp_coord.points[0]
+        pp.lbft = fp_coord.units.convert(fp_coord.points[0], "hours")
 
     # Time mean (non-climatological).
     # XXX This only works when we have a single timestep.

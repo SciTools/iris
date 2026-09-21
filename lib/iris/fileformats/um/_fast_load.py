@@ -21,7 +21,7 @@ to the pp "as_pairs" functions.
 """
 
 from contextlib import contextmanager
-import os.path
+from pathlib import Path
 import threading
 
 import numpy as np
@@ -120,7 +120,7 @@ def _basic_load_function(filename, pp_filter=None, **kwargs):
         from iris.fileformats.um import um_to_pp
 
         with open(fname, "rb") as fh:
-            spec = FORMAT_AGENT.get_spec(os.path.basename(fname), fh)
+            spec = FORMAT_AGENT.get_spec(Path(fname).name, fh)
         if spec.name.startswith(_FF_SPEC_NAME):
             loader = um_to_pp
         elif spec.name.startswith(_PP_SPEC_NAME):

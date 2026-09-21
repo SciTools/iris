@@ -8,9 +8,8 @@ To avoid replicating implementation-dependent test and conversion code.
 
 """
 
-from functools import lru_cache, wraps
-from types import ModuleType
-from typing import Sequence
+from functools import lru_cache, partial, wraps
+from typing import TYPE_CHECKING, Sequence
 
 import dask
 import dask.array as da
@@ -20,6 +19,9 @@ import numpy as np
 import numpy.ma as ma
 
 import iris.exceptions
+
+if TYPE_CHECKING:
+    from types import ModuleType
 
 MAX_CACHE_SIZE = 100
 """Maximum number of Dask arrays to cache."""
@@ -560,6 +562,13 @@ def co_realise_cubes(*cubes):
         cube.data = result
 
 
+def _as_array_wrapper(op, block):
+    # Some operations return a Python scalar for a 0-dimensional block
+    # (e.g. cf_units.Unit.convert on a scalar array), which Dask cannot
+    # store. Ensure each block remains an array. See #6965.
+    return np.asanyarray(op(block))
+
+
 def lazy_elementwise(lazy_array, elementwise_op):
     """Apply a (numpy-style) elementwise array operation to a lazy array.
 
@@ -592,7 +601,12 @@ def lazy_elementwise(lazy_array, elementwise_op):
     dtype = elementwise_op(np.zeros(1, lazy_array.dtype)).dtype
     meta = da.utils.meta_from_array(lazy_array).astype(dtype)
 
-    return da.map_blocks(elementwise_op, lazy_array, dtype=dtype, meta=meta)
+    return da.map_blocks(
+        partial(_as_array_wrapper, elementwise_op),
+        lazy_array,
+        dtype=dtype,
+        meta=meta,
+    )
 
 
 def map_complete_blocks(src, func, dims, out_sizes, dtype, *args, **kwargs):

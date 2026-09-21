@@ -11,7 +11,7 @@ from iris.coord_systems import GeogCS, VerticalPerspective
 from iris.tests import _shared_utils
 
 
-class Test:
+class TestVerticalPerspective:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.latitude_of_projection_origin = 0.0

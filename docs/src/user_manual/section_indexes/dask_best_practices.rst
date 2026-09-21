@@ -3,6 +3,8 @@
 Dask Best Practices
 *******************
 
+.. readingtime::
+
 This section outlines some of the best practices when using Dask with Iris. These
 practices involve improving performance through rechunking, making the best use of
 computing clusters and avoiding parallelisation conflicts between Dask and NumPy.

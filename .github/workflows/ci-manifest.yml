@@ -1,5 +1,6 @@
 # Reference
 #    - https://github.com/actions/checkout
+#    - https://github.com/SciTools/workflows
 
 name: ci-manifest
 
@@ -20,7 +21,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   manifest:
     name: "check-manifest"
-    uses: scitools/workflows/.github/workflows/ci-manifest.yml@2026.04.2
+    uses: scitools/workflows/.github/workflows/ci-manifest.yml@28aea7a3a1eb58e1bbf9b1d9c8cb2de07892b67e

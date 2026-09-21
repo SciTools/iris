@@ -6,6 +6,8 @@
 Contributing to the Documentation (the easy way)
 ------------------------------------------------
 
+.. readingtime::
+
 Documentation is important and we encourage any improvements that can be made.
 If you believe the documentation is not clear please contribute a change to
 improve the documentation for all users.

@@ -8,6 +8,7 @@
     import numpy as np
     import iris
     import iris.fileformats.pp
+
     np.set_printoptions(precision=2)
 
 
@@ -21,6 +22,8 @@
 ===================================
 Iris Handling of PP and Fieldsfiles
 ===================================
+
+.. readingtime::
 
 This document provides a basic account of how PP and Fieldsfiles data is
 represented within Iris.
@@ -97,7 +100,7 @@ as follows:
     The complete details are implemented as follows:
 
     *   The conversion of fields to raw cubes is performed by the function
-        :func:`iris.fileformats.pp_rules.convert`, which is called from
+        :func:`iris.fileformats.pp_load_rules.convert`, which is called from
         :func:`iris.fileformats.pp.load_cubes` during loading.
     *   The corresponding save functionality for PP output is implemented by
         the :func:`iris.fileformats.pp.save` function.  The relevant
@@ -151,14 +154,14 @@ For example:
     ... fname = iris.sample_data_path('air_temp.pp')
     >>> fields_iter = iris.fileformats.pp.load(fname)
     >>> field = next(fields_iter)
-    >>> 
+    >>>
     >>> # Show grid details and first 5 longitude values.
     >>> print(' '.join(str(_) for _ in (field.lbcode, field.lbnpt, field.bzx,
     ...                                 field.bdx)))
     1 96 -3.749999 3.749999
     >>> print(field.bzx + field.bdx * np.arange(1, 6))
     [ 0.    3.75  7.5  11.25 15.  ]
-    >>> 
+    >>>
     >>> # Show Iris equivalent information.
     ... cube = iris.load_cube(fname)
     >>> print(cube.coord('longitude').points[:5])
@@ -207,8 +210,8 @@ For example:
     16203
     >>> print(field.lbuser[6])
     1
-    >>> 
-    >>> 
+    >>>
+    >>>
     >>> # Show Iris equivalents.
     >>> print(cube.standard_name)
     air_temperature
@@ -309,7 +312,7 @@ For hybrid height levels (LBVC=65):
     multidimensional or non-monotonic.
 
 See an example printout of a hybrid height cube,
-:ref:`here <hybrid_cube_printout>`.  Notice that this contains all of the 
+:ref:`here <hybrid_cube_printout>`.  Notice that this contains all of the
 above coordinates -- ``model_level_number``, ``sigma``, ``level_height`` and
 the derived ``altitude``.
 
@@ -396,7 +399,7 @@ See an example printout of a forecast data cube,
 :ref:`here <cube-statistics_forecast_printout>`.  Notice that this example
 contains all of the above coordinates -- ``time``, ``forecast_period`` and
 ``forecast_reference_time``.  In this case the data are forecasts, so ``time``
-is a dimension, ``forecast_period``` varies with time and 
+is a dimension, ``forecast_period``` varies with time and
 ``forecast_reference_time`` is a constant.
 
 
@@ -441,7 +444,7 @@ For example:
     622
     >>> print(eg_field.lbproc)
     128
-    >>> 
+    >>>
     >>> # Print out the Iris equivalent information.
     >>> print(iris.load_cube(fname).cell_methods)
     (CellMethod(method='mean', coord_names=('time',), intervals=('6 hour',), comments=()),)

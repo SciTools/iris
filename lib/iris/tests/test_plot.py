@@ -1024,6 +1024,7 @@ class TestPlottingExceptions:
 
 @_shared_utils.skip_data
 @_shared_utils.skip_plot
+@_shared_utils.skip_proj_9_8_incompatible
 class TestPlotOtherCoordSystems(_shared_utils.GraphicsTest):
     def test_plot_tmerc(self):
         filename = _shared_utils.get_data_path(

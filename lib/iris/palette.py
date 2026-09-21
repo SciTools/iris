@@ -15,7 +15,7 @@ color map meta-data mappings.
 
 from functools import wraps
 import os
-import os.path
+from pathlib import Path
 import re
 
 import cf_units
@@ -31,7 +31,7 @@ import iris.cube
 PIVOT_BY_UNIT = {cf_units.Unit("K"): 273.15}
 
 # Color map names by palette file metadata field value.
-CMAP_BREWER = set()
+CMAP_BREWER: set[str] = set()
 _CMAP_BY_SCHEME = None
 _CMAP_BY_KEYWORD = None
 _CMAP_BY_STD_NAME = None
@@ -248,15 +248,15 @@ def _load_palette():
         # Identify any target .txt color map palette files.
         filenames.extend(
             [
-                os.path.join(root, filename)
+                str(Path(root) / filename)
                 for filename in files
-                if os.path.splitext(filename)[1] == ".txt"
+                if Path(filename).suffix == ".txt"
             ]
         )
 
     for filename in filenames:
         # Default color map name based on the file base-name (case-SENSITIVE).
-        cmap_name = os.path.splitext(os.path.basename(filename))[0]
+        cmap_name = Path(filename).stem
         cmap_scheme = None
         cmap_keywords = []
         cmap_std_names = []

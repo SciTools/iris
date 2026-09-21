@@ -24,8 +24,8 @@ the below table.
 
    <!-- Must import jquery before the datatables css and js files. -->
    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.3.2/css/dataTables.dataTables.min.css">
-   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.3.2/js/dataTables.min.js"></script>
+   <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.3.8/css/dataTables.dataTables.min.css">
+   <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
 
 
    <table id="voted_issues_table" class="hover row-border order-column" style="width:100%">
@@ -48,9 +48,11 @@ the below table.
            $('#voted_issues_table').DataTable( {
               <!-- "ajax": 'voted-issues.json', -->
               "ajax": 'https://raw.githubusercontent.com/scitools/voted_issues/main/voted-issues.json',
+              // docs: https://datatables.net/reference/option/
               "lengthMenu": [10, 25, 50, 100],
               "pageLength": 10,
               "order": [[ 0, "desc" ]],
+              "orderClasses": false,
               "bJQueryUI": true,
            } );
         } );

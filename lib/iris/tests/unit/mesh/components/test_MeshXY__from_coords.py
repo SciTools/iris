@@ -8,9 +8,10 @@ import numpy as np
 import pytest
 
 from iris.coords import AuxCoord, DimCoord
-from iris.mesh import Connectivity, MeshXY, logger
+from iris.mesh import Connectivity, MeshCoord, MeshXY, logger
 from iris.tests import _shared_utils
 from iris.tests.stock import simple_2d_w_multidim_coords
+from iris.tests.stock.mesh import sample_meshcoord
 
 
 class Test1Dim:
@@ -241,3 +242,10 @@ class TestInvalidPoints:
         coord_1, coord_2 = cube.coords()
         with pytest.raises(ValueError, match="Expected coordinate ndim == 1"):
             _ = MeshXY.from_coords(coord_1, coord_2)
+
+
+def test_type_validation():
+    # Only AuxCoord or DimCoord supported.
+    mesh_coord = sample_meshcoord()
+    with pytest.raises(ValueError, match="Expected coords to be DimCoord or AuxCoord."):
+        _ = MeshXY.from_coords(mesh_coord, mesh_coord)

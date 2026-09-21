@@ -54,6 +54,7 @@ include INSTALL
 include LICENSE
 exclude Makefile
 exclude codecov.yml
+include environment.yml
 include noxfile.py
 include tox.ini
 exclude pixi.lock
@@ -80,6 +81,8 @@ prune docs
 # (2) top-level files to omit
 exclude .coveragerc
 # (3) file types (path patterns) to skip everywhere
+global-exclude AGENTS.md
+global-exclude CLAUDE.md
 global-exclude *.py[cod]
 global-exclude __pycache__
     # principles:
@@ -97,6 +100,7 @@ global-exclude __pycache__
 # Local Iris-specific settings
 #
 prune benchmarks
+prune changelog
 prune etc
 prune tools
 

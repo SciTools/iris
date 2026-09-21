@@ -1870,19 +1870,32 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
         pp_file_read = pp_file.read
 
         field_count = 0
+        # Total bytes for the full header record:
+        #   leading length word + long headers + float headers + trailing length word
+        _HEADER_BYTES = PP_WORD_DEPTH * (1 + NUM_LONG_HEADERS + NUM_FLOAT_HEADERS + 1)
+        _LONGS_OFFSET = PP_WORD_DEPTH  # bytes: skip leading length word
+        _FLOATS_OFFSET = _LONGS_OFFSET + NUM_LONG_HEADERS * PP_WORD_DEPTH
+        dtype_longs = np.dtype("%ci%d" % (dtype_endian_char, PP_WORD_DEPTH))
+        dtype_floats = np.dtype("%cf%d" % (dtype_endian_char, PP_WORD_DEPTH))
         # Keep reading until we reach the end of file
         while True:
-            # Move past the leading header length word
-            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
-            # Get the LONG header entries
-            dtype = "%ci%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_longs = np.fromfile(pp_file, dtype=dtype, count=NUM_LONG_HEADERS)
+            # Read the entire header record in one go
+            header_buf = pp_file_read(_HEADER_BYTES)
             # Nothing returned => EOF
-            if len(header_longs) == 0:
+            if len(header_buf) == 0:
                 break
-            # Get the FLOAT header entries
-            dtype = "%cf%d" % (dtype_endian_char, PP_WORD_DEPTH)
-            header_floats = np.fromfile(pp_file, dtype=dtype, count=NUM_FLOAT_HEADERS)
+            header_longs = np.frombuffer(
+                header_buf,
+                dtype=dtype_longs,
+                count=NUM_LONG_HEADERS,
+                offset=_LONGS_OFFSET,
+            )
+            header_floats = np.frombuffer(
+                header_buf,
+                dtype=dtype_floats,
+                count=NUM_FLOAT_HEADERS,
+                offset=_FLOATS_OFFSET,
+            )
             header = tuple(header_longs) + tuple(header_floats)
 
             # Make a PPField of the appropriate sub-class (depends on header
@@ -1899,9 +1912,6 @@ def _field_gen(filename, read_data_bytes, little_ended=False):
                     category=_WarnComboIgnoringLoad,
                 )
                 break
-
-            # Skip the trailing 4-byte word containing the header length
-            pp_file_seek(PP_WORD_DEPTH, os.SEEK_CUR)
 
             # Read the word telling me how long the data + extra data is
             # This value is # of bytes

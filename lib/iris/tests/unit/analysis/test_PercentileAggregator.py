@@ -15,7 +15,7 @@ from iris.cube import Cube
 from iris.tests import _shared_utils
 
 
-class Test:
+class TestPercentileAggregator:
     def test_init(self, mocker):
         name = "percentile"
         units_func = mocker.sentinel.units_func

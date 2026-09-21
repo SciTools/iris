@@ -7,10 +7,9 @@
 import iris.tests as tests  # isort:skip
 
 from datetime import datetime
-import os.path
-from typing import NamedTuple
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, Callable, NamedTuple
 
-from cartopy.crs import CRS
 from cf_units import Unit
 import numpy as np
 import numpy.ma as ma
@@ -29,6 +28,9 @@ from ._stock_2d_latlons import (  # noqa
     make_bounds_discontiguous_at_point,
     sample_2d_latlons,
 )
+
+if TYPE_CHECKING:
+    from cartopy.crs import CRS
 
 
 def lat_lon_cube():
@@ -572,7 +574,7 @@ def realistic_4d():
 
     """
     data_path = tests.get_data_path(("stock", "stock_arrays.npz"))
-    if not os.path.isfile(data_path):
+    if not Path(data_path).is_file():
         raise IOError("Test data is not available at {}.".format(data_path))
     r = np.load(data_path)
     # sort the arrays based on the order they were originally given.
@@ -671,7 +673,7 @@ def realistic_4d_no_derived():
 
 def realistic_4d_w_missing_data():
     data_path = tests.get_data_path(("stock", "stock_mdi_arrays.npz"))
-    if not os.path.isfile(data_path):
+    if not Path(data_path).is_file():
         raise IOError("Test data is not available at {}.".format(data_path))
     data_archive = np.load(data_path)
     data = ma.masked_array(data_archive["arr_0"], mask=data_archive["arr_1"])
@@ -718,7 +720,7 @@ def realistic_4d_w_missing_data():
     return cube
 
 
-def realistic_4d_w_everything(w_mesh=False):
+def realistic_4d_w_everything(w_mesh=False) -> Cube:
     """Returns a cube that will exercise as much of Iris as possible.
 
     Uses :func:`realistic_4d` as a basis, then modifies accordingly.
@@ -747,6 +749,10 @@ def realistic_4d_w_everything(w_mesh=False):
 
     cube.long_name = "Air Potential Temperature"
     cube.var_name = "air_temp"
+    cube.coord("level_height").standard_name = "atmosphere_hybrid_height_coordinate"
+
+    for coord in [*cube.dim_coords, *cube.aux_coords]:
+        coord.var_name = coord.name()
 
     cell_method = CellMethod("mean", coords="time", intervals="1 hour")
     cube.add_cell_method(cell_method)
@@ -760,12 +766,14 @@ def realistic_4d_w_everything(w_mesh=False):
     cell_measure = CellMeasure(
         data=cell_areas,
         standard_name="cell_area",
+        var_name="cell_area",
     )
     cube.add_cell_measure(cell_measure, (lat_dim, lon_dim))
 
     ancillary_variable = AncillaryVariable(
-        data=np.remainder(cube.data.astype(int), 2),
+        data=np.remainder(np.ma.filled(cube.data, 0).astype(int), 2),
         standard_name="quality_flag",
+        var_name="quality_flag",
     )
     cube.add_ancillary_variable(ancillary_variable, np.arange(cube.ndim))
 
@@ -812,12 +820,14 @@ def realistic_4d_w_everything(w_mesh=False):
         default_points.x,
         bounds=default_bounds.x,
         standard_name="longitude",
+        var_name="longitude",
         units="degrees",
     )
     default_lat = AuxCoord(
         default_points.y,
         bounds=default_bounds.y,
         standard_name="latitude",
+        var_name="latitude",
         units="degrees",
     )
     cube.add_aux_coord(default_lon, (lat_dim, lon_dim))
@@ -855,7 +865,7 @@ def realistic_4d_w_everything(w_mesh=False):
         # Processed nodes: [a, b, c, d]
         # Processed faces: [[0, 1, 2, 3], [0, 2, 1, 3]]
 
-        nodes = np.stack([c.points for c in mesh.node_coords])
+        nodes = np.stack([c.points for c in mesh.node_coords if c is not None])
         face_node = mesh.face_node_connectivity
 
         # first_instances = a full length array but always with the index of
@@ -876,6 +886,7 @@ def realistic_4d_w_everything(w_mesh=False):
         node_x, node_y = [
             AuxCoord(nodes_unique[i], **c.metadata._asdict())
             for i, c in enumerate(mesh.node_coords)
+            if c is not None
         ]
         mesh.add_coords(node_x=node_x, node_y=node_y)
         conn_kwargs = dict(indices=indices_unique, start_index=0)
@@ -916,12 +927,15 @@ def realistic_4d_w_everything(w_mesh=False):
         cube.cell_measures(),
         cube.ancillary_variables(),
     ]
-    add_methods = {
+
+    AddMethod = Callable[..., None]
+    add_methods: dict[type[Any], AddMethod] = {
         AncillaryVariable: Cube.add_ancillary_variable,
         AuxCoord: Cube.add_aux_coord,
         CellMeasure: Cube.add_cell_measure,
         DimCoord: Cube.add_dim_coord,
     }
+
     for dim_metadata_group in dim_metadata_groups:
         for dim_metadata in dim_metadata_group:
             add_method = add_methods[type(dim_metadata)]
@@ -972,6 +986,8 @@ def realistic_4d_w_everything(w_mesh=False):
         }
         aux_factory = aux_factory.updated(coord_mapping)
         mesh_cube.add_aux_factory(aux_factory)
+
+    cube.attributes.globals["Conventions"] = "CF-1.7"
 
     if w_mesh:
         result = mesh_cube

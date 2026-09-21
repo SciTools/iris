@@ -5,7 +5,7 @@
 """Test cube indexing, slicing, and extracting, and also the dot graphs."""
 
 import collections
-import os
+from pathlib import Path
 import re
 
 import cf_units
@@ -27,7 +27,7 @@ class IrisDotTest:
     def check_dot(self, cube, reference_filename):
         test_string = iris.fileformats.dot.cube_text(cube)
         reference_path = _shared_utils.get_result_path(reference_filename)
-        if os.path.isfile(reference_path):
+        if Path(reference_path).is_file():
             with open(reference_path, "r") as reference_fh:
                 reference = "".join(reference_fh.readlines())
             _shared_utils._assert_str_same(

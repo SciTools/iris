@@ -2,6 +2,7 @@ name: iris-dev
 
 channels:
   - conda-forge
+  - nodefaults
 
 dependencies:
   - python =3.13
@@ -44,7 +45,7 @@ dependencies:
   - imagehash >=4.0
   - pre-commit
   - psutil
-  - pytest
+  - pytest <9.1
   - pytest-cov
   - pytest-mock
   - pytest-xdist
@@ -56,9 +57,13 @@ dependencies:
   - sphinx-copybutton
   - sphinx-gallery >=0.11.0
   - sphinx-design
-  - pydata-sphinx-theme
+  - pydata-sphinx-theme >=0.17.0
   - sphinx-needs
   - sphinx-reredirects
+  - sphinx_changelog >=1.6.0
+  - sphinx-llm
+  - sphinx-sitemap
+  - towncrier
 
 # Temporary minimum pins.
 # See https://github.com/SciTools/iris/pull/5051

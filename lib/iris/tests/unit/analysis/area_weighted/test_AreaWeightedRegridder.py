@@ -122,6 +122,22 @@ class Test:
         result = regridder(src)
         _shared_utils.assert_array_all_close(result.data, target.data)
 
+    def test_result_coords_independent_of_target(self):
+        # The horizontal coordinates of the result must be copies, not the
+        # same objects as the target's: mutating one must not mutate the
+        # other (#6844).
+        src, target = self.grids()
+        regridder = AreaWeightedRegridder(src, target)
+        result = regridder(src)
+        for name in ("latitude", "longitude"):
+            result_coord = result.coord(name)
+            target_coord = target.coord(name)
+            assert result_coord == target_coord
+            assert result_coord is not target_coord
+            original = target_coord.points.copy()
+            result_coord.points = result_coord.points + 100
+            _shared_utils.assert_array_equal(target.coord(name).points, original)
+
     def test_multiple_src_on_same_grid(self):
         coord_names = ["latitude", "longitude"]
         src1 = self.cube(np.linspace(20, 32, 4), np.linspace(10, 22, 4))

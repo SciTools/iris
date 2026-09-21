@@ -4,6 +4,8 @@
 Docstrings
 ==========
 
+.. readingtime::
+
 Every public object in the Iris package should have an appropriate docstring.
 This is important as the docstrings are used by developers to understand
 the code and may be read directly in the source or via the

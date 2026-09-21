@@ -1891,6 +1891,11 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     -------
     :class:`~matplotlib.animation.FuncAnimation` object suitable for saving and or plotting.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     >>> import iris
@@ -1903,11 +1908,6 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> cube_iter = my_cube.slices(("longitude", "latitude"))
     >>> ani = iplt.animate(cube_iter, qplt.contourf)
     >>> iplt.show()
-
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     kwargs.setdefault("interval", 100)

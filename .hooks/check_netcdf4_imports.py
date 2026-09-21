@@ -19,9 +19,8 @@ Exit codes:
 """
 
 import ast
-import sys
 from pathlib import Path
-
+import sys
 
 # Files that are allowed to import netCDF4 directly.
 _PERMITTED_SUFFIXES = (
@@ -29,6 +28,8 @@ _PERMITTED_SUFFIXES = (
     "iris/fileformats/netcdf/_thread_safe_nc.py",
     # The test for the wrapper.
     "iris/tests/unit/fileformats/netcdf/_thread_safe_nc/test_NetCDFWriteProxy.py",
+    # The tests for the bytecoding dataset wrapper.
+    "iris/tests/unit/fileformats/netcdf/test_bytecoding_datasets.py",
     # The system test that checks netCDF4 is importable.
     "iris/tests/system_test.py",
 )
@@ -40,15 +41,13 @@ def _is_permitted(path: Path) -> bool:
     return any(as_posix.endswith(suffix) for suffix in _PERMITTED_SUFFIXES)
 
 
-def _has_netcdf4_import(node: ast.Import | ast.ImportFrom) -> bool:
+def _has_netcdf4_import(node: ast.AST) -> bool:
     """Return True if *node* is a direct netCDF4 import statement."""
-    match type(node):
-        case ast.Import:
-            return any(alias.name == "netCDF4" for alias in node.names)
-        case ast.ImportFrom:
-            return node.module is not None and node.module.startswith("netCDF4")
-        case _:
-            return False
+    if isinstance(node, ast.Import):
+        return any(alias.name == "netCDF4" for alias in node.names)
+    if isinstance(node, ast.ImportFrom):
+        return node.module is not None and node.module.startswith("netCDF4")
+    return False
 
 
 def check_file(path: Path) -> list[str]:
@@ -69,14 +68,12 @@ def check_file(path: Path) -> list[str]:
         return []
 
     violations = []
-    imports = filter(
-        lambda node: isinstance(node, (ast.Import, ast.ImportFrom)),
-        ast.walk(tree)
-    )
-    for imp in imports:
+    for imp in ast.walk(tree):
+        if not isinstance(imp, (ast.Import, ast.ImportFrom)):
+            continue
         if _has_netcdf4_import(imp):
             violations.append(
-                f"{path}:{imp.lineno}: direct netCDF4 import — "
+                f"{path}:{getattr(imp, 'lineno', 0)}: direct netCDF4 import — "
                 "use iris.fileformats.netcdf._thread_safe_nc instead."
             )
 
@@ -107,5 +104,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-
-

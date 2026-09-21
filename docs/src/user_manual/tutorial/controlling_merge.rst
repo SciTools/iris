@@ -9,6 +9,8 @@
 Controlling Merge and Concatenate
 =================================
 
+.. readingtime::
+
 Preliminaries
 -------------
 

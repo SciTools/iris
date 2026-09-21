@@ -4,8 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for loading and saving netcdf files."""
 
-from os.path import dirname
-from os.path import sep as os_sep
+from pathlib import Path
 
 import pytest
 
@@ -15,14 +14,10 @@ from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
 class TestClimatology:
-    reference_cdl_path = os_sep.join(
-        [
-            dirname(iris.tests.__file__),
-            (
-                "results/integration/climatology/TestClimatology/"
-                "reference_simpledata.cdl"
-            ),
-        ]
+    reference_cdl_path = str(
+        Path(iris.tests.__file__).parent
+        / "results/integration/climatology/TestClimatology/"
+        / "reference_simpledata.cdl"
     )
 
     @classmethod

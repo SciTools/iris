@@ -13,12 +13,16 @@ shifts in performance being flagged in a new GitHub issue.
 
 On GitHub: a Pull Request can be benchmarked by adding the 
 https://github.com/SciTools/iris/labels/benchmark_this 
-label to the PR (to run a second time: just remove and re-add the label).
+label to the PR.
 Note that a benchmark run could take an hour or more to complete.
 This runs a comparison between the PR branch's ``HEAD`` and its merge-base with
 the PR's base branch, thus showing performance differences introduced
 by the PR. (This run is managed by 
 [the aforementioned GitHub Action](../.github/workflows/benchmark.yml)).
+
+> [!TIP]
+> To run the benchmarks a second time: remove the
+> https://github.com/SciTools/iris/labels/benchmark_this label and add it again.
 
 To run locally: the **benchmark runner** provides conveniences for
 common benchmark setup and run tasks, including replicating the benchmarking
@@ -48,42 +52,17 @@ are not already. This can be done in several ways:
 
 ### Environment variables
 
-* `OVERRIDE_TEST_DATA_REPOSITORY` - required - some benchmarks use
-`iris-test-data` content, and your local `site.cfg` is not available for
-benchmark scripts. The benchmark runner defers to any value already set in
-the shell, but will otherwise download `iris-test-data` and set the variable
-accordingly.
-* `DATA_GEN_PYTHON` - required - path to a Python executable that can be
-used to generate benchmark test objects/files; see
-[Data generation](#data-generation). The benchmark runner sets this 
-automatically, but will defer to any value already set in the shell. Note that
-[Mule](https://github.com/MetOffice/mule) will be  automatically installed into 
-this environment, and sometimes 
-[iris-test-data](https://github.com/SciTools/iris-test-data) (see 
-`OVERRIDE_TEST_DATA_REPOSITORY`).
-* `BENCHMARK_DATA` - optional - path to a directory for benchmark synthetic
-test data, which the benchmark scripts will create if it doesn't already
-exist. Defaults to `<root>/benchmarks/.data/` if not set. Note that some of
-the generated files, especially in the 'SPerf' suite, are many GB in size so
-plan accordingly.
-* `ON_DEMAND_BENCHMARKS` - optional - when set (to any value): benchmarks
-decorated with `@on_demand_benchmark` are included in the ASV run. Usually
-coupled with the ASV `--bench` argument to only run the benchmark(s) of
-interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands.
-* `ASV_COMMIT_ENVS` - optional - instruct the 
-[delegated environment management](#benchmark-environments) to create a
-dedicated environment for each commit being benchmarked when set (to any 
-value). This means that benchmarking commits with different environment 
-requirements will not be delayed by repeated environment setup - especially 
-relevant given the [benchmark runner](bm_runner.py)'s use of
-[--interleave-rounds](https://asv.readthedocs.io/en/stable/commands.html?highlight=interleave-rounds#asv-run),
-or any time you know you will repeatedly benchmark the same commit. **NOTE:**
-SciTools environments tend to large so this option can consume a lot of disk 
-space.
+| Name | Required | Description | Notes |
+|------|----------|-------------|-------|
+| `OVERRIDE_TEST_DATA_REPOSITORY` | **required** | Some benchmarks use `iris-test-data` content, and your local `site.cfg` is not available for benchmark scripts. The benchmark runner defers to any value already set in the shell, but will otherwise download `iris-test-data` and set the variable accordingly. |  |
+| `DATA_GEN_PYTHON` | **required** | Path to a Python executable that can be used to generate benchmark test objects/files; see [Data generation](#data-generation). The benchmark runner sets this automatically, but will defer to any value already set in the shell. | [Mule](https://github.com/MetOffice/mule) will be  automatically installed into this environment, and sometimes [iris-test-data](https://github.com/SciTools/iris-test-data) (see `OVERRIDE_TEST_DATA_REPOSITORY`). |
+| `BENCHMARK_DATA` | optional | Path to a directory for benchmark synthetic test data, which the benchmark scripts will create if it doesn't already exist. Defaults to `<root>/benchmarks/.data/` if not set. | Some of the generated files, especially in the 'SPerf' suite, are many GB in size so plan accordingly. |
+| `ON_DEMAND_BENCHMARKS` | optional | When set (to any value): benchmarks decorated with `@on_demand_benchmark` are included in the ASV run. Usually coupled with the ASV `--bench` argument to only run the benchmark(s) of interest. Is set during the benchmark runner `cperf` and `sperf` sub-commands. |  |
+| `ASV_COMMIT_ENVS` | optional | Instruct the [delegated environment management](#benchmark-environments) to create a dedicated environment for each commit being benchmarked when set (to any value). This means that benchmarking commits with different environment requirements will not be delayed by repeated environment setup - especially relevant given the [benchmark runner](bm_runner.py)'s use of [--interleave-rounds](https://asv.readthedocs.io/en/stable/commands.html?highlight=interleave-rounds#asv-run), or any time you know you will repeatedly benchmark the same commit. | **SciTools environments tend to be large so this option can consume a lot of disk space.** |
 
 ## Writing benchmarks
 
-[See the ASV docs](https://asv.readthedocs.io/) for full detail.
+[See the ASV docs](https://asv.readthedocs.io/en/stable/) for full detail.
 
 ### What benchmarks to write
 
@@ -96,19 +75,21 @@ positive regressions.
 We therefore recommend writing benchmarks representing scripts or single
 operations that are likely to be run at the user level.
 
-The drawback of this approach: a reported regression is less likely to reveal
-the root cause (e.g. if a commit caused a regression in coordinate-creation 
-time, but the only benchmark covering this was for file-loading). Be prepared
-for manual investigations; and consider committing any useful benchmarks as 
-[on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
+> [!CAUTION]
+> The drawback of this approach: a reported regression is less likely to reveal
+> the root cause (e.g. if a commit caused a regression in coordinate-creation 
+> time, but the only benchmark covering this was for file-loading). Be prepared
+> for manual investigations; and consider committing any useful benchmarks as 
+> [on-demand benchmarks](#on-demand-benchmarks) for future developers to use.
 
 ### Data generation
 
-**Important:** be sure not to use the benchmarking environment to generate any
-test objects/files, as this environment changes with each commit being
-benchmarked, creating inconsistent benchmark 'conditions'. The
-[generate_data](./benchmarks/generate_data/__init__.py) module offers a
-solution; read more detail there.
+> [!WARNING]
+> Be sure not to use the benchmarking environment to generate any
+> test objects/files, as this environment changes with each commit being
+> benchmarked, creating inconsistent benchmark 'conditions'. The
+> [generate_data](./benchmarks/generate_data/__init__.py) module offers a
+> solution; read more detail there.
 
 ### ASV re-run behaviour
 
@@ -136,9 +117,10 @@ detail.
 
 ### Scaling / non-Scaling Performance Differences
 
-**(We no longer advocate the below for benchmarks run during CI, given the
-limited available runtime and risk of false-positives. It remains useful for
-manual investigations).**
+> [!CAUTION]
+> We no longer advocate the below for benchmarks run during CI, given the
+> limited available runtime and risk of false-positives. It remains useful for
+> manual investigations.
 
 When comparing performance between commits/file-type/whatever it can be helpful
 to know if the differences exist in scaling or non-scaling parts of the 
@@ -160,7 +142,7 @@ suites for the UK Met Office NG-VAT project.
 
 ## Benchmark environments
 
-We have disabled ASV's standard environment management, instead using an
+We have disabled ASV's standard environment management[^1], instead using an
 environment built using the same scripts that set up the package test 
 environments. 
 This is done using ASV's plugin architecture - see
@@ -168,8 +150,8 @@ This is done using ASV's plugin architecture - see
 references in [`asv.conf.json`](asv.conf.json) (`environment_type` and 
 `plugins`).
 
-(ASV is written to control the environment(s) that benchmarks are run in -
+[^1]: ASV is written to control the environment(s) that benchmarks are run in -
 minimising external factors and also allowing it to compare between a matrix
 of dependencies (each in a separate environment). We have chosen to sacrifice
 these features in favour of testing each commit with its intended dependencies,
-controlled by the test environment setup script(s)).
+controlled by the test environment setup script(s).

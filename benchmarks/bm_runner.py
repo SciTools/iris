@@ -173,6 +173,46 @@ def _asv_compare(
             raise RuntimeError(message)
 
 
+def _read_gh_report_command(command_path: Path, commit_dir: Path) -> list[str]:
+    body_file = commit_dir / "body.txt"
+    command = command_path.read_text().strip().split("\t")
+    if len(command) == 3 and command[0] == "pr_comment":
+        _, pr_number, repo = command
+        return [
+            "gh",
+            "pr",
+            "comment",
+            pr_number,
+            "--body-file",
+            str(body_file),
+            "--repo",
+            repo,
+        ]
+    if len(command) == 4 and command[0] == "issue_create":
+        _, repo, title, assignee = command
+        command = [
+            "gh",
+            "issue",
+            "create",
+            "--title",
+            title,
+            "--body-file",
+            str(body_file),
+            "--label",
+            "Bot",
+            "--label",
+            "Type: Performance",
+            "--repo",
+            repo,
+        ]
+        if assignee:
+            command.extend(["--assignee", assignee])
+        return command
+
+    message = f"Unexpected report command format: {command_path}"
+    raise ValueError(message)
+
+
 def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) -> None:
     """If running under GitHub Actions: record the results in report(s).
 
@@ -230,17 +270,12 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
     )
 
     if on_pull_request:
-        # Command to post the report as a comment on the active PR.
+        # Strict command format to post report as a comment on the active PR.
         body_path.write_text(performance_report)
-        command = (
-            f"gh pr comment {pr_number} "
-            f"--body-file {body_path.absolute()} "
-            f"--repo {repo}"
-        )
-        command_path.write_text(command)
+        command_path.write_text(f"pr_comment\t{pr_number}\t{repo}")
 
     else:
-        # Command to post the report as new issue.
+        # Strict command format to post the report as a new issue.
         commit_msg = _subprocess_runner_capture(
             f"git log {commit_sha}^! --oneline".split(" ")
         )
@@ -291,18 +326,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
         )
         body += performance_report
         body_path.write_text(body)
-
-        command = (
-            "gh issue create "
-            f'--title "{title}" '
-            f"--body-file {body_path.absolute()} "
-            '--label "Bot" '
-            '--label "Type: Performance" '
-            f"--repo {repo}"
-        )
-        if assignee:
-            command += f" --assignee {assignee}"
-        command_path.write_text(command)
+        command_path.write_text(f"issue_create\t{repo}\t{title}\t{assignee}")
 
 
 def _gh_post_reports() -> None:
@@ -318,12 +342,8 @@ def _gh_post_reports() -> None:
     commit_dirs = [x for x in GH_REPORT_DIR.iterdir() if x.is_dir()]
     for commit_dir in commit_dirs:
         command_path = commit_dir / "command.txt"
-        command = command_path.read_text()
-
-        # Security: only accept certain commands to run.
-        assert command.startswith(("gh issue create", "gh pr comment"))
-
-        _subprocess_runner(shlex.split(command))
+        command = _read_gh_report_command(command_path, commit_dir)
+        _subprocess_runner(command)
 
 
 class _SubParserGenerator(ABC):

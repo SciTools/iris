@@ -7,6 +7,8 @@
 Missing Data Handling in Iris
 =============================
 
+.. readingtime::
+
 This document provides a brief overview of how Iris handles missing data values
 when datasets are loaded as cubes, and when cubes are saved or modified.
 

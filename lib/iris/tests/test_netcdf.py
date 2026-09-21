@@ -5,7 +5,6 @@
 """Test CF-NetCDF file loading and saving."""
 
 import os
-import os.path
 import shutil
 import stat
 

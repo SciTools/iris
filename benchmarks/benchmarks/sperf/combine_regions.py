@@ -4,8 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Region combine benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
 
-import os.path
-
 from dask import array as da
 import numpy as np
 

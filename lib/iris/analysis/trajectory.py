@@ -202,6 +202,11 @@ def interpolate(cube, sample_points, method=None):
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -210,10 +215,6 @@ def interpolate(cube, sample_points, method=None):
         ('longitude', [-60, -50, -40])]
         interpolated_cube = interpolate(cube, sample_points)
 
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 

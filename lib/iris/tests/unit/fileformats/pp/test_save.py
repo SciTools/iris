@@ -298,6 +298,22 @@ class TestTimeMean:
 
         assert mock_lbft is actual
 
+    def test_lbft_forecast_period_converted_to_hours(self, mocker):
+        cube = stock.realistic_3d()[0:1, :, :]
+        time_coord = cube.coord("time")
+        fp_coord = cube.coord("forecast_period")
+
+        # Hit the no-bounds forecast branch and force non-hour forecast units.
+        time_coord.bounds = None
+        expected_hours = fp_coord.units.convert(fp_coord.points[0], "hours")
+        fp_coord.points = [fp_coord.units.convert(fp_coord.points[0], "seconds")]
+        fp_coord.units = "seconds"
+
+        pp_field = mocker.patch("iris.fileformats.pp.PPField3", autospec=True)
+        verify(cube, pp_field)
+
+        assert pp_field.lbft == pytest.approx(expected_hours)
+
     def test_lbtim_no_time_mean(self, mocker, single_time_cube):
         expected_ib = 0
         expected_ic = 2  # 360 day calendar

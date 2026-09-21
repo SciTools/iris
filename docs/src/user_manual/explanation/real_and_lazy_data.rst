@@ -3,8 +3,6 @@
 
    Read about how Iris defers data loading from disk.
 
-.. _real_and_lazy_data:
-
 
 .. testsetup:: *
 
@@ -14,9 +12,13 @@
     import numpy as np
 
 
+.. _real_and_lazy_data:
+
 ==================
 Real and Lazy Data
 ==================
+
+.. readingtime::
 
 We have seen in the :doc:`../explanation/iris_cubes` section of the user guide that
 Iris cubes contain data and metadata about a phenomenon. The data element of a cube
@@ -25,6 +27,7 @@ is always an array, but the array may be either "real" or "lazy".
 In this section of the user guide we will look specifically at the concepts of
 real and lazy data as they apply to the cube and other data structures in Iris.
 
+.. _real_and_lazy_arrays:
 
 What is Real and Lazy Data?
 ---------------------------
@@ -193,9 +196,9 @@ coordinates' lazy points and bounds:
 
 .. doctest::
 
-    >>> cube = iris.load_cube(iris.sample_data_path('orca2_votemper.nc'),'votemper')
+    >>> cube = iris.load_cube(iris.sample_data_path("orca2_votemper.nc"), "votemper")
 
-    >>> dim_coord = cube.coord('depth')
+    >>> dim_coord = cube.coord("depth")
     >>> print(dim_coord.has_lazy_points())
     False
     >>> print(dim_coord.has_bounds())
@@ -203,7 +206,7 @@ coordinates' lazy points and bounds:
     >>> print(dim_coord.has_lazy_bounds())
     False
 
-    >>> aux_coord = cube.coord('longitude')
+    >>> aux_coord = cube.coord("longitude")
     >>> print(aux_coord.has_lazy_points())
     True
     >>> print(aux_coord.has_bounds())
@@ -219,8 +222,10 @@ coordinates' lazy points and bounds:
     True
 
     # Fetch a derived coordinate, from a different file: These can also have lazy data.
-    >>> cube2 = iris.load_cube(iris.sample_data_path('hybrid_height.nc'), 'air_potential_temperature')
-    >>> derived_coord = cube2.coord('altitude')
+    >>> cube2 = iris.load_cube(
+    ...     iris.sample_data_path("hybrid_height.nc"), "air_potential_temperature"
+    ... )
+    >>> derived_coord = cube2.coord("altitude")
     >>> print(derived_coord.has_lazy_points())
     True
     >>> print(derived_coord.has_bounds())
