@@ -26,6 +26,29 @@ repos:
         language: python
         entry: python .hooks/check_netcdf4_imports.py
         types: [python]
+    -   id: check-license-headers
+        name: Check license headers
+        language: python
+        entry: python .hooks/check_license_headers.py
+        types: [python]
+    -   id: check-categorised-warnings
+        name: Check warnings are categorised
+        language: python
+        entry: python .hooks/check_categorised_warnings.py
+        types: [python]
+    -   id: check-python-versions
+        name: Check Python version consistency
+        language: python
+        entry: python .hooks/check_python_versions.py
+        additional_dependencies: [packaging]
+        files: |
+            (?x)(
+                pyproject\.toml|
+                noxfile\.py|
+                \.github/workflows/(ci-tests|ci-wheels)\.yml|
+                benchmarks/bm_runner\.py|
+                requirements/py\d+\.yml
+            )
 
 -   repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v6.0.0
