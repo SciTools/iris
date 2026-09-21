@@ -321,7 +321,8 @@ objects **[verified, two independent producers]**.
 
 Iris carries such values onto the cube unchanged, does not interpret them, and
 does not write them back through the netCDF saver. This is the provisional
-answer; the durable one needs the attribute-model discussion recorded in §10.
+answer; the durable one needs the attribute-model discussion in
+SciTools/iris#7288 (§10).
 
 **Masking and unpacking.** netCDF4 applies `_FillValue`/`missing_value`
 masking, `valid_min`/`valid_max`/`valid_range` masking and
@@ -388,8 +389,9 @@ netCDF. Round-trip tests therefore compare attribute **values**, not dtypes.
 
 This is the provisional answer to the wider question of how the CF attribute
 model maps onto JSON in both directions — the same question the nested-object
-paragraph in §4.4 runs into from the read side. §10 records it as parked for a
-dedicated discussion; nothing else in the design depends on how it is settled.
+paragraph in §4.4 runs into from the read side. §10 and SciTools/iris#7288 record it as parked
+for a dedicated discussion; nothing else in the design depends on how it is
+settled.
 
 Two attributes are exempt because their dtype is load-bearing: `_FillValue` and
 `missing_value` are written as the Python scalar matching the array dtype, and
@@ -747,7 +749,7 @@ arranged so that changing this answer later touches only the attribute
 conversion in `zarr/_dataset.py` — nothing in the loader, the saver or the
 `CFDataset` interface depends on it.
 
-A separate issue tracks the discussion, with the relevant specification
+**SciTools/iris#7288** tracks the discussion, with the relevant specification
 citations (Zarr v3 "arbitrary JSON literal"; CF §2.5.1 "of the same type as its
 variable") and the two real-world examples from §4.4.
 
@@ -758,6 +760,7 @@ variable") and the two real-world examples from §4.4.
 - SciTools/iris#6961 — Zarr I/O, parent issue
 - SciTools/iris#6977, #6979, #6980 — the three sub-issues
 - SciTools/iris#7259 — `cf.py` unit test coverage, by Martin Yeo
+- SciTools/iris#7288 — the parked CF attribute model question (§10)
 - Zarr specifications: https://zarr-specs.readthedocs.io/
 - zarr-python: https://zarr.readthedocs.io/
 - CF conventions for Zarr: https://github.com/zarr-conventions/CF
