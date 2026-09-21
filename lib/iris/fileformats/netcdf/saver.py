@@ -28,7 +28,7 @@ from pathlib import Path
 import re
 import string
 import typing
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urlsplit
 import warnings
 
@@ -37,7 +37,7 @@ import dask
 import dask.array as da
 from dask.delayed import Delayed
 import numpy as np
-import zarr
+# import zarr
 
 from iris import FUTURE
 from iris._deprecation import warn_deprecated
@@ -318,16 +318,6 @@ class CFDataset(ABC):
     # Flag allows duck-typing checks without strict isinstance usage.
     CF_DATASET_FLAG = True
 
-    # @property
-    # @abstractmethod
-    # def backend(self) -> str:
-    #     pass
-
-    # @property
-    # @abstractmethod
-    # def wrapped(self) -> Any:
-    #     pass
-
     @property
     @abstractmethod
     def dimensions(self):
@@ -343,11 +333,6 @@ class CFDataset(ABC):
     def file_format(self):
         pass
 
-    # @property
-    # @abstractmethod
-    # def isopen(self):
-    #     pass
-
     @abstractmethod
     def filepath(self):
         pass
@@ -360,13 +345,6 @@ class CFDataset(ABC):
     def createVariable(self, *args, **kwargs):
         pass
 
-    # @abstractmethod
-    # def sync(self):
-    #     pass
-    #
-    # @abstractmethod
-    # def close(self):
-    #     pass
     @abstractmethod
     def exit(self):
         pass
@@ -463,12 +441,7 @@ class NetCDFDataset(CFDataset):
                     raise
         self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
         self.THREAD_SEAFE_FLAG = self._dataset.THREAD_SAFE_FLAG
-        # self._dataset = dataset
 
-    # @property
-    # @abstractmethod
-    # def wrapped(self) -> Any:
-    #     pass
 
     @property
     def dimensions(self):
@@ -539,22 +512,17 @@ class ZarrDataset(CFDataset):
     def __init__(self, filename: Any, file_format: str, compute=True):
         self._file_format = file_format
         zarr_format = {"ZARR2":2, "ZARR3":3}[file_format]
-        if isinstance(filename, zarr.abc.store.Store):
-            raise NotImplementedError(
-                "Saving to a pre-existing Zarr store is not yet supported."
-            )
-        #: The Zarr store to which we will write data.
-        self._store = zarr.storage.LocalStore(filename)
-        self._dataset = zarr.group(
-            store=self._store, zarr_format=zarr_format, overwrite=True
-        )
+        # if isinstance(filename, zarr.abc.store.Store):
+        #     raise NotImplementedError(
+        #         "Saving to a pre-existing Zarr store is not yet supported."
+        #     )
+        # #: The Zarr store to which we will write data.
+        # self._store = zarr.storage.LocalStore(filename)
+        # self._dataset = zarr.group(
+        #     store=self._store, zarr_format=zarr_format, overwrite=True
+        # )
         self._filepath = filename
         # TODO: more stuff here
-
-    # @property
-    # @abstractmethod
-    # def wrapped(self) -> Any:
-    #     pass
 
     @property
     def dimensions(self):
@@ -781,63 +749,6 @@ class Saver:
             self._dataset = NetCDFDataset(filename, file_format, compute)
         else:
             self._dataset = ZarrDataset(filename, file_format, compute)
-
-        # # Detect if we were passed a pre-opened dataset (or something like one)
-        # self._to_open_dataset = hasattr(filename, "createVariable")
-        # if self._to_open_dataset:
-        #     # We were passed a *dataset*, so we don't open (or close) one of our own.
-        #     self._dataset = filename
-        #     if compute:
-        #         msg = (
-        #             "Cannot save to a user-provided dataset with 'compute=True'. "
-        #             "Please use 'compute=False' and complete delayed saving in the "
-        #             "calling code after the file is closed."
-        #         )
-        #         raise ValueError(msg)
-        #
-        #     # Put it inside a _thread_safe_nc wrapper to ensure thread-safety.
-        #     # Except if it already is one, since they forbid "re-wrapping".
-        #     if not hasattr(self._dataset, "THREAD_SAFE_FLAG"):
-        #         self._dataset = bytecoding_datasets.EncodedDataset.from_existing(
-        #             self._dataset
-        #         )
-        #
-        #     # In this case the dataset gives a filepath, not the other way around.
-        #     self.filepath = self._dataset.filepath()
-        #
-        # else:
-        #     # Given a filepath string/path : create a dataset from that
-        #     try:
-        #         # Lazy import to avoid circular import overhead at module import-time.
-        #         from iris.io import _is_nczarr_fragment
-        #
-        #         self._is_nczarr = _is_nczarr_fragment(
-        #             urlsplit(str(filename)).fragment or None
-        #         )
-        #         if self._is_nczarr:
-        #             # NCZarr URLs contain a #mode= fragment; Path() strips it.
-        #             # Keep as a plain string and pass directly to DatasetWrapper.
-        #             self.filepath = str(filename)
-        #         else:
-        #             filepath = Path(filename)
-        #             self.filepath = filepath.absolute()
-        #         self._dataset = bytecoding_datasets.EncodedDataset(
-        #             self.filepath, mode="w", format=format
-        #         )
-        #     except RuntimeError:
-        #         if self._is_nczarr:
-        #             raise
-        #         dir_name = Path(self.filepath).parent
-        #         if not dir_name.is_dir():
-        #             msg = "No such file or directory: {}".format(dir_name)
-        #             raise IOError(msg)
-        #         if not os.access(dir_name, os.R_OK | os.W_OK):
-        #             msg = "Permission denied: {}".format(self.filepath)
-        #             raise IOError(msg)
-        #         else:
-        #             raise
-
-        # self.file_write_lock = _dask_locks.get_worker_lock(self.filepath)
 
     def __enter__(self):
         return self
