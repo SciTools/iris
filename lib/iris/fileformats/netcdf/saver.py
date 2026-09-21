@@ -727,11 +727,11 @@ class Saver:
         self.filepath = None  # this line just for the API page -- value is set later
         #: Whether to complete delayed saves on exit.
         self.compute = compute
-        # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
-        #: A per-file write lock to prevent dask attempting overlapping writes.
-        self.file_write_lock = (
-            None  # this line just for the API page -- value is set later
-        )
+        # # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
+        # #: A per-file write lock to prevent dask attempting overlapping writes.
+        # self.file_write_lock = (
+        #     None  # this line just for the API page -- value is set later
+        # )
 
         #: Whether the save target is an NCZarr URL.
         self._is_nczarr = False
@@ -2913,7 +2913,7 @@ class Saver:
                     # Note: we do *not* support selectable string encoding for writes,
                     # so this never needs to be a _thread_safe_nc.NetCDFWriteProxy.
                     write_wrapper = bytecoding_datasets.EncodedNetCDFWriteProxy(
-                        self.filepath, cf_var, self.file_write_lock
+                        self.filepath, cf_var, self._dataset.file_write_lock
                     )
                     # Add to the list of delayed writes, used in delayed_completion().
                     self._delayed_writes.append((data, write_wrapper))
