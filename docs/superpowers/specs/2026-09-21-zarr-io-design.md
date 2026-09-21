@@ -248,6 +248,23 @@ NCZarr-written stores use a `_scalar_` pseudo-dimension for scalar variables.
 `CFLabelVariable` cf.py:814) do **not**, which is a latent bug on the existing
 NCZarr path. It is fixed in PR 1 with its own changelog entry.
 
+**Fill values.** The array's own `fill_value` property is authoritative, not
+the `_FillValue` attribute. In the NOAA GFS store the `_FillValue` attribute of
+every `float32` data variable is the string `'AAAAAAAA+H8='` **[verified]** —
+base64 of a `float64` NaN, neither a number nor the array's dtype — while
+`Array.fill_value` is correctly `float32` NaN. Iris therefore reads
+`Array.fill_value` first and falls back to `_FillValue` only when the array
+carries none. A `_FillValue` attribute that is not a number is ignored with an
+`IrisCfLoadWarning` rather than raising, because real published data contains
+them.
+
+**Attributes that are not scalars or strings.** JSON permits nested objects,
+and real data uses them: the GFS store gives `valid_time` a
+`statistics_approximate` attribute whose value is `{'min': ..., 'max': ...}`
+**[verified]**. netCDF has no equivalent, so Iris has no existing handling.
+Nested values are carried onto the cube unchanged and are not written back by
+the netCDF saver. They are not interpreted.
+
 **Masking and unpacking.** netCDF4 applies `_FillValue`/`missing_value`
 masking, `valid_min`/`valid_max`/`valid_range` masking and
 `scale_factor`/`add_offset` unpacking for free. Zarr does none of it, so
@@ -498,13 +515,21 @@ in-memory or in `tmp_path`.
 
 **Integration.** `lib/iris/tests/integration/zarr/` covers round trips through
 `stock.realistic_4d_w_everything()`, following the shape of the existing
-`integration/netcdf/test_nczarr.py`, which is already parametrised over
-`["nczarr", "xarray"]` modes and gains a `"zarr"` mode. Cross-reader checks
-confirm that what Iris writes, xarray reads, and vice versa.
+`integration/netcdf/test_nczarr.py`.
 
-**Version 2 reading** is tested against fixtures written by zarr-python with
-`zarr_format=2` and `_ARRAY_DIMENSIONS` set by hand, since zarr-python refuses
-to write version 2 dimension names itself **[verified]**.
+Note that the `["nczarr", "xarray"]` parametrisation in that module is **not**
+about the xarray package: both are netCDF-c NCZarr URL modes, and `xarray` is
+the mode that writes `_ARRAY_DIMENSIONS`. xarray is not an Iris dependency and
+this design does not make it one. Testing that xarray can read what Iris writes
+would need a new optional test dependency; §10 raises that as a decision.
+
+**Version 2 reading** is tested two ways. Synthetic fixtures are written by
+zarr-python with `zarr_format=2` and `_ARRAY_DIMENSIONS` set by hand, since
+zarr-python refuses to write version 2 dimension names itself **[verified]**.
+Separately, the existing NCZarr `mode=xarray` save path already produces a
+version 2 store with `_ARRAY_DIMENSIONS`, so it generates realistic version 2
+fixtures with no new dependency, and gives a direct check that the native
+reader and the NCZarr writer agree.
 
 **Remote stores** are covered by an in-memory store and a local directory
 store only. No test touches the network. The URL path is exercised by checking
@@ -528,10 +553,15 @@ Two sources, both cut down before contribution to `SciTools/iris-test-data`
 variable carrying `crs_wkt`. Licensed CC BY 4.0; the attribution string and
 DOI 10.5281/zenodo.18777399 travel with the data.
 
-**This endpoint is documented as closing on 30 September 2026**, nine days from
-this document's date. The subset must be pulled first. That is the only
-schedule risk in the programme, and it is why PR 6's data acquisition happens
-immediately rather than at the end.
+**This endpoint is documented as closing on 30 September 2026.** The subset has
+therefore already been cut, ahead of the rest of the programme, and is held at
+`~/projects/iris-zarr-testdata/gfs_forecast_sample.zarr`: 1.4 MB, 35 files, 12
+members, 2 forecast initialisations x 8 lead times x 120 x 120 points, for
+`temperature_2m`, `wind_u_10m`, `wind_v_10m` and `precipitation_surface`. It
+keeps the sharding codec, the scalar `spatial_ref` grid mapping, the
+two-dimensional `valid_time` auxiliary coordinate, all source attributes
+verbatim including the base64 `_FillValue`, and the `CC-BY-4.0` licence and
+attribution in the root group.
 
 **ESA EOPF Sentinel samples** — the version 2 and deep-group-hierarchy fixture,
 exercising the `group=` keyword and the `_ARRAY_DIMENSIONS` path. The service
@@ -577,7 +607,12 @@ preserved because that is what is being tested.
    painful later.
 2. **Attribute encoding.** JSON-native with dtype loss, versus a base64
    envelope preserving dtype. §4.5 recommends JSON-native for interoperability.
-3. **EOPF's role.** The design assumes EOPF is the version 2 and group-hierarchy
+3. **Cross-reader testing.** Confirming that xarray reads Iris output is the
+   strongest possible interoperability check, and is the entire justification
+   for the JSON-native attribute decision in item 2. It needs xarray added as
+   an optional test dependency. Recommended, but it is a new dependency and so
+   is the user's call.
+4. **EOPF's role.** The design assumes EOPF is the version 2 and group-hierarchy
    fixture while GFS covers version 3. If EOPF has already migrated to version
    3, a synthetic version 2 fixture covers that path instead.
 
