@@ -253,7 +253,7 @@ class CFDatasetVariable(ABC):
     size: int
     fill_value: Any | None
     chunking: tuple[int, ...] | None   # None when the store is unchunked
-    attributes: MutableMapping[str, Any]
+    attributes: MutableMapping[str, Any]   # materialised once; tracks reads
 
     def __getitem__(self, keys) -> np.ndarray: ...
     def __setitem__(self, keys, values) -> None: ...
@@ -286,15 +286,65 @@ for Zarr). Each implementation documents its own accepted keys, and
 
 ### 4.3 `CFVariable.__getattr__` and backwards compatibility
 
-`CFVariable.__getattr__` stays, because it is public API. All 86 internal
-`getattr`/`hasattr` call sites move to `.attributes`, so nothing inside Iris
-depends on it.
+`CFVariable.__getattr__` (cf.py:198) does two unrelated jobs today, and the
+refactor separates them. Counting what reaches it from inside Iris:
 
-For a netCDF-backed variable it behaves exactly as now. For a Zarr-backed
-variable it raises `TypeError` with a message naming `.attributes` as the
-replacement. `TypeError` rather than `AttributeError` is deliberate: an
-`AttributeError` is swallowed by `hasattr`, which would turn a hard failure
-into a silent wrong answer in third-party code.
+| Reached via `__getattr__` | Count | Job |
+|---|---|---|
+| `.dimensions` | 28 | proxy the backing netCDF4 variable |
+| `.shape` | 11 | proxy |
+| `.dtype` | 11 | proxy |
+| `.getncattr` | 6 | proxy |
+| `.size`, `.group`, `.chunking` | 7 | proxy |
+| CF attribute names (`units`, `bounds`, `coordinates`, ...) | the rest | open-world data |
+
+`self.getncattr(attr)` at cf.py:223 is the clearest case: `CFVariable` does not
+define `getncattr`, so the call resolves through `__getattr__` onto the netCDF4
+object. Everything in the "proxy" rows is exactly what `CFDatasetVariable`
+(§4.2) declares explicitly and typed, so the refactor does not have to defend
+`__getattr__` - it shrinks it to the one job that justifies it.
+
+**The surviving job is legitimate.** CF attributes are an open-ended set of
+data keys read from a file; there is no schema to enumerate, so this is the
+narrow exception `lib/iris/AGENTS.md` now carves out. The condition attached to
+that exception is that `.attributes` is the path library code takes, and
+`__getattr__` is only a convenience skin over it.
+
+So, on `CFVariable`:
+
+- `__getattr__` resolves against `self.attributes` - one implementation on the
+  base class, **identical for netCDF and Zarr**. An earlier draft had it raise
+  `TypeError` for Zarr-backed variables; that put a hole in the most-used
+  public accessor of the very abstraction §4.2 exists to provide, and was
+  wrong. A missing key raises plain `AttributeError`, which is correct:
+  `getattr(nc_var, "bounds", None)` is a deliberate idiom throughout the loader
+  and depends on `hasattr` semantics working.
+- **No `setattr(self, name, value)` caching.** Today's version caches by
+  mutating `self.__dict__`, so an instance's shape depends on its access
+  history - that genuinely is the "dynamically generated attributes"
+  anti-pattern. A read-through to a mapping materialised once at construction
+  is faster than today's *first* access and stays inspectable.
+- On a miss, a netCDF-backed variable falls back to the backing netCDF4 object
+  and issues a deprecation warning naming the `CFDatasetVariable` member that
+  replaces it, so `cf_var.getncattr("units")` and `cf_var.ndim` keep working
+  for one cycle. A Zarr-backed variable has no such object, so the fallback
+  simply does not apply - consistent, not a special case.
+
+**Known limitation, documented rather than fixed.** `__getattr__` fires only
+when normal lookup fails, so a file carrying an attribute named `filename`,
+`cf_name` or `spans` is silently shadowed by the class member of that name. CF
+reserves no namespace, so this cannot be ruled out. `.attributes` has no such
+ambiguity, which is the practical argument for making the mapping the library
+path.
+
+**Consequence for attribute tracking, the sharpest edge in PR 2.** The
+`_cf_attrs` "which attributes were read" set is currently a side effect of
+`__getattr__`, and `cf_attrs_unused()` has exactly one consumer:
+`netcdf/loader.py:190`, which decides which attributes survive onto the cube.
+Move the reads to `.attributes` and the tracking must move with them, or every
+CF-reserved attribute silently leaks onto loaded cubes. `.attributes` is
+therefore a tracking mapping, not a plain `dict`, and PR 1's tests must pin
+`cf_attrs_unused()` before PR 2 touches it.
 
 ### 4.4 Reading
 
@@ -974,6 +1024,20 @@ Append-only. Each entry is the decision, not the discussion.
   earlier four-way split was a line count in search of a rationale. `cf`
   splits three ways instead, and `_variables.py` is allowed over the
   ~1000-line aim. §4.1.
+- **`CFVariable.__getattr__` works identically for both backends.** @bjlittle
+  asked whether `lib/iris/AGENTS.md` overreached in banning `__getattr__`. It
+  did, in one place, and the spec was worse: it had the accessor raise
+  `TypeError` for Zarr-backed variables, which holed the abstraction §4.2
+  exists to provide. `__getattr__` now reads through `.attributes` on the base
+  class for netCDF and Zarr alike, drops the `setattr` instance caching, and
+  keeps a one-cycle deprecating fallback to the netCDF4 object. §4.3.
+- **The `getattr` rules in `lib/iris/AGENTS.md` are narrowed, not lifted.**
+  `getattr(var, "cf_role", "")` was never banned — the rule says *computed*
+  names and *string dispatch*, and `iris.fileformats` has 42 constant-name
+  lookups and **zero** dispatch sites **[verified]**. That stands, with a
+  clarifying clause. The blanket `__getattr__` ban is replaced by a checkable
+  exception: open-world data keys read from a file, forwarding to a declared
+  `Mapping`, with that `Mapping` as the path library code takes.
 
 ### 12.5 Artefacts
 
@@ -997,3 +1061,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Confirmed seven separate pull requests; tests required, changelog fragments deferred. |
 | 2026-09-22 | Proof-of-concept framing retracted. Added the merge-back step (§5) that carries the closing keywords, the five changelog fragments and the documentation. |
 | 2026-09-22 | Dropped the proposed `cf/_ugrid.py`; the `cf` package splits three ways, not four. |
+| 2026-09-22 | Rewrote §4.3: `__getattr__` separated from the backend-proxy job, made backend-agnostic, and the attribute-tracking consequence for PR 2 called out. `lib/iris/AGENTS.md` narrowed to match. |

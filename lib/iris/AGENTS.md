@@ -19,10 +19,9 @@ want the same things — explicit names, local reasoning, small units. This
 file records that shared style, plus the few places the two diverge and which
 way to resolve them.
 
-Note that models are trained to imitate human code and to please human diff
-reviewers — not to produce code that is cheap to navigate later. Default
-output therefore drifts towards long functions, redundant comments and
-defensive wrapping. Correct for that deliberately.
+Models are trained to please diff reviewers, not to produce code that is
+cheap to navigate later, and so drift towards long functions, redundant
+comments and defensive wrapping. Correct for that deliberately.
 
 
 ## Fast Rules
@@ -58,7 +57,9 @@ does not exist.
 
 - Never construct identifiers at runtime: no `setattr(obj, f"{name}_bounds",
   ...)`, no `getattr(module, method_name)` dispatch where a dict or `if/elif`
-  would do. A constructed name is unfindable for every reader.
+  would do. A constructed name is unfindable for every reader. This bans
+  *computed* names only — `getattr(var, "cf_role", "")` is a safe lookup with
+  a greppable literal and is the preferred idiom for optional CF attributes.
 - Give public names enough distinctiveness to search for. Local `data`,
   `cube`, `result` are fine; a public helper called `_process` is not.
 - Declare `__all__` in modules with a public surface. No `import *`.
@@ -117,18 +118,13 @@ a human treats it as documentation.
 
 ## Module Docstrings Carry the Explanation
 
-Prose explaining a subsystem has to live somewhere, and the module docstring
-is the best available home. Inline comments are the wrong place: they
-interrupt the code for every reader and scatter a single argument across
-dozens of sites. A companion Markdown file is also wrong: nothing validates
-it, nothing forces anyone to open it, and it rots unseen. The module
-docstring is the only location that is read automatically whenever the file
-is opened, published by Sphinx, checked by numpydoc, and reviewed in the same
-diff as the code it describes.
+Prose explaining a subsystem belongs in the module docstring. Inline comments
+scatter one argument across dozens of sites; a companion Markdown file is
+validated by nothing and rots unseen. Only the docstring is read on every
+visit, published by Sphinx, checked by numpydoc, and reviewed in the diff.
 
-Be generous with it. Sixty lines of orientation above a two-thousand-line
-module is cheap, because it is read once per visit rather than once per call
-site. Stop short of a tutorial.
+Be generous: sixty lines of orientation above a two-thousand-line module is
+cheap, read once per visit rather than once per call site. Not a tutorial.
 
 Cover whichever apply:
 
@@ -142,13 +138,11 @@ Leave out anything a reader or Sphinx can already derive: API listings,
 signatures, call sequences, per-release history. Explanation scoped to a
 single class belongs in that class's docstring instead.
 
-**Exemption to "do not document code you did not change":** if you had to
-work out how a subsystem behaves in order to edit it, writing that
-understanding into the module docstring is in scope. The comprehension was
-expensive and is otherwise discarded when your context ends; the next reader,
-human or agent, should not have to repeat it. Several of the most commonly
-misread modules — `_concatenate.py`, `_merge.py`, `common/resolve.py` —
-currently carry only a line or two of module docstring apiece.
+**Exemption to "do not document code you did not change":** if you had to work
+out how a subsystem behaves in order to edit it, write that understanding into
+the module docstring — the comprehension is otherwise discarded when your
+context ends. `_concatenate.py`, `_merge.py` and `common/resolve.py` are the
+most commonly misread modules and carry barely a line each.
 
 
 ## Size and Shape
@@ -180,7 +174,13 @@ but do not opportunistically split them either.
 
 - Dynamically generated attributes, methods or module members.
 - `eval`, `exec`, or `getattr` string dispatch in library code.
-- Metaclasses or `__getattr__`, except in existing deprecation shims.
+- Metaclasses, or `__getattr__` used to invent behaviour. `__getattr__` has
+  one legitimate use: presenting an open-ended set of *data* keys read from
+  a file as attributes, as `CFVariable` does over CF-netCDF attributes. It
+  must forward to a declared `Mapping`, that `Mapping` must be the path
+  library code takes, and the docstring must say so. Note the cost: a class
+  with `__getattr__` makes mypy stop checking *every* attribute on it and
+  its subclasses, so confining it is what keeps the rest of the class typed.
 - Silent `except Exception: pass`.
 - Boolean flags that switch a function between two unrelated behaviours —
   write two functions.
