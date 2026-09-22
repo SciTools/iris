@@ -301,7 +301,9 @@ NCZarr-written stores use a `_scalar_` pseudo-dimension for scalar variables.
 `_NCZARR_SCALAR_DIMENSION`. The three subclasses that override `spans`
 (`CFBoundaryVariable` cf.py:415, `CFClimatologyVariable` cf.py:491,
 `CFLabelVariable` cf.py:814) do **not**, which is a latent bug on the existing
-NCZarr path. It is fixed in PR 2 with its own changelog entry.
+NCZarr path. It is fixed in PR 2, and is the one item in the programme that
+needs a changelog fragment of its own when the official pull requests are
+written: it is a user-visible bugfix, not new capability.
 
 **Fill values.** Zarr's array-level `fill_value` and CF's `_FillValue`
 attribute are different things — see §2.4 — so Iris reads
@@ -517,9 +519,10 @@ Warnings are emitted on **use**, not on import, so simply importing
 
 ## 5. The programme
 
-Seven pull requests against `brownfield`. Each carries the `Agentic` and
-`Type: Feature Branch` labels, attributes the contribution to Claude, and adds
-a changelog fragment crediting `` :user:`claude` ``.
+Seven pull requests against `brownfield`, each opened separately so that every
+step gets its own CI signal and can be verified on its own. Each carries the
+`Agentic` and `Type: Feature Branch` labels and attributes the contribution to
+Claude.
 
 **These are proof-of-concept pull requests.** They exist to find out whether
 the design holds up against real code, on a feature branch, at speed. Official
@@ -527,6 +530,15 @@ pull requests follow later, once the shape is known. Nothing here uses a
 GitHub closing keyword, and no pull request in this programme closes
 #6977, #6979 or #6980 — those issues are the requirement, and they stay open
 for the official work. Reference them as context, never as `Closes`.
+
+**Tests yes, changelog no.** Tests are the proof in "proof of concept" —
+without them the programme learns nothing about whether the design holds, so
+every production change is tested to the standard in `tests/AGENTS.md`.
+Changelog fragments describe user-visible change to a release and are premature
+here; they are deferred to the official pull requests, which is where
+`` :user:`claude` `` gets credited per `changelog/AGENTS.md`. Each pull request
+body says so explicitly, so a reviewer does not read the omission as an
+oversight.
 
 ### PR 1 — `iris.fileformats.cf` becomes a package, with tests first
 
@@ -537,7 +549,7 @@ behaviour change and no API change**: the diff is a move plus import edits, so
 a reviewer can skim it.
 
 Brings in the unit test coverage from SciTools/iris#7259 by Martin Yeo, rebased
-onto `brownfield` and credited in both the changelog and the pull request body.
+onto `brownfield` and credited in the pull request body.
 That branch is named `cf_reader_zarr` and was written for exactly this
 refactor; it adds roughly 2300 lines of coverage across nineteen test modules.
 Landing it *here*, against today's behaviour, is what makes PR 2 reviewable:
@@ -551,8 +563,7 @@ The subject of **#6977**. Adds `cf/dataset.py` and `netcdf/_dataset.py`. Rewrite
 86 `getattr`/`hasattr` sites and the 57 netCDF-API sites in the `cf` package,
 `_nc_load_rules/` and `netcdf/` to go through the new interface. Makes
 `CFVariable.__getattr__` raise on non-netCDF backends. Fixes the
-`_NCZARR_SCALAR_DIMENSION` gap in the three overriding `spans` methods, with
-its own changelog entry.
+`_NCZARR_SCALAR_DIMENSION` gap in the three overriding `spans` methods.
 
 No behaviour change other than the `spans` fix. The suite from PR 1 must pass
 untouched.
@@ -815,7 +826,8 @@ States are `Not started`, `Drafted`, `In review`, `Changes requested`,
 `Merged` or `Abandoned`. Record the pull request number and its state as soon
 as it is opened, not when it merges.
 
-There is deliberately no `Closes` column: see §5.
+There is deliberately no `Closes` column, and no changelog-fragment column:
+see §5.
 
 ### 12.2 Related work
 
@@ -885,6 +897,11 @@ Append-only. Each entry is the decision, not the discussion.
   learn whether the design holds, then return later with official pull
   requests. The seven pull requests do not close #6977, #6979 or #6980, and
   the spec does not track issue state — that lives on GitHub. §5, §12.2.
+- **Seven separate pull requests**, not a collapsed branch. Per-step CI and
+  independent verification are worth the extra cycles even on a proof of
+  concept, and it keeps the proof-of-concept shape close to the official one.
+- **Tests yes, changelog no.** Full test coverage on every proof-of-concept
+  pull request; changelog fragments deferred to the official pull requests. §5.
 
 ### 12.5 Artefacts
 
@@ -905,3 +922,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-21 | Package layout adopted; programme grew to seven pull requests; the two "real data" findings re-framed as one specification fact and one publisher malformation; EOPF confirmed version 2; three decisions settled and the attribute-model question parked to #7288. |
 | 2026-09-21 | Added this progress record (§12). |
 | 2026-09-22 | Reframed as a proof of concept; removed issue-closure claims and issue-state tracking. |
+| 2026-09-22 | Confirmed seven separate pull requests; tests required, changelog fragments deferred. |
