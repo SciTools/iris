@@ -11,9 +11,10 @@
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
-| **Closes** | SciTools/iris#6977, #6979, #6980 (sub-issues of #6961) |
+| **Intent** | **Proof of concept.** Official pull requests follow later |
+| **Context** | SciTools/iris#6961 and its sub-issues #6977, #6979, #6980 |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-09-21 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-09-22 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13
 
@@ -31,7 +32,12 @@ variables as length-one arrays. This document specifies **native Zarr support**
 built on zarr-python: reading Zarr version 2 and version 3 stores, and writing
 version 3 stores.
 
-The work is structured as seven pull requests against the `brownfield` branch.
+The work is a **proof of concept**: seven pull requests against the
+`brownfield` feature branch, built at speed to find out whether this design
+survives contact with the code. Official pull requests follow later. The
+sub-issues stay open; nothing here closes them (§5).
+
+It is structured as seven pull requests against the `brownfield` branch.
 Four of them are behaviour-preserving refactors that promote
 `iris.fileformats.cf` to a package and extract the format-agnostic CF machinery
 out of `iris.fileformats.netcdf`; three add user-visible Zarr capability on top.
@@ -515,6 +521,13 @@ Seven pull requests against `brownfield`. Each carries the `Agentic` and
 `Type: Feature Branch` labels, attributes the contribution to Claude, and adds
 a changelog fragment crediting `` :user:`claude` ``.
 
+**These are proof-of-concept pull requests.** They exist to find out whether
+the design holds up against real code, on a feature branch, at speed. Official
+pull requests follow later, once the shape is known. Nothing here uses a
+GitHub closing keyword, and no pull request in this programme closes
+#6977, #6979 or #6980 — those issues are the requirement, and they stay open
+for the official work. Reference them as context, never as `Closes`.
+
 ### PR 1 — `iris.fileformats.cf` becomes a package, with tests first
 
 `git mv cf.py cf/_variables.py` and split out `_ugrid.py`, `_group.py` and
@@ -534,7 +547,7 @@ request is opened.
 
 ### PR 2 — `CFDataset`, and the CF variable classes rewritten against it
 
-Closes **#6977**. Adds `cf/dataset.py` and `netcdf/_dataset.py`. Rewrites the
+The subject of **#6977**. Adds `cf/dataset.py` and `netcdf/_dataset.py`. Rewrites the
 86 `getattr`/`hasattr` sites and the 57 netCDF-API sites in the `cf` package,
 `_nc_load_rules/` and `netcdf/` to go through the new interface. Makes
 `CFVariable.__getattr__` raise on non-netCDF backends. Fixes the
@@ -553,7 +566,7 @@ verifiable.
 
 ### PR 4 — Zarr loading
 
-Closes **#6979**. Adds `zarr` to the optional dependencies section of
+The subject of **#6979**. Adds `zarr` to the optional dependencies section of
 `requirements/py3{12,13,14}.yml` and regenerates the lock files, once, here.
 Adds `fileformats/zarr/` with `_dataset.py`, `_decode.py` and `loader.py`, the
 format specification, and the five load-chain changes in §4.7.
@@ -569,7 +582,7 @@ it is on its own.
 
 ### PR 6 — Zarr saving
 
-Closes **#6980**. Adds `zarr/saver.py`, the `ZarrDataset` write path, JSON
+The subject of **#6980**. Adds `zarr/saver.py`, the `ZarrDataset` write path, JSON
 attribute conversion, masked-data filling, deferred writes, encoding
 translation and `consolidate_metadata`. Registers the `zarr` saver and updates
 the S3 documentation.
@@ -782,15 +795,15 @@ Scope for each is in §5. Dependencies are strictly sequential within the
 `cf`/`netcdf` refactor chain (1 → 2 → 3 → 5); the Zarr features (4, 6) depend
 on the relocation before them, and PR 7 depends on everything.
 
-| # | Title | Closes | State | Link |
-|---|---|---|---|---|
-| 1 | `iris.fileformats.cf` becomes a package, with tests first | — | Not started | — |
-| 2 | `CFDataset`, and the CF variable classes rewritten against it | #6977 | Not started | — |
-| 3 | Relocate the CF loader | — | Not started | — |
-| 4 | Zarr loading | #6979 | Not started | — |
-| 5 | Relocate the CF saver | — | Not started | — |
-| 6 | Zarr saving | #6980 | Not started | — |
-| 7 | Real-world test data and benchmarks | — | Not started | — |
+| # | Title | State | Link |
+|---|---|---|---|
+| 1 | `iris.fileformats.cf` becomes a package, with tests first | Not started | — |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | Not started | — |
+| 3 | Relocate the CF loader | Not started | — |
+| 4 | Zarr loading | Not started | — |
+| 5 | Relocate the CF saver | Not started | — |
+| 6 | Zarr saving | Not started | — |
+| 7 | Real-world test data and benchmarks | Not started | — |
 
 Companion work outside `SciTools/iris`:
 
@@ -802,21 +815,21 @@ States are `Not started`, `Drafted`, `In review`, `Changes requested`,
 `Merged` or `Abandoned`. Record the pull request number and its state as soon
 as it is opened, not when it merges.
 
-### 12.2 Issues
+There is deliberately no `Closes` column: see §5.
 
-| Issue | Title | Role | State |
-|---|---|---|---|
-| [#6961](https://github.com/SciTools/iris/issues/6961) | Zarr I/O | Parent issue; the programme closes its three children | Open |
-| [#6977](https://github.com/SciTools/iris/issues/6977) | Extend `CFReader` to read Zarr files | Closed by PR 2 | Open |
-| [#6979](https://github.com/SciTools/iris/issues/6979) | Extend NetCDF loader to read Zarr files | Closed by PR 4 | Open |
-| [#6980](https://github.com/SciTools/iris/issues/6980) | Extend NetCDF saver to write Zarr files | Closed by PR 6 | Open |
-| [#7288](https://github.com/SciTools/iris/issues/7288) | How should the CF attribute model map onto JSON? | Raised by this design; §10 | Open |
+### 12.2 Related work
 
-Pull requests this programme depends on but does not own:
+Issue state is tracked on GitHub, not here. This table says what each item is
+*for* in this programme, and nothing about whether it is open.
 
-| PR | Author | Role | State |
-|---|---|---|---|
-| [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers | Unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643). Carried into PR 1 with credit; post a courtesy comment before opening PR 1 | Open |
+| Item | What it is to this programme |
+|---|---|
+| [#6961](https://github.com/SciTools/iris/issues/6961) | The requirement. Parent issue for Zarr I/O |
+| [#6977](https://github.com/SciTools/iris/issues/6977) | The requirement PR 2 explores |
+| [#6979](https://github.com/SciTools/iris/issues/6979) | The requirement PR 4 explores |
+| [#6980](https://github.com/SciTools/iris/issues/6980) | The requirement PR 6 explores |
+| [#7288](https://github.com/SciTools/iris/issues/7288) | The parked attribute-model question this design raised (§10) |
+| [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
 ### 12.3 Open questions
 
@@ -866,6 +879,13 @@ Append-only. Each entry is the decision, not the discussion.
   JSON attributes turned out to be already in the Zarr specification. Now
   recorded in `lib/iris/AGENTS.md`.
 
+**2026-09-22 — agreed with @bjlittle**
+
+- **This programme is a proof of concept.** Move fast on the feature branch to
+  learn whether the design holds, then return later with official pull
+  requests. The seven pull requests do not close #6977, #6979 or #6980, and
+  the spec does not track issue state — that lives on GitHub. §5, §12.2.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -884,3 +904,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-21 | Grounded against the real NOAA GFS store. |
 | 2026-09-21 | Package layout adopted; programme grew to seven pull requests; the two "real data" findings re-framed as one specification fact and one publisher malformation; EOPF confirmed version 2; three decisions settled and the attribute-model question parked to #7288. |
 | 2026-09-21 | Added this progress record (§12). |
+| 2026-09-22 | Reframed as a proof of concept; removed issue-closure claims and issue-state tracking. |
