@@ -267,10 +267,13 @@ class CFDatasetVariable(ABC):
     def __getitem__(self, keys) -> np.ndarray: ...
     def __setitem__(self, keys, values) -> None: ...
 
+    def write_handle(self) -> Any: ...  # picklable __setitem__ target; see 4.5
+
 
 class CFDataset(ABC):
     """A CF-conforming array store, open for reading or writing."""
     location: str                       # path or URL, for messages and proxies
+    mode: str                           # "r" | "w" | "r+"; see 4.5
     variables: Mapping[str, CFDatasetVariable]
     dimensions: Mapping[str, int]
     attributes: MutableMapping[str, Any]
@@ -279,8 +282,16 @@ class CFDataset(ABC):
     def create_variable(self, name, dtype, dimensions, *,
                         fill_value=None, **encoding) -> CFDatasetVariable: ...
     def sync(self) -> None: ...
+    def finalise(self) -> None: ...     # one-shot; NOT part of close()
     def close(self) -> None: ...
 ```
+
+Three members exist only to keep multi-process writing reachable later, and
+are explained in §4.5: `write_handle`, `mode` and `finalise`. They cost
+almost nothing now — `mode` is a string the implementations already track
+internally, `write_handle` returns `self` for Zarr, and `finalise` is a no-op
+for netCDF — and their absence is what would force a breaking interface
+change later.
 
 The split that matters is `attributes` versus everything else. Today
 `cf_var.units` might be a CF attribute or a netCDF property and the caller
@@ -493,13 +504,87 @@ array's `fill_value` set to match, as recommended in #6961. Writing a separate
 mask array is rejected as over-engineering for no CF benefit.
 
 **Deferred writes.** The netCDF saver defers lazy writes by closing the file,
-returning a `Delayed`, and reopening per chunk. Zarr needs none of that: the
-store stays valid and concurrent writes to distinct chunks are safe. The Zarr
-saver therefore builds one `da.store(..., compute=False, lock=False)` over all
-lazy sources and returns it from `save(..., compute=False)`, matching the
-netCDF signature without the reopen dance. This is also why the NCZarr special
-case in `Saver.__exit__` (saver.py:485-498) is untouched: it is a different,
-older path.
+returning a `Delayed`, and reopening per chunk under a whole-file lock. Zarr
+needs no reopen: the store stays valid, and writes to *distinct chunks* are
+independent objects. The Zarr saver builds one
+`da.store(..., compute=False, lock=False)` over all lazy sources and returns it
+from `save(..., compute=False)`, matching the netCDF signature. This is also
+why the NCZarr special case in `Saver.__exit__` (saver.py:485-498) is
+untouched: it is a different, older path.
+
+`lock=False` is licensed by an invariant, not by Zarr being inherently safe.
+Two dask tasks that touch the *same* Zarr chunk race: each reads the chunk,
+modifies its slice and writes the whole chunk back, so one update is silently
+lost. Therefore:
+
+> **Chunk-alignment invariant.** Every Zarr array Iris writes has a chunk grid
+> that the lazy source's dask chunking tiles exactly.
+
+`create_variable` derives `chunks` from the source's dask chunking by default,
+so the invariant holds by construction. Where the caller forces `chunksizes=`
+that the source does not tile, the saver rechunks the dask source to match
+before storing. It never issues an unaligned concurrent write. This is the same
+guarantee xarray spells `safe_chunks`, and it is a correctness requirement
+today, not only a precondition for the future work below.
+
+**Consolidation is a separate, one-shot step.** `CFDataset.finalise()` writes
+consolidated metadata; `close()` only releases resources. They are split
+because a worker that writes one slab of a store must not consolidate — N
+workers consolidating the same single metadata object is a race. Under
+`compute=False` the returned `Delayed` owns the `finalise()` call, after every
+chunk write. For netCDF, `finalise()` is a no-op.
+
+#### Multi-process writes: kept reachable, not built
+
+Coordinated writing to one target from many processes is an Iris
+differentiator for netCDF and is explicitly wanted for Zarr. It is out of
+scope here (§9) purely for size. These are the provisions that keep it a
+later addition rather than a redesign.
+
+**zarr-python will not do it for us.** Version 3.4.0 dropped the version 2
+synchroniser machinery: `zarr.create_array` has no `synchronizer` parameter at
+all, and `zarr.open_group(synchronizer=...)` is accepted but warns
+`"synchronizer is not yet implemented"` **[verified]**. `zarr.ProcessSynchronizer`
+and `zarr.sync` no longer exist. Any coordination Iris offers must therefore be
+Iris's own, exactly as `_dask_locks.py` is for netCDF today. §9's bullet is
+worded accordingly.
+
+1. **`_dask_locks.py` moves to `cf/`, in PR 5.** Despite its netCDF-flavoured
+   docstring it imports only `threading` and four `dask` modules — **no netCDF
+   whatsoever** **[verified]**. It is scheduler-aware, file-identity-based
+   locking that is generic already. Relocating it costs one `git mv` and an
+   updated docstring, and it is the difference between a future Zarr
+   implementation reaching for an existing toolkit and growing a parallel one.
+
+2. **`CFDatasetVariable.write_handle()` is the coordination seam.** It returns
+   a picklable object supporting `__setitem__`, which is what a dask worker
+   receives. netCDF returns today's `NetCDFWriteProxy`, which carries the
+   `distributed.Lock` keyed on the file path. Zarr returns the `zarr.Array`
+   itself — verified picklable, round-tripping shape and chunks under
+   `zarr 3.4.0` **[verified]** — because no lock is needed while the alignment
+   invariant holds. If Zarr later needs coordination, the Zarr implementation
+   returns a lock-carrying proxy instead: **no change to the interface and no
+   change to `cf/saver.py`**. This is the precise sense in which the design
+   does not preclude the feature.
+
+3. **The lock lives in the dataset implementation, never in `cf/saver.py`.**
+   The generic saver asks for write handles and stores into them; it holds no
+   lock and knows no scheduler. That is what lets the two backends coordinate
+   differently — and lets Zarr coordinate *better*, since a whole-store lock
+   would throw away the parallel throughput that is the reason to write Zarr.
+
+4. **`mode` is on `CFDataset` from the start.** The Zarr shape of this feature
+   is a region write: open an existing store `"r+"` and have each process fill
+   its own slab, rather than serialise every worker behind one lock. That needs
+   a dataset that can be opened for update without creating anything, which an
+   interface whose only verbs are `create_dimension` and `create_variable`
+   cannot express. Adding `mode` afterwards would be a breaking change to a
+   published ABC with two implementations and deprecation aliases pointing at
+   it; adding it now is one attribute.
+
+Nothing here builds the feature. Together they mean building it later is new
+code in `zarr/_dataset.py` plus a keyword on `save`, with the generic layer
+and the netCDF path untouched.
 
 **Encoding.** `zlib`/`complevel` map to a Blosc or Gzip codec, `shuffle` to
 Blosc shuffle, `chunksizes` to `chunks`, `fletcher32` to Crc32c. `contiguous`,
@@ -666,6 +751,12 @@ After this pull request, `iris.load("store.zarr")` and
 `git mv netcdf/saver.py cf/saver.py`, same shape as PR 3. The largest diff of
 the seven and the one with no behaviour change at all, which is precisely why
 it is on its own.
+
+Also `git mv`s `netcdf/_dask_locks.py` to `cf/_dask_locks.py` and rewrites its
+netCDF-specific docstring. The code imports only `threading` and four `dask`
+modules **[verified]**, so this is a relocation with no behaviour change — it
+puts the scheduler-aware locking toolkit where a future Zarr implementation
+can reach it (§4.5).
 
 ### PR 6 — Zarr saving
 
@@ -848,9 +939,18 @@ preserved because that is what is being tested.
 - Walking or loading multiple groups in one call.
 - GeoZarr and the proposed Zarr-CS coordinate-system convention.
 - Icechunk, virtual Zarr and Kerchunk reference stores.
-- Multi-process write coordination beyond what zarr-python guarantees.
+- **Building** multi-process write coordination for Zarr — see below.
 - Any change to the existing NCZarr path other than the `spans` bug fix.
 - Adding an fsspec, s3fs or gcsfs dependency to Iris.
+
+Multi-process write coordination is deferred for size only. It is an Iris
+differentiator for netCDF, it is asked for by name, and zarr-python offers
+nothing to build on — version 3.4.0 warns `"synchronizer is not yet
+implemented"` **[verified]**, so it will be Iris's own machinery when it comes.
+§4.5 lists the four provisions that keep it a later addition rather than a
+redesign, and the chunk-alignment invariant it depends on is a correctness
+requirement of the first release regardless. Anything in review that would
+break those provisions should be treated as in scope, not out of it.
 
 ---
 
@@ -1055,6 +1155,20 @@ Append-only. Each entry is the decision, not the discussion.
   implementation layers. `AGENTS.md` now states the pattern positively, with
   the conditions that keep it greppable — verbatim, static, `__all__`, no
   renaming, no conditional imports. §4.1.
+- **Multi-process writing stays out of scope, but the design must not
+  preclude it.** @bjlittle: it is "SPECIFICALLY DESIRED by multiple users, and
+  is a USP of Iris when it comes to NetCDF". Four provisions added in §4.5:
+  `_dask_locks.py` relocates to `cf/` in PR 5, `CFDatasetVariable.write_handle`
+  becomes the coordination seam, the lock stays inside the dataset
+  implementation, and `CFDataset` carries `mode` from the start.
+- **The chunk-alignment invariant is a correctness requirement now.** Writing
+  `da.store(..., lock=False)` is only safe where the lazy source tiles the Zarr
+  chunk grid exactly; two tasks sharing a chunk silently lose one update. The
+  saver derives `chunks` from the source's dask chunking, and rechunks the
+  source when the caller forces a conflicting `chunksizes=`. §4.5.
+- **`finalise()` is separate from `close()`.** Consolidating metadata is
+  one-shot and belongs to the returned `Delayed` under `compute=False`; N
+  workers consolidating one metadata object would race. §4.2, §4.5.
 
 ### 12.5 Artefacts
 
@@ -1080,3 +1194,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Dropped the proposed `cf/_ugrid.py`; the `cf` package splits three ways, not four. |
 | 2026-09-22 | Rewrote §4.3: `__getattr__` separated from the backend-proxy job, made backend-agnostic, and the attribute-tracking consequence for PR 2 called out. `lib/iris/AGENTS.md` narrowed to match. |
 | 2026-09-22 | Dropped the apologetic framing of the `cf/__init__.py` re-exports; `lib/iris/AGENTS.md` now endorses the pattern. |
+| 2026-09-22 | Multi-process writing kept reachable: chunk-alignment invariant, `write_handle` seam, `_dask_locks` relocation, `mode` and `finalise` on the ABC. |
