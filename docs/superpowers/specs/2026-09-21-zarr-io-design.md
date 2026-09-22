@@ -1330,7 +1330,7 @@ delete it.
 
 Append-only. Each entry is the decision, not the discussion.
 
-**2026-09-21 — before design, agreed with @bjlittle**
+**2026-09-21 — before design, agreed with @trexfeathers**
 
 - `zarr` is an optional, lazily imported dependency.
 - Extract the format-agnostic CF machinery out of `iris.fileformats.netcdf`,
@@ -1344,7 +1344,7 @@ Append-only. Each entry is the decision, not the discussion.
   Sentinel samples.
 - Carry the test modules from #7259 into the programme, with credit.
 
-**2026-09-21 — at review of the first draft, agreed with @bjlittle**
+**2026-09-21 — at review of the first draft, agreed with @trexfeathers**
 
 - **Module layout:** `iris.fileformats.cf` becomes a package, not three flat
   sibling modules. §4.1. The move became PR 1, on its own, so the programme
@@ -1363,7 +1363,7 @@ Append-only. Each entry is the decision, not the discussion.
   JSON attributes turned out to be already in the Zarr specification. Now
   recorded in `lib/iris/AGENTS.md`.
 
-**2026-09-22 — agreed with @bjlittle**
+**2026-09-22 — agreed with @trexfeathers**
 
 - ~~**This programme is a proof of concept**, with official pull requests to
   follow.~~ **Superseded the same day** — see the next entry.
@@ -1372,9 +1372,9 @@ Append-only. Each entry is the decision, not the discussion.
 - **Seven separate pull requests**, not a collapsed branch. Per-step CI and
   independent verification are worth the extra cycles.
 
-**2026-09-22 — retraction, agreed with @bjlittle**
+**2026-09-22 — retraction, agreed with @trexfeathers**
 
-- **This is the delivery plan, not a proof of concept.** @bjlittle: "I was
+- **This is the delivery plan, not a proof of concept.** @trexfeathers: "I was
   mistaken to introduce talk of proof-of-concept. This spec is THE spec we will
   be using, and I need to see your strategy for real, even if everything is
   being isolated to the feature branch." The programme is unchanged in shape;
@@ -1390,16 +1390,16 @@ Append-only. Each entry is the decision, not the discussion.
   how the repository works.
 - **Tests are required on every pull request**, unchanged. `tests/AGENTS.md`.
 
-**2026-09-22 — cross-cutting design review, with @bjlittle**
+**2026-09-22 — cross-cutting design review, with @trexfeathers**
 
-- **The `CFUGrid*` classes stay with the other variable classes.** @bjlittle
+- **The `CFUGrid*` classes stay with the other variable classes.** @trexfeathers
   asked why they warranted a private module of their own; they did not. They
   are peers of the classic classifiers, share the private `_is_str_dtype`
   helper, and appear in the same tuples in `CFReader` and `CFGroup`. The
   earlier four-way split was a line count in search of a rationale. `cf`
   splits three ways instead, and `_variables.py` is allowed over the
   ~1000-line aim. §4.1.
-- **`CFVariable.__getattr__` works identically for both backends.** @bjlittle
+- **`CFVariable.__getattr__` works identically for both backends.** @trexfeathers
   asked whether `lib/iris/AGENTS.md` overreached in banning `__getattr__`. It
   did, in one place, and the spec was worse: it had the accessor raise
   `TypeError` for Zarr-backed variables, which holed the abstraction §4.2
@@ -1413,7 +1413,7 @@ Append-only. Each entry is the decision, not the discussion.
   clarifying clause. The blanket `__getattr__` ban is replaced by a checkable
   exception: open-world data keys read from a file, forwarding to a declared
   `Mapping`, with that `Mapping` as the path library code takes.
-- **Re-exporting from `cf/__init__.py` needs no justification.** @bjlittle
+- **Re-exporting from `cf/__init__.py` needs no justification.** @trexfeathers
   noted that `lib/iris/AGENTS.md` made surfacing low-level objects at a higher
   level read as naughty, and that the spec had written a defensive paragraph in
   response. Neither was right: `iris.mesh` already re-exports from four
@@ -1422,7 +1422,7 @@ Append-only. Each entry is the decision, not the discussion.
   the conditions that keep it greppable — verbatim, static, `__all__`, no
   renaming, no conditional imports. §4.1.
 - **Multi-process writing stays out of scope, but the design must not
-  preclude it.** @bjlittle: it is "SPECIFICALLY DESIRED by multiple users, and
+  preclude it.** @trexfeathers: it is "SPECIFICALLY DESIRED by multiple users, and
   is a USP of Iris when it comes to NetCDF". Four provisions added in §4.5:
   `_dask_locks.py` relocates to `cf/` in PR 5, `CFDatasetVariable.write_handle`
   becomes the coordination seam, the lock stays inside the dataset
@@ -1435,7 +1435,7 @@ Append-only. Each entry is the decision, not the discussion.
 - **`finalise()` is separate from `close()`.** Consolidating metadata is
   one-shot and belongs to the returned `Delayed` under `compute=False`; N
   workers consolidating one metadata object would race. §4.2, §4.5.
-- **Store durability was an oversight; now covered in §4.5.** @bjlittle asked
+- **Store durability was an oversight; now covered in §4.5.** @trexfeathers asked
   whether metadata/data desynchronisation is impossible in the Iris write
   chain. It is for a fresh store — metadata is written once at array creation
   and never edited — but not for `save(..., group=...)`, which writes into a
@@ -1448,7 +1448,7 @@ Append-only. Each entry is the decision, not the discussion.
   dtype, `fill_value`, codecs or dimension names of an existing array. It is
   also most of the safety argument for future parallel writes. §4.5.
 - **`save` defaults to `mode="w-"` — raise if the target exists.** Chosen by
-  @bjlittle over matching the netCDF saver's clobber, because a Zarr clobber is
+  @trexfeathers over matching the netCDF saver's clobber, because a Zarr clobber is
   many non-atomic deletes and an interrupt destroys the old store without
   completing the new one. `mode="w"` opts back in; `mode="a"` is what `group=`
   needs. Re-consolidation is mandatory when adding to a consolidated store.
@@ -1456,7 +1456,7 @@ Append-only. Each entry is the decision, not the discussion.
   Directory rename is atomic on POSIX but object stores have no equivalent, so
   the guarantee would evaporate where Zarr is most used. Icechunk is the
   ecosystem's answer and stays out of scope; the documentation says so. §4.5.
-- **There is no `ZarrDataProxy`.** @bjlittle asked whether the netCDF proxy
+- **There is no `ZarrDataProxy`.** @trexfeathers asked whether the netCDF proxy
   classes are actually necessary for Zarr, given that chunks are inherent to
   the store. They are not. Every reason `NetCDFDataProxy` exists is a
   netCDF4/HDF5 reason — an unpicklable `Variable`, a thread-unsafe library, an
@@ -1480,7 +1480,7 @@ Append-only. Each entry is the decision, not the discussion.
   and decompress the same 488 MiB object **[verified]**. The Zarr loader rounds
   up instead, and warns when the store's layout is the binding constraint.
   §4.4.
-- **No `ZarrWriteProxy` either, but `write_handle()` stays.** @bjlittle asked
+- **No `ZarrWriteProxy` either, but `write_handle()` stays.** @trexfeathers asked
   whether the write proxy is purely multi-process machinery and so purely
   future scope. It is not: `NetCDFWriteProxy`'s first job is to be a
   `__setitem__` target that outlives the closed `Dataset`, which a deferred
