@@ -179,10 +179,9 @@ lib/iris/fileformats/
         dataset.py       # NEW  CFDataset / CFDatasetVariable
         loader.py        # NEW  generic CF -> Cube  (from netcdf/loader.py)
         saver.py         # NEW  generic Cube -> CF  (from netcdf/saver.py)
-        _variables.py    # CFVariable and the classic CF subclasses (was cf.py)
-        _ugrid.py        # the three CFUGrid* variable classes      (was cf.py)
-        _group.py        # CFGroup                                  (was cf.py)
-        _reader.py       # CFReader                                 (was cf.py)
+        _variables.py    # every CFVariable subclass, classic and UGRID (was cf.py)
+        _group.py        # CFGroup                                      (was cf.py)
+        _reader.py       # CFReader                                     (was cf.py)
     netcdf/
         _dataset.py      # NEW  NetCDFDataset, NetCDFDatasetVariable
         loader.py        # netCDF load_cubes + deprecating aliases
@@ -201,19 +200,35 @@ Every public name that `iris.fileformats.cf` exports today is re-exported from
 no deprecation is needed for the move itself. This is the shape `iris.mesh`
 already has: a 36-line `__init__.py` over `components.py` and `utils.py`.
 
-The private split follows the four kinds of thing already in `cf.py` rather
-than an arbitrary line count: classic CF variable classes (cf.py:78-895),
-the UGRID variable classes (cf.py:896-1116), the `CFGroup` mapping
-(cf.py:1117-1280) and the `CFReader` (cf.py:1281-1721). Each lands under the
-~1000-line guidance in `lib/iris/AGENTS.md`, and the UGRID seam is the same
-one `iris.mesh` draws.
+The private split cuts at the three seams already in `cf.py`, each of which
+is a different kind of thing: the variable classifiers (cf.py:78-1116), the
+`CFGroup` mapping that collects them (cf.py:1117-1280) and the `CFReader`
+that drives the whole thing (cf.py:1281-1721). That gives `_variables.py` at
+roughly 1120 lines, `_group.py` at 180 and `_reader.py` at 460.
+
+`_variables.py` sits just over the ~1000-line aim in `lib/iris/AGENTS.md`,
+and stays there deliberately. An earlier draft of this section put the three
+`CFUGrid*` classes in a fourth module to get under the number; that was a
+line count in search of a rationale. The UGRID classes are not a separate
+concern from the classic ones — they are `CFVariable` subclasses with the
+same shape (`cf_identity`, `cf_identities`, a classmethod `identify`), doing
+the same job of classifying a CF-netCDF variable by its attributes.
+`CFReader._variable_types` lists all ten in one tuple (cf.py:1291-1302);
+`CFGroup.non_data_variable_names` enumerates `connectivities`, `ugrid_coords`
+and `meshes` alongside `bounds`, `labels` and `cell_measures`; and the
+module-private `_is_str_dtype` (cf.py:78) is called from both sets, so the
+split would export a private helper across a module boundary to buy nothing.
+The `iris.mesh` analogy does not hold either: that package holds cube-level
+data-model objects, whereas these are variable classifiers doing the work of
+`CFAuxiliaryCoordinateVariable`. `lib/iris/AGENTS.md` settles it — *"Cohesion
+wins. Do not fragment into micro-modules purely to shrink files."*
 
 The re-export layer in `__init__.py` is the one `lib/iris/AGENTS.md`
 discourages, taken deliberately: the alternative is renaming the most
 depended-upon public module in this subtree. The rule exists to stop
 indirection being invented; here it preserves an existing import path.
 
-`_variables.py`, `_ugrid.py`, `_group.py` and `_reader.py` are private because
+`_variables.py`, `_group.py` and `_reader.py` are private because
 they are a file layout, not an API. Third-party code that reaches past
 `iris.fileformats.cf` into a submodule is reaching into the split itself, which
 is exactly the thing that should stay free to move.
@@ -542,8 +557,8 @@ as an oversight, and §5's merge-back subsection lists the fragments owed.
 
 ### PR 1 — `iris.fileformats.cf` becomes a package, with tests first
 
-`git mv cf.py cf/_variables.py` and split out `_ugrid.py`, `_group.py` and
-`_reader.py` along the boundaries in §4.1, with an `__init__.py` that
+`git mv cf.py cf/_variables.py` and split out `_group.py` and `_reader.py`
+along the boundaries in §4.1, with an `__init__.py` that
 re-exports the existing public names. Imports updated across the tree. **No
 behaviour change and no API change**: the diff is a move plus import edits, so
 a reviewer can skim it.
@@ -950,6 +965,16 @@ Append-only. Each entry is the decision, not the discussion.
   how the repository works.
 - **Tests are required on every pull request**, unchanged. `tests/AGENTS.md`.
 
+**2026-09-22 — module layout, after review by @bjlittle**
+
+- **The `CFUGrid*` classes stay with the other variable classes.** @bjlittle
+  asked why they warranted a private module of their own; they did not. They
+  are peers of the classic classifiers, share the private `_is_str_dtype`
+  helper, and appear in the same tuples in `CFReader` and `CFGroup`. The
+  earlier four-way split was a line count in search of a rationale. `cf`
+  splits three ways instead, and `_variables.py` is allowed over the
+  ~1000-line aim. §4.1.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -971,3 +996,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Reframed as a proof of concept; removed issue-closure claims and issue-state tracking. |
 | 2026-09-22 | Confirmed seven separate pull requests; tests required, changelog fragments deferred. |
 | 2026-09-22 | Proof-of-concept framing retracted. Added the merge-back step (§5) that carries the closing keywords, the five changelog fragments and the documentation. |
+| 2026-09-22 | Dropped the proposed `cf/_ugrid.py`; the `cf` package splits three ways, not four. |
