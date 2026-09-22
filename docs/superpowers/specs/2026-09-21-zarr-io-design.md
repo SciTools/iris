@@ -223,10 +223,19 @@ data-model objects, whereas these are variable classifiers doing the work of
 `CFAuxiliaryCoordinateVariable`. `lib/iris/AGENTS.md` settles it — *"Cohesion
 wins. Do not fragment into micro-modules purely to shrink files."*
 
-The re-export layer in `__init__.py` is the one `lib/iris/AGENTS.md`
-discourages, taken deliberately: the alternative is renaming the most
-depended-upon public module in this subtree. The rule exists to stop
-indirection being invented; here it preserves an existing import path.
+The re-export layer in `__init__.py` is the ordinary Iris pattern, not a
+concession. `iris.mesh` re-exports from four modules, two of them in a
+different subtree entirely (`iris.fileformats.netcdf.saver`,
+`iris.fileformats.netcdf.ugrid_load`), so that users import `MeshXY` and
+`save_mesh` from one place. Surfacing objects where users expect them is a
+genuine convenience, and it is what leaves the private file layout free to
+change. `lib/iris/AGENTS.md` says so explicitly; its "do not add indirection"
+rule governs implementation layers, not API surface.
+
+The re-exports are verbatim and static — `from ._reader import CFReader`, name
+for name, gathered into `__all__` — so `class CFReader` still finds the
+definition in one grep. No renaming, no conditional imports, no logic in
+`__init__.py`.
 
 `_variables.py`, `_group.py` and `_reader.py` are private because
 they are a file layout, not an API. Third-party code that reaches past
@@ -1038,6 +1047,14 @@ Append-only. Each entry is the decision, not the discussion.
   clarifying clause. The blanket `__getattr__` ban is replaced by a checkable
   exception: open-world data keys read from a file, forwarding to a declared
   `Mapping`, with that `Mapping` as the path library code takes.
+- **Re-exporting from `cf/__init__.py` needs no justification.** @bjlittle
+  noted that `lib/iris/AGENTS.md` made surfacing low-level objects at a higher
+  level read as naughty, and that the spec had written a defensive paragraph in
+  response. Neither was right: `iris.mesh` already re-exports from four
+  modules across two subtrees, and the "do not add indirection" rule is about
+  implementation layers. `AGENTS.md` now states the pattern positively, with
+  the conditions that keep it greppable — verbatim, static, `__all__`, no
+  renaming, no conditional imports. §4.1.
 
 ### 12.5 Artefacts
 
@@ -1062,3 +1079,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Proof-of-concept framing retracted. Added the merge-back step (§5) that carries the closing keywords, the five changelog fragments and the documentation. |
 | 2026-09-22 | Dropped the proposed `cf/_ugrid.py`; the `cf` package splits three ways, not four. |
 | 2026-09-22 | Rewrote §4.3: `__getattr__` separated from the backend-proxy job, made backend-agnostic, and the attribute-tracking consequence for PR 2 called out. `lib/iris/AGENTS.md` narrowed to match. |
+| 2026-09-22 | Dropped the apologetic framing of the `cf/__init__.py` re-exports; `lib/iris/AGENTS.md` now endorses the pattern. |

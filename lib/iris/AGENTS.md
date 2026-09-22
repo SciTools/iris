@@ -12,16 +12,14 @@ It is an orientation map only; algorithm detail belongs in module docstrings.
 
 ## Why This File Exists
 
-Iris will be maintained by humans and agents together for the foreseeable
-future. Agents read through a narrow context window using text search and
-cannot run the code; humans read with intuition but limited patience. Both
-want the same things — explicit names, local reasoning, small units. This
-file records that shared style, plus the few places the two diverge and which
-way to resolve them.
-
-Models are trained to please diff reviewers, not to produce code that is
-cheap to navigate later, and so drift towards long functions, redundant
-comments and defensive wrapping. Correct for that deliberately.
+Iris is maintained by humans and agents together. Agents read through a
+narrow context window using text search and cannot run the code; humans read
+with intuition but limited patience. Both want explicit names, local
+reasoning and small units. This file records that shared style, plus the few
+places the two diverge and which way to resolve them. Models are trained to
+please diff reviewers rather than to produce code that is cheap to navigate
+later, and drift towards long functions, redundant comments and defensive
+wrapping; correct for that deliberately.
 
 
 ## Fast Rules
@@ -45,7 +43,8 @@ comments and defensive wrapping. Correct for that deliberately.
   `iris.common.mixin`, metadata managers), follow the existing pattern rather
   than inventing a parallel one.
 - Do not add indirection (registry, dispatch dict, plugin hook, base class)
-  for a single caller.
+  for a single caller. This governs implementation layers, not API surface;
+  a package `__init__.py` that re-exports is not indirection, see below.
 - Pass dependencies in as arguments rather than reaching for module-level
   mutable state.
 
@@ -63,6 +62,14 @@ does not exist.
 - Give public names enough distinctiveness to search for. Local `data`,
   `cube`, `result` are fine; a public helper called `_process` is not.
 - Declare `__all__` in modules with a public surface. No `import *`.
+- **Re-export freely from a package `__init__.py`.** Surfacing objects at
+  the level users import from is a real convenience, and it keeps the file
+  layout free to change later. `iris.mesh` is the model: explicit
+  `from .components import MeshXY`, gathered into `__all__`. Re-export
+  verbatim — never rename on the way out, never wrap in `try`/conditional
+  imports, never put logic in `__init__.py`. Each object stays defined in
+  one module, so `class MeshXY` still finds it in a single grep.
+  (`iris.common` uses `import *`; that is legacy, not a pattern to copy.)
 - Make error and warning messages distinctive and mostly static, so a
   traceback maps to exactly one line. Put interpolated values at the end:
   `f"Cannot collapse a coordinate with bounds: {coord.name()}"`.
@@ -91,12 +98,10 @@ Iris implements published conventions — CF, UGRID, Zarr, netCDF. Sample files
 are evidence that a code path gets exercised, not authority for what it should
 do. Derive behaviour from the convention's text and cite the section; before
 claiming a file taught you something general, check whether the convention
-already says it.
-
-When a real file disagrees with the convention, the file is wrong: warn
-(`iris.warnings`) naming the variable and the offending value, and carry on.
-Do not reshape the reader around one publisher's output. Raise only where the
-data cannot be interpreted at all.
+already says it. When a real file disagrees with the convention, the file is
+wrong: warn (`iris.warnings`) naming the variable and the offending value,
+and carry on. Do not reshape the reader around one publisher's output; raise
+only where the data cannot be interpreted at all.
 
 
 ## Comments and Docstrings
@@ -148,15 +153,14 @@ most commonly misread modules and carry barely a line each.
 ## Size and Shape
 
 Agents pay for every line they read; humans lose the thread. Existing giants
-such as `cube.py` (~5600 lines) are legacy — do not grow them without cause,
-but do not opportunistically split them either.
+such as `cube.py` (~5600 lines) are legacy: do not grow them without cause,
+but do not opportunistically split them either — put genuinely separable new
+code in a private sibling module instead.
 
 - New modules: aim under ~1000 lines, one coherent concept each.
 - Functions: aim to fit one screen (~50 lines).
 - Use guard clauses and early returns instead of nested conditionals.
 - Nesting beyond three levels is a signal to extract a named helper.
-- When adding genuinely separable code to an oversized module, put it in a
-  new private sibling module rather than growing the giant.
 
 
 ## Where Human and Agent Preferences Diverge
