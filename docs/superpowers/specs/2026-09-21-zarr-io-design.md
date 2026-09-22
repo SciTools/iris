@@ -273,7 +273,7 @@ class CFDatasetVariable(ABC):
 class CFDataset(ABC):
     """A CF-conforming array store, open for reading or writing."""
     location: str                       # path or URL, for messages and proxies
-    mode: str                           # "r" | "w" | "r+"; see 4.5
+    mode: str                           # "r" | "r+" | "a" | "w" | "w-"; 4.5
     variables: Mapping[str, CFDatasetVariable]
     dimensions: Mapping[str, int]
     attributes: MutableMapping[str, Any]
@@ -534,6 +534,66 @@ workers consolidating the same single metadata object is a race. Under
 `compute=False` the returned `Delayed` owns the `finalise()` call, after every
 chunk write. For netCDF, `finalise()` is a no-op.
 
+#### Durability: what an interrupted save leaves behind
+
+Zarr has no multi-object transaction. A store's metadata and its chunks are
+separate objects, so an edit that touches both can be interrupted between them
+and leave the two disagreeing. Two consequences, both confirmed against
+`zarr 3.4.0` **[verified]**:
+
+- A missing chunk is **not an error**. Remove one chunk object from a complete
+  array and it reads back as `fill_value` with no warning. An interrupted save
+  therefore leaves a store that opens cleanly and silently under-reports data.
+- Consolidated metadata goes **silently stale**. Add an array to a consolidated
+  store without re-consolidating, and a default reader — which uses
+  consolidated metadata when it is present — does not see the new array at all.
+  An unconsolidated reader of the same store does.
+
+Neither is fixable from inside Iris; they are properties of the format. What
+Iris can do is never create the conditions for them.
+
+> **Create-once invariant.** Array metadata is written when the array is
+> created and never edited afterwards. Iris does not resize, rechunk, or change
+> the dtype, `fill_value`, codecs or dimension names of an array that already
+> exists.
+
+That is what makes `iris.save(cubes, "new.zarr")` desynchronisation-free by
+construction rather than by luck: the chain is create-arrays, write-chunks,
+consolidate, with metadata written once at the front. It is stated here as a
+constraint on future work, not merely as a description of today's.
+
+**Writing into a store that already exists** is the case the invariant does not
+cover, and `save(..., group=...)` reaches it within the current scope. Rules:
+
+- `save` takes `mode`, using zarr's vocabulary. The default is **`"w-"`:
+  create, and raise if the target already exists.** This deliberately differs
+  from the netCDF saver, which clobbers, because a Zarr clobber is many
+  non-atomic deletes: an interrupt destroys the old store without completing
+  the new one. `mode="w"` opts back in to replacement; `mode="a"` adds to an
+  existing store and is what `group=` needs. The error message names `mode`.
+- When Iris adds to a store that already carries consolidated metadata, it
+  **must** re-consolidate as its final act. If it cannot — the root is not
+  writable, say — it raises rather than returning, because leaving stale
+  consolidated metadata hides the data just written.
+- `finalise()` is always the last write. Under `compute=False` the returned
+  `Delayed` owns it, so consolidation follows the last chunk rather than
+  preceding it.
+
+**What Iris does not promise.** An interrupted save leaves a partial store, and
+Iris offers no torn-write detection or rollback. The usual mitigation — write
+to a temporary name and rename on success — is not adopted: directory rename is
+atomic on POSIX but object stores have no equivalent, so the guarantee would
+evaporate precisely where Zarr is most used, which is worse than not offering
+it. Callers needing transactional writes want Icechunk, which is out of scope
+(§9). The Zarr documentation section says so plainly rather than leaving users
+to discover it.
+
+**Tests.** Deleting a chunk object from a saved store and asserting the read is
+silently filled; adding an array to a consolidated store and asserting the
+default reader misses it until re-consolidation; and `mode="w-"` raising on an
+existing target. These pin format behaviour Iris depends on, so they should
+fail loudly if a zarr-python release changes it.
+
 #### Multi-process writes: kept reachable, not built
 
 Coordinated writing to one target from many processes is an Iris
@@ -586,6 +646,14 @@ Nothing here builds the feature. Together they mean building it later is new
 code in `zarr/_dataset.py` plus a keyword on `save`, with the generic layer
 and the netCDF path untouched.
 
+The durability hazards above get sharper under parallelism, and the
+create-once invariant is most of the answer there too: workers that only fill
+chunks of arrays created up front never touch metadata, so the one shared
+mutable object is the consolidated metadata, written once at the end by the
+process that owns `finalise()`. A design that let workers create or resize
+arrays would have no such property, which is a further reason the invariant is
+written down rather than assumed.
+
 **Encoding.** `zlib`/`complevel` map to a Blosc or Gzip codec, `shuffle` to
 Blosc shuffle, `chunksizes` to `chunks`, `fletcher32` to Crc32c. `contiguous`,
 `endian` and `least_significant_digit` have no Zarr equivalent and raise
@@ -597,6 +665,10 @@ remote stores usable, with the zarr-python warning suppressed and explained).
 
 `load_cubes(..., group=None)` and `save(..., group=None)` both default to the
 root group. A non-`None` `group` is a `/`-separated path within the store.
+
+Writing to a non-root group means opening a store that may already exist, so
+`save(..., group=...)` is governed by the existing-store rules in §4.5 — it
+implies `mode="a"`, and re-consolidation is mandatory.
 
 Iris loads **one** group per call, like xarray. Nested groups are not walked:
 a Zarr store can legitimately hold unrelated datasets, and merging them into
@@ -938,7 +1010,9 @@ preserved because that is what is being tested.
 - Writing Zarr version 2.
 - Walking or loading multiple groups in one call.
 - GeoZarr and the proposed Zarr-CS coordinate-system convention.
-- Icechunk, virtual Zarr and Kerchunk reference stores.
+- Icechunk, virtual Zarr and Kerchunk reference stores. Icechunk is the
+  ecosystem's answer to transactional Zarr writes; §4.5 says so where the
+  limitation bites.
 - **Building** multi-process write coordination for Zarr — see below.
 - Any change to the existing NCZarr path other than the `spans` bug fix.
 - Adding an fsspec, s3fs or gcsfs dependency to Iris.
@@ -1169,6 +1243,27 @@ Append-only. Each entry is the decision, not the discussion.
 - **`finalise()` is separate from `close()`.** Consolidating metadata is
   one-shot and belongs to the returned `Delayed` under `compute=False`; N
   workers consolidating one metadata object would race. §4.2, §4.5.
+- **Store durability was an oversight; now covered in §4.5.** @bjlittle asked
+  whether metadata/data desynchronisation is impossible in the Iris write
+  chain. It is for a fresh store — metadata is written once at array creation
+  and never edited — but not for `save(..., group=...)`, which writes into a
+  store that may already exist. Both hazards confirmed against zarr 3.4.0
+  **[verified]**: a missing chunk reads back as `fill_value` with no warning,
+  and consolidated metadata goes silently stale so a default reader cannot see
+  arrays added without re-consolidation.
+- **The create-once invariant is written down as a constraint**, not left as an
+  accident of the current chain: Iris never resizes, rechunks or changes the
+  dtype, `fill_value`, codecs or dimension names of an existing array. It is
+  also most of the safety argument for future parallel writes. §4.5.
+- **`save` defaults to `mode="w-"` — raise if the target exists.** Chosen by
+  @bjlittle over matching the netCDF saver's clobber, because a Zarr clobber is
+  many non-atomic deletes and an interrupt destroys the old store without
+  completing the new one. `mode="w"` opts back in; `mode="a"` is what `group=`
+  needs. Re-consolidation is mandatory when adding to a consolidated store.
+- **No torn-write detection, and write-to-temp-then-rename is rejected.**
+  Directory rename is atomic on POSIX but object stores have no equivalent, so
+  the guarantee would evaporate where Zarr is most used. Icechunk is the
+  ecosystem's answer and stays out of scope; the documentation says so. §4.5.
 
 ### 12.5 Artefacts
 
@@ -1195,3 +1290,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Rewrote §4.3: `__getattr__` separated from the backend-proxy job, made backend-agnostic, and the attribute-tracking consequence for PR 2 called out. `lib/iris/AGENTS.md` narrowed to match. |
 | 2026-09-22 | Dropped the apologetic framing of the `cf/__init__.py` re-exports; `lib/iris/AGENTS.md` now endorses the pattern. |
 | 2026-09-22 | Multi-process writing kept reachable: chunk-alignment invariant, `write_handle` seam, `_dask_locks` relocation, `mode` and `finalise` on the ABC. |
+| 2026-09-22 | Added store durability (§4.5): the create-once invariant, `mode="w-"` by default, mandatory re-consolidation, and the two format hazards verified against zarr 3.4.0. |
