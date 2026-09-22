@@ -620,6 +620,77 @@ workers consolidating the same single metadata object is a race. Under
 `compute=False` the returned `Delayed` owns the `finalise()` call, after every
 chunk write. For netCDF, `finalise()` is a no-op.
 
+#### The write proxy: why netCDF needs one, and Zarr does not
+
+`NetCDFWriteProxy` is easy to read as multi-process machinery, because it
+carries the file lock. That is its *second* job. Its first is more basic: to be
+a `__setitem__` target that survives the file being closed.
+
+The netCDF deferred save closes the dataset before the `Delayed` is computed —
+`Saver.delayed_completion` says so explicitly, and computing with the file
+still open hangs. A `netCDF4.Variable` cannot outlive its `Dataset`, and is not
+picklable, so it cannot be the target handed to `da.store`. The proxy replaces
+it with `(path, varname, lock)` and reopens per chunk, retrying up to five
+times because HDF5 sometimes refuses a file Python believes it has released
+(`_thread_safe_nc.py:412-433`). So the proxy is needed for a **single-threaded**
+deferred save too, not only a distributed one. The lock is what makes it also
+work across workers.
+
+Neither job exists for Zarr. There is no handle to close, so nothing has to
+outlive one; `zarr.Array` is picklable and keeps writing after a pickle
+round trip **[verified]**; and distinct chunks are distinct objects, so the
+alignment invariant above removes the need for a lock rather than deferring it.
+The end-to-end property was checked directly: a `da.store(..., compute=False,
+lock=False)` over a `zarr.Array` still lands correctly after every in-process
+reference to the group is dropped, **and the whole delayed graph survives
+`pickle.dumps`/`loads` before computing** **[verified]** — which is the
+property a `distributed` scheduler actually requires.
+
+**Native Zarr therefore restores a feature NCZarr had to give up.** The
+existing saver cannot defer NCZarr writes at all: `Saver.__exit__`
+(saver.py:485-498) computes them eagerly with `da.store` while the file is
+still open, commenting that "the deferred reopen-write pattern used for netCDF
+is not supported". That is a limitation of reaching Zarr through netCDF-c, not
+of Zarr. Going direct, `iris.save(cubes, "out.zarr", compute=False)` returns a
+deferred save like the netCDF path — this is a *gain* over the status quo for
+the distributed-write use case, and PR 6 must include a test asserting it.
+
+So `write_handle()` earns its place, but not as future-proofing: it is needed
+today, by netCDF, for exactly the reason above. `NetCDFDatasetVariable` returns
+the write proxy; `ZarrDatasetVariable` returns its `zarr.Array`. `cf/saver.py`
+asks for a handle and stores into it, knowing nothing about locks, reopening or
+schedulers.
+
+One correction to the accounting in §4.5 below: library code never instantiates
+`_thread_safe_nc.NetCDFWriteProxy` directly. `_lazy_stream_data` builds
+`_bytecoding_datasets.EncodedNetCDFWriteProxy`, a subclass, and says why
+(saver.py:2638-2643). The base class survives as public API and as the
+superclass. The relocation must preserve both.
+
+**A live defect in the machinery this inherits.** With `dask 2026.7.1`,
+`da.store(sources, targets, compute=False)` returns a **tuple** when `sources`
+is a sequence, not a `Delayed` **[verified]**. `Saver.delayed_completion` is
+annotated `-> Delayed` and returns that value unchanged, so
+`iris.save(cubes, path, compute=False)` returns a tuple and the documented
+idiom fails:
+
+```
+>>> result = iris.save(cubes, path, compute=False)
+>>> result.compute()
+AttributeError: 'tuple' object has no attribute 'compute'
+```
+
+`dask.compute(result)` works, which is why nothing caught it: `Saver.complete`
+uses `dask.compute`, and no test calls `.compute()` on the returned object
+**[verified]**. The docstring of `iris.save` promises a `dask.delayed.Delayed`.
+
+This is a netCDF-side defect, not a Zarr one, and it is **not** fixed by this
+programme — PR 5 relocates the saver without changing behaviour. But it is
+recorded here because the Zarr saver inherits the same shape, so `zarr/saver.py`
+wraps its `da.store` result in `dask.delayed` and returns a real `Delayed`, and
+its tests assert `.compute()` works. Tracked as Q5 in §12.3, to be raised as
+its own issue.
+
 #### Durability: what an interrupted save leaves behind
 
 Zarr has no multi-object transaction. A store's metadata and its chunks are
@@ -704,8 +775,9 @@ worded accordingly.
 
 2. **`CFDatasetVariable.write_handle()` is the coordination seam.** It returns
    a picklable object supporting `__setitem__`, which is what a dask worker
-   receives. netCDF returns today's `NetCDFWriteProxy`, which carries the
-   `distributed.Lock` keyed on the file path. Zarr returns the `zarr.Array`
+   receives. netCDF returns today's write proxy — in practice
+   `EncodedNetCDFWriteProxy` — which carries the `distributed.Lock` keyed on
+   the file path. Zarr returns the `zarr.Array`
    itself — verified picklable, round-tripping shape and chunks under
    `zarr 3.4.0` **[verified]** — because no lock is needed while the alignment
    invariant holds. If Zarr later needs coordination, the Zarr implementation
@@ -930,6 +1002,11 @@ attribute conversion, masked-data filling, deferred writes, encoding
 translation and `consolidate_metadata`. Registers the `zarr` saver, and
 documents saving alongside the loading documentation from PR 4, including the
 S3 pages.
+
+Includes a test that `iris.save(cubes, "out.zarr", compute=False)` returns a
+`Delayed` whose `.compute()` completes the store — the deferred save that the
+NCZarr path cannot offer (§4.5), and the contract the netCDF path is currently
+breaking (§12.3 Q5).
 
 After this pull request, `iris.save(cubes, "out.zarr")` works.
 
@@ -1239,6 +1316,7 @@ closing keywords live (§5).
 | Q2 | Are `<U7`-style fixed-length unicode dtypes, which #6961 notes are not strictly Zarr-supported and which the EOPF store contains, readable as-is? | Unverified — read them before PR 4 | §7 | PR 4 |
 | Q3 | Does the `dimension_names`-absent error in §4.4 need an escape hatch for stores that are otherwise loadable? | No; synthesising names produces silently wrong cubes | §4.4 | Nothing |
 | Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
+| Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, because `da.store` changed shape; `result.compute()` raises `AttributeError` **[verified]** | Raise as its own netCDF issue. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | §4.5 | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -1397,6 +1475,23 @@ Append-only. Each entry is the decision, not the discussion.
   and decompress the same 488 MiB object **[verified]**. The Zarr loader rounds
   up instead, and warns when the store's layout is the binding constraint.
   §4.4.
+- **No `ZarrWriteProxy` either, but `write_handle()` stays.** @bjlittle asked
+  whether the write proxy is purely multi-process machinery and so purely
+  future scope. It is not: `NetCDFWriteProxy`'s first job is to be a
+  `__setitem__` target that outlives the closed `Dataset`, which a deferred
+  save needs even single-threaded. The lock is its second job. Zarr needs
+  neither — nothing to close, `zarr.Array` picklable, distinct chunks
+  independent — and the delayed graph was verified to survive
+  `pickle.dumps`/`loads` before computing. `write_handle()` is therefore
+  justified by present netCDF need, not by future-proofing. §4.5.
+- **Native Zarr restores deferred saving, which NCZarr gave up.**
+  `Saver.__exit__` computes NCZarr writes eagerly because netCDF-c cannot
+  reopen a Zarr store for deferred writes. Going direct removes that
+  limitation, so `compute=False` works for Zarr; PR 6 tests it. §4.5.
+- **Found in passing, not fixed:** `iris.save(..., compute=False)` returns a
+  tuple rather than the documented `Delayed`, so the documented
+  `result.compute()` raises **[verified]**. Untested because every internal
+  caller uses `dask.compute`. Q5 in §12.3; a netCDF issue of its own.
 
 ### 12.5 Artefacts
 
@@ -1425,3 +1520,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Multi-process writing kept reachable: chunk-alignment invariant, `write_handle` seam, `_dask_locks` relocation, `mode` and `finalise` on the ABC. |
 | 2026-09-22 | Added store durability (§4.5): the create-once invariant, `mode="w-"` by default, mandatory re-consolidation, and the two format hazards verified against zarr 3.4.0. |
 | 2026-09-22 | Dropped `ZarrDataProxy` (§4.4): decoding becomes an explicit dask graph layer, `as_lazy_data` gains `cache_key=`, and the read-side chunk-alignment guard was added after `_optimum_chunksize` was shown to subdivide large store chunks. |
+| 2026-09-22 | Covered the write proxy (§4.5): no Zarr equivalent needed, `write_handle()` justified by present netCDF need, native Zarr regains the deferred saving NCZarr gave up, and the `da.store` return-type defect recorded as Q5. |
