@@ -680,16 +680,20 @@ idiom fails:
 AttributeError: 'tuple' object has no attribute 'compute'
 ```
 
-`dask.compute(result)` works, which is why nothing caught it: `Saver.complete`
-uses `dask.compute`, and no test calls `.compute()` on the returned object
-**[verified]**. The docstring of `iris.save` promises a `dask.delayed.Delayed`.
+`dask.compute(result)` works, which is why nothing caught it. The cause is
+known: #6451 adapted Iris to `dask/dask#11844` for dask 2025.4, correctly
+switching every internal caller to `dask.compute()`, and relaxed the test
+assertion to a helper accepting either shape. The public return type changed
+with it, but `Saver.delayed_completion`, `save()` and
+`docs/src/user_manual/explanation/real_and_lazy_data.rst` still promise a
+`Delayed` completed by `result.compute()`. Raised as
+[#7291](https://github.com/SciTools/iris/issues/7291).
 
 This is a netCDF-side defect, not a Zarr one, and it is **not** fixed by this
 programme — PR 5 relocates the saver without changing behaviour. But it is
 recorded here because the Zarr saver inherits the same shape, so `zarr/saver.py`
 wraps its `da.store` result in `dask.delayed` and returns a real `Delayed`, and
-its tests assert `.compute()` works. Tracked as Q5 in §12.3, to be raised as
-its own issue.
+its tests assert `.compute()` works. Tracked as Q5 in §12.3 and as #7291.
 
 #### Durability: what an interrupted save leaves behind
 
@@ -1306,6 +1310,7 @@ closing keywords live (§5).
 | [#6979](https://github.com/SciTools/iris/issues/6979) | Implemented by PR 4; closed at merge-back |
 | [#6980](https://github.com/SciTools/iris/issues/6980) | Implemented by PR 6; closed at merge-back |
 | [#7288](https://github.com/SciTools/iris/issues/7288) | The parked attribute-model question this design raised (§10) |
+| [#7291](https://github.com/SciTools/iris/issues/7291) | The deferred-save return type this design turned up (§4.5, Q5). Not fixed by this programme |
 | [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
 ### 12.3 Open questions
@@ -1316,7 +1321,7 @@ closing keywords live (§5).
 | Q2 | Are `<U7`-style fixed-length unicode dtypes, which #6961 notes are not strictly Zarr-supported and which the EOPF store contains, readable as-is? | Unverified — read them before PR 4 | §7 | PR 4 |
 | Q3 | Does the `dimension_names`-absent error in §4.4 need an escape hatch for stores that are otherwise loadable? | No; synthesising names produces silently wrong cubes | §4.4 | Nothing |
 | Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
-| Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, because `da.store` changed shape; `result.compute()` raises `AttributeError` **[verified]** | Raise as its own netCDF issue. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | §4.5 | Nothing |
+| Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
