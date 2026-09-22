@@ -425,27 +425,113 @@ SciTools/iris#7288 (§10).
 **Masking and unpacking.** netCDF4 applies `_FillValue`/`missing_value`
 masking, `valid_min`/`valid_max`/`valid_range` masking and
 `scale_factor`/`add_offset` unpacking for free. Zarr does none of it, so
-`zarr/_decode.py` implements the same CF rules, applied inside the data proxy
-so that laziness is preserved. It is Zarr-side rather than shared because the
-netCDF path gets the behaviour from the C library and has nothing to reuse.
+`zarr/_decode.py` implements the same CF rules. It is Zarr-side rather than
+shared because the netCDF path gets the behaviour from the C library and has
+nothing to reuse.
 
-**Laziness.** `ZarrDataProxy` mirrors `NetCDFDataProxy`: it holds the store
-location, the array path and the decode parameters, and opens the array on each
-`__getitem__`. Going through a proxy rather than `dask.array.from_zarr`
-preserves three things that matter:
+Decoding is applied as **explicit dask graph layers** over the raw array —
+`da.map_blocks(_mask_and_scale, raw, ...)` — not hidden inside an opaque
+`__getitem__`. Each rule is a small pure function of `(block, parameters)`,
+unit-testable on a plain ndarray with no store at all; the layers are visible
+in the graph, fuse with neighbours, and keep the lazy contract. A proxy whose
+`__getitem__` silently returned something other than what the store holds is
+exactly the "behaviour not derivable from the file in front of you" that
+`lib/iris/AGENTS.md` warns against.
 
-1. `CHUNK_CONTROL` keeps working identically across formats.
-2. The dask meta stays a **masked** array, as everywhere else in Iris.
-3. `iris._lazy_data` (lines 302 and 334) special-cases `NetCDFDataProxy` to
-   build a dask cache key from `repr(data)`. `ZarrDataProxy` is registered
-   alongside it so Zarr arrays get the same graph-level caching.
+**Laziness: there is no `ZarrDataProxy`.** An earlier draft of this spec said
+the Zarr reader would mirror `NetCDFDataProxy`. That was wrong, and the reason
+is worth recording, because every reason `NetCDFDataProxy` exists is a
+netCDF4/HDF5 reason:
+
+- `netCDF4.Variable` is not picklable, so it cannot travel in a dask graph.
+- HDF5 is not thread-safe, so every read serialises on `_GLOBAL_NETCDF4_LOCK`.
+- A `Dataset` is an open OS file handle that must not be held for the lifetime
+  of a lazy graph — hence the open/read/close on every `__getitem__`
+  (`_thread_safe_nc.py:353-366`).
+
+None of the three holds for Zarr. `zarr.Array` **is** picklable and round-trips
+shape and chunks **[verified]**. A chunk is an independent object in a
+key-value store, so concurrent reads of distinct chunks need no lock. A store
+is a namespace, not an open handle, so there is nothing to leave open. And this
+is the mainstream path rather than a novelty: `dask.array.from_zarr` is a thin
+wrapper that calls `from_array` on the `zarr.Array` itself **[verified]**.
+
+So `zarr/loader.py` hands the `zarr.Array` to `as_lazy_data` directly and adds
+the decode layers on top. The three things the earlier draft claimed a proxy
+preserved survive without one:
+
+1. **`CHUNK_CONTROL`.** Chunking is computed by the loader from
+   `CFDatasetVariable.chunking` *before* `as_lazy_data` is called. It never
+   depended on proxy-ness.
+2. **Masked dask meta.** `meta` is an argument to `as_lazy_data`, not something
+   a proxy supplies. With decoding as a graph layer the mask arrives with the
+   decode layer, so a masked meta is correct by construction. Note the honest
+   ordering — passing a masked meta with no decode layer beneath it would be a
+   meta that lies about its own graph.
+3. **The dask cache key.** This is the one real point, and it wants a hashable
+   identity, not a class. See below.
+
+**Replacing the `NetCDFDataProxy` cache special case.** `iris/_lazy_data.py`
+imports `NetCDFDataProxy` from `iris.fileformats.netcdf` (line 302) purely to
+recognise it (lines 333-337) and build a cache key from `repr(data)`, so that
+many cubes sharing a coordinate array share one dask array. That is a backwards
+import — the lazy-data layer reaching into a file format — and adding a second
+`isinstance` branch for Zarr would double it.
+
+PR 3 replaces it with a caller-supplied `cache_key=` keyword on
+`as_lazy_data`. The netCDF loader passes `repr(proxy)`, which is
+byte-for-byte the key computed today, so the change is behaviour-preserving and
+testable as such. The Zarr loader passes `(store location, array path, zarr
+format)`. `_lazy_data` then knows about no file format at all.
+
+**Read-side chunk alignment.** §4.5 fixes a write-side invariant: the dask
+chunking must tile the Zarr chunk grid exactly. Reading needs the same
+invariant for a different reason, and it is *not* free.
+
+A Zarr chunk is the atomic unit of storage: a read of any part of it fetches
+and decompresses the whole object. So if the dask chunking subdivides a store
+chunk into N pieces, N tasks each pull and decompress that entire chunk — N
+times the bytes and N times the CPU, and over a remote store, N HTTP GETs for
+the same object.
+
+`_optimum_chunksize` does the right thing in the ordinary case, expanding to
+whole multiples of the store chunk **[verified]**:
+
+| store chunk | array shape | dask chunk | multiple |
+|---|---|---|---|
+| `(512, 512)` | `(4096, 4096)` | `(4096, 4096)` | 8 × 8 |
+| `(1000, 1000)` | `(10000, 10000)` | `(1000, 10000)` | 1 × 10 |
+
+But when the store chunk is *itself* larger than the `dask.array.chunk-size`
+target (128 MiB by default) it shrinks below it **[verified]**:
+
+| store chunk | size | array shape | dask chunk | result |
+|---|---|---|---|---|
+| `(8000, 8000)` | 488 MiB | `(16000, 16000)` | `(2000, 8000)` | 4 × re-read |
+| `(6000, 6000)` | 275 MiB | `(6000, 6000)` | `(2000, 6000)` | 3 × re-read |
+
+Subdividing buys nothing here. Peak memory per task is still a whole
+decompressed chunk, because that is what the store hands back; only the
+I/O and decompression multiply. So on the Zarr path the loader rounds the
+computed chunking **up** to a whole multiple of the store chunk, never below
+it, and emits an `IrisLoadWarning` naming the variable when the store's own
+chunking exceeds the dask target — the store's layout is then the binding
+constraint and the user should know. An explicit `CHUNK_CONTROL` setting still
+wins, since that is a deliberate instruction, but it warns on the same terms.
+
+This trap is not new and not Zarr-specific: `NetCDFDataProxy` reopens the
+`Dataset` on every `__getitem__`, so HDF5's chunk cache is discarded between
+tasks and the netCDF path re-reads sub-chunks too. It simply costs far more
+over a network than over a page cache. Changing the netCDF path is out of scope
+here — the relocation PRs must not alter behaviour — but it is recorded as an
+open question in §12.3.
 
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
-`cf/loader.py` uses exactly as it uses `chunking()` today, so
-`ChunkControl.from_file()` works unchanged. For a sharded version 3 array,
-`chunking` returns `Array.shards`, which is `None` on an unsharded array
-**[verified]**, falling back to `Array.chunks`. The shard is the unit a reader
-actually fetches, so it is the right dask chunk.
+`cf/loader.py` uses exactly as it uses `chunking()` today. For a sharded
+version 3 array it returns `Array.shards`, which is `None` on an unsharded
+array **[verified]**, falling back to `Array.chunks`. The shard is the unit a
+reader actually fetches, so it is the right unit for both the chunk
+calculation and the alignment rule above.
 
 Zarr's own async concurrency is left at its default. Iris does not write to
 `zarr.config`; the interaction between `zarr_async_concurrency` and the dask
@@ -487,9 +573,9 @@ netCDF. Round-trip tests therefore compare attribute **values**, not dtypes.
 
 This is the provisional answer to the wider question of how the CF attribute
 model maps onto JSON in both directions — the same question the nested-object
-paragraph in §4.4 runs into from the read side. §10 and SciTools/iris#7288 record it as parked
-for a dedicated discussion; nothing else in the design depends on how it is
-settled.
+paragraph in §4.4 runs into from the read side. §10 and SciTools/iris#7288
+record it as parked for a dedicated discussion; nothing else in the design
+depends on how it is settled.
 
 Two attributes are exempt because their dtype is load-bearing: `_FillValue` and
 `missing_value` are written as the Python scalar matching the array dtype, and
@@ -792,8 +878,9 @@ request is opened.
 
 The subject of **#6977**. Adds `cf/dataset.py` and `netcdf/_dataset.py`. Rewrites the
 86 `getattr`/`hasattr` sites and the 57 netCDF-API sites in the `cf` package,
-`_nc_load_rules/` and `netcdf/` to go through the new interface. Makes
-`CFVariable.__getattr__` raise on non-netCDF backends. Fixes the
+`_nc_load_rules/` and `netcdf/` to go through the new interface. Rewires
+`CFVariable.__getattr__` onto `.attributes`, with the deprecating
+fallback and the attribute-read tracking of §4.3. Fixes the
 `_NCZARR_SCALAR_DIMENSION` gap in the three overriding `spans` methods.
 
 No behaviour change other than the `spans` fix. The suite from PR 1 must pass
@@ -805,6 +892,12 @@ untouched.
 the netCDF specifics and the deprecating aliases. Still netCDF-only behaviour;
 the whole existing suite passes unchanged. Large, mechanical, independently
 verifiable.
+
+Also adds the `cache_key=` keyword to `as_lazy_data` and deletes the
+`isinstance(data, NetCDFDataProxy)` special case in `iris/_lazy_data.py`
+(§4.4), removing that module's import of `iris.fileformats.netcdf`. The
+netCDF loader passes the same `repr(proxy)` key it produces today, so this
+too is behaviour-preserving — and a test asserts the key is unchanged.
 
 ### PR 4 — Zarr loading
 
@@ -893,6 +986,21 @@ in-memory or in `tmp_path`.
 **Integration.** `lib/iris/tests/integration/zarr/` covers round trips through
 `stock.realistic_4d_w_everything()`, following the shape of the existing
 `integration/netcdf/test_nczarr.py`.
+
+**Chunking and decoding** are unit-testable without a store, which is the main
+practical dividend of dropping the proxy (§4.4). Each CF decode rule is a pure
+function of `(block, parameters)` and is tested on plain ndarrays. The
+alignment guard is tested on the `chunking` values alone:
+
+- a store chunk smaller than the dask target expands to a whole multiple;
+- a store chunk larger than the dask target is **not** subdivided, and warns;
+- an explicit `CHUNK_CONTROL` setting that subdivides is honoured, and warns;
+- the resulting dask chunks tile the store chunk grid exactly, in every case.
+
+**The `cache_key=` change** (§4.4, PR 3) is pinned by asserting that the netCDF
+loader produces the identical key to today's `repr(proxy)`, so the removal of
+the `isinstance` branch in `iris/_lazy_data.py` cannot silently lose the
+array-sharing it exists to provide.
 
 Note that the `["nczarr", "xarray"]` parametrisation in that module is **not**
 about the xarray package: both are netCDF-c NCZarr URL modes, and `xarray` is
@@ -1130,6 +1238,7 @@ closing keywords live (§5).
 | Q1 | How should the CF attribute model map onto JSON, on write and on read? | JSON-native both ways (§4.4, §4.5) | #7288, §10 | Nothing. Changing it touches only the attribute conversion in `zarr/_dataset.py` |
 | Q2 | Are `<U7`-style fixed-length unicode dtypes, which #6961 notes are not strictly Zarr-supported and which the EOPF store contains, readable as-is? | Unverified — read them before PR 4 | §7 | PR 4 |
 | Q3 | Does the `dimension_names`-absent error in §4.4 need an escape hatch for stores that are otherwise loadable? | No; synthesising names produces silently wrong cubes | §4.4 | Nothing |
+| Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -1198,7 +1307,7 @@ Append-only. Each entry is the decision, not the discussion.
   how the repository works.
 - **Tests are required on every pull request**, unchanged. `tests/AGENTS.md`.
 
-**2026-09-22 — module layout, after review by @bjlittle**
+**2026-09-22 — cross-cutting design review, with @bjlittle**
 
 - **The `CFUGrid*` classes stay with the other variable classes.** @bjlittle
   asked why they warranted a private module of their own; they did not. They
@@ -1264,6 +1373,30 @@ Append-only. Each entry is the decision, not the discussion.
   Directory rename is atomic on POSIX but object stores have no equivalent, so
   the guarantee would evaporate where Zarr is most used. Icechunk is the
   ecosystem's answer and stays out of scope; the documentation says so. §4.5.
+- **There is no `ZarrDataProxy`.** @bjlittle asked whether the netCDF proxy
+  classes are actually necessary for Zarr, given that chunks are inherent to
+  the store. They are not. Every reason `NetCDFDataProxy` exists is a
+  netCDF4/HDF5 reason — an unpicklable `Variable`, a thread-unsafe library, an
+  open file handle — and none holds for Zarr, where `zarr.Array` is picklable
+  **[verified]** and a chunk is an independent object needing no lock. Two of
+  the draft's three justifications for a proxy were false on inspection; the
+  third, the dask cache key, wants a hashable identity rather than a class.
+  §4.4.
+- **CF decoding is an explicit dask graph layer**, not hidden inside a proxy's
+  `__getitem__`: lazy, inspectable, fuseable, and testable without a store.
+  §4.4.
+- **`as_lazy_data` gains `cache_key=`**, and `iris/_lazy_data.py` stops
+  importing `NetCDFDataProxy` from `iris.fileformats.netcdf`. The netCDF loader
+  passes the key it produces today, so the change is behaviour-preserving.
+  PR 3. §4.4.
+- **Read-side chunk alignment, mirroring the write-side invariant.** A Zarr
+  chunk is the atomic unit of storage, so dask chunking must never subdivide
+  it. `_optimum_chunksize` ordinarily expands to whole multiples, but **shrinks
+  below the store chunk when the store chunk already exceeds the 128 MiB dask
+  target** — `(8000, 8000)` becomes `(2000, 8000)`, so four tasks each fetch
+  and decompress the same 488 MiB object **[verified]**. The Zarr loader rounds
+  up instead, and warns when the store's layout is the binding constraint.
+  §4.4.
 
 ### 12.5 Artefacts
 
@@ -1291,3 +1424,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Dropped the apologetic framing of the `cf/__init__.py` re-exports; `lib/iris/AGENTS.md` now endorses the pattern. |
 | 2026-09-22 | Multi-process writing kept reachable: chunk-alignment invariant, `write_handle` seam, `_dask_locks` relocation, `mode` and `finalise` on the ABC. |
 | 2026-09-22 | Added store durability (§4.5): the create-once invariant, `mode="w-"` by default, mandatory re-consolidation, and the two format hazards verified against zarr 3.4.0. |
+| 2026-09-22 | Dropped `ZarrDataProxy` (§4.4): decoding becomes an explicit dask graph layer, `as_lazy_data` gains `cache_key=`, and the read-side chunk-alignment guard was added after `_optimum_chunksize` was shown to subdivide large store chunks. |
