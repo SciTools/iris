@@ -7,12 +7,12 @@
 | | |
 |---|---|
 | **Phase** | Design, awaiting approval |
-| **Progress** | 0 of 7 pull requests raised — see §12.1 |
+| **Progress** | 0 of 7 pull requests raised; merge-back not started — see §12.1 |
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
-| **Intent** | **Proof of concept.** Official pull requests follow later |
-| **Context** | SciTools/iris#6961 and its sub-issues #6977, #6979, #6980 |
+| **Delivery** | Seven pull requests into `brownfield`, then one merge-back into `main` — §5 |
+| **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
 **Created:** 2026-09-21 · **Last updated:** 2026-09-22 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
@@ -32,12 +32,7 @@ variables as length-one arrays. This document specifies **native Zarr support**
 built on zarr-python: reading Zarr version 2 and version 3 stores, and writing
 version 3 stores.
 
-The work is a **proof of concept**: seven pull requests against the
-`brownfield` feature branch, built at speed to find out whether this design
-survives contact with the code. Official pull requests follow later. The
-sub-issues stay open; nothing here closes them (§5).
-
-It is structured as seven pull requests against the `brownfield` branch.
+The work is structured as seven pull requests against the `brownfield` branch.
 Four of them are behaviour-preserving refactors that promote
 `iris.fileformats.cf` to a package and extract the format-agnostic CF machinery
 out of `iris.fileformats.netcdf`; three add user-visible Zarr capability on top.
@@ -301,9 +296,9 @@ NCZarr-written stores use a `_scalar_` pseudo-dimension for scalar variables.
 `_NCZARR_SCALAR_DIMENSION`. The three subclasses that override `spans`
 (`CFBoundaryVariable` cf.py:415, `CFClimatologyVariable` cf.py:491,
 `CFLabelVariable` cf.py:814) do **not**, which is a latent bug on the existing
-NCZarr path. It is fixed in PR 2, and is the one item in the programme that
-needs a changelog fragment of its own when the official pull requests are
-written: it is a user-visible bugfix, not new capability.
+NCZarr path. It is fixed in PR 2, and is the only `bugfix` fragment the
+merge-back owes: everything else in the programme is new capability, a
+relocation or a deprecation.
 
 **Fill values.** Zarr's array-level `fill_value` and CF's `_FillValue`
 attribute are different things — see §2.4 — so Iris reads
@@ -519,26 +514,31 @@ Warnings are emitted on **use**, not on import, so simply importing
 
 ## 5. The programme
 
-Seven pull requests against `brownfield`, each opened separately so that every
-step gets its own CI signal and can be verified on its own. Each carries the
-`Agentic` and `Type: Feature Branch` labels and attributes the contribution to
-Claude.
+Seven pull requests into `brownfield`, each opened separately so that every
+step gets its own CI signal and can be verified on its own, followed by a
+single merge-back into `main`. Each carries the `Agentic` and
+`Type: Feature Branch` labels and attributes the contribution to Claude. This
+is the delivery plan, not a rehearsal for one: the pull requests below are the
+work, and the merge-back is how it reaches users.
 
-**These are proof-of-concept pull requests.** They exist to find out whether
-the design holds up against real code, on a feature branch, at speed. Official
-pull requests follow later, once the shape is known. Nothing here uses a
-GitHub closing keyword, and no pull request in this programme closes
-#6977, #6979 or #6980 — those issues are the requirement, and they stay open
-for the official work. Reference them as context, never as `Closes`.
+**Issues resolve at merge-back, not before.** A GitHub closing keyword only
+fires when the pull request merges into the repository's *default* branch, so
+`Closes #6977` on a pull request based on `brownfield` would link the issue and
+never close it. The feature-branch pull requests therefore write
+`Part of #6977`, and the merge-back pull request carries the closing keywords
+for all three sub-issues. This is bookkeeping, not caution: #6977, #6979 and
+#6980 are genuinely resolved by this programme, just not one branch merge
+earlier than they should be. Issue *state* is not tracked in this document at
+all — that lives on GitHub (§12.2).
 
-**Tests yes, changelog no.** Tests are the proof in "proof of concept" —
-without them the programme learns nothing about whether the design holds, so
-every production change is tested to the standard in `tests/AGENTS.md`.
-Changelog fragments describe user-visible change to a release and are premature
-here; they are deferred to the official pull requests, which is where
-`` :user:`claude` `` gets credited per `changelog/AGENTS.md`. Each pull request
-body says so explicitly, so a reviewer does not read the omission as an
-oversight.
+**Changelog fragments land with the merge-back.** Fragments are named
+`<PR-number>.<type>.rst` (`changelog/AGENTS.md`), and a fragment numbered for a
+feature-branch pull request would advertise a change that `main` has not yet
+received. Established practice on this branch agrees: the two pull requests
+already merged into `brownfield`, #7285 and #7287, carry no fragment, while
+#7267 into `main` does **[verified]**. Each feature-branch pull request body
+therefore states that its fragment is deferred, so the omission does not read
+as an oversight, and §5's merge-back subsection lists the fragments owed.
 
 ### PR 1 — `iris.fileformats.cf` becomes a package, with tests first
 
@@ -580,7 +580,9 @@ verifiable.
 The subject of **#6979**. Adds `zarr` to the optional dependencies section of
 `requirements/py3{12,13,14}.yml` and regenerates the lock files, once, here.
 Adds `fileformats/zarr/` with `_dataset.py`, `_decode.py` and `loader.py`, the
-format specification, and the five load-chain changes in §4.7.
+format specification, and the five load-chain changes in §4.7. Documents Zarr
+loading in the user guide and the `iris.fileformats` API reference, including
+the remote-store URL forms and the `group=` keyword.
 
 After this pull request, `iris.load("store.zarr")` and
 `iris.load("s3://bucket/store.zarr")` work for version 2 and version 3 stores.
@@ -595,8 +597,9 @@ it is on its own.
 
 The subject of **#6980**. Adds `zarr/saver.py`, the `ZarrDataset` write path, JSON
 attribute conversion, masked-data filling, deferred writes, encoding
-translation and `consolidate_metadata`. Registers the `zarr` saver and updates
-the S3 documentation.
+translation and `consolidate_metadata`. Registers the `zarr` saver, and
+documents saving alongside the loading documentation from PR 4, including the
+S3 pages.
 
 After this pull request, `iris.save(cubes, "out.zarr")` works.
 
@@ -606,6 +609,31 @@ Integration tests against the cut-down NOAA GFS and ESA EOPF samples, plus ASV
 coverage: `ZarrSave` beside `NetcdfSave` in `benchmarks/benchmarks/save.py`,
 and Zarr variants of `LoadAndRealise` in `benchmarks/benchmarks/load/`.
 Depends on a companion pull request to `SciTools/iris-test-data`.
+
+### Merge back — `brownfield` into `main`
+
+Labelled `Type: Merge Back`. This is where the programme becomes a release, and
+where three obligations deferred by the feature-branch pull requests are met.
+
+**Closing keywords** for #6977, #6979 and #6980.
+
+**Changelog fragments**, numbered for the merge-back pull request. Per
+`changelog/AGENTS.md`, one pull request may own several fragments of different
+types, which is what this needs:
+
+| Type | Covers |
+|---|---|
+| `feature` | Native Zarr version 2 and version 3 reading, and version 3 writing |
+| `dependency` | `zarr` added as an optional dependency; xarray as a test dependency |
+| `deprecation` | The relocated public names in §4.8, which warn on use |
+| `bugfix` | The `_NCZARR_SCALAR_DIMENSION` gap in the three overriding `spans` methods |
+| `internal` | The `cf` package split and the CF loader/saver relocation |
+
+Every fragment credits `` :user:`claude` `` per `changelog/AGENTS.md`.
+
+**Documentation** is written in PRs 4 and 6, alongside the code it describes,
+and becomes visible to users only here. The merge-back checks it builds clean
+against `main` with `-W`, since the two branches can drift.
 
 **Ordering rationale.** Refactor and feature alternate so that no feature pull
 request is large, and every relocation is a separate, skimmable diff. Tests
@@ -815,6 +843,7 @@ on the relocation before them, and PR 7 depends on everything.
 | 5 | Relocate the CF saver | Not started | — |
 | 6 | Zarr saving | Not started | — |
 | 7 | Real-world test data and benchmarks | Not started | — |
+| — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
 Companion work outside `SciTools/iris`:
 
@@ -826,20 +855,23 @@ States are `Not started`, `Drafted`, `In review`, `Changes requested`,
 `Merged` or `Abandoned`. Record the pull request number and its state as soon
 as it is opened, not when it merges.
 
-There is deliberately no `Closes` column, and no changelog-fragment column:
-see §5.
+There is deliberately no `Closes` column and no changelog-fragment column:
+both obligations belong to the merge-back, not to the feature-branch pull
+requests. See §5.
 
 ### 12.2 Related work
 
 Issue state is tracked on GitHub, not here. This table says what each item is
-*for* in this programme, and nothing about whether it is open.
+*for* in this programme, and nothing about whether it is open. The three
+sub-issues are resolved by the merge-back pull request, which is where the
+closing keywords live (§5).
 
 | Item | What it is to this programme |
 |---|---|
 | [#6961](https://github.com/SciTools/iris/issues/6961) | The requirement. Parent issue for Zarr I/O |
-| [#6977](https://github.com/SciTools/iris/issues/6977) | The requirement PR 2 explores |
-| [#6979](https://github.com/SciTools/iris/issues/6979) | The requirement PR 4 explores |
-| [#6980](https://github.com/SciTools/iris/issues/6980) | The requirement PR 6 explores |
+| [#6977](https://github.com/SciTools/iris/issues/6977) | Implemented by PR 2; closed at merge-back |
+| [#6979](https://github.com/SciTools/iris/issues/6979) | Implemented by PR 4; closed at merge-back |
+| [#6980](https://github.com/SciTools/iris/issues/6980) | Implemented by PR 6; closed at merge-back |
 | [#7288](https://github.com/SciTools/iris/issues/7288) | The parked attribute-model question this design raised (§10) |
 | [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
@@ -893,15 +925,30 @@ Append-only. Each entry is the decision, not the discussion.
 
 **2026-09-22 — agreed with @bjlittle**
 
-- **This programme is a proof of concept.** Move fast on the feature branch to
-  learn whether the design holds, then return later with official pull
-  requests. The seven pull requests do not close #6977, #6979 or #6980, and
-  the spec does not track issue state — that lives on GitHub. §5, §12.2.
+- ~~**This programme is a proof of concept**, with official pull requests to
+  follow.~~ **Superseded the same day** — see the next entry.
+- **Issue state is not tracked in this document.** It lives on GitHub. §12.2.
+  *(Survives the retraction above; it is a rule about what a spec is for.)*
 - **Seven separate pull requests**, not a collapsed branch. Per-step CI and
-  independent verification are worth the extra cycles even on a proof of
-  concept, and it keeps the proof-of-concept shape close to the official one.
-- **Tests yes, changelog no.** Full test coverage on every proof-of-concept
-  pull request; changelog fragments deferred to the official pull requests. §5.
+  independent verification are worth the extra cycles.
+
+**2026-09-22 — retraction, agreed with @bjlittle**
+
+- **This is the delivery plan, not a proof of concept.** @bjlittle: "I was
+  mistaken to introduce talk of proof-of-concept. This spec is THE spec we will
+  be using, and I need to see your strategy for real, even if everything is
+  being isolated to the feature branch." The programme is unchanged in shape;
+  what changes is that it is expected to reach users.
+- **Issues resolve at merge-back.** A closing keyword only fires on merge into
+  the default branch, so the feature-branch pull requests write `Part of
+  #NNNN` and the merge-back carries `Closes`. §5.
+- **Changelog fragments land with the merge-back**, for the same structural
+  reason and matching established practice on this branch: #7285 and #7287
+  carry no fragment, #7267 into `main` does **[verified]**. The merge-back owes
+  five fragments; §5 lists them. This supersedes the earlier "changelog no"
+  reasoning, which was justified by the proof-of-concept framing rather than by
+  how the repository works.
+- **Tests are required on every pull request**, unchanged. `tests/AGENTS.md`.
 
 ### 12.5 Artefacts
 
@@ -923,3 +970,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-21 | Added this progress record (§12). |
 | 2026-09-22 | Reframed as a proof of concept; removed issue-closure claims and issue-state tracking. |
 | 2026-09-22 | Confirmed seven separate pull requests; tests required, changelog fragments deferred. |
+| 2026-09-22 | Proof-of-concept framing retracted. Added the merge-back step (§5) that carries the closing keywords, the five changelog fragments and the documentation. |
