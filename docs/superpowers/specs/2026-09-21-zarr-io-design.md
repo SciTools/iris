@@ -14,9 +14,10 @@
 | **Delivery** | Seven pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-09-22 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-09-23 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
-**Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13
+**Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
+dask 2026.7.1, xarray 2026.7.0
 
 Line references in this document are accurate as of the baseline commit.
 Claims marked **[verified]** were checked by running code against the versions
@@ -224,9 +225,9 @@ that drives the whole thing (cf.py:1281-1721). That gives `_variables.py` at
 roughly 1120 lines, `_group.py` at 180 and `_reader.py` at 460.
 
 `_variables.py` sits just over the ~1000-line aim in `lib/iris/AGENTS.md`,
-and stays there deliberately. An earlier draft of this section put the three
-`CFUGrid*` classes in a fourth module to get under the number; that was a
-line count in search of a rationale. The UGRID classes are not a separate
+and stays there deliberately. Do not split the three `CFUGrid*` classes into a
+fourth module to get under the number; that is a line count in search of a
+rationale. The UGRID classes are not a separate
 concern from the classic ones — they are `CFVariable` subclasses with the
 same shape (`cf_identity`, `cf_identities`, a classmethod `identify`), doing
 the same job of classifying a CF-netCDF variable by its attributes.
@@ -350,10 +351,10 @@ that exception is that `.attributes` is the path library code takes, and
 So, on `CFVariable`:
 
 - `__getattr__` resolves against `self.attributes` - one implementation on the
-  base class, **identical for netCDF and Zarr**. An earlier draft had it raise
-  `TypeError` for Zarr-backed variables; that put a hole in the most-used
-  public accessor of the very abstraction §4.2 exists to provide, and was
-  wrong. A missing key raises plain `AttributeError`, which is correct:
+  base class, **identical for netCDF and Zarr**. It must not raise `TypeError`
+  for Zarr-backed variables: that would put a hole in the most-used public
+  accessor of the very abstraction §4.2 exists to provide. A missing key
+  raises plain `AttributeError`, which is correct:
   `getattr(nc_var, "bounds", None)` is a deliberate idiom throughout the loader
   and depends on `hasattr` semantics working.
 - **No `setattr(self, name, value)` caching.** Today's version caches by
@@ -385,13 +386,14 @@ therefore a tracking mapping, not a plain `dict`, and PR 1's tests must pin
 
 ### 4.4 Reading
 
-**Dimension names.** `ZarrDatasetVariable.dimensions` reads
-`metadata.dimension_names` on version 3 and the `_ARRAY_DIMENSIONS` attribute
-on version 2. A scalar array yields `()`. An array with neither, and rank
-greater than zero, raises `ValueError` naming the array: synthesising names
-would silently produce wrong cubes. `ZarrDataset.dimensions` is then the union
-of the per-array names with their sizes, and a name used at two different sizes
-is an error.
+#### Dimension names
+
+`ZarrDatasetVariable.dimensions` reads `metadata.dimension_names` on version 3
+and the `_ARRAY_DIMENSIONS` attribute on version 2. A scalar array yields `()`.
+An array with neither, and rank greater than zero, raises `ValueError` naming
+the array: synthesising names would silently produce wrong cubes.
+`ZarrDataset.dimensions` is then the union of the per-array names with their
+sizes, and a name used at two different sizes is an error.
 
 NCZarr-written stores use a `_scalar_` pseudo-dimension for scalar variables.
 `cf.py` already handles this in `CFVariable.spans` (cf.py:179-184) via
@@ -402,13 +404,14 @@ NCZarr path. It is fixed in PR 2, and is the only `bugfix` fragment the
 merge-back owes: everything else in the programme is new capability, a
 relocation or a deprecation.
 
-**Fill values.** Zarr's array-level `fill_value` and CF's `_FillValue`
-attribute are different things — see §2.4 — and the difference runs the
-opposite way to the intuitive one. `fill_value` is a *storage* fact: it is what
-a chunk that was never written reads back as. `_FillValue` is a *semantic*
-one: it declares a value to mean "missing". Only the second is a masking
-instruction, so **the CF attribute governs masking and the storage field does
-not.**
+#### Fill values: storage fact versus masking instruction
+
+Zarr's array-level `fill_value` and CF's `_FillValue` attribute are different
+things — see §2.4 — and the difference runs the opposite way to the intuitive
+one. `fill_value` is a *storage* fact: it is what a chunk that was never
+written reads back as. `_FillValue` is a *semantic* one: it declares a value to
+mean "missing". Only the second is a masking instruction, so **the CF attribute
+governs masking and the storage field does not.**
 
 The precedence is therefore version-aware, matching what released xarray does
 (`use_zarr_fill_value_as_mask`, `xarray/backends/zarr.py:1989-1995`):
@@ -431,23 +434,22 @@ against a store written by xarray **[verified]**.
 yields, it round-trips through `create_variable` on save (§4.5), and on version
 2 it is the mask source above. It is simply not a CF missing-value declaration.
 
-**A floating `_FillValue` is base64 on version 3, and that is a convention, not
-a malformation.** Released xarray encodes a floating-point `_FillValue`
-attribute as base64 of a little-endian `float64` — `struct.pack("<d", value)`
-— for *every* floating dtype including `float32`, and its reader *requires*
-that form, raising `TypeError` for a plain JSON number
+#### A floating `_FillValue` is base64 on version 3
+
+That is a convention, not a malformation. Released xarray encodes a
+floating-point `_FillValue` attribute as base64 of a little-endian `float64` —
+`struct.pack("<d", value)` — for *every* floating dtype including `float32`,
+and its reader *requires* that form, raising `TypeError` for a plain JSON number
 (`FillValueCoder.encode`/`decode`, `xarray/backends/zarr.py:144-149` and
 `185-191`).
 
-An earlier draft of this section called the NOAA GFS store's
-`_FillValue` of `'AAAAAAAA+H8='` a publisher's CF violation and a "file
-malformation to defend against". That was wrong.
-`base64(struct.pack("<d", float("nan")))` **is** `'AAAAAAAA+H8='`
-**[verified]**, and writing a `float32` NaN with xarray produces that literal
-string **[verified]**. It is the de-facto encoding for Zarr version 3, not one
-publisher's slip, and most version 3 data in the wild will carry it. Treating
-it as malformed would have meant warning on essentially every xarray-written
-store.
+Do not treat a base64 `_FillValue` as a file malformation to defend against.
+The NOAA GFS store's `'AAAAAAAA+H8='` is the obvious candidate, and it is not a
+publisher's CF violation: `base64(struct.pack("<d", float("nan")))` **is**
+`'AAAAAAAA+H8='` **[verified]**, and writing a `float32` NaN with xarray
+produces that literal string **[verified]**. It is the de-facto encoding for
+Zarr version 3, and most version 3 data in the wild will carry it. Warning on
+it would mean warning on essentially every xarray-written store.
 
 So Iris **reads** both forms on version 3 — a base64 string decoded as
 `float64` and narrowed to the array dtype, or a JSON number — and writes the
@@ -467,11 +469,13 @@ right width is still a producer error: Iris ignores it and emits an
 The cut-down NOAA fixture keeps the attribute verbatim, now as the
 **cross-reader conformance case** rather than as a malformation sample.
 
-**Attributes that are not scalars or strings.** This one *is* a property of
-Zarr: the version 3 specification says an attribute value can be an arbitrary
-JSON literal, and CF has no nested-attribute concept, so the gap exists for
-every conforming store. It is also an established habit rather than one team's
-slip — the GFS store gives `valid_time` a `statistics_approximate` attribute
+#### Attributes that are not scalars or strings
+
+This one *is* a property of Zarr: the version 3 specification says an attribute
+value can be an arbitrary JSON literal, and CF has no nested-attribute concept,
+so the gap exists for every conforming store. It is also an established habit
+rather than one team's slip — the GFS store gives `valid_time` a
+`statistics_approximate` attribute
 whose value is `{'min': ..., 'max': ...}`, and the ESA EOPF product root
 carries `stac_discovery`, `other_metadata` and `processing_history` as nested
 objects **[verified, two independent producers]**.
@@ -481,8 +485,10 @@ does not write them back through the netCDF saver. This is the provisional
 answer; the durable one needs the attribute-model discussion in
 SciTools/iris#7288 (§10).
 
-**Masking and unpacking.** netCDF4 applies `_FillValue`/`missing_value`
-masking, `valid_min`/`valid_max`/`valid_range` masking and
+#### Masking and unpacking
+
+netCDF4 applies `_FillValue`/`missing_value` masking,
+`valid_min`/`valid_max`/`valid_range` masking and
 `scale_factor`/`add_offset` unpacking for free. Zarr does none of it, so
 `zarr/_decode.py` implements the same CF rules. It is Zarr-side rather than
 shared because the netCDF path gets the behaviour from the C library and has
@@ -497,9 +503,10 @@ in the graph, fuse with neighbours, and keep the lazy contract. A proxy whose
 exactly the "behaviour not derivable from the file in front of you" that
 `lib/iris/AGENTS.md` warns against.
 
-**Laziness: there is no `ZarrDataProxy`.** An earlier draft of this spec said
-the Zarr reader would mirror `NetCDFDataProxy`. That was wrong, and the reason
-is worth recording, because every reason `NetCDFDataProxy` exists is a
+#### Laziness: there is no `ZarrDataProxy`
+
+Do not mirror `NetCDFDataProxy` on the Zarr side. It is the obvious move and it
+is the wrong one, because every reason `NetCDFDataProxy` exists is a
 netCDF4/HDF5 reason:
 
 - `netCDF4.Variable` is not picklable, so it cannot travel in a dask graph.
@@ -516,8 +523,8 @@ is the mainstream path rather than a novelty: `dask.array.from_zarr` is a thin
 wrapper that calls `from_array` on the `zarr.Array` itself **[verified]**.
 
 So `zarr/loader.py` hands the `zarr.Array` to `as_lazy_data` directly and adds
-the decode layers on top. The three things the earlier draft claimed a proxy
-preserved survive without one:
+the decode layers on top. The three things a proxy might look necessary for
+all survive without one:
 
 1. **`CHUNK_CONTROL`.** Chunking is computed by the loader from
    `CFDatasetVariable.chunking` *before* `as_lazy_data` is called. It never
@@ -530,8 +537,10 @@ preserved survive without one:
 3. **The dask cache key.** This is the one real point, and it wants a hashable
    identity, not a class. See below.
 
-**Replacing the `NetCDFDataProxy` cache special case.** `iris/_lazy_data.py`
-imports `NetCDFDataProxy` from `iris.fileformats.netcdf` (line 302) purely to
+#### The dask cache key
+
+**Replacing the `NetCDFDataProxy` special case.** `iris/_lazy_data.py` imports
+`NetCDFDataProxy` from `iris.fileformats.netcdf` (line 302) purely to
 recognise it (lines 333-337) and build a cache key from `repr(data)`, so that
 many cubes sharing a coordinate array share one dask array. That is a backwards
 import — the lazy-data layer reaching into a file format — and adding a second
@@ -542,9 +551,9 @@ PR 3 replaces it with a caller-supplied `cache_key=` keyword on
 byte-for-byte the key computed today, so the change is behaviour-preserving and
 testable as such. `_lazy_data` then knows about no file format at all.
 
-**The Zarr key must carry the array's metadata, not just its address.** An
-earlier draft proposed `(store location, array path, zarr format)`. That is an
-*address*, and `CACHE` is a process-wide `LRUCache(100)` (`_lazy_data.py:262`),
+**The Zarr key must carry the array's metadata, not just its address.** Do not
+key on `(store location, array path, zarr format)`. That is an *address*, and
+`CACHE` is a process-wide `LRUCache(100)` (`_lazy_data.py:262`),
 so the address goes stale the moment a store is rewritten in place — which
 `mode="w"` supports and which a notebook or a long-running service does
 routinely. Two failure modes were reproduced against the real key shape
@@ -557,11 +566,11 @@ routinely. Two failure modes were reproduced against the real key shape
   new one. Under the rules above that feeds the version 2 mask, so stale
   metadata becomes wrongly masked data.
 
-Note that the address-only key would have been **weaker than the netCDF key it
+Note that an address-only key would be **weaker than the netCDF key it
 replaces**: `repr(NetCDFDataProxy)` already includes shape and dtype
 (`_thread_safe_nc.py:370-376`), so the first case above cannot happen on the
-netCDF path today. A relocation that quietly loosened the invariant would not
-have been behaviour-preserving.
+netCDF path today. A relocation that quietly loosened that invariant would not
+be behaviour-preserving.
 
 The Zarr loader therefore passes `(store location, array path,
 json.dumps(Array.metadata.to_dict(), sort_keys=True))`. The metadata document
@@ -575,9 +584,11 @@ can the netCDF key, so this is the existing standard and not a regression — bu
 it is the reason the cache is an optimisation for array sharing *within* a
 load, and §12.3 Q6 records scoping it to a load session as the durable fix.
 
-**Read-side chunk alignment.** §4.5 fixes a write-side invariant: the dask
-chunking must tile the Zarr chunk grid exactly. Reading needs the same
-invariant for a different reason, and it is *not* free.
+#### Read-side chunk alignment
+
+§4.5 fixes a write-side invariant: the dask chunking must tile the Zarr chunk
+grid exactly. Reading needs the same invariant for a different reason, and it
+is *not* free.
 
 A Zarr chunk is the atomic unit of storage: a read of any part of it fetches
 and decompresses the whole object. So if the dask chunking subdivides a store
@@ -620,10 +631,11 @@ open question in §12.3.
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
 `cf/loader.py` uses exactly as it uses `chunking()` today.
 
-**The read unit is the inner chunk, even when the array is sharded.** An
-earlier draft had `chunking` return `Array.shards` when present, on the
-reasoning that "the shard is the unit a reader actually fetches". That is not
-how sharding works. Zarr's sharding codec is *indexed*: a reader fetches the
+#### The read unit is the inner chunk, even when the array is sharded
+
+Do not have `chunking` return `Array.shards` when present, on the reasoning
+that "the shard is the unit a reader actually fetches". That is not how
+sharding works. Zarr's sharding codec is *indexed*: a reader fetches the
 shard index, then byte ranges for only the inner chunks it needs. The inner
 chunk is the independently decodable unit, and it stays the right unit for the
 chunk calculation.
@@ -650,6 +662,8 @@ boundary. This is not academic: the NOAA GFS fixture is sharded (§7).
 Shard-sized blocks remain a *write* requirement, for a different reason and in
 one direction only. §4.5 keeps them there.
 
+#### Async concurrency
+
 Zarr's own async concurrency is left at its default. Iris does not write to
 `zarr.config`; the interaction between `zarr_async_concurrency` and the dask
 worker count is documented instead.
@@ -669,17 +683,20 @@ lives in `ZarrDataset`:
 `NotImplementedError` for anything but 3, in one place. Adding version 2 write
 means implementing those three points and deleting that guard.
 
-**Dimensions.** Zarr has no dimension objects. `ZarrDataset.create_dimension`
-records name and size in a plain dict, and `create_variable` writes the names
-onto each array. The dict is what lets the saver check for the size conflicts
-it checks for today.
+#### Dimensions
 
-**Attributes.** Values are converted to JSON-native types **before** being
-handed to zarr, never after, because a rejected value poisons the attributes
-mapping **[verified]**. The conversion is: NumPy scalar to its Python
-equivalent, NumPy array to a list, `bytes` to `str` via ASCII, everything else
-unchanged. Anything still unserialisable raises with the attribute name in the
-message.
+Zarr has no dimension objects. `ZarrDataset.create_dimension` records name and
+size in a plain dict, and `create_variable` writes the names onto each array.
+The dict is what lets the saver check for the size conflicts it checks for
+today.
+
+#### Attributes
+
+Values are converted to JSON-native types **before** being handed to zarr,
+never after, because a rejected value poisons the attributes mapping
+**[verified]**. The conversion is: NumPy scalar to its Python equivalent, NumPy
+array to a list, `bytes` to `str` via ASCII, everything else unchanged.
+Anything still unserialisable raises with the attribute name in the message.
 
 This loses the NumPy dtype of attributes. That is the same trade xarray makes,
 and it is what makes the output readable by every other Zarr consumer. The
@@ -694,9 +711,11 @@ paragraph in §4.4 runs into from the read side. §10 and SciTools/iris#7288
 record it as parked for a dedicated discussion; nothing else in the design
 depends on how it is settled.
 
-Two attributes are exempt because their dtype is load-bearing: `_FillValue` and
-`missing_value`. They are written in the encoding released xarray reads, which
-on version 3 is **dtype-dependent**:
+#### `_FillValue` and `missing_value`: a dtype-dependent encoding
+
+These two attributes are exempt from the JSON-native conversion above, because
+their dtype is load-bearing. They are written in the encoding released xarray
+reads, which on version 3 is **dtype-dependent**:
 
 | array dtype | `_FillValue` attribute written |
 |---|---|
@@ -724,9 +743,11 @@ now has a specific case to carry.
 `_bytes_if_ascii` and `_setncattr` (saver.py:271, 290) coerce attribute values
 to ASCII `bytes` for netCDF. That coercion stays on the netCDF path only.
 
-**Masked data.** Masked arrays are stored as `data.filled(fill_value)` with the
-array's `fill_value` set to match, as recommended in #6961. Writing a separate
-mask array is rejected as over-engineering for no CF benefit.
+#### Masked data
+
+Masked arrays are stored as `data.filled(fill_value)` with the array's
+`fill_value` set to match, as recommended in #6961. Writing a separate mask
+array is rejected as over-engineering for no CF benefit.
 
 The saver **must also write a `_FillValue` attribute** in this case, in the
 encoding above, even when the source cube carries no such attribute of its own.
@@ -737,10 +758,12 @@ unmasked** — a round trip that loses the mask. Setting `fill_value` without
 `_FillValue` is the write-side form of the same conflation the read-side
 precedence made. §6 pins it with a masked round-trip test.
 
-**Deferred writes.** The netCDF saver defers lazy writes by closing the file,
-returning a `Delayed`, and reopening per chunk under a whole-file lock. Zarr
-needs no reopen: the store stays valid, and writes to *distinct chunks* are
-independent objects. The Zarr saver builds one
+#### Deferred writes, and what licenses `lock=False`
+
+The netCDF saver defers lazy writes by closing the file, returning a
+`Delayed`, and reopening per chunk under a whole-file lock. Zarr needs no
+reopen: the store stays valid, and writes to *distinct chunks* are independent
+objects. The Zarr saver builds one
 `da.store(..., compute=False, lock=False)` over all lazy sources and returns it
 from `save(..., compute=False)`, matching the netCDF signature. This is also
 why the NCZarr special case in `Saver.__exit__` (saver.py:485-498) is
@@ -751,10 +774,12 @@ Two dask tasks that touch the *same stored object* race: each reads it,
 modifies its slice and writes the whole object back, so one update is silently
 lost.
 
+#### The write-alignment invariant
+
 **The stored object is the shard, not the chunk, whenever sharding is
-enabled.** An earlier draft stated this invariant over the chunk grid alone.
-That is insufficient, and the gap is not theoretical — it silently destroys
-data. With `da.arange(128, chunks=8)` stored into an array with `chunks=(8,)`
+enabled.** Stating this invariant over the chunk grid alone is insufficient,
+and the gap is not theoretical — it silently destroys data. With
+`da.arange(128, chunks=8)` stored into an array with `chunks=(8,)`
 and `shards=(64,)`, the dask chunking tiles the chunk grid *exactly*, yet
 threaded `da.store(..., lock=False)` lost 72–96 of 128 values in **12 of 12
 trials** **[verified]**. Eight inner chunks share one shard; eight tasks
@@ -781,8 +806,9 @@ concurrent write.
 This is the same guarantee xarray spells `safe_chunks`, and xarray states it
 over the same unit — `effective_write_chunks = encoding.get("shards") or
 encoding["chunks"]`, added for exactly this corruption
-(`xarray/backends/zarr.py:1304-1316`, pydata/xarray#10831). The earlier draft
-cited the right precedent and then under-specified it.
+(`xarray/backends/zarr.py:1304-1316`, pydata/xarray#10831). Citing
+`safe_chunks` as precedent without also matching its unit is the specific trap
+here.
 
 It is a correctness requirement today, not only a precondition for the future
 work below, and it binds even though the saver does not offer a `shards=`
@@ -790,10 +816,12 @@ keyword yet: the invariant is what licenses `lock=False`, so it has to be
 stated over the unit that will exist when sharding is offered (the version 3
 list) or when Iris writes into a store someone else sharded.
 
-**Consolidation is a separate, one-shot step.** `CFDataset.finalise()` writes
-consolidated metadata; `close()` only releases resources. They are split
-because a worker that writes one slab of a store must not consolidate — N
-workers consolidating the same single metadata object is a race. Under
+#### Consolidation is a separate, one-shot step
+
+`CFDataset.finalise()` writes consolidated metadata; `close()` only releases
+resources. They are split because a worker that writes one slab of a store
+must not consolidate — N workers consolidating the same single metadata object
+is a race. Under
 `compute=False` the returned `Delayed` owns the `finalise()` call, after every
 chunk write. For netCDF, `finalise()` is a no-op.
 
@@ -993,8 +1021,10 @@ process that owns `finalise()`. A design that let workers create or resize
 arrays would have no such property, which is a further reason the invariant is
 written down rather than assumed.
 
-**Encoding.** `zlib`/`complevel` map to a Blosc or Gzip codec, `shuffle` to
-Blosc shuffle, `chunksizes` to `chunks`, `fletcher32` to Crc32c. `contiguous`,
+#### Encoding keywords
+
+`zlib`/`complevel` map to a Blosc or Gzip codec, `shuffle` to Blosc shuffle,
+`chunksizes` to `chunks`, `fletcher32` to Crc32c. `contiguous`,
 `endian` and `least_significant_digit` have no Zarr equivalent and raise
 `TypeError` if passed. Zarr adds `shards=` and `compressors=`, and
 `consolidate_metadata=True` (default `True`, since consolidation is what makes
@@ -1360,9 +1390,9 @@ attribution in the root group.
 
 Two of those are load-bearing rather than incidental. The **sharding codec**
 makes this the fixture that exercises the read-unit rule in §4.4 and the
-write-alignment invariant in §4.5, both of which an earlier draft got wrong;
-keeping it is what stops those regressions being caught only in synthetic
-tests. The **base64 `_FillValue`** is retained as the cross-reader conformance
+write-alignment invariant in §4.5, the two rules in this design most easily got
+wrong; keeping it is what stops those regressions being caught only in
+synthetic tests. The **base64 `_FillValue`** is retained as the cross-reader conformance
 case — it is xarray's version 3 encoding, not a producer defect (§4.4).
 
 **ESA EOPF Sentinel samples** — the version 2 and deep-group-hierarchy
@@ -1812,3 +1842,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Dropped `ZarrDataProxy` (§4.4): decoding becomes an explicit dask graph layer, `as_lazy_data` gains `cache_key=`, and the read-side chunk-alignment guard was added after `_optimum_chunksize` was shown to subdivide large store chunks. |
 | 2026-09-22 | Covered the write proxy (§4.5): no Zarr equivalent needed, `write_handle()` justified by present netCDF need, native Zarr regains the deferred saving NCZarr gave up, and the `da.store` return-type defect recorded as Q5. |
 | 2026-09-23 | Accepted all five findings of the #7292 review, all reproduced. Write alignment restated over shards; fill-value masking made version-aware and taken off the storage field; the base64 `_FillValue` corrected from "malformation" to xarray's convention, and now written as well as read; the read unit separated from the write unit; the Zarr cache keyed on `Array.metadata`. Tests named in §6; Q6 and Q7 opened. |
+| 2026-09-23 | Structural pass for readability. §4.4 and §4.5 given `####` subheadings throughout — they were 617 lines navigated only by run-in bold lead-ins, and `Encoding` had been nested under multi-process writes by accident. Design history recast from "an earlier draft said X" into the rule it implies ("do not do X, because Y"): same guidance against re-deriving the rejected answer, without depending on knowledge of a draft the reader never saw. No normative content changed. |
