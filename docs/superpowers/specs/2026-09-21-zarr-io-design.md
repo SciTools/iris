@@ -670,6 +670,15 @@ to ASCII `bytes` for netCDF. That coercion stays on the netCDF path only.
 array's `fill_value` set to match, as recommended in #6961. Writing a separate
 mask array is rejected as over-engineering for no CF benefit.
 
+The saver **must also write a `_FillValue` attribute** in this case, in the
+encoding above, even when the source cube carries no such attribute of its own.
+This follows directly from §4.4: on version 3 the CF attribute is the masking
+declaration and the storage `fill_value` is not, so a store written with the
+storage field alone would read back with **every masked point silently
+unmasked** — a round trip that loses the mask. Setting `fill_value` without
+`_FillValue` is the write-side form of the same conflation the read-side
+precedence made. §6 pins it with a masked round-trip test.
+
 **Deferred writes.** The netCDF saver defers lazy writes by closing the file,
 returning a `Delayed`, and reopening per chunk under a whole-file lock. Zarr
 needs no reopen: the store stays valid, and writes to *distinct chunks* are
