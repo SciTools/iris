@@ -104,6 +104,20 @@ Build output goes to `docs/src/_build/html/`.
    will break in CI.
 4. **API doc changes**: Moving or renaming public symbols requires updating
    any manual cross-references in the RST files.
+5. **Re-export packages (`__init__.py` importing from private modules)**:
+   run the docs build, and read the rendered page - the tests will not catch
+   these. Three failure modes, two of them silent:
+   - A public name missing from `__all__` is dropped from the page; autodoc
+     rejects it on `__module__`.
+   - Module-level **data** is documented only where the module's own source
+     assigns it. An imported name produces no entry, no warning and no
+     failure; `__all__` does not help. Re-state it with its `#:` comment.
+   - Never "fix" either by rewriting `__module__` onto the package.
+     `inspect` resolves a class's source through it, so that breaks
+     `getsource` and silently strips every `[source]` link. If a class is
+     also aliased as a class attribute, autodoc describes it twice and the
+     two collide - suppress the duplicate with `:meta private:` on the
+     alias instead.
 
 
 ## ⚠️ Meta-Instruction: Auto-Update Rule
