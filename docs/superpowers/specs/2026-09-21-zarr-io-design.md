@@ -540,8 +540,40 @@ import — the lazy-data layer reaching into a file format — and adding a seco
 PR 3 replaces it with a caller-supplied `cache_key=` keyword on
 `as_lazy_data`. The netCDF loader passes `repr(proxy)`, which is
 byte-for-byte the key computed today, so the change is behaviour-preserving and
-testable as such. The Zarr loader passes `(store location, array path, zarr
-format)`. `_lazy_data` then knows about no file format at all.
+testable as such. `_lazy_data` then knows about no file format at all.
+
+**The Zarr key must carry the array's metadata, not just its address.** An
+earlier draft proposed `(store location, array path, zarr format)`. That is an
+*address*, and `CACHE` is a process-wide `LRUCache(100)` (`_lazy_data.py:262`),
+so the address goes stale the moment a store is rewritten in place — which
+`mode="w"` supports and which a notebook or a long-running service does
+routinely. Two failure modes were reproduced against the real key shape
+**[verified]**:
+
+- an array reopened after its shape changed from `(4,)` to `(6,)` under fixed
+  chunking returned the **cached four values**, silently truncating;
+- an array whose storage `fill_value` changed from `-1` to `-2`, with chunks
+  left unwritten, returned the **old fill**, while a fresh open returned the
+  new one. Under the rules above that feeds the version 2 mask, so stale
+  metadata becomes wrongly masked data.
+
+Note that the address-only key would have been **weaker than the netCDF key it
+replaces**: `repr(NetCDFDataProxy)` already includes shape and dtype
+(`_thread_safe_nc.py:370-376`), so the first case above cannot happen on the
+netCDF path today. A relocation that quietly loosened the invariant would not
+have been behaviour-preserving.
+
+The Zarr loader therefore passes `(store location, array path,
+json.dumps(Array.metadata.to_dict(), sort_keys=True))`. The metadata document
+covers shape, chunks, shards, dtype, `fill_value`, codecs, `dimension_names`
+and attributes in one value; it is stable across reopen and distinguishes both
+cases above **[verified]**, at a few hundred characters per key.
+
+This narrows the window rather than closing it: metadata identity still cannot
+detect a store whose *chunk contents* changed under identical metadata. Neither
+can the netCDF key, so this is the existing standard and not a regression — but
+it is the reason the cache is an optimisation for array sharing *within* a
+load, and §12.3 Q6 records scoping it to a load session as the durable fix.
 
 **Read-side chunk alignment.** §4.5 fixes a write-side invariant: the dask
 chunking must tile the Zarr chunk grid exactly. Reading needs the same
