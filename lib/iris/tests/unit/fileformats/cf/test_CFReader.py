@@ -543,7 +543,7 @@ class Test_init_and_lifecycle:
             False,
         )
         wrapper_ds = mocker.patch(
-            "iris.fileformats.cf._variables._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.cf._reader._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         )
 
@@ -611,7 +611,7 @@ class Test_translate__grid_mapping_parse_errors:
             return_value=self.dataset,
         )
         mocker.patch(
-            "iris.fileformats.cf._variables.hh._parse_extended_grid_mapping",
+            "iris.fileformats.cf._reader.hh._parse_extended_grid_mapping",
             side_effect=iris.exceptions.CFParseError("failed to parse"),
         )
 
@@ -893,7 +893,9 @@ class Test_build_cf_groups__private_edge_cases:
         assert "temp_bnds" in self.reader.cf_group["temp"].cf_group.bounds
 
     def test_derived_bounds_boundary_guard_continue_branch(self, mocker):
-        # TODO: maybe the code itself is wrong and should be using isinstance?
+        # The branch under test is dead in production - see
+        # https://github.com/SciTools/iris/issues/7296 - so it can only be
+        # reached by patching the name the identity check compares against.
         root = CFCoordinateVariable("z", netcdf_variable(mocker, "z", "z", np.float64))
         term = CFAuxiliaryCoordinateVariable(
             "term", netcdf_variable(mocker, "term", "z", np.float64)
@@ -906,7 +908,7 @@ class Test_build_cf_groups__private_edge_cases:
         # The target must name the module whose global CFReader reads, not the
         # iris.fileformats.cf re-export, or the patch has no effect at all and
         # this test passes without exercising the branch.
-        mocker.patch("iris.fileformats.cf._variables.CFBoundaryVariable", term)
+        mocker.patch("iris.fileformats.cf._reader.CFBoundaryVariable", term)
         with iris.FUTURE.context(derived_bounds=True):
             self.reader._build_cf_groups({})
 

@@ -26,6 +26,8 @@ References
 
 """
 
+from ._group import CFGroup
+from ._reader import CFReader, reference_terms
 from ._variables import (
     CFAncillaryDataVariable,
     CFAuxiliaryCoordinateVariable,
@@ -34,15 +36,12 @@ from ._variables import (
     CFCoordinateVariable,
     CFDataVariable,
     CFGridMappingVariable,
-    CFGroup,
     CFLabelVariable,
     CFMeasureVariable,
-    CFReader,
     CFUGridAuxiliaryCoordinateVariable,
     CFUGridConnectivityVariable,
     CFUGridMeshVariable,
     CFVariable,
-    reference_terms,
 )
 
 __all__ = [
