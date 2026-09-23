@@ -599,19 +599,48 @@ why the NCZarr special case in `Saver.__exit__` (saver.py:485-498) is
 untouched: it is a different, older path.
 
 `lock=False` is licensed by an invariant, not by Zarr being inherently safe.
-Two dask tasks that touch the *same* Zarr chunk race: each reads the chunk,
-modifies its slice and writes the whole chunk back, so one update is silently
-lost. Therefore:
+Two dask tasks that touch the *same stored object* race: each reads it,
+modifies its slice and writes the whole object back, so one update is silently
+lost.
 
-> **Chunk-alignment invariant.** Every Zarr array Iris writes has a chunk grid
-> that the lazy source's dask chunking tiles exactly.
+**The stored object is the shard, not the chunk, whenever sharding is
+enabled.** An earlier draft stated this invariant over the chunk grid alone.
+That is insufficient, and the gap is not theoretical — it silently destroys
+data. With `da.arange(128, chunks=8)` stored into an array with `chunks=(8,)`
+and `shards=(64,)`, the dask chunking tiles the chunk grid *exactly*, yet
+threaded `da.store(..., lock=False)` lost 72–96 of 128 values in **12 of 12
+trials** **[verified]**. Eight inner chunks share one shard; eight tasks
+read-modify-write that one object. Therefore:
 
-`create_variable` derives `chunks` from the source's dask chunking by default,
-so the invariant holds by construction. Where the caller forces `chunksizes=`
-that the source does not tile, the saver rechunks the dask source to match
-before storing. It never issues an unaligned concurrent write. This is the same
-guarantee xarray spells `safe_chunks`, and it is a correctness requirement
-today, not only a precondition for the future work below.
+> **Write-alignment invariant.** Every Zarr array Iris writes has a *write
+> grid* that the lazy source's dask chunking tiles exactly, where the write
+> grid is `Array.shards` when the array is sharded and `Array.chunks`
+> otherwise. Each concurrent task owns at least one whole write-grid cell; no
+> cell is touched by two tasks. A truncated final cell is permitted.
+
+The fix was checked on the same reproduction **[verified]**: aligning the
+source to the shard (`chunks=64`) or to a whole multiple of it (`chunks=128`)
+gives 0 of 12 corrupt trials, as does the unsharded case. Serialising with
+`lock=True` also fixes it, at the cost of the concurrency the design exists to
+get.
+
+`create_variable` derives the write grid from the source's dask chunking by
+default, so the invariant holds by construction. Where the caller forces
+`chunksizes=` or a `shards=` encoding that the source does not tile, the saver
+rechunks the dask source to match before storing. It never issues an unaligned
+concurrent write.
+
+This is the same guarantee xarray spells `safe_chunks`, and xarray states it
+over the same unit — `effective_write_chunks = encoding.get("shards") or
+encoding["chunks"]`, added for exactly this corruption
+(`xarray/backends/zarr.py:1304-1316`, pydata/xarray#10831). The earlier draft
+cited the right precedent and then under-specified it.
+
+It is a correctness requirement today, not only a precondition for the future
+work below, and it binds even though the saver does not offer a `shards=`
+keyword yet: the invariant is what licenses `lock=False`, so it has to be
+stated over the unit that will exist when sharding is offered (the version 3
+list) or when Iris writes into a store someone else sharded.
 
 **Consolidation is a separate, one-shot step.** `CFDataset.finalise()` writes
 consolidated metadata; `close()` only releases resources. They are split
@@ -1012,6 +1041,11 @@ Includes a test that `iris.save(cubes, "out.zarr", compute=False)` returns a
 NCZarr path cannot offer (§4.5), and the contract the netCDF path is currently
 breaking (§12.3 Q5).
 
+Also carries the §6 write tests the #7292 review made mandatory: the
+write-alignment invariant on a sharded target, which silently loses data
+without it, and the bidirectional cross-reader conformance test — xarray must
+open every store Iris writes.
+
 After this pull request, `iris.save(cubes, "out.zarr")` works.
 
 ### PR 7 — Real-world test data and benchmarks
@@ -1211,7 +1245,7 @@ differentiator for netCDF, it is asked for by name, and zarr-python offers
 nothing to build on — version 3.4.0 warns `"synchronizer is not yet
 implemented"` **[verified]**, so it will be Iris's own machinery when it comes.
 §4.5 lists the four provisions that keep it a later addition rather than a
-redesign, and the chunk-alignment invariant it depends on is a correctness
+redesign, and the write-alignment invariant it depends on is a correctness
 requirement of the first release regardless. Anything in review that would
 break those provisions should be treated as in scope, not out of it.
 
