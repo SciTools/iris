@@ -8,7 +8,7 @@ import warnings
 
 import pytest
 
-from iris.fileformats.cf import _CFFormulaTermsVariable
+from iris.fileformats.cf._variables import _CFFormulaTermsVariable
 import iris.warnings
 
 from .identify_mixins import _NetCDFVar, assert_warning_gated

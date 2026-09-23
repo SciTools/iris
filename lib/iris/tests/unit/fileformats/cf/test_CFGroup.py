@@ -10,9 +10,10 @@ from unittest.mock import MagicMock
 import pytest
 
 from iris.fileformats import cf
+from iris.fileformats.cf import _variables
 
 VariableMap: dict[type[cf.CFVariable], Callable] = {
-    cf._CFFormulaTermsVariable: cf.CFGroup.formula_terms,
+    _variables._CFFormulaTermsVariable: cf.CFGroup.formula_terms,
     cf.CFAncillaryDataVariable: cf.CFGroup.ancillary_variables,
     cf.CFAuxiliaryCoordinateVariable: cf.CFGroup.auxiliary_coordinates,
     cf.CFBoundaryVariable: cf.CFGroup.bounds,
@@ -109,7 +110,9 @@ class TestProperties:
         expected = {
             mocked.cf_name
             for mocked in mock_variables_all
-            if not isinstance(mocked, (cf.CFDataVariable, cf._CFFormulaTermsVariable))
+            if not isinstance(
+                mocked, (cf.CFDataVariable, _variables._CFFormulaTermsVariable)
+            )
         }
         assert cf_group_populated.non_data_variable_names == expected
 

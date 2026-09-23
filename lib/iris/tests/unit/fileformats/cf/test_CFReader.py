@@ -543,7 +543,7 @@ class Test_init_and_lifecycle:
             False,
         )
         wrapper_ds = mocker.patch(
-            "iris.fileformats.cf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.cf._variables._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         )
 
@@ -611,7 +611,7 @@ class Test_translate__grid_mapping_parse_errors:
             return_value=self.dataset,
         )
         mocker.patch(
-            "iris.fileformats.cf.hh._parse_extended_grid_mapping",
+            "iris.fileformats.cf._variables.hh._parse_extended_grid_mapping",
             side_effect=iris.exceptions.CFParseError("failed to parse"),
         )
 
@@ -903,7 +903,10 @@ class Test_build_cf_groups__private_edge_cases:
         self.reader.cf_group["term"] = term
 
         # Force the exact identity check branch in CFReader._build_cf_groups.
-        mocker.patch("iris.fileformats.cf.CFBoundaryVariable", term)
+        # The target must name the module whose global CFReader reads, not the
+        # iris.fileformats.cf re-export, or the patch has no effect at all and
+        # this test passes without exercising the branch.
+        mocker.patch("iris.fileformats.cf._variables.CFBoundaryVariable", term)
         with iris.FUTURE.context(derived_bounds=True):
             self.reader._build_cf_groups({})
 

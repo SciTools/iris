@@ -7,6 +7,7 @@
 import pytest
 
 from iris.fileformats import cf as cf
+from iris.fileformats.cf import _variables
 
 
 class CFVariableSub(cf.CFVariable):
@@ -92,7 +93,7 @@ class TestIdentifyCommon:
 
 class TestSpans:
     def test_scalar_dimension_always_true(self, mocker, nc_var):
-        nc_var.dimensions = (cf._NCZARR_SCALAR_DIMENSION,)
+        nc_var.dimensions = (_variables._NCZARR_SCALAR_DIMENSION,)
         cf_var = CFVariableSub("scalar", nc_var)
 
         other = mocker.MagicMock()
