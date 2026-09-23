@@ -48,6 +48,14 @@ stores are cited as evidence that a code path will be exercised, and where such
 a store is non-conforming it is named as a malformation and handled with a
 warning — never by bending the reader to fit one publisher's files.
 
+Where the two specifications are silent and an established *de-facto*
+convention has filled the gap, that is a third case, distinct from both a
+specification rule and a publisher's mistake — and misreading it as the latter
+is its own failure mode (§4.4, `_FillValue`). Such a convention is adopted only
+when it is named, its source cited, and the cost of ignoring it stated. The
+test of one is whether an independent reader depends on it, not whether a file
+happens to contain it.
+
 ---
 
 ## 2. What exists today
@@ -139,6 +147,15 @@ Iris must merely defend against:
   `"-Infinity"`, or the hex string form `"0xYYYYYYYY"`; base64 is not among
   them. CF's `_FillValue` is an *optional attribute*. These are two different
   things, and the design reconciles them rather than conflating them.
+- **`fill_value` says what unwritten storage reads as. It does not say the
+  value is missing.** The two are easy to conflate and the conflation is
+  destructive: zarr-python defaults `fill_value` to **zero** — `np.int16(0)`
+  for `int16`, `np.float32(0.0)` for `float32`, on both version 2 and version
+  3 **[verified]**. Treating it as a CF missing-value sentinel masks every
+  valid zero in an array that simply never specified one. And because the
+  field is *required* on version 3, there is no "array without a usable
+  `fill_value`" case for a CF attribute to fall back into. §4.4 sets the
+  precedence accordingly.
 
 ---
 
@@ -386,27 +403,69 @@ merge-back owes: everything else in the programme is new capability, a
 relocation or a deprecation.
 
 **Fill values.** Zarr's array-level `fill_value` and CF's `_FillValue`
-attribute are different things — see §2.4 — so Iris reads
-`Array.fill_value`, which is required to exist and to be typed, and falls back
-to the `_FillValue` attribute only when the array carries no usable one. That
-ordering follows from the two specifications and holds for every store, not
-just the ones that have been looked at.
+attribute are different things — see §2.4 — and the difference runs the
+opposite way to the intuitive one. `fill_value` is a *storage* fact: it is what
+a chunk that was never written reads back as. `_FillValue` is a *semantic*
+one: it declares a value to mean "missing". Only the second is a masking
+instruction, so **the CF attribute governs masking and the storage field does
+not.**
 
-A `_FillValue` attribute whose value is not a number of the array's type is a
-CF violation on the producer's side: CF §2.5.1 requires "the scalar attribute
-with the name `_FillValue` and of the same type as its variable". It is
-nevertheless legal *Zarr*, because an attribute value may be any JSON literal.
-Iris therefore ignores such a value and emits an `IrisCfLoadWarning` naming the
-variable and the offending value. Warning rather than raising, because the
-array-level `fill_value` already gives the correct answer and refusing to load
-published data over a producer's metadata bug helps nobody.
+The precedence is therefore version-aware, matching what released xarray does
+(`use_zarr_fill_value_as_mask`, `xarray/backends/zarr.py:1989-1995`):
 
-The NOAA GFS store is a live instance: the `_FillValue` attribute of every
-`float32` data variable is the string `'AAAAAAAA+H8='` **[verified]** — base64
-of a `float64` NaN — while `Array.fill_value` is correctly `float32` NaN. This
-is a **file malformation to defend against, not a property of Zarr.** It is
-cited here as evidence that the warning path will be exercised in the wild, and
-the cut-down fixture keeps the attribute verbatim so the test suite covers it.
+| | masking source |
+|---|---|
+| **Version 3** | the CF `_FillValue`/`missing_value` attributes only. `Array.fill_value` is *not* a mask source |
+| **Version 2** | `Array.fill_value` is used as the mask source when no CF attribute is present, because version 2 stores predate the convention and this is what their writers meant |
+
+Reading `Array.fill_value` as a sentinel on version 3 would mask valid data in
+the ordinary case, not the exotic one: zarr-python defaults the field to zero,
+so an `int16` array holding `[0, 1, 2]` with no CF attributes at all has its
+valid zero masked **[verified]**. And since the field is *required* on version
+3, an "only when the array carries no usable one" fallback would never fire, so
+a genuine CF sentinel that differs from the storage fill — `_FillValue = -999`
+over a default `fill_value = 0` — could never win. Both cases were reproduced
+against a store written by xarray **[verified]**.
+
+`Array.fill_value` is still read, and still used: it is what an unwritten chunk
+yields, it round-trips through `create_variable` on save (§4.5), and on version
+2 it is the mask source above. It is simply not a CF missing-value declaration.
+
+**A floating `_FillValue` is base64 on version 3, and that is a convention, not
+a malformation.** Released xarray encodes a floating-point `_FillValue`
+attribute as base64 of a little-endian `float64` — `struct.pack("<d", value)`
+— for *every* floating dtype including `float32`, and its reader *requires*
+that form, raising `TypeError` for a plain JSON number
+(`FillValueCoder.encode`/`decode`, `xarray/backends/zarr.py:144-149` and
+`185-191`).
+
+An earlier draft of this section called the NOAA GFS store's
+`_FillValue` of `'AAAAAAAA+H8='` a publisher's CF violation and a "file
+malformation to defend against". That was wrong.
+`base64(struct.pack("<d", float("nan")))` **is** `'AAAAAAAA+H8='`
+**[verified]**, and writing a `float32` NaN with xarray produces that literal
+string **[verified]**. It is the de-facto encoding for Zarr version 3, not one
+publisher's slip, and most version 3 data in the wild will carry it. Treating
+it as malformed would have meant warning on essentially every xarray-written
+store.
+
+So Iris **reads** both forms on version 3 — a base64 string decoded as
+`float64` and narrowed to the array dtype, or a JSON number — and writes the
+base64 form (§4.5). CF §2.5.1 does require "the scalar attribute with the name
+`_FillValue` and of the same type as its variable", and base64 is a deliberate,
+documented deviation from that, taken because interoperability with the other
+Zarr readers is the reason for native Zarr support in the first place. It is
+one narrow exception for one attribute whose dtype is load-bearing; it is not a
+general licence to reshape the reader around whatever a file happens to
+contain, and it does not reopen the base64-envelope rejection for general
+attributes (§4.5).
+
+A `_FillValue` that is neither a number nor a decodable base64 string of the
+right width is still a producer error: Iris ignores it and emits an
+`IrisCfLoadWarning` naming the variable and the value.
+
+The cut-down NOAA fixture keeps the attribute verbatim, now as the
+**cross-reader conformance case** rather than as a malformation sample.
 
 **Attributes that are not scalars or strings.** This one *is* a property of
 Zarr: the version 3 specification says an attribute value can be an arbitrary
@@ -578,9 +637,31 @@ record it as parked for a dedicated discussion; nothing else in the design
 depends on how it is settled.
 
 Two attributes are exempt because their dtype is load-bearing: `_FillValue` and
-`missing_value` are written as the Python scalar matching the array dtype, and
-the array's own `fill_value` is set to the same value, so an unwritten chunk
-reads back as missing.
+`missing_value`. They are written in the encoding released xarray reads, which
+on version 3 is **dtype-dependent**:
+
+| array dtype | `_FillValue` attribute written |
+|---|---|
+| floating | base64 of `struct.pack("<d", value)` — a `float64` payload, including for `float32` |
+| integer | a plain JSON integer |
+
+The array's own `fill_value` is set to the same value in its native type, so an
+unwritten chunk still reads back as missing.
+
+The floating case is the deviation from CF §2.5.1 argued in §4.4, and it is
+load-bearing in the literal sense: writing a plain JSON number instead makes
+the store **unreadable by default xarray**, which raises
+
+```
+TypeError: Failed to decode fill_value: expected str or bytes for dtype float32, got float
+```
+
+and fails the whole dataset open, not merely the one variable **[verified]**.
+An Iris-written store that no other Zarr reader can open would defeat the
+purpose of writing Zarr rather than netCDF. Note the check that catches this
+already existed on paper: §6 promises that xarray must read what Iris writes,
+and says "if xarray cannot read Iris output, the decision was wrong". That test
+now has a specific case to carry.
 
 `_bytes_if_ascii` and `_setncattr` (saver.py:271, 290) coerce attribute values
 to ASCII `bytes` for netCDF. That coercion stays on the netCDF path only.
@@ -1172,6 +1253,13 @@ two-dimensional `valid_time` auxiliary coordinate, all source attributes
 verbatim including the base64 `_FillValue`, and the `CC-BY-4.0` licence and
 attribution in the root group.
 
+Two of those are load-bearing rather than incidental. The **sharding codec**
+makes this the fixture that exercises the read-unit rule in §4.4 and the
+write-alignment invariant in §4.5, both of which an earlier draft got wrong;
+keeping it is what stops those regressions being caught only in synthetic
+tests. The **base64 `_FillValue`** is retained as the cross-reader conformance
+case — it is xarray's version 3 encoding, not a producer defect (§4.4).
+
 **ESA EOPF Sentinel samples** — the version 2 and deep-group-hierarchy
 fixture, exercising the `group=` keyword and the `_ARRAY_DIMENSIONS` path.
 
@@ -1224,6 +1312,7 @@ preserved because that is what is being tested.
 | zarr-python uses Effective Effort Versioning, not semantic versioning | Pin `>=3.0.8`, which is above the known data-loss bug, and rely on CI to catch drift |
 | Attribute dtype loss surprises someone | Documented; round-trip tests assert values not dtypes; xarray reads the output (§6); base64 remains available as a later opt-in |
 | Designing against one publisher's files produces brittle code | Every behaviour in §4 is justified from the Zarr and CF specifications first; a real file is cited only as evidence that a path will be exercised. Where a file is non-conforming it is labelled a malformation and handled with a warning, never by bending the reader (§4.4) |
+| Mistaking a de-facto convention for a publisher's mistake — the inverse risk, and the one that actually bit | Before calling a file non-conforming, check whether an independent reader *depends* on the form. The `_FillValue` encoding failed that check: it was xarray's, and the numeric alternative made Iris output unopenable (§4.4). The bidirectional cross-reader tests in §6 are the standing guard |
 | Consolidated metadata is not in the version 3 specification | Written by default because remote stores are unusable without it; controllable by keyword; readers that ignore it still work |
 
 ---
@@ -1392,10 +1481,11 @@ Append-only. Each entry is the decision, not the discussion.
   Q1 above, issue #7288, §10.
 - **Method:** behaviour is justified from the Zarr and CF specifications, and a
   real file is cited only as evidence that a code path gets exercised. Two
-  earlier claims credited to "real data" were re-examined under this rule: the
-  base64 `_FillValue` turned out to be a publisher's CF violation, and nested
-  JSON attributes turned out to be already in the Zarr specification. Now
-  recorded in `lib/iris/AGENTS.md`.
+  earlier claims credited to "real data" were re-examined under this rule:
+  ~~the base64 `_FillValue` turned out to be a publisher's CF violation~~
+  **— wrong, corrected 2026-09-23 below; it is xarray's version 3 encoding —**
+  and nested JSON attributes turned out to be already in the Zarr
+  specification. Now recorded in `lib/iris/AGENTS.md`.
 
 **2026-09-22 — agreed with @trexfeathers**
 
