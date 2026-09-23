@@ -23,10 +23,12 @@ a formula term is a property of the variable rather than of its class.
 Two attributes sit alongside the variables and are populated by the reader,
 not by this module. ``global_attributes`` holds the file's netCDF global
 attributes. ``promoted`` records the variables that the reader re-classified
-as :class:`~iris.fileformats.cf.CFDataVariable` after finding they were
-referenced by nothing -- an unreferenced coordinate-like variable is a
-data pay-load in its own right, and promoting it is how Iris avoids silently
-dropping it.
+as :class:`~iris.fileformats.cf.CFDataVariable`, which it does for two
+distinct reasons: a formula term that names a reference surface is a data
+pay-load in its own right, per [CF] Appendix D; and a variable that was
+referenced but whose dimensions are not a subset of the referrer's is dropped
+from that referrer with a warning, then promoted so that it is not lost
+altogether. Promotion is how Iris avoids silently discarding either.
 
 """
 

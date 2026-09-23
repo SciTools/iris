@@ -34,12 +34,11 @@ def _origin(value, fallback):
 def _defined_public_names(module):
     """Return the public names a module's own source binds at the top level.
 
-    Read from the source rather than from ``vars()``, for two reasons. An
-    imported name is indistinguishable from a defined one in ``vars()``
-    without consulting ``__module__``, which the package deliberately rewrites
-    (see ``cf/__init__.py``); and ``__module__`` does not exist at all on data
-    members such as ``reference_terms``, so a ``vars()`` walk would miss the
-    one kind of name that has already gone astray once.
+    Read from the source rather than from ``vars()``, because ``__module__``
+    does not exist at all on data members such as ``reference_terms``. A
+    ``vars()`` walk would therefore have to skip exactly the kind of name that
+    has already gone astray once - see
+    ``test_data_members_are_assigned_in_the_package_source``.
     """
     tree = ast.parse(Path(inspect.getsourcefile(module)).read_text())
     names = set()
@@ -62,14 +61,15 @@ def test_public_names_are_re_exported(module):
 
 
 @pytest.mark.parametrize("name", cf.__all__)
-def test_public_names_report_the_package_as_their_module(name):
-    # The split must be invisible. __module__ is what repr() prints and what
-    # pickle records, and before the split every one of these said
-    # "iris.fileformats.cf" - see cf/__init__.py. reference_terms is a dict
-    # and has no __module__ to check.
+def test_re_exported_classes_keep_their_source(name):
+    # Rewriting __module__ to the package - a tempting way to hide the split
+    # from repr() - makes inspect look for the class body in __init__.py,
+    # where it is not. That breaks getsource, IPython's "??", debuggers, and
+    # silently drops the "[source]" link from every class on the API page,
+    # with no warning in the docs build to say so. See the plan, section 8.4.
     value = getattr(cf, name)
     if isinstance(value, type):
-        assert value.__module__ == "iris.fileformats.cf"
+        assert inspect.getsource(value).lstrip().startswith("class ")
 
 
 def test_data_members_are_assigned_in_the_package_source():
@@ -117,6 +117,9 @@ def test_imports_in_a_fresh_interpreter(first_import):
         [sys.executable, "-c", code],
         capture_output=True,
         text=True,
+        # An import deadlock is one of the failures this is looking for, and
+        # without a timeout it would hang the suite instead of failing it.
+        timeout=120,
     )
     assert completed.returncode == 0, completed.stderr
 

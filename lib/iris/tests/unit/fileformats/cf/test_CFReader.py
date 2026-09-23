@@ -892,24 +892,47 @@ class Test_build_cf_groups__private_edge_cases:
 
         assert "temp_bnds" in self.reader.cf_group["temp"].cf_group.bounds
 
-    def test_derived_bounds_boundary_guard_continue_branch(self, mocker):
+    @pytest.mark.parametrize("guard_fires", [False, True])
+    def test_derived_bounds_boundary_guard_continue_branch(self, mocker, guard_fires):
         # The branch under test is dead in production - see
         # https://github.com/SciTools/iris/issues/7296 - so it can only be
         # reached by patching the name the identity check compares against.
-        root = CFCoordinateVariable("z", netcdf_variable(mocker, "z", "z", np.float64))
-        term = CFAuxiliaryCoordinateVariable(
-            "term", netcdf_variable(mocker, "term", "z", np.float64)
+        #
+        # Both cases are run because the guard's only effect is to skip the
+        # promotion below it, so promotion is the sole observable that
+        # distinguishes them. Asserting anything else - that the term is still
+        # in cf_group.formula_terms, say - holds either way, and would leave
+        # the test passing while the branch went unexercised.
+        root = CFCoordinateVariable(
+            "z",
+            netcdf_variable(
+                mocker,
+                "z",
+                "z",
+                np.float64,
+                standard_name="atmosphere_hybrid_height_coordinate",
+            ),
         )
-        term.add_formula_term("z", "a")
+        term = CFAuxiliaryCoordinateVariable(
+            "orog", netcdf_variable(mocker, "orog", "z", np.float64)
+        )
+        # "orog" is the reference surface term for this standard name, so
+        # without the guard it qualifies for promotion to a CFDataVariable.
+        term.add_formula_term("z", "orog")
         self.reader.cf_group["z"] = root
-        self.reader.cf_group["term"] = term
+        self.reader.cf_group["orog"] = term
 
-        # Force the exact identity check branch in CFReader._build_cf_groups.
-        # The target must name the module whose global CFReader reads, not the
-        # iris.fileformats.cf re-export, or the patch has no effect at all and
-        # this test passes without exercising the branch.
-        mocker.patch("iris.fileformats.cf._reader.CFBoundaryVariable", term)
+        if guard_fires:
+            # Force the exact identity check in CFReader._build_cf_groups. The
+            # target must name the module whose global CFReader reads, not the
+            # iris.fileformats.cf re-export, or the patch has no effect at all
+            # and the guard never fires - which is what the False case detects.
+            mocker.patch("iris.fileformats.cf._reader.CFBoundaryVariable", term)
+
         with iris.FUTURE.context(derived_bounds=True):
             self.reader._build_cf_groups({})
 
-        assert "term" in self.reader.cf_group.formula_terms
+        if guard_fires:
+            assert "orog" not in self.reader.cf_group.promoted
+        else:
+            assert "orog" in self.reader.cf_group.promoted

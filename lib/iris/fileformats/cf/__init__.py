@@ -19,6 +19,12 @@ Import from :mod:`iris.fileformats.cf`, not from the private modules: the file
 layout is deliberately free to change, and it will, as the format-agnostic CF
 machinery grows a dataset abstraction, a loader and a saver.
 
+The re-exported classes keep the ``__module__`` their defining module gives
+them, so ``repr(CFReader)`` names ``iris.fileformats.cf._reader`` rather than
+this package. That is the same trade-off :mod:`iris.mesh` already makes, and
+it is the one that keeps ``inspect.getsource`` and the documentation's
+``[source]`` links working. See the plan, section 8.4.
+
 References
 ----------
     [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
@@ -70,16 +76,3 @@ reference_terms = reference_terms
 # puts it on the API reference page. Sphinx autodoc documents module data only
 # where the module's own source assigns it; an imported name it silently drops,
 # with no warning and no build failure. See the plan, section 8.4.
-
-# Present every re-exported class as belonging to this module, which is where
-# it was defined before the package split and where callers are told to reach
-# it. This is not cosmetic: __module__ is what repr() prints, what pickle
-# records, and what Sphinx uses to decide a class's canonical name. Leaving it
-# pointing at the private module would change all three, and would make Sphinx
-# register CFGroup twice - once directly and once as the CFReader.CFGroup
-# alias - which fails the docs build outright under RTD's fail_on_warning.
-for _name in __all__:
-    _obj = globals()[_name]
-    if isinstance(_obj, type):
-        _obj.__module__ = __name__
-del _name, _obj

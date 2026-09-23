@@ -117,6 +117,16 @@ class CFReader:
         CFUGridMeshVariable,
     )
 
+    #: Alias of :class:`~iris.fileformats.cf.CFGroup`, for callers that reach
+    #: it through the reader.
+    #:
+    #: Hidden from the documentation because autodoc would otherwise describe
+    #: ``CFGroup`` twice - once as a member of the package and once as this
+    #: attribute - and the two descriptions collide, which fails the build
+    #: outright under Read the Docs' ``fail_on_warning``. The alias itself is
+    #: unaffected; only its duplicate documentation entry goes.
+    #:
+    #: :meta private:
     CFGroup = CFGroup
 
     def __init__(self, file_source, warn=False, monotonic=False):

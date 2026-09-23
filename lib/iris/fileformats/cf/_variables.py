@@ -33,10 +33,14 @@ The CF-UGRID classes for unstructured meshes live here rather than in
 the same pass in :class:`~iris.fileformats.cf.CFReader`. What they identify is
 handed to :mod:`iris.mesh` to build the mesh proper.
 
-Nothing in this module reads array data or opens a file. It is given netCDF
-variables and returns classifications;
-:mod:`iris.fileformats.cf._group` collects them and
-:mod:`iris.fileformats.cf._reader` drives the whole thing.
+This module opens no files. It is given netCDF variables and returns
+classifications; :mod:`iris.fileformats.cf._group` collects them and
+:mod:`iris.fileformats.cf._reader` drives the whole thing. It does read array
+data in exactly one place: ``CFCoordinateVariable.identify`` fetches a
+candidate's values when called with ``monotonic=True``, because whether a
+coordinate is monotonic cannot be told from its metadata. That is the only
+path here that touches data, and it is reached only from
+``CFReader(..., monotonic=True)``.
 
 """
 
