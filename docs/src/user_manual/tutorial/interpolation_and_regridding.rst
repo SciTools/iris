@@ -27,8 +27,9 @@ In Iris we refer to the available types of interpolation and regridding as
 `schemes`. The following are the interpolation schemes that are currently
 available in Iris:
 
-* linear interpolation (:class:`iris.analysis.Linear`), and
-* nearest-neighbour interpolation (:class:`iris.analysis.Nearest`).
+* linear interpolation (:class:`iris.analysis.Linear`),
+* nearest-neighbour interpolation (:class:`iris.analysis.Nearest`), and
+* pchip interpolation (:class:`iris.analysis.Pchip`).
 
 The following are the regridding schemes that are currently available in Iris:
 
