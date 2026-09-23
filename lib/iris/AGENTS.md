@@ -12,19 +12,14 @@ It is an orientation map only; algorithm detail belongs in module docstrings.
 
 ## Why This File Exists
 
-Iris will be maintained by humans and agents together for the foreseeable
-future. Agents read code through a narrow context window using text search,
-and cannot run the code to find out what it does. Humans read with intuition
-and experience, but limited patience.
-
-These two readers want mostly the same things: explicit names, local
-reasoning, small units. This file records that shared style, plus the few
-places where the two genuinely diverge and which way to resolve them.
-
-Note that models are trained to imitate human code and to please human diff
-reviewers — not to produce code that is cheap to navigate later. Default
-output therefore drifts towards long functions, redundant comments and
-defensive wrapping. Correct for that deliberately.
+Iris is maintained by humans and agents together. Agents read through a
+narrow context window using text search and cannot run the code; humans read
+with intuition but limited patience. Both want explicit names, local
+reasoning and small units. This file records that shared style, plus the few
+places the two diverge and which way to resolve them. Models are trained to
+please diff reviewers rather than to produce code that is cheap to navigate
+later, and drift towards long functions, redundant comments and defensive
+wrapping; correct for that deliberately.
 
 
 ## Fast Rules
@@ -48,7 +43,8 @@ defensive wrapping. Correct for that deliberately.
   `iris.common.mixin`, metadata managers), follow the existing pattern rather
   than inventing a parallel one.
 - Do not add indirection (registry, dispatch dict, plugin hook, base class)
-  for a single caller.
+  for a single caller. This governs implementation layers, not API surface;
+  a package `__init__.py` that re-exports is not indirection, see below.
 - Pass dependencies in as arguments rather than reaching for module-level
   mutable state.
 
@@ -60,10 +56,20 @@ does not exist.
 
 - Never construct identifiers at runtime: no `setattr(obj, f"{name}_bounds",
   ...)`, no `getattr(module, method_name)` dispatch where a dict or `if/elif`
-  would do. A constructed name is unfindable for every reader.
+  would do. A constructed name is unfindable for every reader. This bans
+  *computed* names only — `getattr(var, "cf_role", "")` is a safe lookup with
+  a greppable literal and is the preferred idiom for optional CF attributes.
 - Give public names enough distinctiveness to search for. Local `data`,
   `cube`, `result` are fine; a public helper called `_process` is not.
 - Declare `__all__` in modules with a public surface. No `import *`.
+- **Re-export freely from a package `__init__.py`.** Surfacing objects at
+  the level users import from is a real convenience, and it keeps the file
+  layout free to change later. `iris.mesh` is the model: explicit
+  `from .components import MeshXY`, gathered into `__all__`. Re-export
+  verbatim — never rename on the way out, never wrap in `try`/conditional
+  imports, never put logic in `__init__.py`. Each object stays defined in
+  one module, so `class MeshXY` still finds it in a single grep.
+  (`iris.common` uses `import *`; that is legacy, not a pattern to copy.)
 - Make error and warning messages distinctive and mostly static, so a
   traceback maps to exactly one line. Put interpolated values at the end:
   `f"Cannot collapse a coordinate with bounds: {coord.name()}"`.
@@ -86,6 +92,18 @@ does not exist.
   the call realises data.
 
 
+## Conform to the Specification, Not to the Sample File
+
+Iris implements published conventions — CF, UGRID, Zarr, netCDF. Sample files
+are evidence that a code path gets exercised, not authority for what it should
+do. Derive behaviour from the convention's text and cite the section; before
+claiming a file taught you something general, check whether the convention
+already says it. When a real file disagrees with the convention, the file is
+wrong: warn (`iris.warnings`) naming the variable and the offending value,
+and carry on. Do not reshape the reader around one publisher's output; raise
+only where the data cannot be interpreted at all.
+
+
 ## Comments and Docstrings
 
 A stale comment is worse than no comment — an agent treats it as evidence and
@@ -105,18 +123,13 @@ a human treats it as documentation.
 
 ## Module Docstrings Carry the Explanation
 
-Prose explaining a subsystem has to live somewhere, and the module docstring
-is the best available home. Inline comments are the wrong place: they
-interrupt the code for every reader and scatter a single argument across
-dozens of sites. A companion Markdown file is also wrong: nothing validates
-it, nothing forces anyone to open it, and it rots unseen. The module
-docstring is the only location that is read automatically whenever the file
-is opened, published by Sphinx, checked by numpydoc, and reviewed in the same
-diff as the code it describes.
+Prose explaining a subsystem belongs in the module docstring. Inline comments
+scatter one argument across dozens of sites; a companion Markdown file is
+validated by nothing and rots unseen. Only the docstring is read on every
+visit, published by Sphinx, checked by numpydoc, and reviewed in the diff.
 
-Be generous with it. Sixty lines of orientation above a two-thousand-line
-module is cheap, because it is read once per visit rather than once per call
-site. Stop short of a tutorial.
+Be generous: sixty lines of orientation above a two-thousand-line module is
+cheap, read once per visit rather than once per call site. Not a tutorial.
 
 Cover whichever apply:
 
@@ -130,34 +143,30 @@ Leave out anything a reader or Sphinx can already derive: API listings,
 signatures, call sequences, per-release history. Explanation scoped to a
 single class belongs in that class's docstring instead.
 
-**Exemption to "do not document code you did not change":** if you had to
-work out how a subsystem behaves in order to edit it, writing that
-understanding into the module docstring is in scope. The comprehension was
-expensive and is otherwise discarded when your context ends; the next reader,
-human or agent, should not have to repeat it. Several of the most commonly
-misread modules — `_concatenate.py`, `_merge.py`, `common/resolve.py` —
-currently carry only a line or two of module docstring apiece.
+**Exemption to "do not document code you did not change":** if you had to work
+out how a subsystem behaves in order to edit it, write that understanding into
+the module docstring — the comprehension is otherwise discarded when your
+context ends. `_concatenate.py`, `_merge.py` and `common/resolve.py` are the
+most commonly misread modules and carry barely a line each.
 
 
 ## Size and Shape
 
 Agents pay for every line they read; humans lose the thread. Existing giants
-such as `cube.py` (~5600 lines) are legacy — do not grow them without cause,
-but do not opportunistically split them either.
+such as `cube.py` (~5600 lines) are legacy: do not grow them without cause,
+but do not opportunistically split them either — put genuinely separable new
+code in a private sibling module instead.
 
 - New modules: aim under ~1000 lines, one coherent concept each.
 - Functions: aim to fit one screen (~50 lines).
 - Use guard clauses and early returns instead of nested conditionals.
 - Nesting beyond three levels is a signal to extract a named helper.
-- When adding genuinely separable code to an oversized module, put it in a
-  new private sibling module rather than growing the giant.
 
 
 ## Where Human and Agent Preferences Diverge
 
 | Tension | Resolution |
 |---|---|
-| Verbosity vs concision | Favour explicit. But never narrate line by line. |
 | Abstraction vs duplication | Duplicate up to ~3 occurrences; abstract only once the shape is proven. |
 | Clever idiom vs plain code | Plain. No nested comprehensions beyond two levels, no walrus inside complex expressions, no metaclass tricks. |
 | Small files vs cohesion | Cohesion wins. Do not fragment into micro-modules purely to shrink files. |
@@ -169,7 +178,13 @@ but do not opportunistically split them either.
 
 - Dynamically generated attributes, methods or module members.
 - `eval`, `exec`, or `getattr` string dispatch in library code.
-- Metaclasses or `__getattr__`, except in existing deprecation shims.
+- Metaclasses, or `__getattr__` used to invent behaviour. `__getattr__` has
+  one legitimate use: presenting an open-ended set of *data* keys read from
+  a file as attributes, as `CFVariable` does over CF-netCDF attributes. It
+  must forward to a declared `Mapping`, that `Mapping` must be the path
+  library code takes, and the docstring must say so. Note the cost: a class
+  with `__getattr__` makes mypy stop checking *every* attribute on it and
+  its subclasses, so confining it is what keeps the rest of the class typed.
 - Silent `except Exception: pass`.
 - Boolean flags that switch a function between two unrelated behaviours —
   write two functions.
