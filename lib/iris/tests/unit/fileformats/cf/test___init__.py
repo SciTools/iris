@@ -9,6 +9,9 @@ testing is the layer itself: that it exposes everything it used to, exposes
 nothing it should not, and imports cleanly on its own.
 """
 
+import ast
+import inspect
+from pathlib import Path
 import subprocess
 import sys
 from types import ModuleType
@@ -29,14 +32,25 @@ def _origin(value, fallback):
 
 
 def _defined_public_names(module):
-    """Return the public names a module defines itself, ignoring imports."""
-    return {
-        name
-        for name, value in vars(module).items()
-        if not name.startswith("_")
-        and not isinstance(value, ModuleType)
-        and _origin(value, module.__name__) == module.__name__
-    }
+    """Return the public names a module's own source binds at the top level.
+
+    Read from the source rather than from ``vars()``, for two reasons. An
+    imported name is indistinguishable from a defined one in ``vars()``
+    without consulting ``__module__``, which the package deliberately rewrites
+    (see ``cf/__init__.py``); and ``__module__`` does not exist at all on data
+    members such as ``reference_terms``, so a ``vars()`` walk would miss the
+    one kind of name that has already gone astray once.
+    """
+    tree = ast.parse(Path(inspect.getsourcefile(module)).read_text())
+    names = set()
+    for node in tree.body:
+        if isinstance(node, (ast.ClassDef, ast.FunctionDef)):
+            names.add(node.name)
+        elif isinstance(node, ast.Assign):
+            names.update(t.id for t in node.targets if isinstance(t, ast.Name))
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            names.add(node.target.id)
+    return {name for name in names if not name.startswith("_")}
 
 
 @pytest.mark.parametrize("module", PRIVATE_MODULES, ids=lambda m: m.__name__)
@@ -45,6 +59,29 @@ def test_public_names_are_re_exported(module):
     # __all__ vanishes from the API docs without any warning, because autodoc
     # rejects it on __module__ - see the plan, section 3.2.
     assert _defined_public_names(module) <= set(cf.__all__)
+
+
+@pytest.mark.parametrize("name", cf.__all__)
+def test_public_names_report_the_package_as_their_module(name):
+    # The split must be invisible. __module__ is what repr() prints and what
+    # pickle records, and before the split every one of these said
+    # "iris.fileformats.cf" - see cf/__init__.py. reference_terms is a dict
+    # and has no __module__ to check.
+    value = getattr(cf, name)
+    if isinstance(value, type):
+        assert value.__module__ == "iris.fileformats.cf"
+
+
+def test_data_members_are_assigned_in_the_package_source():
+    # Sphinx autodoc documents module data only where the module's own source
+    # assigns it, and drops an imported name silently. Anything in __all__
+    # that is not a class therefore has to be re-stated in cf/__init__.py, or
+    # it disappears from the API reference with no warning at all.
+    assigned = _defined_public_names(cf)
+    data_names = {
+        name for name in cf.__all__ if not isinstance(getattr(cf, name), type)
+    }
+    assert data_names <= assigned
 
 
 @pytest.mark.parametrize("name", cf.__all__)
