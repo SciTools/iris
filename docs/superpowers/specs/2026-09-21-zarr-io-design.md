@@ -586,11 +586,37 @@ here — the relocation PRs must not alter behaviour — but it is recorded as a
 open question in §12.3.
 
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
-`cf/loader.py` uses exactly as it uses `chunking()` today. For a sharded
-version 3 array it returns `Array.shards`, which is `None` on an unsharded
-array **[verified]**, falling back to `Array.chunks`. The shard is the unit a
-reader actually fetches, so it is the right unit for both the chunk
-calculation and the alignment rule above.
+`cf/loader.py` uses exactly as it uses `chunking()` today.
+
+**The read unit is the inner chunk, even when the array is sharded.** An
+earlier draft had `chunking` return `Array.shards` when present, on the
+reasoning that "the shard is the unit a reader actually fetches". That is not
+how sharding works. Zarr's sharding codec is *indexed*: a reader fetches the
+shard index, then byte ranges for only the inner chunks it needs. The inner
+chunk is the independently decodable unit, and it stays the right unit for the
+chunk calculation.
+
+Requiring shard-sized dask blocks actively destroys that, and it does so
+*because* of the explicit decode layers above. Bare dask slicing can push a
+slice down into the array's own `__getitem__`, but a `map_blocks` layer in
+between cannot, so the block is materialised in full. On a `shape=(1024,)`,
+`chunks=(8,)`, `shards=(1024,)` int32 array, reading the first eight values
+**[verified]**:
+
+| dask blocks | decode layer | bytes fetched |
+|---|---|---|
+| inner-chunk `(8,)` | no | 2,084 |
+| inner-chunk `(8,)` | yes | 2,084 |
+| shard `(1024,)` | no | 2,084 |
+| shard `(1024,)` | **yes** | **6,148** — the whole shard |
+
+2,052 of those bytes are the shard index and 32 are the data actually wanted.
+So `chunking` returns `Array.chunks`, and the alignment rule above aggregates
+*upward* into whole multiples of it — never down, and never to a shard
+boundary. This is not academic: the NOAA GFS fixture is sharded (§7).
+
+Shard-sized blocks remain a *write* requirement, for a different reason and in
+one direction only. §4.5 keeps them there.
 
 Zarr's own async concurrency is left at its default. Iris does not write to
 `zarr.config`; the interaction between `zarr_async_concurrency` and the dask
