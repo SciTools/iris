@@ -1,2 +1,0 @@
-:user:`pp-mo` fixed the chardata support to allow correct operation with
-ncdata 'shortcut' data transfers. (:issue:`7283`).
