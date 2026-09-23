@@ -10,5 +10,5 @@ v3.16.1 (21 Sep 2026)
    This patch release of Iris includes:
 
    * :user:`pp-mo` fixed the chardata support to allow correct operation with ncdata 'shortcut' data transfers. (:issue:`7283`).
-   * :user:`stephenworsley` fixed a bug which caused indexing to fail when ``start_index`` was 1. (:issue:`7246`)
-   * :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 :pull:`7262`:.
+   * :user:`stephenworsley` fixed a bug which caused indexing to fail when ``start_index`` was 1. (:issue:`7246`).
+   * :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 (:pull:`7262`).
