@@ -228,8 +228,21 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         return getattr(self._variable, name)
 
     def write_handle(self) -> Any:
-        """Return a picklable object supporting ``__setitem__``, for Dask stores."""
-        raise NotImplementedError
+        """Return a picklable object supporting ``__setitem__``, for Dask stores.
+
+        It carries the file path and variable name rather than the open file,
+        reopening on each write, so that a worker can use it after the saver
+        that created it has closed its own handle.
+
+        """
+        proxy_class: type[_thread_safe_nc.NetCDFWriteProxy]
+        if isinstance(self._variable, _bytecoding_datasets.EncodedVariable):
+            proxy_class = _bytecoding_datasets.EncodedNetCDFWriteProxy
+        else:
+            # Only reachable for a dataset opened without string encoding;
+            # the saver always encodes.
+            proxy_class = _thread_safe_nc.NetCDFWriteProxy
+        return proxy_class(self._location, self._variable, self._write_lock)
 
 
 #: The formats that make CF loading slow, and that the user can convert away
@@ -390,14 +403,34 @@ class NetCDFDataset(CFDataset):
         return self._attributes
 
     def create_dimension(self, name: str, size: int | None) -> None:
-        """Declare a dimension of the given length."""
-        raise NotImplementedError
+        """Declare a dimension of the given length, or unlimited for ``None``."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        self._dataset.createDimension(name, size)
 
     def create_variable(
         self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
     ) -> NetCDFDatasetVariable:
-        """Create and return a new variable."""
-        raise NotImplementedError
+        """Create and return a new variable.
+
+        ``**encoding`` reaches :meth:`netCDF4.Dataset.createVariable`
+        unaltered: ``compression``, ``zlib``, ``complevel``, ``shuffle``,
+        ``chunksizes``, ``least_significant_digit`` and the rest.
+
+        """
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        variable = self._dataset.createVariable(
+            name, dtype, tuple(dimensions), fill_value=fill_value, **encoding
+        )
+        wrapped = NetCDFDatasetVariable(
+            variable, self._location, write_lock=self.write_lock
+        )
+        if self._variables is not None:
+            # Keep an already-materialised mapping in step, rather than
+            # leaving it stale for the rest of the dataset's life.
+            self._variables[name] = wrapped
+        return wrapped
 
     def sync(self) -> None:
         """Flush buffered writes to the file."""
