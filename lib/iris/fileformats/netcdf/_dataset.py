@@ -315,6 +315,12 @@ class NetCDFDataset(CFDataset):
         instance._variables = None
         instance._attributes = None
         instance._write_lock = None
+        # netCDF4 exposes no public attribute recording a dataset's open
+        # mode, so a borrowed dataset's true mode is unobservable: "r+" is a
+        # stipulation, not a reading. It is also the correct one for this
+        # PR's only caller, Saver (Task 12), a write path, and it is
+        # consistent with the wrapping just below - EncodedDataset is what
+        # __init__ picks for every mode except plain "r".
         instance._mode = "r+"
 
         if not hasattr(dataset, "THREAD_SAFE_FLAG"):

@@ -140,6 +140,19 @@ class TestBorrowing:
         finally:
             raw.close()
 
+    def test_from_existing_mode_is_stipulated_not_observed(self, sample_path):
+        # netCDF4 exposes no public attribute recording a dataset's open
+        # mode, so from_existing cannot read the mode a borrowed dataset was
+        # actually opened in - it *always* reports "r+", regardless of the
+        # mode below. Pins that stipulated value; it is not a description of
+        # `raw`'s real mode.
+        raw = _bytecoding_datasets.EncodedDataset(sample_path, mode="r")
+        try:
+            dataset = _dataset.NetCDFDataset.from_existing(raw)
+            assert dataset.mode == "r+"
+        finally:
+            raw.close()
+
 
 class TestAutoChartostring:
     """Iris decodes byte data itself, so netCDF4 must not do it first.
