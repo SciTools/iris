@@ -27,7 +27,6 @@ class Test__get_cf_var_data(MockerMixin):
         if shape is None:
             shape = self.shape
         cf_data = self.mocker.MagicMock(
-            _FillValue=None,
             __getitem__="<real-data>",
             dimensions=["dim_" + str(x) for x in range(len(shape))],
             shape=shape,
@@ -43,6 +42,8 @@ class Test__get_cf_var_data(MockerMixin):
             cf_name="DUMMY_VAR",
             shape=shape,
             size=np.prod(shape),
+            attributes={},
+            dimensions=cf_data.dimensions,
             **extra_properties,
         )
         cf_var.__getitem__.return_value = self.mocker.sentinel.real_data_accessed

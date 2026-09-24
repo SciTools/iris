@@ -211,10 +211,10 @@ def _get_actual_dtype(cf_var):
     # Figure out what the eventual data type will be after any scale/offset
     # transforms.
     dummy_data = np.zeros(1, dtype=cf_var.dtype)
-    if hasattr(cf_var, "scale_factor"):
-        dummy_data = cf_var.scale_factor * dummy_data
-    if hasattr(cf_var, "add_offset"):
-        dummy_data = cf_var.add_offset + dummy_data
+    if "scale_factor" in cf_var.attributes:
+        dummy_data = cf_var.attributes["scale_factor"] * dummy_data
+    if "add_offset" in cf_var.attributes:
+        dummy_data = cf_var.attributes["add_offset"] + dummy_data
     return dummy_data.dtype
 
 
@@ -303,10 +303,8 @@ def _get_cf_var_data(cf_var):
                 fill_value = ""
             else:
                 fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
-                fill_value = getattr(
-                    cf_var.cf_data,
-                    "_FillValue",
-                    _thread_safe_nc.default_fillvals[fill_dtype],
+                fill_value = cf_var.attributes.get(
+                    "_FillValue", _thread_safe_nc.default_fillvals[fill_dtype]
                 )
 
             # Switch type of proxy, based on type of variable.
@@ -347,7 +345,7 @@ def _get_cf_var_data(cf_var):
                 dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
                     cf_var.cf_name
                 ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
-                dims = cf_var.cf_data.dimensions
+                dims = cf_var.dimensions
                 if CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE:
                     dims_fixed = np.ones(len(dims), dtype=bool)
                 elif not dim_chunks:
@@ -415,7 +413,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     """Create the cube associated with the CF-netCDF data variable."""
     from iris.fileformats.netcdf.saver import Saver
 
-    if hasattr(cf_var, Saver._DATALESS_ATTRNAME):
+    if Saver._DATALESS_ATTRNAME in cf_var.attributes:
         # This data-variable represents a dataless cube.
         # The variable array content was never written (to take up no space).
         data = None
@@ -645,12 +643,16 @@ def _translate_constraints_to_var_callback(constraints):
                 for name in constraint._names:
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
-                        attr_name = "cf_name" if name == "var_name" else name
-                        # Fetch property : N.B. CFVariable caches the property values
-                        # The use of a default here is the only difference from the code in NameConstraint.
-                        if not hasattr(cf_datavar, attr_name):
+                        if name == "var_name":
+                            # Iris's name for it; not a file attribute at all.
+                            actual = cf_datavar.cf_name
+                        elif name in cf_datavar.attributes:
+                            actual = cf_datavar.attributes[name]
+                        else:
+                            # Unlike NameConstraint, a variable that does not
+                            # carry the attribute is not a mismatch here: the
+                            # cube may still acquire the name later in the load.
                             continue
-                        actual = getattr(cf_datavar, attr_name, "")
                         if actual != expected:
                             match_this_constraint = False
                             break
@@ -728,7 +730,7 @@ def load_cubes(file_sources, callback=None, constraints=None):
                 mesh_name = None
                 mesh = None
                 mesh_coords, mesh_dim = [], None
-                mesh_name = getattr(cf_var, "mesh", None)
+                mesh_name = cf_var.attributes.get("mesh")
                 if mesh_name is not None:
                     try:
                         mesh = meshes[mesh_name]

@@ -206,8 +206,8 @@ class TestDtype(MockerMixin):
         yield
 
     def test_scale_factor_add_offset_int(self):
-        self.cf_coord_var.scale_factor = 3
-        self.cf_coord_var.add_offset = 5
+        self.cf_coord_var.attributes["scale_factor"] = 3
+        self.cf_coord_var.attributes["add_offset"] = 5
 
         build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
@@ -215,7 +215,7 @@ class TestDtype(MockerMixin):
         assert coord.dtype.kind == "i"
 
     def test_scale_factor_float(self):
-        self.cf_coord_var.scale_factor = 3.0
+        self.cf_coord_var.attributes["scale_factor"] = 3.0
 
         with self.deferred_load_patch():
             build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
@@ -224,7 +224,7 @@ class TestDtype(MockerMixin):
         assert coord.dtype.kind == "f"
 
     def test_add_offset_float(self):
-        self.cf_coord_var.add_offset = 5.0
+        self.cf_coord_var.attributes["add_offset"] = 5.0
 
         with self.deferred_load_patch():
             build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
