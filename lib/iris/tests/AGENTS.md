@@ -40,17 +40,31 @@ existing test style.
 
 ## Running Tests
 
-Run targeted tests while iterating:
+`-n auto` is **not** in `addopts`. Pass it yourself or the run is serial:
+roughly half speed on the full suite, and no worse than break-even on
+anything smaller (see below).
 
-```bash
-pytest -n auto lib/iris/tests/unit/<path_or_file>.py
-```
+Work in tiers. The full suite is minutes; the area you are changing is
+usually seconds, and is the right command for nearly all of an iteration.
 
-Run broader coverage before finishing:
+| Tier | When | Command |
+|---|---|---|
+| The module you changed | every edit | `pytest lib/iris/tests/unit/<area>/` |
+| Its immediate neighbours | before committing | `pytest -n auto lib/iris/tests/unit/<parent>/ lib/iris/tests/integration/<area>/` |
+| Everything | before finishing, and to compare against a base branch | `pytest -n auto lib/iris/tests` |
 
-```bash
-pytest -n auto lib/iris/tests
-```
+Indicative on a 4-core machine: ~6s, ~1min, ~4min respectively. Running the
+full suite on every edit is the single biggest avoidable delay in this
+repository.
+
+- **Do not add `-n auto` to small runs.** Spawning workers costs a few
+  seconds, so it makes a sub-10-second selection slower, not faster.
+- **Do not raise `-n` above the core count.** Measured on the full suite,
+  `-n 8` on 4 cores bought 7% wall time for 60% more CPU.
+- Prefer `-o cache_dir=<scratch>/pytest_cache` over `-p no:cacheprovider`
+  when concurrent runs must not collide. Disabling the cache plugin also
+  disables `--lf` and `--ff`, which are the cheapest speed-ups available
+  while iterating on failures.
 
 
 ## Style and Lint in Tests
@@ -64,7 +78,10 @@ pytest -n auto lib/iris/tests
 
 - Some tests require external `iris-test-data`; Preferred env
   var: `OVERRIDE_TEST_DATA_REPOSITORY=/path/to/iris-test-data/test_data`
-- Missing data will skip affected tests by design.
+- **Set it before trusting any run**, and check it took effect. Missing data
+  skips affected tests by design — silently, and without failing — so an
+  unset variable quietly removes coverage from whatever you are changing. Ask
+  for the path if you cannot find it; do not proceed and caveat the result.
 - Keep new tests independent of local machine paths and optional system state.
 - For optional dependencies, skip gracefully using existing patterns.
 
@@ -90,6 +107,13 @@ pytest -n auto lib/iris/tests
 - The changed tests pass locally.
 - No unrelated tests were modified.
 - Any required external data setup is documented in the change notes.
+- **Read the skip count, not just the failures.** Comparing failures before
+  and after a change — the standard way to show a refactor broke nothing —
+  cannot detect a test that never ran. A skip is neither a pass nor a
+  failure, so a `FAILED|ERROR` diff filters it out and the comparison comes
+  back clean whether coverage is intact or absent. Treat any skip in the area
+  you changed as a gap to close, usually missing `iris-test-data` or an
+  optional dependency, rather than as background noise.
 
 
 ## Scope Boundaries
