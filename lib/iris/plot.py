@@ -754,6 +754,11 @@ def _shift_plot_sections(u_object, u, v):
     endpoints = points[1:, :2]
     proj_x, proj_y, _ = tgt_proj.transform_points(src_crs, u, v).T
 
+    # Wrap proj_x into range -180..+180, as that's what the following logic needs.
+    # N.B. before Cartopy>0.26, this was true anyway, but has since changed.
+    # see : github.com/SciTools/cartopy/issues/2747
+    proj_x = (proj_x + 540.0) % 360.0 - 180.0
+
     # Calculate the inverse geodesic for each pair of points in turn, and
     # convert the start point's azimuth into a vector in the source coordinate
     # system.
