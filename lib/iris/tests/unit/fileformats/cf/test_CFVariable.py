@@ -117,6 +117,26 @@ class TestSpans:
         other = CFVariableSub("other", other_nc_var)
         assert not other.spans(rhs)
 
+    def test_scalar_dimension_with_others_is_not_scalar(self, mocker, nc_var):
+        # _scalar_ means "this variable is scalar", which a variable with a
+        # second dimension is not. It is not a wildcard.
+        nc_var.dimensions = (_variables._NCZARR_SCALAR_DIMENSION, "bnds")
+        cf_var = CFVariableSub("not_scalar", nc_var)
+
+        other = mocker.MagicMock()
+        other.dimensions = ("time",)
+
+        assert not cf_var.spans(other)
+
+    def test_no_dimensions_always_spans(self, mocker, nc_var):
+        nc_var.dimensions = ()
+        cf_var = CFVariableSub("scalar", nc_var)
+
+        other = mocker.MagicMock()
+        other.dimensions = ("time",)
+
+        assert cf_var.spans(other)
+
 
 class TestComparisonAndRepresentation:
     def test_equality_inequality_and_hash_by_name(self, nc_vars):

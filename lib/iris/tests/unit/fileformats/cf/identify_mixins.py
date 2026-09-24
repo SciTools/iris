@@ -15,6 +15,7 @@ import numpy as np
 import pytest
 
 from iris.fileformats.cf import CFVariable
+from iris.fileformats.cf._variables import _NCZARR_SCALAR_DIMENSION
 import iris.warnings
 
 
@@ -98,6 +99,32 @@ class SpansMixin(ABC):
         """Dimensions that don't fit either slice => does not span."""
         cf_source = self._make_cf_var("source_var", ("x", "b", "c"))
         cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert not cf_source.spans(cf_target)
+
+    def test_nczarr_scalar_dimension_spans(self):
+        """An NCZarr scalar source variable always spans the target.
+
+        NCZarr spells a zero-dimensional variable as one dimension named
+        _scalar_, so this is the same case as test_empty_dimensions_spans
+        arriving from a different writer.
+        """
+        cf_source = self._make_cf_var("source_var", (_NCZARR_SCALAR_DIMENSION,))
+        cf_target = self._make_cf_var("target_var", ("x", "y"))
+        assert cf_source.spans(cf_target)
+
+    def test_nczarr_scalar_target_is_spanned_by_a_scalar(self):
+        cf_source = self._make_cf_var("source_var", (_NCZARR_SCALAR_DIMENSION,))
+        cf_target = self._make_cf_var("target_var", (_NCZARR_SCALAR_DIMENSION,))
+        assert cf_source.spans(cf_target)
+
+    def test_nczarr_scalar_is_not_a_dimension_name_to_match_on(self):
+        """_scalar_ marks a scalar; it is not a dimension two variables share.
+
+        A source that is not scalar has to justify itself dimension by
+        dimension, whether or not _scalar_ is among its names.
+        """
+        cf_source = self._make_cf_var("source_var", ("a", "b", "extra"))
+        cf_target = self._make_cf_var("target_var", (_NCZARR_SCALAR_DIMENSION,))
         assert not cf_source.spans(cf_target)
 
 
