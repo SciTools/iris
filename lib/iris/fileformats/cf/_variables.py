@@ -188,6 +188,16 @@ class CFVariable(metaclass=ABCMeta):
         """
         pass
 
+    def _is_scalar(self) -> bool:
+        """Whether this variable is scalar, in either spelling of scalar.
+
+        NetCDF gives a zero-dimensional variable no dimensions at all.
+        NCZarr gives it one, named ``_scalar_``. The two mean the same
+        thing, and every ``spans`` implementation has to treat them alike.
+
+        """
+        return not self.dimensions or self.dimensions == (_NCZARR_SCALAR_DIMENSION,)
+
     def spans(self, cf_variable):
         """Determine dimensionality coverage.
 
@@ -207,11 +217,11 @@ class CFVariable(metaclass=ABCMeta):
         bool
 
         """
-        dimensions = tuple(self.dimensions)
-        if dimensions == (_NCZARR_SCALAR_DIMENSION,):
+        # Scalar variables always span the target variable.
+        if self._is_scalar():
             return True
 
-        result = set(dimensions).issubset(cf_variable.dimensions)
+        result = set(self.dimensions).issubset(cf_variable.dimensions)
         return result
 
     def __eq__(self, other):
@@ -520,7 +530,7 @@ class CFBoundaryVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if self.dimensions:
+        if not self._is_scalar():
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the bounds extent dimension.
@@ -596,7 +606,7 @@ class CFClimatologyVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if self.dimensions:
+        if not self._is_scalar():
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore the climatology extent dimension.
@@ -919,7 +929,7 @@ class CFLabelVariable(CFVariable):
         """
         # Scalar variables always span the target variable.
         result = True
-        if self.dimensions:
+        if not self._is_scalar():
             source = self.dimensions
             target = cf_variable.dimensions
             # Ignore label string length dimension.
