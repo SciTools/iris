@@ -35,6 +35,22 @@ _CONTIGUOUS = "contiguous"
 _EMULATED_DATA_ARRAY = "_data_array"
 
 
+def _bytes_if_ascii(value):
+    """Return an ASCII string as bytes, and anything else unchanged.
+
+    netCDF4 stores a bytes attribute as NC_CHAR. Coercing on the way in is
+    what keeps Iris's string attributes to that type across file formats,
+    rather than leaving it to netCDF4's own str handling.
+
+    """
+    if isinstance(value, str):
+        try:
+            return value.encode(encoding="ascii")
+        except (AttributeError, UnicodeEncodeError):
+            pass
+    return value
+
+
 class _NetCDFAttributes(MutableMapping):
     """A netCDF object's attributes as a mapping: read once, written through.
 
@@ -65,7 +81,10 @@ class _NetCDFAttributes(MutableMapping):
 
     def __setitem__(self, key: str, value: Any) -> None:
         """Set ``key``'s value, here and in the netCDF object."""
-        self._target.setncattr(key, value)
+        # Coerce on the way out only.  Caching the coerced value would make a
+        # just-written attribute read back as bytes, where the same attribute
+        # read from a file reads back as str.  See finding F12.
+        self._target.setncattr(key, _bytes_if_ascii(value))
         self._values[key] = value
 
     def __delitem__(self, key: str) -> None:

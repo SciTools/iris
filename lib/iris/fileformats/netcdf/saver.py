@@ -66,6 +66,7 @@ from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf import _dask_locks
 from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+from iris.fileformats.netcdf._dataset import _bytes_if_ascii
 import iris.util
 import iris.warnings
 
@@ -266,25 +267,6 @@ class CFNameCoordMap:
                 result = pair.coord
                 break
         return result
-
-
-def _bytes_if_ascii(string):
-    """Convert string to a byte string (str in py2k, bytes in py3k).
-
-    Convert the given string to a byte string (str in py2k, bytes in py3k)
-    if the given string can be encoded to ascii, else maintain the type
-    of the inputted string.
-
-    Note: passing objects without an `encode` method (such as None) will
-    be returned by the function unchanged.
-
-    """
-    if isinstance(string, str):
-        try:
-            return string.encode(encoding="ascii")
-        except (AttributeError, UnicodeEncodeError):
-            pass
-    return string
 
 
 def _setncattr(variable, name, attribute):

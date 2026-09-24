@@ -141,3 +141,82 @@ class TestSyncAndFinalise:
     def test_finalise_is_a_no_op(self, grid):
         assert grid.finalise() is None
         assert grid.closed is False
+
+
+class TestAttributeWrites:
+    def test_variable_attribute_write_through(self, grid, path):
+        variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        variable.attributes["units"] = "K"
+        assert variable.attributes["units"] == "K"
+        grid.close()
+
+        with _dataset.NetCDFDataset(path) as reader:
+            assert reader.variables["air"].attributes["units"] == "K"
+
+    def test_global_attribute_write_through(self, writer, path):
+        writer.attributes["Conventions"] = "CF-1.7"
+        assert writer.attributes["Conventions"] == "CF-1.7"
+        writer.close()
+
+        with _dataset.NetCDFDataset(path) as reader:
+            assert reader.attributes["Conventions"] == "CF-1.7"
+
+    def test_attribute_deletion(self, grid, path):
+        variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        variable.attributes["units"] = "K"
+        del variable.attributes["units"]
+        assert "units" not in variable.attributes
+        grid.close()
+
+        with _dataset.NetCDFDataset(path) as reader:
+            assert "units" not in reader.variables["air"].attributes
+
+    def test_ascii_value_is_written_as_bytes(self, grid):
+        # _bytes_if_ascii, moved here from saver.py. netCDF4 writes a bytes
+        # value as NC_CHAR; the coercion is what makes every string attribute
+        # Iris writes take that type, whatever the file format.
+        variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        variable.attributes["units"] = "K"
+        assert variable.variable.getncattr("units") == "K"
+        assert _dataset._bytes_if_ascii("K") == b"K"
+
+    def test_non_string_values_pass_through(self, grid):
+        variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        variable.attributes["valid_min"] = np.float32(-3.5)
+        assert variable.attributes["valid_min"] == np.float32(-3.5)
+        assert _dataset._bytes_if_ascii(3) == 3
+
+
+class TestNonAsciiAttributes:
+    """Review Focus 5. The coercion's except branch, which is the common one
+    for real-world metadata: degree signs, accented names, superscripts.
+    """
+
+    @pytest.mark.parametrize(
+        "value",
+        [
+            "degC \N{DEGREE SIGN}",
+            "na\N{LATIN SMALL LETTER I WITH DIAERESIS}ve",
+            "m s\N{SUPERSCRIPT MINUS}\N{SUPERSCRIPT ONE}",
+        ],
+    )
+    def test_round_trips_unchanged(self, grid, path, value):
+        variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        variable.attributes["long_name"] = value
+        assert variable.attributes["long_name"] == value
+        grid.close()
+
+        with _dataset.NetCDFDataset(path) as reader:
+            assert reader.variables["air"].attributes["long_name"] == value
+
+    def test_is_not_coerced_to_bytes(self):
+        value = "degC \N{DEGREE SIGN}"
+        assert _dataset._bytes_if_ascii(value) is value
+
+    def test_global_non_ascii_round_trips(self, writer, path):
+        value = "Produced at M\N{LATIN SMALL LETTER E WITH ACUTE}t\N{LATIN SMALL LETTER E WITH ACUTE}o"
+        writer.attributes["institution"] = value
+        writer.close()
+
+        with _dataset.NetCDFDataset(path) as reader:
+            assert reader.attributes["institution"] == value
