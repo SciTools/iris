@@ -11,6 +11,11 @@ where it is written, only where it is subclassed.
 
 Spec section 6: the interface is only worth having if both sides of it agree,
 and agreement is cheapest to check by asking the same questions twice.
+
+Deliberately not exercised here: :meth:`CFDatasetVariable.deprecated_netcdf_member`.
+It is an explicitly netCDF4-specific compatibility escape hatch, so asserting
+either its presence or its absence in a shared body would itself be
+backend-specific - the omission is intentional, not a gap.
 """
 
 import numpy as np
@@ -164,10 +169,12 @@ class CFDatasetContract:
 
     def test_variable_chunking_is_none_or_a_shape(self, variable):
         chunking = variable.chunking
+        # np.integer alongside int: netCDF4 answers plain ints, but a Zarr
+        # chunk shape is plausibly numpy.int64, and both are equally a shape.
         assert chunking is None or (
             isinstance(chunking, tuple)
             and len(chunking) == len(variable.shape)
-            and all(isinstance(size, int) for size in chunking)
+            and all(isinstance(size, int | np.integer) for size in chunking)
         )
 
     def test_scalar_variable(self, scalar):
@@ -212,6 +219,22 @@ class CFDatasetContract:
             assert reader.variables["air_temperature"].attributes["comment"] == "added"
 
     def test_write_handle_works_after_close(self, writable, reopen):
+        # Not asserted here: that `handle` itself survives a pickle round
+        # trip. CFDatasetVariable.write_handle's docstring requires it,
+        # because it is what a Dask worker receives as a da.store target -
+        # but the handle carries a backend-injected lock
+        # (NetCDFDataset.write_lock) whose type depends on the active Dask
+        # scheduler, and under the default threaded scheduler that lock is
+        # an unpicklable threading.Lock which is, in practice, never
+        # pickled: _dask_locks.get_worker_lock only returns a picklable
+        # dask.distributed.Lock under the distributed scheduler, which is
+        # also the only scheduler that ever ships a handle to another
+        # process. A round-trip assertion here would wrongly fail a correct
+        # backend under the default scheduler. What an implementation
+        # actually owes is that the handle itself captures no unpicklable
+        # state of its own - no open file, store handle or live connection -
+        # which is what this test approximates by proving the handle still
+        # works once the dataset that created it has closed.
         populate(writable)
         handle = writable.variables["air_temperature"].write_handle()
         writable.close()
