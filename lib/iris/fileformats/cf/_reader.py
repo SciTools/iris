@@ -43,10 +43,11 @@ This is the one module in :mod:`iris.fileformats.cf` still coupled to
 :mod:`iris.fileformats.netcdf`: opening a file needs ``_thread_safe_nc`` and
 ``_bytecoding_datasets``. Everything else in the package already works against
 any object that presents netCDF-like ``variables``, ``dimensions``,
-``ncattrs`` and ``getncattr``. Removing that last coupling -- replacing the direct dataset
-construction with a format-agnostic dataset abstraction, so that Zarr can be
-read by the same machinery -- is the subject of §4.2 of the native Zarr I/O
-design, ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+``ncattrs`` and ``getncattr``. Removing that last coupling -- replacing the
+direct dataset construction with a format-agnostic dataset abstraction, so
+that Zarr can be read by the same machinery -- is the subject of §4.2 of the
+native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

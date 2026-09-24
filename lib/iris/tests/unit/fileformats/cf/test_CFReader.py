@@ -27,22 +27,20 @@ from iris.fileformats.cf import (
 )
 import iris.warnings
 
-# The CF attributes CFReader now reads through CFVariable.attributes, which
-# is built from a variable's ncattrs()/getncattr(), not from plain Python
-# attribute access. `netcdf_variable` below sets these as real Mock
-# attributes for callers that still read them directly (or mutate them, as
-# several tests do, with a later assignment or `del`); ncattrs()/getncattr()
-# are wired to reflect the same names dynamically, at call time, so that
-# `.attributes` sees whatever the mock currently carries.
-_CF_MOCK_ATTR_NAMES = (
-    "bounds",
-    "coordinates",
-    "climatology",
-    "formula_terms",
-    "standard_name",
-)
 
-
+# CFVariable.attributes is built once, at construction, from a variable's
+# ncattrs()/getncattr() (see CFVariable.__init__ and _attributes_source in
+# cf/_variables.py). `netcdf_variable` below wires ncattrs()/getncattr() to a
+# presence-keyed dict of the CF-attribute keywords the caller passed here -
+# fixed at this call, not at the CFVariable's later construction. A test
+# that mutates or deletes one of these named attributes on the returned mock
+# afterwards - as a few in this file do, to simulate a variable missing an
+# attribute - changes only the raw Mock attribute. That still reaches the
+# classification code in cf/_variables.py's identify() methods, which reads
+# raw variables with plain getattr(), but it never reaches `.attributes`, no
+# matter when the mutation happens relative to `CFReader(...)`. To vary what
+# `.attributes` sees, pass the value to a fresh `netcdf_variable(...)` call
+# instead - see e.g. `test_derived_bounds_promotes_reference_terms` below.
 def netcdf_variable(
     mocker,
     name,
@@ -56,6 +54,7 @@ def netcdf_variable(
     grid_mapping=None,
     cell_measures=None,
     standard_name=None,
+    long_name=None,
 ):
     """Return a mock NetCDF4 variable."""
     ndim = 0
@@ -83,18 +82,31 @@ def netcdf_variable(
         grid_mapping=grid_mapping,
         cell_measures=cell_measures,
         standard_name=standard_name,
+        long_name=long_name,
         **{name: None for name in ugrid_identities},
     )
-    ncvar.ncattrs = mocker.Mock(
-        side_effect=lambda: [
-            attr_name
-            for attr_name in _CF_MOCK_ATTR_NAMES
-            if getattr(ncvar, attr_name, None)
-        ]
-    )
-    ncvar.getncattr = mocker.Mock(
-        side_effect=lambda attr_name: getattr(ncvar, attr_name)
-    )
+    # `coordinates` defaults to "" rather than None, so it is always present
+    # here even when the caller left it unset - unlike a real file, which
+    # would omit the name entirely. Harmless: _reader.py only ever reads it
+    # as `.get("coordinates", "")`, and identify()'s raw getattr sees ""
+    # either way.
+    cf_attributes = {
+        attr_name: value
+        for attr_name, value in (
+            ("ancillary_variables", ancillary_variables),
+            ("bounds", bounds),
+            ("cell_measures", cell_measures),
+            ("climatology", climatology),
+            ("coordinates", coordinates),
+            ("formula_terms", formula_terms),
+            ("grid_mapping", grid_mapping),
+            ("long_name", long_name),
+            ("standard_name", standard_name),
+        )
+        if value is not None
+    }
+    ncvar.ncattrs = mocker.Mock(side_effect=lambda: list(cf_attributes))
+    ncvar.getncattr = mocker.Mock(side_effect=cf_attributes.__getitem__)
     return ncvar
 
 
@@ -723,7 +735,6 @@ class Test_translate__formula_terms_derived_bounds:
         self.root_bnds = netcdf_variable(mocker, "z_bnds", "_scalar_", np.float64)
         # With valid formula terms, the variable would instead be recorded
         #  correctly as a bounds variable.
-        del self.root_bnds.formula_terms
         self.variables["z_bnds"] = self.root_bnds
         self._patch_encoded_dataset(mocker)
 
@@ -816,19 +827,20 @@ class Test_translate__formula_terms_derived_bounds:
     def test_derived_bounds_promotes_reference_terms(
         self, mocker, future_context, standard_name
     ):
+        if not standard_name and isinstance(future_context, contextlib.nullcontext):
+            pytest.skip("Test only applicable when FUTURE context is enabled.")
+        # CFVariable.attributes is a snapshot taken at construction, so the
+        # "absent" case is built without standard_name from the start rather
+        # than deleted from the mock afterwards - a post-construction `del`
+        # is invisible to a CFVariable built from this mock either way.
         self.root = netcdf_variable(
             mocker,
             "z",
             "z",
             np.float64,
             formula_terms="a: pressure",
-            standard_name="custom_reference",
+            standard_name="custom_reference" if standard_name else None,
         )
-        if not standard_name:
-            if isinstance(future_context, contextlib.nullcontext):
-                pytest.skip("Test only applicable when FUTURE context is enabled.")
-            else:
-                del self.root.standard_name
         self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
         self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
         self._patch_encoded_dataset(mocker)
@@ -850,6 +862,54 @@ class Test_translate__formula_terms_derived_bounds:
         else:
             # Promotion step is skipped if standard_name is absent.
             assert "pressure" not in cf_group.promoted
+
+    def test_promotes_using_long_name_when_standard_name_empty(self, mocker):
+        # A present-but-empty standard_name is falsy, so the "or" in
+        # _reader.py falls through to long_name. Both go in the
+        # non-derived_bounds branch: under iris.FUTURE.derived_bounds the
+        # code takes the "continue" at :504 only when standard_name is
+        # *absent*, never reached here since "" is present, but the
+        # promotion machinery itself only runs outside that guard.
+        self.root = netcdf_variable(
+            mocker,
+            "z",
+            "z",
+            np.float64,
+            formula_terms="a: pressure",
+            standard_name="",
+            long_name="custom_reference",
+        )
+        self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
+        self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
+        self._patch_encoded_dataset(mocker)
+        mocker.patch.dict(
+            "iris.fileformats.cf.reference_terms",
+            {"custom_reference": "a"},
+            clear=False,
+        )
+
+        cf_group = CFReader("dummy.nc").cf_group
+
+        assert "pressure" in cf_group.promoted
+
+    def test_raises_when_standard_name_empty_and_long_name_absent(self, mocker):
+        # The one case ``.get("long_name")`` would survive: standard_name
+        # present-but-falsy forces the "or" to evaluate long_name, and with
+        # no long_name at all the subscript must raise KeyError.
+        self.root = netcdf_variable(
+            mocker,
+            "z",
+            "z",
+            np.float64,
+            formula_terms="a: pressure",
+            standard_name="",
+        )
+        self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
+        self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
+        self._patch_encoded_dataset(mocker)
+
+        with pytest.raises(KeyError, match="long_name"):
+            CFReader("dummy.nc")
 
 
 class Test_translate__global_attributes_missing:
@@ -963,11 +1023,17 @@ class Test_build_cf_groups__private_edge_cases:
 
 
 class TestSynthesisedBoundsLink:
-    """The reader writes a bounds link that the file did not carry.
+    """Pin the write-and-read-the-same-place invariant at unit level.
 
-    _reader.py:325 attaches a formula term's bounds variable to the term.
-    Whatever stores that link has to be the same place the reads look, or
-    the link is written and never seen.
+    This class does not exercise `_reader.py` - it builds a
+    `CFAuxiliaryCoordinateVariable` directly and characterises
+    `TrackedAttributes` plus `CFVariable.__getattr__`: a write to
+    ``cf_var.attributes`` is a write to the one place
+    ``cf_var.<attribute>`` reads from, including when the written value is
+    `None`. `_reader.py`'s own synthesised-bounds writes at :327 and :345
+    are exercised by
+    `lib/iris/tests/integration/netcdf/derived_bounds/test_bounds_files.py`,
+    which fails three ways if either write is removed.
     """
 
     def test_a_written_bounds_link_is_visible_to_a_reader(self, mocker):
