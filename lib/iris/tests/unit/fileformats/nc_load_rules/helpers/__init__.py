@@ -11,6 +11,7 @@ import pytest
 from pytest_mock import MockerFixture
 
 from iris.fileformats.cf import CFDataVariable
+from iris.fileformats.cf._variables import _CF_ATTRS_IGNORE
 from iris.fileformats.cf.dataset import TrackedAttributes
 
 
@@ -46,7 +47,12 @@ class CFVariableDouble:
     """
 
     def __init__(self, **attributes):
-        self.attributes = TrackedAttributes(dict(attributes))
+        # Seed with the same ignored names production CFVariable.__init__
+        # does: scale_factor, add_offset and friends must start already-read
+        # here too, or a test that puts one into a double sees it as unread
+        # (and so, e.g., surviving onto a built object's attributes) when a
+        # real load never would.
+        self.attributes = TrackedAttributes(dict(attributes), ignored=_CF_ATTRS_IGNORE)
 
     def __getattr__(self, name):
         # Mirrors production CFVariable.__getattr__'s recursion guard

@@ -99,11 +99,17 @@ class Test:
         result = [callback(var) for var in self.data_variables]
         _shared_utils.assert_array_equal(result, [True, False, True, True, True])
 
-    def test_name_constraint_long_name(self):
+    def test_name_constraint_long_name(self, mocker):
         constr = iris.NameConstraint(long_name="x component of wind")
         callback = _translate_constraints_to_var_callback(constr)
-        result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [True, True, True, True, True])
+        # The shared vars either match long_name or omit it, and omission is
+        # permissive - so without a var that CONTRADICTS, this test would pass
+        # even if the callback ignored long_name altogether.
+        vars = self.data_variables + [
+            _data_variable(mocker, "var1", long_name="y component of wind"),
+        ]
+        result = [callback(var) for var in vars]
+        _shared_utils.assert_array_equal(result, [True, True, True, True, True, False])
 
     def test_name_constraint_var_name(self):
         constr = iris.NameConstraint(var_name="var1")

@@ -377,7 +377,7 @@ def _build_mesh(cf, mesh_var):
         coord_and_axis = _build_aux_coord(coord_var)
         coord = coord_and_axis[0]
 
-        if coord.var_name in mesh_var.node_coordinates.split():
+        if coord.var_name in mesh_var.attributes["node_coordinates"].split():
             node_coord_args.append(coord_and_axis)
             node_dimension = coord_var.dimensions[0]
         elif coord.var_name in mesh_var.attributes.get("edge_coordinates", "").split():
