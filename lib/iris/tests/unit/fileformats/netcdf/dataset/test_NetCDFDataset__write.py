@@ -55,6 +55,17 @@ class TestCreateVariable:
         created = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
         assert grid.variables["air"].name == created.name
 
+    def test_updates_an_already_materialised_variables_cache(self, grid):
+        # Pins that create_variable keeps an already-materialised .variables
+        # mapping current, rather than leaving it stale. saver.py's
+        # variable-naming collision loops (":1566", ":1698", ":1852",
+        # ":1908", ":2294") read `.variables` repeatedly while creating
+        # variables, so a stale cache here would let a name collision go
+        # undetected.
+        assert "air" not in grid.variables  # materialise the cache first
+        grid.create_variable("air", np.dtype("f4"), ("y", "x"))
+        assert "air" in grid.variables
+
     def test_dimensions_default_to_scalar(self, writer):
         # saver.py:2080 creates a grid-mapping variable with no dimensions at
         # all, and passes only a name and a dtype - see finding F4.
@@ -214,7 +225,10 @@ class TestNonAsciiAttributes:
         assert _dataset._bytes_if_ascii(value) is value
 
     def test_global_non_ascii_round_trips(self, writer, path):
-        value = "Produced at M\N{LATIN SMALL LETTER E WITH ACUTE}t\N{LATIN SMALL LETTER E WITH ACUTE}o"
+        value = (
+            "Produced at M\N{LATIN SMALL LETTER E WITH ACUTE}"
+            "t\N{LATIN SMALL LETTER E WITH ACUTE}o"
+        )
         writer.attributes["institution"] = value
         writer.close()
 
