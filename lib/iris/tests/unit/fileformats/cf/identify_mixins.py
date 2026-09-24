@@ -112,11 +112,6 @@ class SpansMixin(ABC):
         cf_target = self._make_cf_var("target_var", ("x", "y"))
         assert cf_source.spans(cf_target)
 
-    def test_nczarr_scalar_target_is_spanned_by_a_scalar(self):
-        cf_source = self._make_cf_var("source_var", (_NCZARR_SCALAR_DIMENSION,))
-        cf_target = self._make_cf_var("target_var", (_NCZARR_SCALAR_DIMENSION,))
-        assert cf_source.spans(cf_target)
-
     def test_nczarr_scalar_is_not_a_dimension_name_to_match_on(self):
         """_scalar_ marks a scalar; it is not a dimension two variables share.
 

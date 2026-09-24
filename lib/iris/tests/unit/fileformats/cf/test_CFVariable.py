@@ -138,6 +138,39 @@ class TestSpans:
         assert cf_var.spans(other)
 
 
+class TestIsScalar:
+    """Direct tests of the single definition of "scalar" that spans() shares.
+
+    _is_scalar() is this task's produced interface: PR 4's Zarr backend
+    reads it rather than restating the rule, so it is tested directly and
+    not only through spans().
+    """
+
+    def test_no_dimensions_is_scalar(self, nc_var):
+        nc_var.dimensions = ()
+        cf_var = CFVariableSub("scalar", nc_var)
+
+        assert cf_var._is_scalar()
+
+    def test_nczarr_scalar_dimension_is_scalar(self, nc_var):
+        nc_var.dimensions = (_variables._NCZARR_SCALAR_DIMENSION,)
+        cf_var = CFVariableSub("scalar", nc_var)
+
+        assert cf_var._is_scalar()
+
+    def test_nczarr_scalar_dimension_with_another_is_not_scalar(self, nc_var):
+        nc_var.dimensions = (_variables._NCZARR_SCALAR_DIMENSION, "bnds")
+        cf_var = CFVariableSub("not_scalar", nc_var)
+
+        assert not cf_var._is_scalar()
+
+    def test_ordinary_dimensions_are_not_scalar(self, nc_var):
+        nc_var.dimensions = ("time", "lat")
+        cf_var = CFVariableSub("not_scalar", nc_var)
+
+        assert not cf_var._is_scalar()
+
+
 class TestComparisonAndRepresentation:
     def test_equality_inequality_and_hash_by_name(self, nc_vars):
         first, second, third = nc_vars
