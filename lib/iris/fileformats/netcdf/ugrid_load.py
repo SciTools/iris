@@ -457,9 +457,7 @@ def _build_mesh_coords(mesh, cf_var):
     if location is None or location not in element_dimensions:
         # We should probably issue warnings and recover, but that is too much
         # work.  Raising a more intelligible error is easy to do though.
-        msg = (
-            f"mesh data variable {cf_var.name!r} has an invalid location={location!r}."
-        )
+        msg = f"mesh data variable {cf_var.cf_name!r} has an invalid location={location!r}."
         raise ValueError(msg)
     mesh_dim_name = element_dimensions.get(location)
     if mesh_dim_name is None:
@@ -469,7 +467,7 @@ def _build_mesh_coords(mesh, cf_var):
         mesh_dim = cf_var.dimensions.index(mesh_dim_name)
     else:
         msg = (
-            f"mesh data variable {cf_var.name!r} does not have the "
+            f"mesh data variable {cf_var.cf_name!r} does not have the "
             f"{location} mesh dimension {mesh_dim_name!r}, in its dimensions."
         )
         raise ValueError(msg)

@@ -5,10 +5,12 @@
 """Unit tests for :class:`iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`."""
 
 from collections.abc import MutableMapping
+import warnings
 
 import numpy as np
 import pytest
 
+from iris._deprecation import IrisDeprecation
 from iris.fileformats.cf.dataset import CFDatasetVariable
 from iris.fileformats.netcdf import _bytecoding_datasets, _dataset, _thread_safe_nc
 
@@ -186,17 +188,31 @@ class TestNetCDFOnlyMembers:
         wrapped.emulated_data_array = np.ones(3)
         np.testing.assert_array_equal(variable._data_array, np.ones(3))
 
-    def test_deprecated_netcdf_member_reaches_the_wrapper(self, air):
-        assert sorted(air.deprecated_netcdf_member("ncattrs")()) == [
+
+class TestDeprecatedNetcdfMember:
+    def test_a_reach_through_warns(self, air):
+        with pytest.warns(IrisDeprecation, match="ncattrs"):
+            names = air.deprecated_netcdf_member("ncattrs")()
+        assert sorted(names) == [
             "_FillValue",
             "coordinates",
             "standard_name",
             "units",
         ]
 
-    def test_deprecated_netcdf_member_of_a_missing_name_raises(self, air):
-        with pytest.raises(AttributeError):
-            air.deprecated_netcdf_member("no_such_netcdf_member")
+    def test_a_missing_name_raises_and_does_not_warn(self, air):
+        # hasattr() probes land here, and a probe that comes back False is
+        # not a use of anything - warning about it would be noise. The
+        # underlying netCDF4 variable raises its own AttributeError, which
+        # does not name the attribute - only the type matters here.
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            with pytest.raises(AttributeError):
+                air.deprecated_netcdf_member("no_such_netcdf_member")
+
+    def test_the_message_names_the_replacement(self, air):
+        with pytest.warns(IrisDeprecation, match=r"cf_data\.variable"):
+            air.deprecated_netcdf_member("ncattrs")
 
 
 class TestCharacterData:

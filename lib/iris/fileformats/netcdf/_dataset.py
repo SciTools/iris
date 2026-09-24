@@ -21,6 +21,7 @@ import warnings
 
 import numpy as np
 
+from iris._deprecation import warn_deprecated
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
@@ -243,8 +244,18 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         setattr(self._variable, _EMULATED_DATA_ARRAY, value)
 
     def deprecated_netcdf_member(self, name: str) -> Any:
-        """Return a member of the backing netCDF variable wrapper."""
-        return getattr(self._variable, name)
+        """Return a member of the backing netCDF variable wrapper, with a warning."""
+        # Fetch before warning, so that a name the wrapper does not have is an
+        # ordinary AttributeError. hasattr() probes arrive here, and a probe
+        # that comes back False has not used anything.
+        value = getattr(self._variable, name)
+        warn_deprecated(
+            f"Reaching netCDF variable member {name!r} through a CFVariable is "
+            "deprecated and will be removed in a future release. Use the CF "
+            "dataset interface instead - iris.fileformats.cf.dataset - or, for "
+            "a netCDF-only need, cf_var.cf_data.variable."
+        )
+        return value
 
     def write_handle(self) -> Any:
         """Return a picklable object supporting ``__setitem__``, for Dask stores.
