@@ -18,6 +18,7 @@ from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
     CFVariableDouble,
     MockerMixin,
+    RealArrayCfData,
 )
 
 
@@ -66,7 +67,7 @@ class RulesTestMixin(MockerMixin):
         result = CFVariableDouble(units=units, calendar=None)
         result.dimensions = dimensions
         result.cf_name = "wibble_bnds"
-        result.cf_data = bounds
+        result.cf_data = RealArrayCfData(bounds)
         result.shape = bounds.shape
         result.size = np.prod(bounds.shape)
         result.dtype = bounds.dtype
@@ -97,7 +98,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         )
         self.cf_coord_var.dimensions = ("foo",)
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.size = np.prod(points.shape)
         self.cf_coord_var.dtype = points.dtype
@@ -344,7 +345,7 @@ class TestBoundsVertexDim(RulesTestMixin):
         )
         self.cf_coord_var.dimensions = ("foo",)
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.dtype = points.dtype
 
@@ -437,7 +438,7 @@ class TestCircular(RulesTestMixin):
         )
         self.cf_coord_var.dimensions = ("foo",)
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.dtype = points.dtype
         if bounds:
@@ -527,7 +528,7 @@ class TestCircularScalar(RulesTestMixin):
         )
         self.cf_coord_var.dimensions = ()
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = ()
         self.cf_coord_var.dtype = points.dtype
 

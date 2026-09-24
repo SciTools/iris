@@ -26,6 +26,10 @@ class _CoordVariableStub:
     def ncattrs(self):
         return []
 
+    @property
+    def attributes(self):
+        return {}
+
     def __getitem__(self, key):
         if self._data.ndim == 0:
             return self._data

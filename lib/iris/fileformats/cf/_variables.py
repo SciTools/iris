@@ -15,8 +15,8 @@ declares which netCDF attribute names it -- ``cf_identity``, a single
 attribute name, or ``cf_identities``, a list of them for the classes that
 answer to several -- and implements ``identify``. ``identify`` is a
 classmethod, not an instance method: it is called on the class, is handed the
-whole ``{name: netCDF4.Variable}`` mapping of the file, and returns the subset
-of it that belongs to that class, as a ``{name: CFVariable instance}``
+whole ``{name: CFDatasetVariable}`` mapping of the file, and returns the
+subset of it that belongs to that class, as a ``{name: CFVariable instance}``
 mapping. ``ignore`` and ``target`` narrow what it looks at; ``warn`` gates
 whether it complains.
 
@@ -52,7 +52,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
-from iris.fileformats.cf.dataset import CFDatasetVariable, TrackedAttributes
+from iris.fileformats.cf.dataset import TrackedAttributes
 from iris.mesh.components import Connectivity
 import iris.util
 import iris.warnings
@@ -86,15 +86,6 @@ _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_fact
 _GETATTR_RECURSION_GUARD = frozenset(["attributes", "cf_data"])
 
 
-def _attributes_source(data):
-    """Return a mapping of the CF attributes of a variable's backing store."""
-    # PR 2 transitional. Task 11 deletes this: once CFReader supplies
-    # CFDatasetVariables, __init__ reads data.attributes directly.
-    if isinstance(data, CFDatasetVariable):
-        return data.attributes
-    return {name: data.getncattr(name) for name in data.ncattrs()}
-
-
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):
     # N.B. use 'datatype' not 'dtype', to "look inside" variable wrappers which
@@ -115,16 +106,15 @@ class CFVariable(metaclass=ABCMeta):
         """NetCDF variable name."""
 
         self.cf_data = data
-        """The variable's storage: a netCDF4 variable.
+        """The variable's storage: a :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`.
 
-        PR 2 transitional. This becomes a
-        :class:`~iris.fileformats.cf.dataset.CFDatasetVariable` once
-        :class:`~iris.fileformats.cf.CFReader` supplies them, leaving
-        ``_deprecated_netcdf_member`` as the only netCDF4-specific route out.
+        ``_deprecated_netcdf_member`` is the only netCDF4-specific route out
+        of this class; everything else goes through the format-agnostic
+        interface.
         """
 
         self.attributes = TrackedAttributes(
-            _attributes_source(data), ignored=_CF_ATTRS_IGNORE
+            dict(data.attributes), ignored=_CF_ATTRS_IGNORE
         )
         """The variable's CF attributes, and a record of which have been read.
 
@@ -132,11 +122,17 @@ class CFVariable(metaclass=ABCMeta):
         ``cf_var.units`` and ``cf_var.attributes["units"]`` are the same read
         and count once. What was read decides what survives onto the loaded
         cube - see :func:`iris.fileformats.netcdf.loader._add_unused_attributes`.
+
+        Copied from ``data.attributes``, not a view onto it:
+        :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`'s
+        mapping writes through to the file, and a plain ``dict`` is what
+        keeps two :class:`CFVariable` built over the same storage object
+        from sharing one mapping.
         """
 
         """File source of the NetCDF content."""
         try:
-            self.filename = data.group().filepath()
+            self.filename = data.location
         except AttributeError:
             self.filename = "<unknown_filename>"
 
@@ -173,7 +169,7 @@ class CFVariable(metaclass=ABCMeta):
         Parameters
         ----------
         variables :
-            Dictionary of netCDF4.Variable instance by variable name.
+            Dictionary of CFDatasetVariable instance by variable name.
         ignore : optional
             List of variable names to ignore.
         target : optional
@@ -289,12 +285,11 @@ class CFVariable(metaclass=ABCMeta):
 
         The one-cycle compatibility route for code that reached netCDF4 API
         through a CFVariable. Records nothing: this is not a CF attribute.
+        The storage object decides what this means, and warns - see
+        :meth:`iris.fileformats.netcdf._dataset.NetCDFDatasetVariable.deprecated_netcdf_member`.
 
         """
-        # PR 2 transitional. Task 11 replaces the body with
-        #   value = self.cf_data.deprecated_netcdf_member(name)
-        # and the deprecation warning, once no Iris code takes this path.
-        return getattr(self.cf_data, name)
+        return self.cf_data.deprecated_netcdf_member(name)
 
     def __getitem__(self, key):
         return self.cf_data.__getitem__(key)
@@ -393,7 +388,7 @@ class CFAncillaryDataVariable(CFVariable):
         # Identify all CF ancillary data variables.
         for nc_var_name, nc_var in target.items():
             # Check for ancillary data variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 for name in nc_var_att.split():
@@ -442,7 +437,7 @@ class CFAuxiliaryCoordinateVariable(CFVariable):
         # Identify all CF auxiliary coordinate variables.
         for nc_var_name, nc_var in target.items():
             # Check for auxiliary coordinate variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 for name in nc_var_att.split():
@@ -491,7 +486,7 @@ class CFBoundaryVariable(CFVariable):
         # Identify all CF boundary variables.
         for nc_var_name, nc_var in target.items():
             # Check for a boundary variable reference.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 name = nc_var_att.strip()
@@ -567,7 +562,7 @@ class CFClimatologyVariable(CFVariable):
         # Identify all CF climatology variables.
         for nc_var_name, nc_var in target.items():
             # Check for a climatology variable reference.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 name = nc_var_att.strip()
@@ -703,7 +698,7 @@ class _CFFormulaTermsVariable(CFVariable):
         # Identify all CF formula terms variables.
         for nc_var_name, nc_var in target.items():
             # Check for formula terms variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 for match_item in _CF_PARSE.finditer(nc_var_att):
@@ -776,7 +771,7 @@ class CFGridMappingVariable(CFVariable):
         # Identify all grid mapping variables.
         for nc_var_name, nc_var in target.items():
             # Check for a grid mapping variable reference.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 # All `grid_mapping` attributes will already have been parsed prior
@@ -860,7 +855,7 @@ class CFLabelVariable(CFVariable):
         # Identify all CF label variables.
         for nc_var_name, nc_var in target.items():
             # Check for label variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 for name in nc_var_att.split():
@@ -963,7 +958,7 @@ class CFMeasureVariable(CFVariable):
         # Identify all CF measure variables.
         for nc_var_name, nc_var in target.items():
             # Check for measure variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 for match_item in _CF_PARSE.finditer(nc_var_att):
@@ -1027,7 +1022,7 @@ class CFUGridConnectivityVariable(CFVariable):
             # Check for connectivity variable references, iterating through
             # the valid cf roles.
             for identity in cls.cf_identities:
-                nc_var_att = getattr(nc_var, identity, None)
+                nc_var_att = nc_var.attributes.get(identity)
 
                 if nc_var_att is not None:
                     # UGRID only allows for one of each connectivity cf role.
@@ -1102,7 +1097,7 @@ class CFUGridAuxiliaryCoordinateVariable(CFVariable):
         for nc_var_name, nc_var in target.items():
             # Check for UGRID auxiliary coordinate variable references.
             for identity in cls.cf_identities:
-                nc_var_att = getattr(nc_var, identity, None)
+                nc_var_att = nc_var.attributes.get(identity)
 
                 if nc_var_att is not None:
                     for name in nc_var_att.split():
@@ -1176,11 +1171,11 @@ class CFUGridMeshVariable(CFVariable):
                 # SPECIAL BEHAVIOUR FOR MESH VARIABLES.
                 # We are looking for all mesh variables. Check if THIS variable
                 #  is a mesh using its own attributes.
-                if getattr(nc_var, "cf_role", "") == "mesh_topology":
+                if nc_var.attributes.get("cf_role", "") == "mesh_topology":
                     result[nc_var_name] = CFUGridMeshVariable(nc_var_name, nc_var)
 
             # Check for mesh variable references.
-            nc_var_att = getattr(nc_var, cls.cf_identity, None)
+            nc_var_att = nc_var.attributes.get(cls.cf_identity)
 
             if nc_var_att is not None:
                 # UGRID only allows for 1 mesh per variable.

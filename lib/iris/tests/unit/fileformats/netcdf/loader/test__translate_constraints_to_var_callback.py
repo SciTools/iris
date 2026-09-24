@@ -16,17 +16,8 @@ from iris.tests import _shared_utils
 
 
 def _data_variable(mocker, name, **attributes):
-    """Build a CFDataVariable whose CF attributes read as a file's would.
-
-    `MagicMock(standard_name=...)` puts the name on the object, which is no
-    longer where CFVariable looks for it.  Drive `ncattrs`/`getncattr`
-    instead.
-
-    """
-    nc_var = mocker.MagicMock()
-    nc_var.ncattrs.return_value = list(attributes)
-    nc_var.getncattr.side_effect = attributes.__getitem__
-    return CFDataVariable(name, nc_var)
+    """A CFDataVariable whose CF attributes are exactly the ones named."""
+    return CFDataVariable(name, mocker.MagicMock(attributes=attributes))
 
 
 class Test:

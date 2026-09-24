@@ -88,6 +88,28 @@ class CFVariableDouble:
         return tuple((name, attributes[name]) for name in sorted(attributes))
 
 
+class RealArrayCfData:
+    """Wrap a real (non-lazy) array as a :class:`CFVariableDouble`'s ``cf_data``.
+
+    ``_get_cf_var_data`` reads ``cf_data.is_emulated`` and
+    ``cf_data.is_variable_length`` before it ever looks at size, so a double
+    backed directly by a plain array - as most of these tests are, since the
+    array given is the coordinate's real data rather than something read from
+    a file - needs this much of the storage interface even though the array
+    is always far too small to reach ``.chunking``/``.variable``, the two
+    members only the lazy-loading branch reads.
+    """
+
+    is_emulated = False
+    is_variable_length = False
+
+    def __init__(self, array):
+        self._array = array
+
+    def __getitem__(self, key):
+        return self._array[key]
+
+
 # A handful of call sites assert `isinstance(cf_var, CFDataVariable)` as a
 # sanity check on their own caller (e.g. `helpers.get_attr_units`, invoked
 # with `capture_invalid=True` only when building a Cube's own units). Register

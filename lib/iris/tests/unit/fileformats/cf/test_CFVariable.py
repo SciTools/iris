@@ -21,18 +21,15 @@ class CFVariableSub(cf.CFVariable):
 
 def make_nc_var(mocker):
     nc_var = mocker.MagicMock()
-    nc_var.ncattrs.return_value = ["coordinates", "standard_name", "_FillValue"]
-    nc_var.getncattr.side_effect = {
+    nc_var.attributes = {
         "coordinates": "x y",
         "standard_name": "air_temperature",
         "_FillValue": -999,
-    }.__getitem__
-    nc_var.coordinates = "x y"
-    nc_var.standard_name = "air_temperature"
+    }
     nc_var.dimensions = ("time", "lat")
+    nc_var.location = "/tmp/file.nc"
     nc_var.__len__.return_value = 4
     nc_var.__getitem__.return_value = "payload"
-    nc_var.group.return_value.filepath.return_value = "/tmp/file.nc"
 
     return nc_var
 
@@ -43,8 +40,8 @@ def nc_var(mocker):
 
 
 @pytest.fixture
-def nc_var_without_group(nc_var):
-    del nc_var.group
+def nc_var_without_location(nc_var):
+    del nc_var.location
 
     return nc_var
 
@@ -56,7 +53,7 @@ def nc_vars(mocker):
 
 
 class TestInit:
-    def test_records_filename_from_group(self, nc_var):
+    def test_records_filename_from_the_variables_location(self, nc_var):
         cf_var = CFVariableSub("foo", nc_var)
 
         assert cf_var.filename == "/tmp/file.nc"
@@ -66,8 +63,10 @@ class TestInit:
         assert cf_var.cf_terms_by_root == {}
         assert cf_var._to_be_promoted is False
 
-    def test_falls_back_to_unknown_filename_without_group(self, nc_var_without_group):
-        cf_var = CFVariableSub("foo", nc_var_without_group)
+    def test_falls_back_to_unknown_filename_without_a_location(
+        self, nc_var_without_location
+    ):
+        cf_var = CFVariableSub("foo", nc_var_without_location)
 
         assert cf_var.filename == "<unknown_filename>"
 
@@ -202,32 +201,33 @@ class TestAttributeAccess:
         assert cf_var.coordinates == "x y"
         assert "coordinates" not in cf_var.__dict__
 
-    def test_attributes_are_read_from_the_file_once(self, nc_var):
-        # Materialised at construction, so repeated reads cost nothing and
-        # cf_attrs_unused() does not have to go back to the file to answer.
+    def test_attributes_are_a_snapshot_taken_at_construction(self, nc_var):
+        # Finding F11. Copied, not wrapped: the storage object's mapping
+        # writes through to the file, and CFReader synthesises a "bounds"
+        # link on a file it opened read-only.
         cf_var = CFVariableSub("foo", nc_var)
-        assert nc_var.ncattrs.call_count == 1
 
-        _ = cf_var.coordinates
-        _ = cf_var.standard_name
-        assert nc_var.ncattrs.call_count == 1
-        assert nc_var.getncattr.call_count == 3
+        nc_var.attributes["units"] = "K"
+        assert "units" not in cf_var.attributes.untracked
+
+        cf_var.attributes["bounds"] = "foo_bnds"
+        assert "bounds" not in nc_var.attributes
 
     def test_getattr_of_a_non_attribute_reaches_the_variable(self, nc_var):
-        # The one-cycle compatibility route: a netCDF4 member that is not a
-        # CF attribute still resolves, and is still not marked as used.
-        nc_var.not_an_ncattr = 42
+        # The one-cycle compatibility route, now delegated to the storage
+        # object - which is also what warns. See Step 15.
+        nc_var.deprecated_netcdf_member.return_value = 42
         cf_var = CFVariableSub("foo", nc_var)
 
         assert cf_var.not_an_ncattr == 42
-        assert "not_an_ncattr" not in cf_var.__dict__
+        nc_var.deprecated_netcdf_member.assert_called_once_with("not_an_ncattr")
         assert "not_an_ncattr" not in dict(cf_var.cf_attrs())
         assert "not_an_ncattr" not in dict(cf_var.cf_attrs_used())
 
     def test_getattr_of_nothing_at_all_raises_attribute_error(self, nc_var):
+        nc_var.deprecated_netcdf_member.side_effect = AttributeError("nonesuch")
         cf_var = CFVariableSub("foo", nc_var)
-        # A MagicMock invents any member, so ask a real object instead.
-        cf_var.cf_data = object()
+
         with pytest.raises(AttributeError, match="nonesuch"):
             cf_var.nonesuch
 
@@ -341,8 +341,7 @@ class TestTypedProperties:
         # even though the value returned was never the file's. A declared
         # property now short-circuits __getattr__ entirely, nothing is
         # recorded, and the attribute survives onto the cube.
-        nc_var.ncattrs.return_value = [name]
-        nc_var.getncattr.side_effect = {name: f"file value of {name}"}.__getitem__
+        nc_var.attributes = {name: f"file value of {name}"}
         nc_var.shape = (3, 4)
         nc_var.dtype = np.dtype("f4")
         nc_var.size = 12
@@ -368,10 +367,9 @@ class TestShadowedAttributeNames:
 
     @pytest.fixture
     def shadowing(self, nc_var):
-        nc_var.ncattrs.return_value = SHADOWED_NAMES + ["units"]
-        nc_var.getncattr.side_effect = (
-            {name: f"file value of {name}" for name in SHADOWED_NAMES} | {"units": "K"}
-        ).__getitem__
+        nc_var.attributes = {
+            name: f"file value of {name}" for name in SHADOWED_NAMES
+        } | {"units": "K"}
         return CFVariableSub("foo", nc_var)
 
     def test_the_class_member_wins(self, nc_var, shadowing):
@@ -457,8 +455,7 @@ class TestGetattrAndHasattr:
     def test_dunder_probes_do_not_reach_the_file(self, nc_var):
         # copy, pickle and numpy all probe for dunders. Answering one from
         # file data would make a CFVariable behave as whatever the file says.
-        nc_var.ncattrs.return_value = ["__array__"]
-        nc_var.getncattr.side_effect = {"__array__": "nonsense"}.__getitem__
+        nc_var.attributes = {"__array__": "nonsense"}
         cf_var = CFVariableSub("foo", nc_var)
 
         assert not hasattr(cf_var, "__array_interface__")

@@ -10,7 +10,7 @@ import pytest
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf._thread_safe_nc import VLType
+import iris.fileformats.netcdf._dataset
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats import MockerMixin
@@ -27,11 +27,17 @@ class Test__get_cf_var_data(MockerMixin):
         if shape is None:
             shape = self.shape
         cf_data = self.mocker.MagicMock(
-            __getitem__="<real-data>",
-            dimensions=["dim_" + str(x) for x in range(len(shape))],
+            spec=iris.fileformats.netcdf._dataset.NetCDFDatasetVariable,
+            fill_value=None,
+            dimensions=tuple("dim_" + str(x) for x in range(len(shape))),
             shape=shape,
+            chunking=chunksizes,
+            is_variable_length=False,
+            is_emulated=False,
+            # NetCDFDataProxy reads .shape straight off this: the one
+            # deliberate escape hatch, and the one place a real shape matters.
+            variable=self.mocker.MagicMock(shape=shape),
         )
-        cf_data.chunking = self.mocker.MagicMock(return_value=chunksizes)
         if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
             dtype = np.dtype(dtype)
         cf_var = self.mocker.MagicMock(
@@ -76,16 +82,10 @@ class Test__get_cf_var_data(MockerMixin):
 
     def test_cf_data_no_chunks(self):
         # No chunks means chunks are calculated from the array's shape by
-        # `iris._lazy_data._optimum_chunksize()`.
+        # `iris._lazy_data._optimum_chunksize()`. This also covers what used
+        # to be the separate "contiguous" case: NetCDFDatasetVariable.chunking
+        # already collapses that netCDF spelling of "unchunked" to None.
         chunks = None
-        cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var)
-        lazy_data_chunks = [c[0] for c in lazy_data.chunks]
-        _shared_utils.assert_array_equal(lazy_data_chunks, self.expected_chunks)
-
-    def test_cf_data_contiguous(self):
-        # Chunks 'contiguous' is equivalent to no chunks.
-        chunks = "contiguous"
         cf_var = self._make(chunks)
         lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
@@ -106,47 +106,41 @@ class Test__get_cf_var_data(MockerMixin):
         var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
-    def test_vltype__1000str_is_lazy(self, mocker):
-        # Variable length string type
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(1000,), dtype=str, datatype=mock_vltype)
+    def test_vltype__1000str_is_lazy(self):
+        cf_var = self._make(shape=(1000,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
     def test_vltype__1000str_is_real_with_hint(self, mocker):
-        # Variable length string type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=1):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
     def test_vltype__100str_is_real(self, mocker):
-        # Variable length string type
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
-    def test_vltype__100str_is_lazy_with_hint(self, mocker):
-        # Variable length string type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+    def test_vltype__100str_is_lazy_with_hint(self):
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=50):
             var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
-    def test_vltype__100f8_is_lazy(self, mocker):
-        # Variable length float64 type
-        mock_vltype = mocker.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
-        cf_var = self._make(shape=(1000,), dtype="f8", datatype=mock_vltype)
+    def test_vltype__100f8_is_lazy(self):
+        cf_var = self._make(shape=(1000,), dtype="f8")
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
     def test_vltype__100f8_is_real_with_hint(self, mocker):
-        # Variable length float64 type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
-        cf_var = self._make(shape=(100,), dtype="f8", datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype="f8")
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=2):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
@@ -154,8 +148,9 @@ class Test__get_cf_var_data(MockerMixin):
     def test_cf_data_emulation(self, mocker):
         # Check that a variable emulation object passes its real data directly.
         emulated_data = mocker.Mock()
-        # Make a cf_var with a special extra '_data_array' property.
-        cf_var = self._make(chunksizes=None, _data_array=emulated_data)
+        cf_var = self._make(chunksizes=None)
+        cf_var.cf_data.is_emulated = True
+        cf_var.cf_data.emulated_data_array = emulated_data
         result = _get_cf_var_data(cf_var)
         # This should get directly returned.
         assert emulated_data is result

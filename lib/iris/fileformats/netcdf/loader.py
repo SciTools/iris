@@ -239,19 +239,19 @@ def _get_cf_var_data(cf_var):
     unnecessarily slow + wasteful of memory.
 
     """
-    if hasattr(cf_var, "_data_array"):
+    if cf_var.cf_data.is_emulated:
         # The variable is not an actual netCDF4 file variable, but an emulating
         # object with an attached data array (either numpy or dask), which can be
         # returned immediately as-is.  This is used as a hook to translate data to/from
         # netcdf data container objects in other packages, such as xarray.
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
-        result = cf_var._data_array
+        result = cf_var.cf_data.emulated_data_array
     else:
         # Determine size of data; however can't do this for variable length (VLEN)
         # netCDF arrays as the size of the array can only be known by reading the
         # data; see https://github.com/Unidata/netcdf-c/issues/1893.
         # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
-        if isinstance(getattr(cf_var, "datatype", None), _thread_safe_nc.VLType):
+        if cf_var.cf_data.is_variable_length:
             msg = (
                 f"NetCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
                 "thus the total data size cannot be known in advance. This may affect the lazy loading "
@@ -311,23 +311,25 @@ def _get_cf_var_data(cf_var):
             # It is done this way, instead of using an instance variable, because the
             #  limited nature of the wrappers makes a stateful choice awkward,
             #  e.g. especially, "variable.group()" is *not* the parent DatasetWrapper.
-            if isinstance(cf_var.cf_data, _bytecoding_datasets.EncodedVariable):
+            if isinstance(
+                cf_var.cf_data.variable, _bytecoding_datasets.EncodedVariable
+            ):
                 proxy_class = _bytecoding_datasets.EncodedNetCDFDataProxy
             else:
                 proxy_class = _thread_safe_nc.NetCDFDataProxy
 
-            proxy = proxy_class(cf_var.cf_data, dtype, cf_var.filename, fill_value)
+            proxy = proxy_class(
+                cf_var.cf_data.variable, dtype, cf_var.filename, fill_value
+            )
             # Get the chunking specified for the variable : this is either a shape, or
-            # maybe the string "contiguous".
+            # None if the variable is unchunked.
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
                 result = as_lazy_data(proxy, meta=proxy.dask_meta, chunks="auto")
             else:
-                chunks = cf_var.cf_data.chunking()
+                chunks = cf_var.cf_data.chunking
                 if chunks is None:
-                    # Occurs for non-version-4 netcdf
-                    chunks = "contiguous"
-                # In the "contiguous" case, pass chunks=None to 'as_lazy_data'.
-                if chunks == "contiguous":
+                    # Unchunked : either a non-version-4 file, or a contiguous
+                    # version-4 variable. Neither offers a chunking to adopt.
                     if (
                         CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
                         and isinstance(cf_var, iris.fileformats.cf.CFDataVariable)
@@ -339,6 +341,9 @@ def _get_cf_var_data(cf_var):
                         )
                     # Equivalent to chunks=None, but value required by chunking control
                     chunks = list(cf_var.shape)
+                else:
+                    # The chunk-control block below assigns into this.
+                    chunks = list(chunks)
 
                 # Modify the chunking in the context of an active chunking control.
                 # N.B. settings specific to this named var override global ('*') ones.

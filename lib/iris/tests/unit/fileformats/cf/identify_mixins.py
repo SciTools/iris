@@ -35,8 +35,10 @@ class _NetCDFVar:
             if not attr.startswith("_") and attr not in self.ATTRS_NOT_RETURN
         ]
 
-    def getncattr(self, name):
-        return getattr(self, name)
+    @property
+    def attributes(self):
+        """The CF attributes, as a CFDatasetVariable presents them."""
+        return {name: getattr(self, name) for name in self.ncattrs()}
 
 
 class _NetCDFVarWithDimensions(_NetCDFVar):

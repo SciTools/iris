@@ -319,26 +319,41 @@ class NetCDFDataset(CFDataset):
         extra = {} if netcdf_format is None else {"format": netcdf_format}
         self._dataset = dataset_class(location, mode=mode, **extra)
 
-        if warn_legacy_format and self._dataset.file_format in _LEGACY_FORMATS:
-            warnings.warn(
-                "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                'to NetCDF4 file format using the "nccopy" command.',
-                category=iris.warnings.IrisLoadWarning,
-            )
+        if warn_legacy_format:
+            self._warn_if_legacy_format()
 
         # Turn off *any* automatic decoding by netCDF4 itself. Iris decodes
         # byte data on its own terms, in _bytecoding_datasets. Inert on an
         # EncodedDataset, which blocks the call; real on a DatasetWrapper.
         self._dataset.set_auto_chartostring(False)
 
+    def _warn_if_legacy_format(self) -> None:
+        """Warn that this file would load faster in netCDF4 format, if it would."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        if self._dataset.file_format in _LEGACY_FORMATS:
+            warnings.warn(
+                "Optimise CF-netCDF loading by converting data from NetCDF3 "
+                'to NetCDF4 file format using the "nccopy" command.',
+                category=iris.warnings.IrisLoadWarning,
+            )
+
     @classmethod
-    def from_existing(cls, dataset) -> "NetCDFDataset":
+    def from_existing(
+        cls, dataset, *, warn_legacy_format: bool = False
+    ) -> "NetCDFDataset":
         """Wrap an already-open netCDF dataset, without taking ownership of it.
 
         ``dataset`` may be a thread-safe wrapper, a bare
         :class:`netCDF4.Dataset`, or any object emulating one - the Xarray
         bridge passes the last of these. :meth:`close` will not release it,
         because whoever opened it is still responsible for it.
+
+        Parameters
+        ----------
+        warn_legacy_format : bool, default=False
+            Whether to warn that a netCDF3 file would load faster if
+            converted. Only loading asks for this.
 
         """
         instance = cls.__new__(cls)
@@ -361,6 +376,10 @@ class NetCDFDataset(CFDataset):
         instance._dataset = dataset
         instance._dataset.set_auto_chartostring(False)
         instance._location = str(dataset.filepath())
+
+        if warn_legacy_format:
+            instance._warn_if_legacy_format()
+
         return instance
 
     @property

@@ -210,6 +210,15 @@ class TestLegacyFormatWarning:
             with _dataset.NetCDFDataset(sample_path, warn_legacy_format=True):
                 pass
 
+    def test_warns_for_a_borrowed_dataset_when_asked(self, tmp_path):
+        legacy = _write_netcdf3(tmp_path)
+        raw = _thread_safe_nc.DatasetWrapper(legacy, mode="r")
+        try:
+            with pytest.warns(IrisLoadWarning, match="nccopy"):
+                _dataset.NetCDFDataset.from_existing(raw, warn_legacy_format=True)
+        finally:
+            raw.close()
+
 
 def _write_netcdf3(tmp_path):
     path = tmp_path / "legacy.nc"

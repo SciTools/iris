@@ -474,5 +474,5 @@ def _build_mesh_coords(mesh, cf_var):
         )
         raise ValueError(msg)
 
-    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+    mesh_coords = mesh.to_MeshCoords(location=location)
     return mesh_coords, mesh_dim

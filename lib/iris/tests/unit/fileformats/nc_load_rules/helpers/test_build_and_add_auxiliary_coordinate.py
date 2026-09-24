@@ -21,6 +21,7 @@ from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
     CFVariableDouble,
     MockerMixin,
+    RealArrayCfData,
 )
 
 
@@ -55,7 +56,7 @@ class TestBoundsVertexDim(MockerMixin):
         )
         self.cf_coord_var.dimensions = dimension_names
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.filename = self.engine.filename
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.size = np.prod(points.shape)
@@ -120,7 +121,7 @@ class TestBoundsVertexDim(MockerMixin):
         cf_bounds_var = CFVariableDouble(units="m")
         cf_bounds_var.dimensions = dimension_names
         cf_bounds_var.cf_name = "wibble_bnds"
-        cf_bounds_var.cf_data = bounds
+        cf_bounds_var.cf_data = RealArrayCfData(bounds)
         cf_bounds_var.filename = self.engine.filename
         cf_bounds_var.shape = bounds.shape
         cf_bounds_var.size = np.prod(bounds.shape)
@@ -163,12 +164,19 @@ class TestDtype(MockerMixin):
     def _setup(self, mocker):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
-        # `cf_data` must support both `.chunking()` (the lazy-loading path,
-        # forced on by `deferred_load_patch` below) and real indexing (via
+        # `cf_data` must support both `.chunking` (the lazy-loading path,
+        # forced on by `deferred_load_patch` below, which also needs
+        # `.variable` for the proxy it builds) and real indexing (via
         # `CFVariableDouble.__getitem__`, which reads `self.cf_data[key]`
         # exactly as production `CFVariable.__getitem__` does).
-        cf_data = mocker.MagicMock(_FillValue=None, shape=points.shape)
-        cf_data.chunking = mocker.MagicMock(return_value=points.shape)
+        cf_data = mocker.MagicMock(
+            _FillValue=None,
+            shape=points.shape,
+            is_emulated=False,
+            is_variable_length=False,
+            chunking=points.shape,
+            variable=mocker.MagicMock(shape=points.shape),
+        )
         cf_data.__getitem__ = mocker.MagicMock(side_effect=lambda key: points[key])
 
         self.engine = mocker.Mock(
@@ -256,7 +264,7 @@ class TestCoordConstruction:
         self.cf_coord_var.scale_factor = 1
         self.cf_coord_var.add_offset = 0
         self.cf_coord_var.cf_name = "wibble"
-        self.cf_coord_var.cf_data = points
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.filename = self.engine.filename
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.size = np.prod(points.shape)
@@ -271,7 +279,7 @@ class TestCoordConstruction:
         self.cf_bounds_var.scale_factor = 1
         self.cf_bounds_var.add_offset = 0
         self.cf_bounds_var.cf_name = "wibble_bnds"
-        self.cf_bounds_var.cf_data = bounds
+        self.cf_bounds_var.cf_data = RealArrayCfData(bounds)
         self.cf_bounds_var.shape = bounds.shape
         self.cf_bounds_var.size = np.prod(bounds.shape)
         self.cf_bounds_var.dtype = bounds.dtype

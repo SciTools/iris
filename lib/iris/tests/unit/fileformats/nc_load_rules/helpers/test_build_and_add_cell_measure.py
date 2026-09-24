@@ -12,7 +12,10 @@ from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_cell_measure
 from iris.loading import LOAD_PROBLEMS
-from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    RealArrayCfData,
+)
 
 
 @pytest.fixture
@@ -33,7 +36,7 @@ def mock_cf_cm_var(monkeypatch, mock_engine, mocker):
     output.scale_factor = 1
     output.add_offset = 0
     output.cf_name = "wibble"
-    output.cf_data = data
+    output.cf_data = RealArrayCfData(data)
     output.filename = mock_engine.filename
     output.shape = data.shape
     output.size = np.prod(data.shape)

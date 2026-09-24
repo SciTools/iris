@@ -40,13 +40,14 @@ before anything that can raise, so the destructor is safe even if
 ``__init__`` fails part way.
 
 This is the one module in :mod:`iris.fileformats.cf` still coupled to
-:mod:`iris.fileformats.netcdf`: opening a file needs ``_thread_safe_nc`` and
-``_bytecoding_datasets``. Everything else in the package already works against
-any object that presents netCDF-like ``variables``, ``dimensions``,
-``ncattrs`` and ``getncattr``. Removing that last coupling -- replacing the
-direct dataset construction with a format-agnostic dataset abstraction, so
-that Zarr can be read by the same machinery -- is the subject of §4.2 of the
-native Zarr I/O design,
+:mod:`iris.fileformats.netcdf`: opening a file means building a
+:class:`~iris.fileformats.netcdf._dataset.NetCDFDataset`. Everything else in
+the package works against the format-agnostic
+:class:`~iris.fileformats.cf.dataset.CFDataset` /
+:class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
+store can be read by the same machinery once a
+:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it
+-- see §4.2 of the native Zarr I/O design,
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
@@ -59,7 +60,7 @@ import warnings
 
 import iris.exceptions
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
+from iris.fileformats.netcdf._dataset import NetCDFDataset
 import iris.warnings
 
 from ._group import CFGroup
@@ -140,35 +141,23 @@ class CFReader:
             else:
                 self._filename = file_source
 
-            if _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ:
-                ds_type = _bytecoding_datasets.EncodedDataset
-            else:
-                ds_type = _thread_safe_nc.DatasetWrapper
-
-            self._dataset = ds_type(self._filename, mode="r")
+            self._dataset = NetCDFDataset(
+                self._filename, mode="r", warn_legacy_format=warn
+            )
             self._own_file = True
         else:
             # We have been passed an open dataset.
             # We use it but don't own it (don't close it).
-            self._dataset = file_source
-            self._filename = self._dataset.filepath()
+            self._dataset = NetCDFDataset.from_existing(
+                file_source, warn_legacy_format=warn
+            )
+            self._filename = self._dataset.location
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
         # Result of parsing "grid_mapping" attribute; mapping of coordinate_system => coordinates
         self._coord_system_mappings = {}
-
-        # Issue load optimisation warning.
-        if warn and self._dataset.file_format in [
-            "NETCDF3_CLASSIC",
-            "NETCDF3_64BIT",
-        ]:
-            warnings.warn(
-                "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                'to NetCDF4 file format using the "nccopy" command.',
-                category=iris.warnings.IrisLoadWarning,
-            )
 
         self._check_monotonic = monotonic
 
@@ -178,9 +167,8 @@ class CFReader:
             self._with_ugrid = False
 
         # Read the variables in the dataset only once to reduce runtime.
-        ds = self._dataset
-        # Turn off *any* automatic decoding in the underlying netCDF4 dataset.
-        ds.set_auto_chartostring(False)
+        # NetCDFDataset.variables caches, so this is the same dict - and the
+        # same CFDatasetVariable objects - that _has_meshes just walked.
         variables = self._dataset.variables
         self._translate(variables)
         self._build_cf_groups(variables)
@@ -202,7 +190,8 @@ class CFReader:
     def _has_meshes(self):
         result = False
         for variable in self._dataset.variables.values():
-            if hasattr(variable, "mesh") or hasattr(variable, "node_coordinates"):
+            attributes = variable.attributes
+            if "mesh" in attributes or "node_coordinates" in attributes:
                 result = True
                 break
         return result
@@ -233,7 +222,7 @@ class CFReader:
         # Parse all instances of "grid_mapping" attributes and store in CFReader
         # This avoids re-parsing the grid_mappings each time they are needed.
         for nc_var in variables.values():
-            if grid_mapping_attr := getattr(nc_var, "grid_mapping", None):
+            if grid_mapping_attr := nc_var.attributes.get("grid_mapping"):
                 try:
                     cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
                     self._coord_system_mappings[nc_var.name] = cs_mappings
@@ -271,11 +260,7 @@ class CFReader:
             )
 
         # Identify global netCDF attributes.
-        attr_dict = {
-            attr_name: _getncattr(self._dataset, attr_name, "")
-            for attr_name in self._dataset.ncattrs()
-        }
-        self.cf_group.global_attributes.update(attr_dict)
+        self.cf_group.global_attributes.update(dict(self._dataset.attributes))
 
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(variables)
@@ -549,12 +534,3 @@ class CFReader:
     def __del__(self):
         # Be sure to close dataset when CFReader is destroyed / garbage-collected.
         self._close()
-
-
-def _getncattr(dataset, attr, default=None):
-    """Wrap `netCDF4.Dataset.getncattr` to make it behave more like `getattr`."""
-    try:
-        value = dataset.getncattr(attr)
-    except AttributeError:
-        value = default
-    return value
