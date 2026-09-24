@@ -86,7 +86,9 @@ Both combine a `CubeList` into fewer cubes, and they are not interchangeable:
 
 `fileformats/netcdf/loader.py` drives CF interpretation through a rules engine
 in `fileformats/_nc_load_rules/`, which translates CF metadata into Iris
-coordinates. `fileformats/cf.py` provides the CF-level view of a file.
+coordinates. `fileformats/cf/` provides the CF-level view of a file: it
+classifies variables (`_variables.py`), groups them (`_group.py`) and reads
+them from a dataset (`_reader.py`, the only part coupled to netCDF).
 Never `import netCDF4` directly — use
 `fileformats/netcdf/_thread_safe_nc.py`.
 

@@ -99,7 +99,7 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 ## Code Style
 
 Linting and formatting are driven by pre-commit, not by invoking tools
-directly. Run pre-commit from a conda environment named `pre-commit`.
+directly.
 
 ```bash
 # Check and auto-fix the files you changed (preferred while iterating)
