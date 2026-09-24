@@ -15,14 +15,16 @@ See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 
-from collections.abc import Iterator, MutableMapping
+from collections.abc import Iterator, Mapping, MutableMapping
 from typing import Any
+import warnings
 
 import numpy as np
 
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
+import iris.warnings
 
-from . import _bytecoding_datasets, _thread_safe_nc
+from . import _bytecoding_datasets, _dask_locks, _thread_safe_nc
 
 #: What ``netCDF4.Variable.chunking()`` answers for an unchunked variable.
 #: ``None`` means the same thing, and arrives from non-version-4 files.
@@ -228,3 +230,210 @@ class NetCDFDatasetVariable(CFDatasetVariable):
     def write_handle(self) -> Any:
         """Return a picklable object supporting ``__setitem__``, for Dask stores."""
         raise NotImplementedError
+
+
+#: The formats that make CF loading slow, and that the user can convert away
+#: from with "nccopy".
+_LEGACY_FORMATS = ("NETCDF3_CLASSIC", "NETCDF3_64BIT")
+
+
+class NetCDFDataset(CFDataset):
+    """A netCDF file, presented through the CF interface."""
+
+    def __init__(
+        self,
+        location,
+        mode: str = "r",
+        *,
+        netcdf_format=None,
+        warn_legacy_format: bool = False,
+    ):
+        """Open a netCDF file.
+
+        Parameters
+        ----------
+        location : str or :class:`pathlib.Path`
+            The file's path or URL.
+        mode : str, default="r"
+            The netCDF4 open mode.
+        netcdf_format : str, optional
+            The netCDF format to create, when writing.
+        warn_legacy_format : bool, default=False
+            Whether to warn that a netCDF3 file would load faster if
+            converted. Only loading asks for this; the loader is where the
+            user can act on it.
+
+        """
+        # Set first, so that __del__ and close() are safe if opening fails.
+        self._dataset: _thread_safe_nc.DatasetWrapper | None = None
+        self._owned = True
+        self._closed = False
+        self._variables: dict[str, NetCDFDatasetVariable] | None = None
+        self._attributes: _NetCDFAttributes | None = None
+        self._write_lock = None
+
+        self._location = str(location)
+        self._mode = mode
+
+        if mode == "r" and not _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ:
+            # The user has turned string decoding off for reads. Writing has
+            # no such switch: the saver always encodes.
+            dataset_class = _thread_safe_nc.DatasetWrapper
+        else:
+            dataset_class = _bytecoding_datasets.EncodedDataset
+
+        # netCDF4.Dataset validates "format" against a fixed list and rejects
+        # None, so omit it entirely rather than passing the default through.
+        extra = {} if netcdf_format is None else {"format": netcdf_format}
+        self._dataset = dataset_class(location, mode=mode, **extra)
+
+        if warn_legacy_format and self._dataset.file_format in _LEGACY_FORMATS:
+            warnings.warn(
+                "Optimise CF-netCDF loading by converting data from NetCDF3 "
+                'to NetCDF4 file format using the "nccopy" command.',
+                category=iris.warnings.IrisLoadWarning,
+            )
+
+        # Turn off *any* automatic decoding by netCDF4 itself. Iris decodes
+        # byte data on its own terms, in _bytecoding_datasets. Inert on an
+        # EncodedDataset, which blocks the call; real on a DatasetWrapper.
+        self._dataset.set_auto_chartostring(False)
+
+    @classmethod
+    def from_existing(cls, dataset) -> "NetCDFDataset":
+        """Wrap an already-open netCDF dataset, without taking ownership of it.
+
+        ``dataset`` may be a thread-safe wrapper, a bare
+        :class:`netCDF4.Dataset`, or any object emulating one - the Xarray
+        bridge passes the last of these. :meth:`close` will not release it,
+        because whoever opened it is still responsible for it.
+
+        """
+        instance = cls.__new__(cls)
+        instance._owned = False
+        instance._closed = False
+        instance._variables = None
+        instance._attributes = None
+        instance._write_lock = None
+        instance._mode = "r+"
+
+        if not hasattr(dataset, "THREAD_SAFE_FLAG"):
+            # The wrappers forbid re-wrapping, so only wrap what is not one.
+            dataset = _bytecoding_datasets.EncodedDataset.from_existing(dataset)
+        instance._dataset = dataset
+        instance._dataset.set_auto_chartostring(False)
+        instance._location = str(dataset.filepath())
+        return instance
+
+    @property
+    def location(self) -> str:
+        """The file's path or URL."""
+        return self._location
+
+    @property
+    def mode(self) -> str:
+        """The mode the file was opened in."""
+        return self._mode
+
+    @property
+    def closed(self) -> bool:
+        """Whether :meth:`close` has already released the file."""
+        return self._closed
+
+    @property
+    def variables(self) -> Mapping:
+        """The file's variables, by name."""
+        if self._variables is None:
+            # Only unset while __init__ or from_existing is still running.
+            assert self._dataset is not None
+            self._variables = {
+                name: NetCDFDatasetVariable(
+                    variable, self._location, write_lock=self.write_lock
+                )
+                for name, variable in self._dataset.variables.items()
+            }
+        return self._variables
+
+    @property
+    def dimensions(self) -> Mapping:
+        """The file's dimension lengths, by name.
+
+        An unlimited dimension reports the number of records written so far,
+        which is what ``len()`` of a netCDF4 dimension gives and what every
+        caller in Iris - all of them membership tests - needs.
+
+        ``.size`` rather than ``len()``: :class:`~iris.fileformats.netcdf.
+        _thread_safe_nc.DimensionWrapper` is a composition wrapper whose
+        ``__getattr__`` forwards ordinary attribute lookups but is never
+        consulted for implicit dunder-protocol calls, so ``len(dimension)``
+        raises ``TypeError`` where ``dimension.size`` reaches the same value
+        through a normal attribute.
+
+        """
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        return {
+            name: dimension.size for name, dimension in self._dataset.dimensions.items()
+        }
+
+    @property
+    def attributes(self) -> MutableMapping:
+        """The file's global attributes."""
+        if self._attributes is None:
+            self._attributes = _NetCDFAttributes(self._dataset)
+        return self._attributes
+
+    def create_dimension(self, name: str, size: int | None) -> None:
+        """Declare a dimension of the given length."""
+        raise NotImplementedError
+
+    def create_variable(
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+    ) -> NetCDFDatasetVariable:
+        """Create and return a new variable."""
+        raise NotImplementedError
+
+    def sync(self) -> None:
+        """Flush buffered writes to the file."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        self._dataset.sync()
+
+    def finalise(self) -> None:
+        """Do nothing: a netCDF file needs no completion step.
+
+        Kept so that callers can be written once. Zarr's consolidated metadata
+        is what this exists for - see finding F6.
+
+        """
+
+    def close(self) -> None:
+        """Close the file, if this object opened it."""
+        if self._owned and self._dataset is not None and not self._closed:
+            self._dataset.close()
+        self._closed = True
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return f"{self.__class__.__name__}({self.location!r}, mode={self.mode!r})"
+
+    # netCDF-only members below.
+
+    @property
+    def dataset(self):
+        """The backing thread-safe netCDF dataset wrapper."""
+        return self._dataset
+
+    @property
+    def write_lock(self):
+        """The lock every worker writing to this file must hold.
+
+        One per dataset, because under the threaded scheduler
+        :func:`iris.fileformats.netcdf._dask_locks.get_worker_lock` returns a
+        new :class:`threading.Lock` on each call, and two such locks exclude
+        nothing.
+
+        """
+        if self._write_lock is None:
+            self._write_lock = _dask_locks.get_worker_lock(self._location)
+        return self._write_lock
