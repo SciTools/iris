@@ -25,7 +25,7 @@ For a map of where code lives and how data flows, see
 | **Distribution** | conda-forge (`iris`), PyPI (`scitools-iris`) |
 | **Key dependencies** | NumPy, Dask, SciPy, Cartopy, CF-Python, NetCDF4 |
 | **Linter / formatter** | Ruff (88-char line length) |
-| **Test runner** | pytest + pytest-xdist (`-n auto`) |
+| **Test runner** | pytest; pytest-xdist is installed but **not** in `addopts` — pass `-n auto` yourself |
 | **Env management** | nox + conda |
 
 
