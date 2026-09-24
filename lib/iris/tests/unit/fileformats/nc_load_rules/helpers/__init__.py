@@ -49,6 +49,15 @@ class CFVariableDouble:
         self.attributes = TrackedAttributes(dict(attributes))
 
     def __getattr__(self, name):
+        # Mirrors production CFVariable.__getattr__'s recursion guard
+        # (_variables.py:86,275): "attributes" is what this method reads to
+        # resolve anything else, so it must never be resolved by this method
+        # itself. Without this, an instance with no "attributes" yet in its
+        # __dict__ - e.g. `cls.__new__(cls)` during copy/deepcopy/unpickling,
+        # then a `__setstate__` probe - recurses infinitely instead of
+        # raising AttributeError.
+        if name.startswith("__") or name == "attributes":
+            raise AttributeError(name)
         try:
             return self.attributes[name]
         except KeyError:

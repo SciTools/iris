@@ -7,6 +7,7 @@ get_attr_units`.
 
 """
 
+import cf_units
 import numpy as np
 import pytest
 
@@ -67,3 +68,22 @@ class TestGetAttrUnits(MockerMixin):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.loaded == {"units": "\u266b"}
+
+    def test_flag_values_untracked(self):
+        """Presence of flag_values must force NO_UNIT_STRING without recording a read.
+
+        This is the load-bearing assertion for the untracked probe in
+        `get_attr_units` (`name in cf_var.attributes.untracked`): if that
+        probe is ever simplified to `name in cf_var.attributes` (a tracked
+        read), `flag_values`/`flag_masks`/`flag_meanings` would stop being
+        copied onto loaded cubes by `_add_unused_attributes`, silently. The
+        second assertion below is the one that catches that regression - the
+        first alone would still pass.
+        """
+        cf_var = CFVariableDouble(units="1", flag_values="1, 2, 3")
+        cf_var.cf_name = "flag_var"
+
+        attr_units = get_attr_units(cf_var, {})
+
+        assert attr_units == cf_units._NO_UNIT_STRING
+        assert "flag_values" not in cf_var.attributes.read

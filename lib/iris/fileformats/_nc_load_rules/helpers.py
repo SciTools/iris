@@ -678,6 +678,13 @@ def build_and_add_names(engine: Engine) -> None:
             engine.cube.attributes["invalid_standard_name"] = invalid_std_name
 
     _ = _add_or_capture(
+        # `_build_name_var` returns `cf_var.cf_name` - a structural member,
+        # not a file attribute - so the `attr_key="cf_name"` capture branch in
+        # `_add_or_capture` can only be reached if that plain attribute lookup
+        # itself raises. It doesn't today; if `_build_name_var` ever grows
+        # logic that can fail, this would capture `{"cf_name": None}` via
+        # `cf_var.attributes["cf_name"]`, which is a KeyError (cf_name is
+        # never in `.attributes`), not a meaningful value.
         build_func=partial(_build_name_var, engine.cf_var),
         add_method=setter("var_name"),
         cf_var=engine.cf_var,
