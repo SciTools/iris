@@ -9,6 +9,7 @@ import pytest
 
 from iris.fileformats import cf as cf
 from iris.fileformats.cf import _variables
+from iris.fileformats.cf.dataset import TrackedAttributes
 
 
 class CFVariableSub(cf.CFVariable):
@@ -269,16 +270,40 @@ class TestTypedProperties:
         assert cf_var.dtype == np.dtype("f4")
         assert cf_var.size == 12
 
-    def test_a_file_attribute_does_not_reach_the_typed_properties(self, nc_var):
-        # The properties are looked up before __getattr__ runs, so a file
-        # attribute called "shape" cannot displace the variable's shape.
-        nc_var.ncattrs.return_value = ["shape"]
-        nc_var.getncattr.side_effect = {"shape": "not a shape"}.__getitem__
-        nc_var.shape = (2,)
+    #: Each typed property, against the value its netCDF4 variable supplies.
+    TYPED_PROPERTIES = {
+        "dimensions": ("time", "lat"),
+        "shape": (3, 4),
+        "ndim": 2,
+        "dtype": np.dtype("f4"),
+        "size": 12,
+    }
+
+    @pytest.mark.parametrize("name", list(TYPED_PROPERTIES))
+    def test_a_file_attribute_colliding_with_a_typed_property(self, nc_var, name):
+        # A deliberate, accepted difference from pre-PR behaviour. The old
+        # __getattr__ recorded such a name as read before forwarding to the
+        # netCDF4 variable, so _add_unused_attributes dropped it and a
+        # legitimate user attribute silently vanished from the loaded cube -
+        # even though the value returned was never the file's. A declared
+        # property now short-circuits __getattr__ entirely, nothing is
+        # recorded, and the attribute survives onto the cube.
+        nc_var.ncattrs.return_value = [name]
+        nc_var.getncattr.side_effect = {name: f"file value of {name}"}.__getitem__
+        nc_var.shape = (3, 4)
+        nc_var.dtype = np.dtype("f4")
+        nc_var.size = 12
         cf_var = CFVariableSub("foo", nc_var)
 
-        assert cf_var.shape == (2,)
-        assert cf_var.attributes["shape"] == "not a shape"
+        # The netCDF4 value wins, not the colliding file attribute.
+        assert getattr(cf_var, name) == self.TYPED_PROPERTIES[name]
+
+        # Reading the property recorded nothing, so the file attribute is
+        # still unused - and so still reaches the cube - with its own value
+        # intact. Deliberately asserted through cf_attrs_unused() rather than
+        # cf_var.attributes[name], which would itself record the read this
+        # test exists to detect.
+        assert dict(cf_var.cf_attrs_unused())[name] == f"file value of {name}"
 
 
 #: CFVariable members that a CF attribute of the same name cannot displace.
@@ -296,9 +321,25 @@ class TestShadowedAttributeNames:
         ).__getitem__
         return CFVariableSub("foo", nc_var)
 
-    @pytest.mark.parametrize("name", SHADOWED_NAMES)
-    def test_the_class_member_wins(self, shadowing, name):
-        assert getattr(shadowing, name) != f"file value of {name}"
+    def test_the_class_member_wins(self, nc_var, shadowing):
+        # Each member's own value, not merely "not the file value": that
+        # weaker form passes against a member returning None or another
+        # member's value, and is trivially true of attributes and cf_data,
+        # neither of which can ever equal a string.
+        assert shadowing.filename == "/tmp/file.nc"
+        assert shadowing.cf_name == "foo"
+        assert shadowing.spans.__func__ is CFVariableSub.spans
+        assert isinstance(shadowing.attributes, TrackedAttributes)
+        assert shadowing.cf_data is nc_var
+
+        # Fails if SHADOWED_NAMES gains a member this test does not assert.
+        assert set(SHADOWED_NAMES) == {
+            "filename",
+            "cf_name",
+            "spans",
+            "attributes",
+            "cf_data",
+        }
 
     @pytest.mark.parametrize("name", SHADOWED_NAMES)
     def test_the_file_value_is_still_reachable(self, shadowing, name):
