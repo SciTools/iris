@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFVariable`."""
 
+import numpy as np
 import pytest
 
 from iris.fileformats import cf as cf
@@ -135,41 +136,46 @@ class TestComparisonAndRepresentation:
 
 
 class TestAttributeAccess:
-    def test_cached(self, nc_var):
-        # Make sure attribute access to the underlying netCDF4.Variable
-        # is cached.
-        name = "foo"
-        cf_var = CFVariableSub(name, nc_var)
-        assert nc_var.ncattrs.call_count == 1
+    def test_reads_are_not_cached_on_the_instance(self, nc_var):
+        # The setattr cache is gone. It made a re-read after cf_attrs_reset()
+        # invisible to attribute tracking, which decided which attributes
+        # reached the cube - see TestReadAfterReset below.
+        cf_var = CFVariableSub("foo", nc_var)
 
-        # Accessing a netCDF attribute should result in no further calls
-        # to nc_var.ncattrs() and the creation of an attribute on the
-        # cf_var.
-        # NB. Can't use hasattr() because that triggers the attribute
-        # to be created!
         assert "coordinates" not in cf_var.__dict__
-        _ = cf_var.coordinates
-        assert nc_var.ncattrs.call_count == 1
-        assert "coordinates" in cf_var.__dict__
+        assert cf_var.coordinates == "x y"
+        assert "coordinates" not in cf_var.__dict__
+        assert cf_var.coordinates == "x y"
+        assert "coordinates" not in cf_var.__dict__
 
-        # Trying again results in no change.
-        _ = cf_var.coordinates
+    def test_attributes_are_read_from_the_file_once(self, nc_var):
+        # Materialised at construction, so repeated reads cost nothing and
+        # cf_attrs_unused() does not have to go back to the file to answer.
+        cf_var = CFVariableSub("foo", nc_var)
         assert nc_var.ncattrs.call_count == 1
-        assert "coordinates" in cf_var.__dict__
 
-        # Trying another attribute results in just a new attribute.
-        assert "standard_name" not in cf_var.__dict__
+        _ = cf_var.coordinates
         _ = cf_var.standard_name
         assert nc_var.ncattrs.call_count == 1
-        assert "standard_name" in cf_var.__dict__
+        assert nc_var.getncattr.call_count == 3
 
-    def test_getattr_non_ncattr_value_is_cached_but_not_marked_used(self, nc_var):
+    def test_getattr_of_a_non_attribute_reaches_the_variable(self, nc_var):
+        # The one-cycle compatibility route: a netCDF4 member that is not a
+        # CF attribute still resolves, and is still not marked as used.
         nc_var.not_an_ncattr = 42
         cf_var = CFVariableSub("foo", nc_var)
 
         assert cf_var.not_an_ncattr == 42
-        assert "not_an_ncattr" in cf_var.__dict__
-        assert "not_an_ncattr" not in cf_var.cf_attrs()
+        assert "not_an_ncattr" not in cf_var.__dict__
+        assert "not_an_ncattr" not in dict(cf_var.cf_attrs())
+        assert "not_an_ncattr" not in dict(cf_var.cf_attrs_used())
+
+    def test_getattr_of_nothing_at_all_raises_attribute_error(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        # A MagicMock invents any member, so ask a real object instead.
+        cf_var.cf_data = object()
+        with pytest.raises(AttributeError, match="nonesuch"):
+            cf_var.nonesuch
 
     def test_getitem_and_len_delegate_to_underlying_variable(self, nc_var):
         cf_var = CFVariableSub("foo", nc_var)
@@ -216,3 +222,60 @@ class TestIdentify:
         cf_var = CFVariableSub("foo", nc_var)
 
         assert cf_var.identify({}) is None
+
+
+class TestAttributesMapping:
+    def test_attributes_contents(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        assert dict(cf_var.attributes) == {
+            "coordinates": "x y",
+            "standard_name": "air_temperature",
+            "_FillValue": -999,
+        }
+
+    def test_getattr_and_mapping_are_the_same_read(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        _ = cf_var.coordinates
+        assert cf_var.attributes.read == frozenset(["_FillValue", "coordinates"])
+
+        cf_var.cf_attrs_reset()
+        _ = cf_var.attributes["coordinates"]
+        assert cf_var.attributes.read == frozenset(["_FillValue", "coordinates"])
+
+    def test_untracked_read_is_not_recorded(self, nc_var):
+        # What helpers.py's flag-attribute probe needs: a look that does not
+        # count, so the attribute still reaches the cube.
+        cf_var = CFVariableSub("foo", nc_var)
+
+        assert cf_var.attributes.untracked["coordinates"] == "x y"
+        assert "coordinates" in dict(cf_var.cf_attrs_unused())
+
+
+class TestTypedProperties:
+    def test_dimensions_is_a_tuple(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        assert cf_var.dimensions == ("time", "lat")
+
+    def test_shape_ndim_dtype_size(self, mocker, nc_var):
+        nc_var.shape = (3, 4)
+        nc_var.dtype = np.dtype("f4")
+        nc_var.size = 12
+        cf_var = CFVariableSub("foo", nc_var)
+
+        assert cf_var.shape == (3, 4)
+        assert cf_var.ndim == 2
+        assert cf_var.dtype == np.dtype("f4")
+        assert cf_var.size == 12
+
+    def test_a_file_attribute_does_not_reach_the_typed_properties(self, nc_var):
+        # The properties are looked up before __getattr__ runs, so a file
+        # attribute called "shape" cannot displace the variable's shape.
+        nc_var.ncattrs.return_value = ["shape"]
+        nc_var.getncattr.side_effect = {"shape": "not a shape"}.__getitem__
+        nc_var.shape = (2,)
+        cf_var = CFVariableSub("foo", nc_var)
+
+        assert cf_var.shape == (2,)
+        assert cf_var.attributes["shape"] == "not a shape"

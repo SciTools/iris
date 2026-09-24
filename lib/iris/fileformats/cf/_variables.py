@@ -52,6 +52,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+from iris.fileformats.cf.dataset import CFDatasetVariable, TrackedAttributes
 from iris.mesh.components import Connectivity
 import iris.util
 import iris.warnings
@@ -78,6 +79,21 @@ _NCZARR_SCALAR_DIMENSION = "_scalar_"
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
+# Names __getattr__ must never resolve through self.attributes, because
+# reading self.attributes is how it resolves anything at all. Deliberately
+# not "every underscore-prefixed name": loader.py and saver.py both probe
+# for "_data_array", and that probe has to reach through.
+_GETATTR_RECURSION_GUARD = frozenset(["attributes", "cf_data"])
+
+
+def _attributes_source(data):
+    """Return a mapping of the CF attributes of a variable's backing store."""
+    # PR 2 transitional. Task 11 deletes this: once CFReader supplies
+    # CFDatasetVariables, __init__ reads data.attributes directly.
+    if isinstance(data, CFDatasetVariable):
+        return data.attributes
+    return {name: data.getncattr(name) for name in data.ncattrs()}
+
 
 # NetCDF returns a different type for strings depending on Python version.
 def _is_str_dtype(var):
@@ -95,16 +111,28 @@ class CFVariable(metaclass=ABCMeta):
     cf_identity: ClassVar[str | None] = None
 
     def __init__(self, name, data):
-        # Accessing the list of netCDF attributes is surprisingly slow.
-        # Since it's used repeatedly, caching the list makes things
-        # quite a bit faster.
-        self._nc_attrs = data.ncattrs()
-
         self.cf_name = name
         """NetCDF variable name."""
 
         self.cf_data = data
-        """NetCDF4 Variable data instance."""
+        """The variable's storage: a netCDF4 variable.
+
+        PR 2 transitional. This becomes a
+        :class:`~iris.fileformats.cf.dataset.CFDatasetVariable` once
+        :class:`~iris.fileformats.cf.CFReader` supplies them, leaving
+        ``_deprecated_netcdf_member`` as the only netCDF4-specific route out.
+        """
+
+        self.attributes = TrackedAttributes(
+            _attributes_source(data), ignored=_CF_ATTRS_IGNORE
+        )
+        """The variable's CF attributes, and a record of which have been read.
+
+        The only place CF attributes live. ``__getattr__`` forwards here, so
+        ``cf_var.units`` and ``cf_var.attributes["units"]`` are the same read
+        and count once. What was read decides what survives onto the loaded
+        cube - see :func:`iris.fileformats.netcdf.loader._add_unused_attributes`.
+        """
 
         """File source of the NetCDF content."""
         try:
@@ -119,8 +147,6 @@ class CFVariable(metaclass=ABCMeta):
         """CF-netCDF formula terms that his variable participates in."""
 
         self._to_be_promoted = False
-
-        self.cf_attrs_reset()
 
     @staticmethod
     def _identify_common(variables, ignore, target):
@@ -200,15 +226,65 @@ class CFVariable(metaclass=ABCMeta):
         # CF variable names are unique.
         return hash(self.cf_name)
 
+    @property
+    def dimensions(self) -> tuple:
+        """The names of the dimensions this variable spans, in order."""
+        return tuple(self.cf_data.dimensions)
+
+    @property
+    def shape(self) -> tuple:
+        """The variable's shape."""
+        return self.cf_data.shape
+
+    @property
+    def ndim(self) -> int:
+        """The number of dimensions this variable spans."""
+        return len(self.shape)
+
+    @property
+    def dtype(self):
+        """The variable's stored data type."""
+        return self.cf_data.dtype
+
+    @property
+    def size(self) -> int:
+        """The total number of elements in the variable."""
+        return self.cf_data.size
+
     def __getattr__(self, name):
-        # Accessing netCDF attributes is surprisingly slow. Since
-        # they're often read repeatedly, caching the values makes things
-        # quite a bit faster.
-        if name in self._nc_attrs:
-            self._cf_attrs.add(name)
-        value = getattr(self.cf_data, name)
-        setattr(self, name, value)
-        return value
+        """Return the named CF attribute, as read from the file.
+
+        The open-ended half of this class. CF attribute names are data read
+        from a file, not API, so they cannot be declared - which is what
+        justifies ``__getattr__`` here at all. It resolves only against
+        :attr:`attributes`; everything structural is a declared property
+        above. Reading through it records the attribute as used, exactly as
+        ``cf_var.attributes[name]`` does.
+
+        """
+        if name.startswith("__") or name in _GETATTR_RECURSION_GUARD:
+            # Dunder probes - copy, pickle, numpy protocols - must not be
+            # answered from file data, and the two members this method reads
+            # must not be resolved by this method.
+            raise AttributeError(name)
+
+        try:
+            return self.attributes[name]
+        except KeyError:
+            pass
+        return self._deprecated_netcdf_member(name)
+
+    def _deprecated_netcdf_member(self, name):
+        """Return a netCDF4 member of the backing variable, as this class used to.
+
+        The one-cycle compatibility route for code that reached netCDF4 API
+        through a CFVariable. Records nothing: this is not a CF attribute.
+
+        """
+        # PR 2 transitional. Task 11 replaces the body with
+        #   value = self.cf_data.deprecated_netcdf_member(name)
+        # and the deprecation warning, once no Iris code takes this path.
+        return getattr(self.cf_data, name)
 
     def __getitem__(self, key):
         return self.cf_data.__getitem__(key)
@@ -223,31 +299,37 @@ class CFVariable(metaclass=ABCMeta):
             self.cf_data,
         )
 
+    # Every cf_attrs_* reader below takes its values from
+    # ``self.attributes.untracked``: a report on what was read must not itself
+    # count as reading. Each binds that view to a local first, because reading
+    # the property copies the whole mapping.
+
     def cf_attrs(self):
         """Return a list of all attribute name and value pairs of the CF-netCDF variable."""
-        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._nc_attrs))
+        attributes = self.attributes.untracked
+        return tuple((name, attributes[name]) for name in sorted(attributes))
 
     def cf_attrs_ignored(self):
         """Return a list of all ignored attribute name and value pairs of the CF-netCDF variable."""
-        return tuple(
-            (attr, self.getncattr(attr))
-            for attr in sorted(set(self._nc_attrs) & _CF_ATTRS_IGNORE)
-        )
+        attributes = self.attributes.untracked
+        names = set(attributes) & _CF_ATTRS_IGNORE
+        return tuple((name, attributes[name]) for name in sorted(names))
 
     def cf_attrs_used(self):
         """Return a list of all accessed attribute name and value pairs of the CF-netCDF variable."""
-        return tuple((attr, self.getncattr(attr)) for attr in sorted(self._cf_attrs))
+        attributes = self.attributes.untracked
+        return tuple((name, attributes[name]) for name in sorted(self.attributes.read))
 
     def cf_attrs_unused(self):
         """Return a list of all non-accessed attribute name and value pairs of the CF-netCDF variable."""
+        attributes = self.attributes.untracked
         return tuple(
-            (attr, self.getncattr(attr))
-            for attr in sorted(set(self._nc_attrs) - self._cf_attrs)
+            (name, attributes[name]) for name in sorted(self.attributes.unread)
         )
 
     def cf_attrs_reset(self):
         """Reset the history of accessed attribute names of the CF-netCDF variable."""
-        self._cf_attrs = set([item[0] for item in self.cf_attrs_ignored()])
+        self.attributes.reset()
 
     def add_formula_term(self, root, term):
         """Register the participation of this CF-netCDF variable in a CF-netCDF formula term.

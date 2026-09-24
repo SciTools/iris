@@ -34,6 +34,9 @@ class _NetCDFVar:
             if not attr.startswith("_") and attr not in self.ATTRS_NOT_RETURN
         ]
 
+    def getncattr(self, name):
+        return getattr(self, name)
+
 
 class _NetCDFVarWithDimensions(_NetCDFVar):
     """Stub NetCDF variable with dimensions for spans() tests."""
