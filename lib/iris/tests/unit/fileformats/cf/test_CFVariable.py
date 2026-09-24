@@ -279,3 +279,152 @@ class TestTypedProperties:
 
         assert cf_var.shape == (2,)
         assert cf_var.attributes["shape"] == "not a shape"
+
+
+#: CFVariable members that a CF attribute of the same name cannot displace.
+SHADOWED_NAMES = ["filename", "cf_name", "spans", "attributes", "cf_data"]
+
+
+class TestShadowedAttributeNames:
+    """Review Focus 1. Spec section 4.3's known limitation, pinned."""
+
+    @pytest.fixture
+    def shadowing(self, nc_var):
+        nc_var.ncattrs.return_value = SHADOWED_NAMES + ["units"]
+        nc_var.getncattr.side_effect = (
+            {name: f"file value of {name}" for name in SHADOWED_NAMES} | {"units": "K"}
+        ).__getitem__
+        return CFVariableSub("foo", nc_var)
+
+    @pytest.mark.parametrize("name", SHADOWED_NAMES)
+    def test_the_class_member_wins(self, shadowing, name):
+        assert getattr(shadowing, name) != f"file value of {name}"
+
+    @pytest.mark.parametrize("name", SHADOWED_NAMES)
+    def test_the_file_value_is_still_reachable(self, shadowing, name):
+        assert shadowing.attributes[name] == f"file value of {name}"
+
+    @pytest.mark.parametrize("name", SHADOWED_NAMES)
+    def test_reading_it_through_the_mapping_marks_it_used(self, shadowing, name):
+        assert name in dict(shadowing.cf_attrs_unused())
+        _ = shadowing.attributes[name]
+        assert name in dict(shadowing.cf_attrs_used())
+        assert name not in dict(shadowing.cf_attrs_unused())
+
+    @pytest.mark.parametrize("name", SHADOWED_NAMES)
+    def test_it_is_listed_among_the_variables_attributes(self, shadowing, name):
+        assert name in dict(shadowing.cf_attrs())
+
+    def test_a_shadowing_name_does_not_disturb_its_neighbours(self, shadowing):
+        assert shadowing.units == "K"
+        assert dict(shadowing.cf_attrs_used())["units"] == "K"
+
+
+class TestGetattrAndHasattr:
+    """Review Focus 2. The two call shapes the loading rules actually use."""
+
+    def test_getattr_with_a_default_finds_the_attribute(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        assert getattr(cf_var, "coordinates", None) == "x y"
+
+    def test_getattr_with_a_default_returns_the_default(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        cf_var.cf_data = object()
+        assert getattr(cf_var, "nonesuch", None) is None
+        assert getattr(cf_var, "nonesuch", "fallback") == "fallback"
+
+    def test_a_missing_attribute_raises_attribute_error_not_key_error(self, nc_var):
+        # getattr(..., default) only swallows AttributeError. A KeyError from
+        # the mapping would escape and abort the load.
+        cf_var = CFVariableSub("foo", nc_var)
+        cf_var.cf_data = object()
+        with pytest.raises(AttributeError):
+            cf_var.nonesuch
+
+    def test_getattr_of_a_default_does_not_record_a_read(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        cf_var.cf_data = object()
+        _ = getattr(cf_var, "nonesuch", None)
+        assert cf_var.cf_attrs_used() == (("_FillValue", -999),)
+
+    def test_hasattr_true_marks_the_attribute_used(self, nc_var):
+        # Parity with the old behaviour: hasattr went through __getattr__,
+        # which added the name to the used set.
+        cf_var = CFVariableSub("foo", nc_var)
+        assert hasattr(cf_var, "coordinates")
+        assert "coordinates" in dict(cf_var.cf_attrs_used())
+
+    def test_hasattr_false_marks_nothing(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        cf_var.cf_data = object()
+        assert not hasattr(cf_var, "nonesuch")
+        assert cf_var.cf_attrs_used() == (("_FillValue", -999),)
+
+    def test_dunder_probes_do_not_reach_the_file(self, nc_var):
+        # copy, pickle and numpy all probe for dunders. Answering one from
+        # file data would make a CFVariable behave as whatever the file says.
+        nc_var.ncattrs.return_value = ["__array__"]
+        nc_var.getncattr.side_effect = {"__array__": "nonsense"}.__getitem__
+        cf_var = CFVariableSub("foo", nc_var)
+
+        assert not hasattr(cf_var, "__array_interface__")
+        # The file really does carry "__array__", and __getattr__ still
+        # refuses it - without that refusal numpy would believe the file.
+        with pytest.raises(AttributeError, match="__array__"):
+            cf_var.__array__
+        assert cf_var.attributes.untracked["__array__"] == "nonsense"
+
+    @pytest.mark.parametrize("name", ["attributes", "cf_data"])
+    def test_the_recursion_guard_holds_before_init_completes(self, name):
+        # An instance whose __init__ never ran - what copy and pickle build -
+        # must raise, not recurse until the stack is gone.
+        cf_var = CFVariableSub.__new__(CFVariableSub)
+        with pytest.raises(AttributeError, match=name):
+            getattr(cf_var, name)
+
+
+class TestReadAfterReset:
+    """Review Focus 3. The cache removal's whole point, at unit scale.
+
+    Task 11, Step 1 pins the same behaviour end to end, on a real file.
+    """
+
+    def test_a_re_read_after_reset_counts_again(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        # As CFReader does: read while parsing structure, then reset.
+        _ = cf_var.coordinates
+        assert "coordinates" in dict(cf_var.cf_attrs_used())
+        cf_var.cf_attrs_reset()
+        assert "coordinates" in dict(cf_var.cf_attrs_unused())
+
+        # As the loading rules then do: read it again.
+        _ = cf_var.coordinates
+        assert "coordinates" in dict(cf_var.cf_attrs_used())
+        assert "coordinates" not in dict(cf_var.cf_attrs_unused())
+
+    def test_the_same_holds_through_hasattr(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        _ = cf_var.coordinates
+        cf_var.cf_attrs_reset()
+
+        assert hasattr(cf_var, "coordinates")
+        assert "coordinates" in dict(cf_var.cf_attrs_used())
+
+    def test_reset_restores_the_ignored_names_only(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        _ = cf_var.coordinates
+        _ = cf_var.standard_name
+        cf_var.cf_attrs_reset()
+
+        assert cf_var.cf_attrs_used() == (("_FillValue", -999),)
+        assert cf_var.cf_attrs_unused() == (
+            ("coordinates", "x y"),
+            ("standard_name", "air_temperature"),
+        )
+
+    def test_values_are_unchanged_by_any_of_this(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+        for _ in range(3):
+            assert cf_var.coordinates == "x y"
+            cf_var.cf_attrs_reset()
