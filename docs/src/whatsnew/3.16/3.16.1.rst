@@ -9,6 +9,6 @@ v3.16.1 (21 Sep 2026)
 
    This patch release of Iris includes:
 
-   * (:fa:`code-pull-request` :pull:`7293`) :user:`pp-mo` fixed the chardata support to allow correct operation with ncdata 'shortcut' data transfers. (:far:`circle-dot` :issue:`7283`).
-   * (:fa:`code-pull-request` :pull:`7253` & :pull:`7273`) :user:`stephenworsley` fixed a bug which caused indexing to fail when ``start_index`` was 1. (:far:`circle-dot` :issue:`7246`).
-   * (:fa:`code-pull-request` :pull:`7262`) :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 (:far:`circle-dot` :issue:`7251`).
+   * :fa:`code-pull-request` :pull:`7293` :user:`pp-mo` fixed the chardata support to allow correct operation with ncdata 'shortcut' data transfers. (:far:`circle-dot` :issue:`7283`).
+   * :fa:`code-pull-request` :pull:`7253` :user:`stephenworsley` fixed a bug which caused indexing to fail when ``start_index`` was 1. (:far:`circle-dot` :issue:`7246`).
+   * :fa:`code-pull-request` :pull:`7262` :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 (:far:`circle-dot` :issue:`7251`).
