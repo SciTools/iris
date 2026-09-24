@@ -563,8 +563,8 @@ def _add_or_capture(
         #  best to capture objects IF possible.
         if attr_key is not None:
             captured_attr = None
-            with contextlib.suppress(AttributeError):
-                captured_attr = getattr(cf_var, attr_key)
+            with contextlib.suppress(KeyError):
+                captured_attr = cf_var.attributes[attr_key]
             captured = {attr_key: captured_attr}
         else:
             with contextlib.suppress(Exception):
@@ -613,7 +613,7 @@ def build_raw_cube(cf_var: cf.CFVariable) -> Cube:
 
 ################################################################################
 def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
-    value = getattr(cf_var, CF_ATTR_STD_NAME, None)
+    value = cf_var.attributes.get(CF_ATTR_STD_NAME)
     if value is not None:
         standard_name = _get_valid_standard_name(value)
     else:
@@ -622,7 +622,7 @@ def _build_name_standard(cf_var: cf.CFVariable) -> str | None:
 
 
 def _build_name_long(cf_var: cf.CFVariable) -> str | None:
-    return getattr(cf_var, CF_ATTR_LONG_NAME, None)
+    return cf_var.attributes.get(CF_ATTR_LONG_NAME)
 
 
 def _build_name_var(cf_var: cf.CFVariable) -> str | None:
@@ -742,7 +742,7 @@ def build_and_add_units(engine: Engine):
 
 ################################################################################
 def _build_cell_methods(cf_var: cf.CFDataVariable) -> List[iris.coords.CellMethod]:
-    nc_att_cell_methods = getattr(cf_var, CF_ATTR_CELL_METHODS, None)
+    nc_att_cell_methods = cf_var.attributes.get(CF_ATTR_CELL_METHODS)
     return parse_cell_methods(nc_att_cell_methods, cf_var.cf_name)
 
 
@@ -771,9 +771,9 @@ def _get_ellipsoid(cf_grid_var):
     `cf_grid_var`. Returns None if no relevant properties are specified.
 
     """
-    major = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MAJOR_AXIS, None)
-    minor = getattr(cf_grid_var, CF_ATTR_GRID_SEMI_MINOR_AXIS, None)
-    inverse_flattening = getattr(cf_grid_var, CF_ATTR_GRID_INVERSE_FLATTENING, None)
+    major = cf_grid_var.attributes.get(CF_ATTR_GRID_SEMI_MAJOR_AXIS)
+    minor = cf_grid_var.attributes.get(CF_ATTR_GRID_SEMI_MINOR_AXIS)
+    inverse_flattening = cf_grid_var.attributes.get(CF_ATTR_GRID_INVERSE_FLATTENING)
 
     # Avoid over-specification exception.
     if major is not None and minor is not None:
@@ -781,12 +781,12 @@ def _get_ellipsoid(cf_grid_var):
 
     # Check for a default spherical earth.
     if major is None and minor is None and inverse_flattening is None:
-        major = getattr(cf_grid_var, CF_ATTR_GRID_EARTH_RADIUS, None)
+        major = cf_grid_var.attributes.get(CF_ATTR_GRID_EARTH_RADIUS)
 
-    datum = getattr(cf_grid_var, CF_ATTR_GRID_DATUM, None)
+    datum = cf_grid_var.attributes.get(CF_ATTR_GRID_DATUM)
     # Check crs_wkt if no datum
     if datum is None:
-        crs_wkt = getattr(cf_grid_var, CF_ATTR_GRID_CRS_WKT, None)
+        crs_wkt = cf_grid_var.attributes.get(CF_ATTR_GRID_CRS_WKT)
         if crs_wkt is not None:
             proj_crs = pyproj.crs.CRS.from_wkt(crs_wkt)
             if proj_crs.datum is not None:
@@ -829,15 +829,17 @@ def build_rotated_coordinate_system(engine, cf_grid_var):
     """Create a rotated coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    north_pole_latitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
-    north_pole_longitude = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
+    north_pole_latitude = cf_grid_var.attributes.get(CF_ATTR_GRID_NORTH_POLE_LAT, 90.0)
+    north_pole_longitude = cf_grid_var.attributes.get(CF_ATTR_GRID_NORTH_POLE_LON, 0.0)
     if north_pole_latitude is None or north_pole_longitude is None:
         warnings.warn(
             "Rotated pole position is not fully specified",
             category=iris.warnings.IrisCfLoadWarning,
         )
 
-    north_pole_grid_lon = getattr(cf_grid_var, CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0)
+    north_pole_grid_lon = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_NORTH_POLE_GRID_LON, 0.0
+    )
 
     rcs = iris.coord_systems.RotatedGeogCS(
         north_pole_latitude,
@@ -854,27 +856,27 @@ def build_transverse_mercator_coordinate_system(engine, cf_grid_var):
     """Create a transverse Mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_central_meridian = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None
+    longitude_of_central_meridian = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    scale_factor_at_central_meridian = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN, None
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
+    scale_factor_at_central_meridian = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_CENT_MERIDIAN
     )
 
     # The following accounts for the inconsistency in the transverse
     # mercator description within the CF spec.
     if longitude_of_central_meridian is None:
-        longitude_of_central_meridian = getattr(
-            cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+        longitude_of_central_meridian = cf_grid_var.attributes.get(
+            CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
         )
     if scale_factor_at_central_meridian is None:
-        scale_factor_at_central_meridian = getattr(
-            cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+        scale_factor_at_central_meridian = cf_grid_var.attributes.get(
+            CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
         )
 
     cs = iris.coord_systems.TransverseMercator(
@@ -894,15 +896,15 @@ def build_lambert_conformal_coordinate_system(engine, cf_grid_var):
     """Create a Lambert conformal conic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_central_meridian = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None
+    longitude_of_central_meridian = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    standard_parallel = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
+    standard_parallel = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
 
     cs = iris.coord_systems.LambertConformal(
         latitude_of_projection_origin,
@@ -921,18 +923,18 @@ def build_stereographic_coordinate_system(engine, cf_grid_var):
     """Create a stereographic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
 
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
 
     cs = iris.coord_systems.Stereographic(
         latitude_of_projection_origin,
@@ -952,19 +954,19 @@ def build_polar_stereographic_coordinate_system(engine, cf_grid_var):
     """Create a polar stereographic coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_STRAIGHT_VERT_LON, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_STRAIGHT_VERT_LON
     )
-    true_scale_lat = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    true_scale_lat = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
 
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
 
     cs = iris.coord_systems.PolarStereographic(
         latitude_of_projection_origin,
@@ -984,14 +986,14 @@ def build_mercator_coordinate_system(engine, cf_grid_var):
     """Create a Mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    standard_parallel = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    standard_parallel = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
 
     cs = iris.coord_systems.Mercator(
@@ -1011,14 +1013,14 @@ def build_lambert_azimuthal_equal_area_coordinate_system(engine, cf_grid_var):
     """Create a lambert azimuthal equal area coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
 
     cs = iris.coord_systems.LambertAzimuthalEqualArea(
         latitude_of_projection_origin,
@@ -1036,15 +1038,15 @@ def build_albers_equal_area_coordinate_system(engine, cf_grid_var):
     """Create a albers conical equal area coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_central_meridian = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_CENT_MERIDIAN, None
+    longitude_of_central_meridian = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_CENT_MERIDIAN
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    standard_parallels = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
+    standard_parallels = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
 
     cs = iris.coord_systems.AlbersEqualArea(
         latitude_of_projection_origin,
@@ -1063,17 +1065,17 @@ def build_vertical_perspective_coordinate_system(engine, cf_grid_var):
     """Create a vertical perspective coordinate system from the CF-netCDF grid mapping variables."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    perspective_point_height = getattr(
-        cf_grid_var, CF_ATTR_GRID_PERSPECTIVE_HEIGHT, None
+    perspective_point_height = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_PERSPECTIVE_HEIGHT
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
 
     cs = iris.coord_systems.VerticalPerspective(
         latitude_of_projection_origin,
@@ -1092,18 +1094,18 @@ def build_geostationary_coordinate_system(engine, cf_grid_var):
     """Create a geostationary coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    perspective_point_height = getattr(
-        cf_grid_var, CF_ATTR_GRID_PERSPECTIVE_HEIGHT, None
+    perspective_point_height = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_PERSPECTIVE_HEIGHT
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
-    sweep_angle_axis = getattr(cf_grid_var, CF_ATTR_GRID_SWEEP_ANGLE_AXIS, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
+    sweep_angle_axis = cf_grid_var.attributes.get(CF_ATTR_GRID_SWEEP_ANGLE_AXIS)
 
     cs = iris.coord_systems.Geostationary(
         latitude_of_projection_origin,
@@ -1123,18 +1125,18 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
     """Create an oblique mercator coordinate system from the CF-netCDF grid mapping variable."""
     ellipsoid = _get_ellipsoid(cf_grid_var)
 
-    azimuth_of_central_line = getattr(cf_grid_var, CF_ATTR_GRID_AZIMUTH_CENT_LINE, None)
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    azimuth_of_central_line = cf_grid_var.attributes.get(CF_ATTR_GRID_AZIMUTH_CENT_LINE)
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
-    longitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LON_OF_PROJ_ORIGIN, None
+    longitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LON_OF_PROJ_ORIGIN
     )
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
-    false_easting = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_EASTING, None)
-    false_northing = getattr(cf_grid_var, CF_ATTR_GRID_FALSE_NORTHING, None)
+    false_easting = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_EASTING)
+    false_northing = cf_grid_var.attributes.get(CF_ATTR_GRID_FALSE_NORTHING)
     kwargs = dict(
         azimuth_of_central_line=azimuth_of_central_line,
         latitude_of_projection_origin=latitude_of_projection_origin,
@@ -1146,7 +1148,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
     )
 
     # Handle the alternative form noted in CF: rotated mercator.
-    grid_mapping_name = getattr(cf_grid_var, CF_ATTR_GRID_MAPPING_NAME)
+    grid_mapping_name = cf_grid_var.attributes[CF_ATTR_GRID_MAPPING_NAME]
     candidate_systems = dict(
         oblique_mercator=iris.coord_systems.ObliqueMercator,
         rotated_mercator=iris.coord_systems.RotatedMercator,
@@ -1166,7 +1168,7 @@ def build_oblique_mercator_coordinate_system(engine, cf_grid_var):
 
 ################################################################################
 def get_attr_units(cf_var, attributes, capture_invalid=False):
-    attr_units = getattr(cf_var, CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
+    attr_units = cf_var.attributes.get(CF_ATTR_UNITS, UNKNOWN_UNIT_STRING)
     if not attr_units:
         attr_units = UNKNOWN_UNIT_STRING
 
@@ -1210,14 +1212,16 @@ def get_attr_units(cf_var, attributes, capture_invalid=False):
         attr_units = UNKNOWN_UNIT_STRING
 
     if any(
-        hasattr(cf_var.cf_data, name)
+        # Deliberately untracked: asking whether these exist must not count as
+        # using them, or they would stop being copied onto the cube.
+        name in cf_var.attributes.untracked
         for name in ("flag_values", "flag_masks", "flag_meanings")
     ):
         attr_units = cf_units._NO_UNIT_STRING
 
     # Get any associated calendar for a time reference coordinate.
     if cf_units.as_unit(attr_units).is_time_reference():
-        attr_calendar = getattr(cf_var, CF_ATTR_CALENDAR, None)
+        attr_calendar = cf_var.attributes.get(CF_ATTR_CALENDAR)
 
         if attr_calendar:
             attr_units = cf_units.Unit(attr_units, calendar=attr_calendar)
@@ -1228,8 +1232,8 @@ def get_attr_units(cf_var, attributes, capture_invalid=False):
 ################################################################################
 def get_names(cf_coord_var, coord_name, attributes):
     """Determine the standard_name, long_name and var_name attributes."""
-    standard_name = getattr(cf_coord_var, CF_ATTR_STD_NAME, None)
-    long_name = getattr(cf_coord_var, CF_ATTR_LONG_NAME, None)
+    standard_name = cf_coord_var.attributes.get(CF_ATTR_STD_NAME)
+    long_name = cf_coord_var.attributes.get(CF_ATTR_LONG_NAME)
     cf_name = str(cf_coord_var.cf_name)
 
     if standard_name is not None:
@@ -1264,6 +1268,13 @@ def get_names(cf_coord_var, coord_name, attributes):
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
     """Return the CF variable representing the bounds of a coordinate variable."""
+    # Deliberately not `.attributes.get(...)`: for "newstyle" derived bounds
+    # (FUTURE.derived_bounds), iris.fileformats.cf._reader synthesises a
+    # `.bounds` link by assigning `cf_var.bounds = ...` directly on the
+    # CFVariable instance, bypassing `self.attributes` entirely. Plain
+    # attribute lookup finds that before `__getattr__` (and so `.attributes`)
+    # is ever consulted; `.attributes.get(...)` cannot see it and silently
+    # drops the derived-bounds link.
     attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
     attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
@@ -1833,7 +1844,7 @@ def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
 
     """
     is_valid = False
-    attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+    attr_units = cf_var.attributes.get(CF_ATTR_UNITS)
 
     if isinstance(attr_units, str):
         attr_units = attr_units.lower()
@@ -1841,18 +1852,18 @@ def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
 
         # Special case - Check for rotated pole.
         if attr_units == "degrees":
-            attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+            attr_std_name = cf_var.attributes.get(CF_ATTR_STD_NAME)
             if attr_std_name is not None:
                 is_valid = attr_std_name.lower() == std_name_grid
             else:
                 is_valid = False
                 # TODO: check that this interpretation of axis is correct.
-                attr_axis = getattr(cf_var, CF_ATTR_AXIS, None)
+                attr_axis = cf_var.attributes.get(CF_ATTR_AXIS)
                 if attr_axis is not None:
                     is_valid = attr_axis.lower() == axis_name
     else:
         # Alternative is to check standard_name or axis.
-        attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+        attr_std_name = cf_var.attributes.get(CF_ATTR_STD_NAME)
 
         if attr_std_name is not None:
             attr_std_name = attr_std_name.lower()
@@ -1862,7 +1873,7 @@ def _is_lat_lon(cf_var, ud_units, std_name, std_name_grid, axis_name, prefixes):
                     [attr_std_name.startswith(prefix) for prefix in prefixes]
                 )
         else:
-            attr_axis = getattr(cf_var, CF_ATTR_AXIS, None)
+            attr_axis = cf_var.attributes.get(CF_ATTR_AXIS)
 
             if attr_axis is not None:
                 is_valid = attr_axis.lower() == axis_name
@@ -1902,8 +1913,8 @@ def is_longitude(engine, cf_name):
 def is_projection_x_coordinate(engine, cf_name):
     """Determine whether the CF coordinate variable is a projection_x_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
-        cf_var, CF_ATTR_LONG_NAME, None
+    attr_name = cf_var.attributes.get(CF_ATTR_STD_NAME) or cf_var.attributes.get(
+        CF_ATTR_LONG_NAME
     )
     return attr_name == CF_VALUE_STD_NAME_PROJ_X
 
@@ -1912,8 +1923,8 @@ def is_projection_x_coordinate(engine, cf_name):
 def is_projection_y_coordinate(engine, cf_name):
     """Determine whether the CF coordinate variable is a projection_y_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
-        cf_var, CF_ATTR_LONG_NAME, None
+    attr_name = cf_var.attributes.get(CF_ATTR_STD_NAME) or cf_var.attributes.get(
+        CF_ATTR_LONG_NAME
     )
     return attr_name == CF_VALUE_STD_NAME_PROJ_Y
 
@@ -1926,10 +1937,10 @@ def is_time(engine, cf_name):
 
     """
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+    attr_units = cf_var.attributes.get(CF_ATTR_UNITS)
 
-    attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
-    attr_axis = getattr(cf_var, CF_ATTR_AXIS, "")
+    attr_std_name = cf_var.attributes.get(CF_ATTR_STD_NAME)
+    attr_axis = cf_var.attributes.get(CF_ATTR_AXIS, "")
     try:
         is_time_reference = cf_units.Unit(attr_units or 1).is_time_reference()
     except ValueError:
@@ -1945,7 +1956,7 @@ def is_time_period(engine, cf_name):
     """Determine whether the CF coordinate variable represents a time period."""
     is_valid = False
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+    attr_units = cf_var.attributes.get(CF_ATTR_UNITS)
 
     if attr_units is not None:
         try:
@@ -1961,7 +1972,7 @@ def is_grid_mapping(engine, cf_name, grid_mapping):
     """Determine whether the CF grid mapping variable is of the appropriate type."""
     is_valid = False
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_mapping_name = getattr(cf_var, CF_ATTR_GRID_MAPPING_NAME, None)
+    attr_mapping_name = cf_var.attributes.get(CF_ATTR_GRID_MAPPING_NAME)
 
     if attr_mapping_name is not None:
         is_valid = attr_mapping_name.lower() == grid_mapping
@@ -2009,12 +2020,12 @@ def _is_rotated(engine, cf_name, cf_attr_value):
     """Determine whether the CF coordinate variable is rotated."""
     is_valid = False
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_std_name = getattr(cf_var, CF_ATTR_STD_NAME, None)
+    attr_std_name = cf_var.attributes.get(CF_ATTR_STD_NAME)
 
     if attr_std_name is not None:
         is_valid = attr_std_name.lower() == cf_attr_value
     else:
-        attr_units = getattr(cf_var, CF_ATTR_UNITS, None)
+        attr_units = cf_var.attributes.get(CF_ATTR_UNITS)
         if attr_units is not None:
             is_valid = attr_units.lower() == "degrees"
 
@@ -2043,9 +2054,9 @@ def has_supported_mercator_parameters(engine, cf_name):
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
-    standard_parallel = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    standard_parallel = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
 
     if scale_factor_at_projection_origin is not None and standard_parallel is not None:
@@ -2070,13 +2081,13 @@ def has_supported_polar_stereographic_parameters(engine, cf_name):
     is_valid = True
     cf_grid_var = engine.cf_var.cf_group[cf_name]
 
-    latitude_of_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN, None
+    latitude_of_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_LAT_OF_PROJ_ORIGIN
     )
 
-    standard_parallel = getattr(cf_grid_var, CF_ATTR_GRID_STANDARD_PARALLEL, None)
-    scale_factor_at_projection_origin = getattr(
-        cf_grid_var, CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN, None
+    standard_parallel = cf_grid_var.attributes.get(CF_ATTR_GRID_STANDARD_PARALLEL)
+    scale_factor_at_projection_origin = cf_grid_var.attributes.get(
+        CF_ATTR_GRID_SCALE_FACTOR_AT_PROJ_ORIGIN
     )
 
     if latitude_of_projection_origin != 90 and latitude_of_projection_origin != -90:

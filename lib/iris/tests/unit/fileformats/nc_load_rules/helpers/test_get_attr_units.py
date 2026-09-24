@@ -11,10 +11,12 @@ import numpy as np
 import pytest
 
 from iris.fileformats._nc_load_rules.helpers import get_attr_units
-from iris.fileformats.cf import CFDataVariable
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import _shared_utils
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 from iris.warnings import IrisCfLoadWarning
 
 
@@ -25,18 +27,16 @@ class TestGetAttrUnits(MockerMixin):
 
         cf_group = self.mocker.Mock(global_attributes=global_attributes)
 
-        cf_var = self.mocker.MagicMock(
-            spec=CFDataVariable,
-            cf_name="sound_frequency",
-            cf_data=self.mocker.Mock(spec=[]),
-            filename="DUMMY",
+        cf_var = CFVariableDouble(
             standard_name=None,
             long_name=None,
             units="\u266b",
-            dtype=np.float64,
             cell_methods=None,
-            cf_group=cf_group,
         )
+        cf_var.cf_name = "sound_frequency"
+        cf_var.filename = "DUMMY"
+        cf_var.dtype = np.float64
+        cf_var.cf_group = cf_group
         return cf_var
 
     def test_unicode_character(self):

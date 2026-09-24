@@ -10,6 +10,7 @@ import pytest
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules.helpers import build_and_add_names
 from iris.loading import LOAD_PROBLEMS
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 @pytest.fixture
@@ -19,15 +20,16 @@ def mock_engine(mocker):
         "comment": "Mocked test object",
     }
     cf_group = mocker.Mock(global_attributes=global_attributes)
-    cf_var = mocker.MagicMock(
-        cf_name="wibble",
+    cf_var = CFVariableDouble(
         standard_name=None,
         long_name=None,
         units="m",
-        dtype=np.float64,
         cell_methods=None,
-        cf_group=cf_group,
     )
+    cf_var.cf_name = "wibble"
+    cf_var.dtype = np.float64
+    cf_var.cf_group = cf_group
+    cf_var.filename = "foo.nc"
     engine = mocker.Mock(cube=Cube([23]), cf_var=cf_var, filename="foo.nc")
     return engine
 
@@ -46,8 +48,8 @@ class TestCubeName:
         # Expected - The expected cube attributes.
         exp_standard_name, exp_long_name = expected
 
-        self.engine.cf_var.standard_name = standard_name
-        self.engine.cf_var.long_name = long_name
+        self.engine.cf_var.attributes["standard_name"] = standard_name
+        self.engine.cf_var.attributes["long_name"] = long_name
         # engine = _make_engine(standard_name=standard_name, long_name=long_name)
         build_and_add_names(self.engine)
         self.cf_name = self.engine.cf_var.cf_name

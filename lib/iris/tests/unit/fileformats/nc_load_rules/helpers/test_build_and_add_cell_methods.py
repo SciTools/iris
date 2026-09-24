@@ -9,18 +9,16 @@ import pytest
 from iris.coords import CellMethod
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
-from iris.fileformats.cf import CFDataVariable
 from iris.loading import LOAD_PROBLEMS
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 @pytest.fixture
 def mock_cf_data_var(mocker):
-    return mocker.Mock(
-        spec=CFDataVariable,
-        cell_methods="time: mean",
-        cf_name="wibble",
-        filename="DUMMY",
-    )
+    double = CFVariableDouble(cell_methods="time: mean")
+    double.cf_name = "wibble"
+    double.filename = "DUMMY"
+    return double
 
 
 @pytest.fixture

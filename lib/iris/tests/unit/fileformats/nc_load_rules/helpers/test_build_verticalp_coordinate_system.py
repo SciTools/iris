@@ -12,7 +12,10 @@ from iris.coord_systems import VerticalPerspective
 from iris.fileformats._nc_load_rules.helpers import (
     build_vertical_perspective_coordinate_system,
 )
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 
 
 class TestBuildVerticalPerspectiveCoordinateSystem(MockerMixin):
@@ -23,7 +26,6 @@ class TestBuildVerticalPerspectiveCoordinateSystem(MockerMixin):
         test_easting = 100.0
         test_northing = 200.0
         cf_grid_var_kwargs = {
-            "spec": [],
             "latitude_of_projection_origin": 1.0,
             "longitude_of_projection_origin": 2.0,
             "perspective_point_height": 2000000.0,
@@ -45,7 +47,7 @@ class TestBuildVerticalPerspectiveCoordinateSystem(MockerMixin):
             test_easting = 0
             test_northing = 0
 
-        cf_grid_var = self.mocker.Mock(**cf_grid_var_kwargs)
+        cf_grid_var = CFVariableDouble(**cf_grid_var_kwargs)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
 
         cs = build_vertical_perspective_coordinate_system(None, cf_grid_var)

@@ -13,7 +13,10 @@ import warnings
 from iris.fileformats._nc_load_rules.helpers import (
     has_supported_polar_stereographic_parameters,
 )
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 
 
 class _EngineMixin(MockerMixin):
@@ -26,8 +29,7 @@ class _EngineMixin(MockerMixin):
 class TestHasSupportedPolarStereographicParameters(_EngineMixin):
     def test_valid_base_north(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -44,8 +46,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
 
     def test_valid_base_south(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=-90,
             false_easting=0,
@@ -62,8 +63,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
 
     def test_valid_straight_vertical_longitude(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=30,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -80,8 +80,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
 
     def test_valid_false_easting_northing(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=15,
@@ -98,8 +97,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
 
     def test_valid_standard_parallel(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -116,8 +114,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
 
     def test_valid_scale_factor(self, mocker):
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -136,8 +133,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -165,8 +161,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             false_easting=0,
@@ -192,8 +187,7 @@ class TestHasSupportedPolarStereographicParameters(_EngineMixin):
         # Scale factor and standard parallel cannot both be specified for
         # Polar Stereographic projections
         cf_name = "polar_stereographic"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=45,
             false_easting=0,

@@ -12,7 +12,10 @@ from iris.coord_systems import LambertConformal
 from iris.fileformats._nc_load_rules.helpers import (
     build_lambert_conformal_coordinate_system,
 )
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 
 
 class TestBuildLambertConformalCoordinateSystem(MockerMixin):
@@ -52,7 +55,7 @@ class TestBuildLambertConformalCoordinateSystem(MockerMixin):
             gridvar_props["semi_minor_axis"] = 6356256.909
             expected_ellipsoid = iris.coord_systems.GeogCS(6377563.396, 6356256.909)
 
-        cf_grid_var = self.mocker.Mock(spec=[], **gridvar_props)
+        cf_grid_var = CFVariableDouble(**gridvar_props)
 
         cs = build_lambert_conformal_coordinate_system(None, cf_grid_var)
 

@@ -4,18 +4,18 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.fileformats._nc_load_rules.helpers._normalise_bounds_units`."""
 
-from typing import Optional
-
 import numpy as np
 import pytest
-from pytest_mock import MockType
 
 from iris.fileformats._nc_load_rules.helpers import (
     _normalise_bounds_units,
     _WarnComboIgnoringCfLoad,
 )
 from iris.tests import _shared_utils
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 from iris.warnings import IrisCfLoadWarning
 
 CF_NAME = "dummy_bnds"
@@ -26,33 +26,23 @@ class Test(MockerMixin):
     def _setup(self):
         self.bounds = self.mocker.sentinel.bounds
 
-    def _make_cf_bounds_var(
-        self,
-        units: Optional[str] = None,
-        unitless: bool = False,
-    ) -> MockType:
-        """Construct a mock CF bounds variable."""
+    def _make_cf_bounds_var(self, units=None, unitless=False):
+        """Construct a double CF bounds variable.
+
+        Deliberately no ``flag_values``/``flag_masks``/``flag_meanings``: their
+        absence from ``.attributes`` is what tells ``helpers.get_attr_units``
+        this is not a flag variable.
+        """
         if units is None:
             units = "days since 1970-01-01"
 
-        cf_data = self.mocker.Mock(spec=[])
-        # we want to mock the absence of flag attributes to helpers.get_attr_units
-        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
-        del cf_data.flag_values
-        del cf_data.flag_masks
-        del cf_data.flag_meanings
+        attrs = dict(calendar=None)
+        if not unitless:
+            attrs["units"] = units
 
-        cf_var = self.mocker.MagicMock(
-            cf_name=CF_NAME,
-            cf_data=cf_data,
-            units=units,
-            calendar=None,
-            dtype=float,
-        )
-
-        if unitless:
-            del cf_var.units
-
+        cf_var = CFVariableDouble(**attrs)
+        cf_var.cf_name = CF_NAME
+        cf_var.dtype = float
         return cf_var
 
     def test_unitless(self) -> None:
