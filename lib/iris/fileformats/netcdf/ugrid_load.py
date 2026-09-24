@@ -227,7 +227,7 @@ def _build_aux_coord(coord_var):
     climatological = False
     # TODO: use CF_ATTR_CLIMATOLOGY on re-integration, when no longer
     #  'experimental'.
-    attr_climatology = getattr(coord_var, "climatology", None)
+    attr_climatology = coord_var.attributes.get("climatology")
     if attr_climatology is not None:
         climatology_vars = coord_var.cf_group.climatology
         climatological = attr_climatology in climatology_vars
@@ -319,11 +319,11 @@ def _build_mesh(cf, mesh_var):
     attr_units = get_attr_units(mesh_var, attributes)
 
     cf_role_message = None
-    if not hasattr(mesh_var, "cf_role"):
+    if "cf_role" not in mesh_var.attributes:
         cf_role_message = f"{mesh_var.cf_name} has no cf_role attribute."
         cf_role = "mesh_topology"
     else:
-        cf_role = getattr(mesh_var, "cf_role")
+        cf_role = mesh_var.attributes["cf_role"]
     if cf_role != "mesh_topology":
         cf_role_message = f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
     if cf_role_message:
@@ -333,17 +333,17 @@ def _build_mesh(cf, mesh_var):
             category=_WarnComboCfDefaulting,
         )
 
-    if hasattr(mesh_var, "volume_node_connectivity"):
+    if "volume_node_connectivity" in mesh_var.attributes:
         topology_dimension = 3
-    elif hasattr(mesh_var, "face_node_connectivity"):
+    elif "face_node_connectivity" in mesh_var.attributes:
         topology_dimension = 2
-    elif hasattr(mesh_var, "edge_node_connectivity"):
+    elif "edge_node_connectivity" in mesh_var.attributes:
         topology_dimension = 1
     else:
         # Nodes only.  We aren't sure yet whether this is a valid option.
         topology_dimension = 0
 
-    if not hasattr(mesh_var, "topology_dimension"):
+    if "topology_dimension" not in mesh_var.attributes:
         msg = (
             f"MeshXY variable {mesh_var.cf_name} has no 'topology_dimension'"
             f" : *Assuming* topology_dimension={topology_dimension}"
@@ -351,7 +351,7 @@ def _build_mesh(cf, mesh_var):
         )
         warnings.warn(msg, category=_WarnComboCfDefaulting)
     else:
-        quoted_topology_dimension = mesh_var.topology_dimension
+        quoted_topology_dimension = mesh_var.attributes["topology_dimension"]
         if quoted_topology_dimension != topology_dimension:
             msg = (
                 f"*Assuming* 'topology_dimension'={topology_dimension}"
@@ -367,8 +367,8 @@ def _build_mesh(cf, mesh_var):
             )
 
     node_dimension = None
-    edge_dimension = getattr(mesh_var, "edge_dimension", None)
-    face_dimension = getattr(mesh_var, "face_dimension", None)
+    edge_dimension = mesh_var.attributes.get("edge_dimension")
+    face_dimension = mesh_var.attributes.get("face_dimension")
 
     node_coord_args = []
     edge_coord_args = []
@@ -380,9 +380,9 @@ def _build_mesh(cf, mesh_var):
         if coord.var_name in mesh_var.node_coordinates.split():
             node_coord_args.append(coord_and_axis)
             node_dimension = coord_var.dimensions[0]
-        elif coord.var_name in getattr(mesh_var, "edge_coordinates", "").split():
+        elif coord.var_name in mesh_var.attributes.get("edge_coordinates", "").split():
             edge_coord_args.append(coord_and_axis)
-        elif coord.var_name in getattr(mesh_var, "face_coordinates", "").split():
+        elif coord.var_name in mesh_var.attributes.get("face_coordinates", "").split():
             face_coord_args.append(coord_and_axis)
         # TODO: support volume_coordinates.
         else:
@@ -403,7 +403,7 @@ def _build_mesh(cf, mesh_var):
         connectivity, first_dim_name = _build_connectivity(
             connectivity_var, element_dims
         )
-        assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
+        assert connectivity.var_name == mesh_var.attributes[connectivity.cf_role]
         connectivity_args.append(connectivity)
 
         # If the mesh_var has not supplied the dimension name, it is safe to
@@ -453,7 +453,7 @@ def _build_mesh_coords(mesh, cf_var):
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    location = getattr(cf_var, "location", "<empty>")
+    location = cf_var.attributes.get("location", "<empty>")
     if location is None or location not in element_dimensions:
         # We should probably issue warnings and recover, but that is too much
         # work.  Raising a more intelligible error is easy to do though.
