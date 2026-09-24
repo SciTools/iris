@@ -87,7 +87,7 @@ jobs:
           env_name: ${{ env.ENV_NAME }}
 
       - name: "conda install"
-        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5
+        uses: conda-incubator/setup-miniconda@be893c923ea9cf1cf7cd510fbdde27c7e18cbdcb
         with:
           miniforge-version: latest
           channels: conda-forge
@@ -149,6 +149,6 @@ jobs:
 
       - name: "upload coverage report"
         if: ${{ matrix.coverage }}
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
