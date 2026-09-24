@@ -27,6 +27,21 @@ from iris.fileformats.cf import (
 )
 import iris.warnings
 
+# The CF attributes CFReader now reads through CFVariable.attributes, which
+# is built from a variable's ncattrs()/getncattr(), not from plain Python
+# attribute access. `netcdf_variable` below sets these as real Mock
+# attributes for callers that still read them directly (or mutate them, as
+# several tests do, with a later assignment or `del`); ncattrs()/getncattr()
+# are wired to reflect the same names dynamically, at call time, so that
+# `.attributes` sees whatever the mock currently carries.
+_CF_MOCK_ATTR_NAMES = (
+    "bounds",
+    "coordinates",
+    "climatology",
+    "formula_terms",
+    "standard_name",
+)
+
 
 def netcdf_variable(
     mocker,
@@ -58,7 +73,6 @@ def netcdf_variable(
     ncvar = mocker.Mock(
         name=name,
         dimensions=dimensions,
-        ncattrs=mocker.Mock(return_value=[]),
         ndim=ndim,
         dtype=dtype,
         ancillary_variables=ancillary_variables,
@@ -70,6 +84,16 @@ def netcdf_variable(
         cell_measures=cell_measures,
         standard_name=standard_name,
         **{name: None for name in ugrid_identities},
+    )
+    ncvar.ncattrs = mocker.Mock(
+        side_effect=lambda: [
+            attr_name
+            for attr_name in _CF_MOCK_ATTR_NAMES
+            if getattr(ncvar, attr_name, None)
+        ]
+    )
+    ncvar.getncattr = mocker.Mock(
+        side_effect=lambda attr_name: getattr(ncvar, attr_name)
     )
     return ncvar
 
@@ -936,3 +960,50 @@ class Test_build_cf_groups__private_edge_cases:
             assert "orog" not in self.reader.cf_group.promoted
         else:
             assert "orog" in self.reader.cf_group.promoted
+
+
+class TestSynthesisedBoundsLink:
+    """The reader writes a bounds link that the file did not carry.
+
+    _reader.py:325 attaches a formula term's bounds variable to the term.
+    Whatever stores that link has to be the same place the reads look, or
+    the link is written and never seen.
+    """
+
+    def test_a_written_bounds_link_is_visible_to_a_reader(self, mocker):
+        nc_var = mocker.MagicMock()
+        nc_var.ncattrs.return_value = ["units"]
+        nc_var.getncattr.side_effect = {"units": "m"}.__getitem__
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        assert "bounds" not in cf_var.attributes
+        cf_var.attributes["bounds"] = "a_bnds"
+
+        assert cf_var.attributes["bounds"] == "a_bnds"
+        assert "bounds" in cf_var.attributes
+        assert cf_var.bounds == "a_bnds"
+
+    def test_a_written_bounds_link_overrides_the_file(self, mocker):
+        nc_var = mocker.MagicMock()
+        nc_var.ncattrs.return_value = ["bounds"]
+        nc_var.getncattr.side_effect = {"bounds": "from_file"}.__getitem__
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        cf_var.attributes["bounds"] = "synthesised"
+        assert cf_var.bounds == "synthesised"
+
+    def test_a_bounds_link_set_to_none_still_reads_as_present(self, mocker):
+        # _reader.py:358 invalidates a broken link by setting it to None
+        # rather than deleting it, and the reads downstream check presence
+        # before value.
+        nc_var = mocker.MagicMock()
+        nc_var.ncattrs.return_value = ["bounds"]
+        nc_var.getncattr.side_effect = {"bounds": "broken"}.__getitem__
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        cf_var.attributes["bounds"] = None
+        assert "bounds" in cf_var.attributes
+        assert cf_var.attributes.get("bounds") is None

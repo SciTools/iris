@@ -42,8 +42,8 @@ before anything that can raise, so the destructor is safe even if
 This is the one module in :mod:`iris.fileformats.cf` still coupled to
 :mod:`iris.fileformats.netcdf`: opening a file needs ``_thread_safe_nc`` and
 ``_bytecoding_datasets``. Everything else in the package already works against
-any object that presents netCDF-like ``variables``, ``dimensions`` and
-``ncattrs``. Removing that last coupling -- replacing the direct dataset
+any object that presents netCDF-like ``variables``, ``dimensions``,
+``ncattrs`` and ``getncattr``. Removing that last coupling -- replacing the direct dataset
 construction with a format-agnostic dataset abstraction, so that Zarr can be
 read by the same machinery -- is the subject of §4.2 of the native Zarr I/O
 design, ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
@@ -301,12 +301,14 @@ class CFReader:
                     if cf_root_coord is None:
                         cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
 
-                    root_bounds_name = getattr(cf_root_coord, "bounds", None)
                     # N.B. cf_root_coord may here be None, if the root var was not a
                     #  coord - that is ok, it will not have a 'bounds', we will skip it.
+                    root_bounds_name = None
+                    if cf_root_coord is not None:
+                        root_bounds_name = cf_root_coord.attributes.get("bounds")
                     if root_bounds_name in self.cf_group:
                         root_bounds_var = self.cf_group.get(root_bounds_name)
-                        if not hasattr(root_bounds_var, "formula_terms"):
+                        if "formula_terms" not in root_bounds_var.attributes:
                             # this is an invalid root bounds, according to CF, and therefore should be promoted into a cube
                             root_bounds_var._to_be_promoted = True
                         else:
@@ -322,7 +324,9 @@ class CFReader:
                                 (term_bounds_var,) = term_bounds_vars
                                 # N.B. bounds==main-var is valid CF for *no* bounds
                                 if term_bounds_var != cf_var:
-                                    cf_var.bounds = term_bounds_var.cf_name
+                                    cf_var.attributes["bounds"] = (
+                                        term_bounds_var.cf_name
+                                    )
                                     new_var = CFBoundaryVariable(
                                         term_bounds_var.cf_name, term_bounds_var.cf_data
                                     )
@@ -336,9 +340,9 @@ class CFReader:
                     if cf_name not in self.cf_group:
                         # If the formula term variable is not already in the group, add it as a coordinate.
                         new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
-                        if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
+                        if iris.FUTURE.derived_bounds and "bounds" in cf_var.attributes:
                             # Copy "old-style" derived bounds link
-                            new_var.bounds = cf_var.bounds
+                            new_var.attributes["bounds"] = cf_var.attributes["bounds"]
                         self.cf_group[cf_name] = new_var
 
                     self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
@@ -347,14 +351,16 @@ class CFReader:
             for cf_root in all_roots:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
-                if getattr(root_var, "formula_terms", None) and getattr(
-                    root_var, "bounds", None
+                if root_var.attributes.get("formula_terms") and root_var.attributes.get(
+                    "bounds"
                 ):
-                    root_bounds_var = self.cf_group.get(root_var.bounds)
-                    if not getattr(root_bounds_var, "formula_terms", None):
+                    root_bounds_var = self.cf_group.get(root_var.attributes["bounds"])
+                    if root_bounds_var is None or not root_bounds_var.attributes.get(
+                        "formula_terms"
+                    ):
                         # This means it is *not* a valid bounds var, according to CF, and so therefore we are
                         # invalidating the bounds.
-                        root_var.bounds = None
+                        root_var.attributes["bounds"] = None
 
         # Determine the CF data variables.
         data_variable_names = (
@@ -436,13 +442,14 @@ class CFReader:
 
             if iris.FUTURE.derived_bounds:
                 # Include bounds of every variable, within cf_group attached to the variable.
-                if hasattr(cf_variable, "bounds"):
-                    if cf_variable.bounds not in cf_group:
-                        bounds_var = self.cf_group.get(cf_variable.bounds)
+                if "bounds" in cf_variable.attributes:
+                    bounds_name = cf_variable.attributes["bounds"]
+                    if bounds_name not in cf_group:
+                        bounds_var = self.cf_group.get(bounds_name)
                         if bounds_var:
                             # TODO: warning if span fails
                             if bounds_var.spans(cf_variable):
-                                cf_group[cf_variable.bounds] = bounds_var
+                                cf_group[bounds_name] = bounds_var
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -457,7 +464,7 @@ class CFReader:
                     }
                 )
                 # Add appropriate "dimensionless" CF coordinate variables.
-                coordinates_attr = getattr(cf_variable, "coordinates", "")
+                coordinates_attr = cf_variable.attributes.get("coordinates", "")
                 cf_group.update(
                     {
                         cf_name: self.cf_group[cf_name]
@@ -494,9 +501,12 @@ class CFReader:
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 cf_root_var = self.cf_group[cf_root]
                 if iris.FUTURE.derived_bounds:
-                    if not hasattr(cf_root_var, "standard_name"):
+                    if "standard_name" not in cf_root_var.attributes:
                         continue
-                name = cf_root_var.standard_name or cf_root_var.long_name
+                name = (
+                    cf_root_var.attributes["standard_name"]
+                    or cf_root_var.attributes["long_name"]
+                )
                 terms = reference_terms.get(name, [])
                 if isinstance(terms, str) or not isinstance(terms, Iterable):
                     terms = [terms]
