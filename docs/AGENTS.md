@@ -55,7 +55,7 @@ Build output goes to `docs/src/_build/html/`.
 
 ## Whatsnew Entries
 
-- See [`AGENTS.md`](../changelog/AGENTS.md) in the `/changelog` directory. 
+- See [`AGENTS.md`](../changelog/AGENTS.md) in the `/changelog` directory.
 
 
 ## RST / Sphinx Conventions
