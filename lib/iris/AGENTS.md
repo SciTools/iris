@@ -147,6 +147,11 @@ Leave out anything a reader or Sphinx can already derive: API listings,
 signatures, call sequences, per-release history. Explanation scoped to a
 single class belongs in that class's docstring instead.
 
+A public module's docstring is also published as an API page, so it must open
+with a `z_reference` item — a title, `:tags:` carrying at least one `topic_*`,
+and a one-line summary — within its first 25 lines. Copy the form from a
+neighbouring module; `pre-commit run check-docs-page-metadata` checks it.
+
 **Exemption to "do not document code you did not change":** if you had to work
 out how a subsystem behaves in order to edit it, write that understanding into
 the module docstring — the comprehension is otherwise discarded when your

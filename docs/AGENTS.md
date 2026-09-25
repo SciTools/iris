@@ -73,10 +73,33 @@ Build output goes to `docs/src/_build/html/`.
   standalone Python files executable by `matplotlib` / `sphinx-gallery`.
 
 
+## Page Metadata
+
+Every page's metadata is authored in a version-controlled file, never in
+build output:
+
+- pages under `docs/src/` state theirs in their own RST;
+- gallery pages state theirs in their script's module docstring;
+- API pages state theirs in the library module's docstring.
+
+Pages under `docs/src/` need a `.. readingtime::` directive. Every page with
+a Diataxis type — the `user_manual/` subdirectories, and all gallery and API
+pages — needs exactly one sphinx-needs item within its first 25 lines, with
+non-empty content and at least one `topic_*` tag (tags are separated by `;`).
+Copy the form from a sibling page.
+
+The rules live in `.hooks/check_docs_page_metadata.py`, and run both as the
+`check-docs-page-metadata` pre-commit hook and during the build. Prefer the
+hook: `pre-commit run check-docs-page-metadata` answers in milliseconds what
+a build takes minutes to tell you. Exemptions belong in that file's
+`READINGTIME_EXCEPTIONS`, and a new rule belongs there too — never in the
+Sphinx extension alone, or the two callers will disagree.
+
+
 ## Gallery Examples
 
 - Each gallery script must have a module-level docstring that becomes its
-  title and description.
+  title and description, and that carries the page's `how-to` item.
 - Scripts are grouped by subdirectory: `general/`, `meteorology/`,
   `oceanography/`.
 - Gallery tests in `docs/gallery_tests/` verify examples execute without
