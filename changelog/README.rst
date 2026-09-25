@@ -64,7 +64,7 @@ Notes
 * Multiple fragments may reference the same PR number if the PR makes
   changes across different categories.
 * For multiple PRs that reference the same change, simply create a separate
-  changlog fragment file for each PR with **identical** contents.
+  changelog fragment file for each PR with **identical** contents.
 * Use ``:issue:`NNNN``` for issue references, ``:pull:`NNNN``` for PR
   references, and ``:user:`github-name``` for user references.
 * The rendered changelog can be previewed with::

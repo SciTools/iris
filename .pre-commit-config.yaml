@@ -13,6 +13,7 @@ ci:
 # Alphabetised, for lack of a better order.
 files: |
     (?x)(
+        AGENTS\.md|
         .github\/workflows\/.*|
         .hooks\/.+\.py|
         benchmarks\/.+\.py|
