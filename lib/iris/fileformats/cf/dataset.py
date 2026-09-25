@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """The format-agnostic description of a CF-conforming array store.
 
+.. z_reference:: iris.fileformats.cf.dataset
+   :tags: topic_load_save
+
+   API reference
+
 :class:`CFDataset` and :class:`CFDatasetVariable` are what the rest of the CF
 layer is written against. They are deliberately small: only what the
 :class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF
