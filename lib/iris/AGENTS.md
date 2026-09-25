@@ -113,6 +113,10 @@ a human treats it as documentation.
   around. Never restate what the code plainly does.
 - Fix or delete any comment your change invalidates, even if you did not
   write it.
+- A comment claiming a branch is unreachable is a testable claim. Pin it
+  with a test or an `assert`, or restructure so it is true by construction.
+  Left as prose it goes stale unnoticed: one reading "the saver always
+  encodes" outlived its condition, and the branch it excused corrupted data.
 - Do not add docstrings or comments to code you did not otherwise change —
   but see the module docstring exemption below.
 - NumPy-style docstrings are mandatory and validated. State the contract:
