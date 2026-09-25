@@ -47,8 +47,10 @@ import threading
 from typing import Any, Callable
 import warnings
 
+import dask.array as da
 import numpy as np
 
+from iris._lazy_data import is_lazy_data
 from iris.fileformats.netcdf._thread_safe_nc import (
     DatasetWrapper,
     GroupWrapper,
@@ -77,7 +79,7 @@ def decode_bytesarray_to_stringarray(
     result = np.empty(var_shape, dtype=string_dtype)
     for ndindex in np.ndindex(var_shape):
         element_bytes = byte_array[ndindex]
-        bytes = b"".join([b or b"\0" for b in element_bytes])
+        bytes = b"".join([b or b"\0" for b in element_bytes.flat])
         try:
             string = bytes.decode(encoding)
         except UnicodeDecodeError as err:
@@ -139,15 +141,16 @@ def encode_stringarray_as_bytearray(
 class VariableEncoder:
     """A record of encoding details which can apply them to variable data."""
 
-    varname: str  # just for the error messages
-    dtype: np.dtype
-    is_chardata: bool  # just a shortcut for the dtype test
-    read_encoding: str  # IF 'is_chardata': one of the supported encodings
-    write_encoding: str  # IF 'is_chardata': one of the supported encodings
-    n_chars_dim: int  # IF 'is_chardata': length of associated character dimension
-    string_width: int  # IF 'is_chardata': width when viewed as strings (i.e. "Uxx")
+    varname: str = ""  # just for the error messages
+    dtype: np.dtype | None = None
+    is_chardata: bool = False  # just a shortcut for the dtype test
+    read_encoding: str = ""  # IF 'is_chardata': one of the supported encodings
+    write_encoding: str = ""  # IF 'is_chardata': one of the supported encodings
+    n_chars_dim: int = 0  # IF 'is_chardata': length of associated character dimension
+    string_width: int = 0  # IF 'is_chardata': width when viewed as strings (i.e. "Uxx")
 
-    def __init__(self, cf_var):
+    @classmethod
+    def from_var(cls, cf_var):
         """Capture the encoding info for a netCDF4 variable.
 
         Can be either an actual netCDF4.Variable, or a _thread_safe_nc.VariableWrapper.
@@ -159,6 +162,7 @@ class VariableEncoder:
         necessary information and store it in this object.
         So, this object has static state + is serialisable.
         """
+        self = cls()
         self.varname = cf_var.name
         self.dtype = cf_var.dtype
         self.is_chardata = np.issubdtype(self.dtype, np.bytes_)
@@ -177,6 +181,7 @@ class VariableEncoder:
                     n_chars_dim = cf_var.group().dimensions[dim_name].size
             self.n_chars_dim = n_chars_dim
             self.string_width = self._get_string_width()
+        return self
 
     def _get_string_width(self) -> int:
         """Return the string-length defined for this variable."""
@@ -189,26 +194,69 @@ class VariableEncoder:
         return n_chars
 
     def decode_bytes_to_stringarray(self, data: np.ndarray) -> np.ndarray:
-        if self.is_chardata:
+        if not self.is_chardata:
+            result = data
+        else:
             # N.B. read encoding default is UTF-8 --> a "usually safe" choice
             encoding = self.read_encoding
             strlen = self.string_width
-            data = decode_bytesarray_to_stringarray(
-                data, encoding, strlen, self.varname
-            )
+            if not data.shape:
+                # If the data array is scalar, add an extra dimension so the decoding
+                #  operation can always remove "the last dimension".  E.G.:
+                #  2-D: array([[b'a', b'b'], [b'c', b'd']]) -> (1-D) array(['ab', 'cd'])
+                #  1-D: array([b'a', b'b', b'c']) -> (scalar) array('abc')
+                #  *scalar* : array(b'a'), reshape=array([b'a']) -> (scalar) array('a')
+                data = data.reshape((1,))
+            # We need to support both real+lazy arrays here
+            if not is_lazy_data(data):
+                result = decode_bytesarray_to_stringarray(
+                    data, encoding, strlen, self.varname
+                )
+            else:
+                # decoding operation can't be done lazily, so map over chunks
+                result = da.map_blocks(
+                    decode_bytesarray_to_stringarray,
+                    data,  # you **can't** make this a named keyword
+                    encoding=encoding,
+                    string_width=strlen,
+                    var_name=self.varname,
+                    # avoid a 'trial' call with empty array (which we can't handle) ...
+                    dtype=f"U{strlen}",  # wrapped function changes type
+                    drop_axis=data.ndim - 1,  # wrapped function drops last dimension
+                )
 
-        return data
+        return result
 
     def encode_strings_as_bytearray(self, data: np.ndarray) -> np.ndarray:
-        if self.is_chardata and data.dtype.kind == "U":
+        if not self.is_chardata or data.dtype.kind != "U":
+            result = data
+        else:
             # N.B. it is also possible to pass a byte array (dtype "S1"),
             #  to be written directly, without processing.
             # N.B. write encoding *default* is "ascii" --> fails bad content
             encoding = self.write_encoding
             strlen = self.n_chars_dim
-            data = encode_stringarray_as_bytearray(data, encoding, strlen, self.varname)
+            # NB must support operation on both real and lazy data
+            if not is_lazy_data(data):
+                result = encode_stringarray_as_bytearray(
+                    data, encoding, strlen, self.varname
+                )
+            else:
+                # encoding operation can't be done lazily, so map over chunks
+                result = da.map_blocks(
+                    encode_stringarray_as_bytearray,
+                    data,
+                    encoding=encoding,
+                    string_dimension_length=strlen,
+                    var_name=self.varname,
+                    # avoid a 'trial' call with empty array (which we can't handle) ...
+                    dtype="S1",  # wrapped function changes type
+                    new_axis=data.ndim,  # wrapped function adds final dimension
+                    chunks=data.chunks
+                    + (strlen,),  # wrapped function extends data shape
+                )
 
-        return data
+        return result
 
 
 class NetcdfStringDecodeSetting(threading.local):
@@ -371,7 +419,7 @@ class EncodedVariable(Mixin_Block_AutoChartostring, VariableWrapper):
         is_chardata = np.issubdtype(self._contained_instance.dtype, np.bytes_)
         if is_chardata:
             # Create a coding spec : redo every time in case "_Encoding" has changed
-            encoding_spec = VariableEncoder(self._contained_instance)
+            encoding_spec = VariableEncoder.from_var(self._contained_instance)
             dtype = np.dtype(f"U{encoding_spec.string_width}")
         return dtype
 
@@ -379,14 +427,14 @@ class EncodedVariable(Mixin_Block_AutoChartostring, VariableWrapper):
         self._contained_instance.set_auto_chartostring(False)
         data = super().__getitem__(keys)
         # Create a coding spec : redo every time in case "_Encoding" has changed
-        encoding_spec = VariableEncoder(self._contained_instance)
+        encoding_spec = VariableEncoder.from_var(self._contained_instance)
         data = encoding_spec.decode_bytes_to_stringarray(data)
         return data
 
     def __setitem__(self, keys, data):
         data = np.asanyarray(data)
         # Create a coding spec : redo every time in case "_Encoding" has changed
-        encoding_spec = VariableEncoder(self._contained_instance)
+        encoding_spec = VariableEncoder.from_var(self._contained_instance)
         data = encoding_spec.encode_strings_as_bytearray(data)
         super().__setitem__(keys, data)
 
@@ -424,7 +472,7 @@ class EncodedNetCDFDataProxy(NetCDFDataProxy):
                 ": expected EncodedVariable."
             )
             raise TypeError(msg)
-        self.encoding_details = VariableEncoder(cf_var._contained_instance)
+        self.encoding_details = VariableEncoder.from_var(cf_var._contained_instance)
 
     def __getitem__(self, keys):
         data = super().__getitem__(keys)
@@ -436,7 +484,7 @@ class EncodedNetCDFDataProxy(NetCDFDataProxy):
 class EncodedNetCDFWriteProxy(NetCDFWriteProxy):
     def __init__(self, filepath, cf_var, file_write_lock):
         super().__init__(filepath, cf_var, file_write_lock)
-        self.encoding_details = VariableEncoder(cf_var._contained_instance)
+        self.encoding_details = VariableEncoder.from_var(cf_var._contained_instance)
 
     def __setitem__(self, key, data):
         data = np.asanyarray(data)
