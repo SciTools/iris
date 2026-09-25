@@ -159,9 +159,8 @@ def test_docs_page_metadata():
     Sphinx extension).
     """
     check_docs_page_metadata = _load_hook("check_docs_page_metadata")
-    docs_src = Path(IRIS_REPO_DIRPATH) / "docs" / "src"
 
-    all_violations = check_docs_page_metadata.check_tree(docs_src)
+    all_violations = check_docs_page_metadata.check_tree(Path(IRIS_REPO_DIRPATH))
 
     message = "The following documentation pages are missing metadata:\n" + "\n".join(
         all_violations
@@ -239,3 +238,94 @@ def test_docs_page_metadata_detects(page, expected):
     assert any(expected in problem for problem in problems), (
         f"Expected a problem containing {expected!r}; got: {problems}"
     )
+
+
+_DOCS_MODULE = '''\
+"""Summary of what this module is for.
+
+.. z_reference:: Phrasebook
+   :tags: topic_interoperability
+
+   Information on terminology differences between Iris and similar packages.
+
+"""
+
+CONSTANT = 1
+'''
+"""A library module carrying the metadata for the page generated from it."""
+
+
+def test_docs_page_metadata_docstring_clean():
+    """A fully populated docstring must be accepted, or the checks below prove nothing."""
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+
+    problems = check_docs_page_metadata.check_docstring(
+        _DOCS_MODULE, check_docs_page_metadata.API_TYPE
+    )
+
+    assert problems == []
+
+
+@pytest.mark.parametrize(
+    ("source", "expected"),
+    [
+        pytest.param(
+            "CONSTANT = 1\n",
+            "Missing a module docstring",
+            id="missing_docstring",
+        ),
+        pytest.param(
+            '"""Summary of what this module is for."""\n',
+            "found 0.",
+            id="missing_item",
+        ),
+        pytest.param(
+            _DOCS_MODULE.replace(".. z_reference::", ".. how-to::"),
+            "expected to have type 'z_reference'",
+            id="wrong_type",
+        ),
+    ],
+)
+def test_docs_page_metadata_docstring_detects(source, expected):
+    """Pages generated from a module are only as good as that module's docstring.
+
+    Nothing else states their metadata, so a docstring that omits it produces
+    a page that is missing metadata.
+    """
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+
+    problems = check_docs_page_metadata.check_docstring(
+        source, check_docs_page_metadata.API_TYPE
+    )
+
+    assert any(expected in problem for problem in problems), (
+        f"Expected a problem containing {expected!r}; got: {problems}"
+    )
+
+
+def test_docs_page_metadata_sources():
+    """Only the files that become documentation pages must carry page metadata.
+
+    These select which files are checked, by reproducing what apidoc and
+    sphinx-gallery are configured to build pages from.
+    """
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+    repo_root = Path(IRIS_REPO_DIRPATH)
+
+    library = repo_root / "lib"
+    modules = {
+        path.relative_to(library).as_posix()
+        for path in check_docs_page_metadata.library_modules(library)
+    }
+    assert "iris/cube.py" in modules
+    assert "iris/__init__.py" in modules
+    # Neither of these gets an API page, so neither needs page metadata.
+    assert "iris/_lazy_data.py" not in modules
+    assert not any(module.startswith("iris/tests/") for module in modules)
+
+    gallery_code = repo_root / "docs" / "gallery_code"
+    scripts = {
+        path.relative_to(gallery_code).as_posix()
+        for path in check_docs_page_metadata.gallery_scripts(gallery_code)
+    }
+    assert "general/plot_coriolis.py" in scripts

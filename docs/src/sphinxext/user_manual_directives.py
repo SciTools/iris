@@ -18,9 +18,10 @@ from sphinx.application import Sphinx
 class Diataxis(enum.StrEnum):
     """The Diataxis-inspired sphinx-needs directives configured in conf.py.
 
-    Which directory is expected to contain which of these is recorded in
-    ``EXPECTED_TYPE_BY_PARENT``, in ``.hooks/check_docs_page_metadata.py``;
-    renaming a member here means editing that mapping too.
+    Which pages are expected to carry which of these is recorded in
+    ``.hooks/check_docs_page_metadata.py`` - by directory in
+    ``EXPECTED_TYPE_BY_PARENT``, and in ``GALLERY_TYPE`` and ``API_TYPE`` for
+    the generated pages; renaming a member here means editing those too.
     """
 
     ALL = "all"

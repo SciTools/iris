@@ -3,3 +3,5 @@
 carries - into ``.hooks/check_docs_page_metadata.py``, where they are shared
 by a new pre-commit hook and by the documentation build.  A missing directive
 is now reported in milliseconds, instead of several minutes into a build.
+This includes the pages generated from gallery scripts and from library
+modules, which are checked in the docstrings they are written from.
