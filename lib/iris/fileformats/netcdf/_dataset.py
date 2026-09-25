@@ -109,7 +109,7 @@ class _NetCDFAttributes(MutableMapping):
 class NetCDFDatasetVariable(CFDatasetVariable):
     """One variable of a netCDF file, presented through the CF interface."""
 
-    def __init__(self, variable, location: str, *, write_lock=None):
+    def __init__(self, variable, location: str, *, write_lock_factory=None):
         """Wrap ``variable``, a thread-safe netCDF variable wrapper.
 
         Parameters
@@ -121,14 +121,19 @@ class NetCDFDatasetVariable(CFDatasetVariable):
             character data; those are passed through, not reached around.
         location : str
             The path or URL of the dataset this variable belongs to.
-        write_lock : optional
-            The lock shared by every variable of one dataset, used by
-            :meth:`write_handle`. Supplied by :class:`NetCDFDataset`.
+        write_lock_factory : callable, optional
+            A zero-argument callable returning the lock shared by every
+            variable of one dataset, called by :meth:`write_handle`. Supplied
+            by :class:`NetCDFDataset` as its
+            :meth:`~NetCDFDataset._write_lock_factory`. A callable rather than
+            the lock itself because making a lock is a write-path act that
+            fails outright under some Dask schedulers, and a variable exists
+            on the read path too - see :meth:`NetCDFDataset.write_lock`.
 
         """
         self._variable = variable
         self._location = location
-        self._write_lock = write_lock
+        self._write_lock_factory = write_lock_factory
         self._attributes = _NetCDFAttributes(variable)
 
     @property
@@ -270,15 +275,29 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         reopening on each write, so that a worker can use it after the saver
         that created it has closed its own handle.
 
+        The handle always encodes, whatever wrapper this variable arrived in.
+        Iris does not support selectable string encoding for writes - see
+        :class:`NetCDFDataset` - so this never needs to be a plain
+        :class:`~iris.fileformats.netcdf._thread_safe_nc.NetCDFWriteProxy`.
+        Choosing the proxy by wrapper type would be wrong as well as
+        unnecessary: :meth:`NetCDFDataset.from_existing` only wraps a dataset
+        that lacks ``THREAD_SAFE_FLAG``, so a borrowed
+        :class:`~iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper` keeps
+        plain, unencoded variables, and an unencoded handle for one of those
+        writes unicode straight at an NC_CHAR variable - a deferred save of
+        ``["abc", "def"]`` comes back as ``["aaa", "ddd"]``.
+        :class:`~iris.fileformats.netcdf._bytecoding_datasets.EncodedNetCDFWriteProxy`
+        accepts either wrapper, because it reads ``_contained_instance``, which
+        every :class:`~iris.fileformats.netcdf._thread_safe_nc._ThreadSafeWrapper`
+        has.
+
         """
-        proxy_class: type[_thread_safe_nc.NetCDFWriteProxy]
-        if isinstance(self._variable, _bytecoding_datasets.EncodedVariable):
-            proxy_class = _bytecoding_datasets.EncodedNetCDFWriteProxy
-        else:
-            # Only reachable for a dataset opened without string encoding;
-            # the saver always encodes.
-            proxy_class = _thread_safe_nc.NetCDFWriteProxy
-        return proxy_class(self._location, self._variable, self._write_lock)
+        write_lock = None
+        if self._write_lock_factory is not None:
+            write_lock = self._write_lock_factory()
+        return _bytecoding_datasets.EncodedNetCDFWriteProxy(
+            self._location, self._variable, write_lock
+        )
 
 
 #: The formats that make CF loading slow, and that the user can convert away
@@ -442,7 +461,9 @@ class NetCDFDataset(CFDataset):
             assert self._dataset is not None
             self._variables = {
                 name: NetCDFDatasetVariable(
-                    variable, self._location, write_lock=self.write_lock
+                    variable,
+                    self._location,
+                    write_lock_factory=self._write_lock_factory,
                 )
                 for name, variable in self._dataset.variables.items()
             }
@@ -504,7 +525,7 @@ class NetCDFDataset(CFDataset):
             name, dtype, tuple(dimensions), fill_value=fill_value, **encoding
         )
         wrapped = NetCDFDatasetVariable(
-            variable, self._location, write_lock=self.write_lock
+            variable, self._location, write_lock_factory=self._write_lock_factory
         )
         # Register in the mapping, materialising it first if it has not been
         # built yet. Keeping an existing mapping in step is not enough on its
@@ -556,7 +577,26 @@ class NetCDFDataset(CFDataset):
         new :class:`threading.Lock` on each call, and two such locks exclude
         nothing.
 
+        Made on first use, never at construction: ``get_worker_lock`` raises
+        :class:`~iris.fileformats.netcdf._dask_locks.DaskSchedulerTypeError`
+        for a Dask scheduler the *saver* does not support, and a read has no
+        quarrel with any scheduler. Reading this property is therefore a
+        write-path act; the read path must reach variables and attributes
+        without touching it.
+
         """
         if self._write_lock is None:
             self._write_lock = _dask_locks.get_worker_lock(self._location)
         return self._write_lock
+
+    def _write_lock_factory(self):
+        """Return :attr:`write_lock`, making it on the first call.
+
+        Handed to every :class:`NetCDFDatasetVariable` so that each can find
+        the one shared lock at the moment it builds a write handle, rather
+        than being given a lock it may never need. Bound to the dataset, so
+        every variable's call lands on the same :attr:`write_lock` - see that
+        property for why one lock per dataset is the requirement.
+
+        """
+        return self.write_lock

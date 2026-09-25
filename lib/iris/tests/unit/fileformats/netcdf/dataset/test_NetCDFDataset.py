@@ -79,11 +79,24 @@ class TestContents:
     def test_variables_share_one_write_lock(self, reader):
         # _dask_locks.get_worker_lock() returns a FRESH threading.Lock under
         # the threaded scheduler, so a per-variable call would hand out locks
-        # that exclude nothing.
+        # that exclude nothing. Observed through the write handles, because
+        # the lock is only made when one is asked for - see
+        # test_materialising_variables_makes_no_write_lock.
         air = reader.variables["air_temperature"]
         height = reader.variables["height"]
-        assert air._write_lock is height._write_lock
-        assert air._write_lock is reader.write_lock
+        assert air.write_handle().lock is height.write_handle().lock
+        assert air.write_handle().lock is reader.write_lock
+
+    def test_materialising_variables_makes_no_write_lock(self, reader):
+        # Making a lock is a write-path act: _dask_locks.get_worker_lock()
+        # raises DaskSchedulerTypeError for a scheduler the *saver* does not
+        # support, naming the saver, and a pure load has no quarrel with any
+        # scheduler. Reading variables and attributes must therefore leave
+        # the lock unmade. See NetCDFDataset.write_lock.
+        assert sorted(reader.variables) == ["air_temperature", "height", "label"]
+        assert dict(reader.attributes) == SAMPLE_GLOBALS
+        assert reader.variables["air_temperature"].attributes is not None
+        assert reader._write_lock is None
 
     def test_dimensions_are_names_and_lengths(self, reader):
         assert dict(reader.dimensions) == SAMPLE_DIMENSIONS

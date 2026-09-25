@@ -92,8 +92,13 @@ class TestCreateVariable:
         assert variable.chunking == (1, 2)
 
     def test_shares_the_datasets_write_lock(self, grid):
+        # Observed at write time, not at construction time: the variable is
+        # handed a factory, and the lock is only made when a write handle
+        # actually asks for it - see NetCDFDataset.write_lock for why a read
+        # must not provoke one.
         variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
-        assert variable._write_lock is grid.write_lock
+        assert grid._write_lock is None
+        assert variable.write_handle().lock is grid.write_lock
 
 
 class TestWritingData:
@@ -119,23 +124,41 @@ class TestWritingData:
         with _dataset.NetCDFDataset(path) as reader:
             np.testing.assert_array_equal(reader.variables["air"][:], payload)
 
-    def test_write_handle_matches_the_variable_encoding(self, grid):
+    def test_write_handle_of_an_encoded_variable_encodes(self, grid):
+        # Renamed from test_write_handle_matches_the_variable_encoding: the
+        # handle does not match the variable's encoding, it always encodes.
+        # This is the encoded-variable half of that rule - the dataset was
+        # opened for writing, so its variables are encoded - and the test
+        # below is the unencoded half. An unencoded proxy in either case would
+        # silently skip string encoding.
         variable = grid.create_variable("air", np.dtype("f4"), ("y", "x"))
-        # The dataset was opened for writing, so its variables are encoded;
-        # an unencoded proxy here would silently skip string encoding.
+        assert isinstance(variable.variable, _bytecoding_datasets.EncodedVariable)
         assert isinstance(
             variable.write_handle(), _bytecoding_datasets.EncodedNetCDFWriteProxy
         )
 
-    def test_write_handle_of_an_unencoded_variable(self, path):
+    def test_write_handle_of_an_unencoded_variable_still_encodes(self, path):
+        # This test used to assert the opposite - that an unencoded variable
+        # yields a plain NetCDFWriteProxy - on the false premise that the
+        # saver never meets one. It does: NetCDFDataset.from_existing only
+        # wraps a dataset lacking THREAD_SAFE_FLAG, so a borrowed
+        # DatasetWrapper keeps plain variables exactly like the one built
+        # here, and saving into one reaches this path. Writes have no
+        # selectable string encoding, so the handle must encode regardless of
+        # how the variable was obtained.
         raw = _thread_safe_nc.DatasetWrapper(path, mode="w", format="NETCDF4")
         try:
             raw.createDimension("x", 2)
             raw.createVariable("air", "f4", ("x",))
             variable = _dataset.NetCDFDatasetVariable(
-                raw.variables["air"], str(path), write_lock=None
+                raw.variables["air"], str(path), write_lock_factory=None
             )
-            assert isinstance(variable.write_handle(), _thread_safe_nc.NetCDFWriteProxy)
+            assert not isinstance(
+                variable.variable, _bytecoding_datasets.EncodedVariable
+            )
+            assert isinstance(
+                variable.write_handle(), _bytecoding_datasets.EncodedNetCDFWriteProxy
+            )
         finally:
             raw.close()
 

@@ -31,9 +31,9 @@ def encoded(sample_path):
     dataset.close()
 
 
-def wrap(dataset, name, location, write_lock=None):
+def wrap(dataset, name, location, write_lock_factory=None):
     return _dataset.NetCDFDatasetVariable(
-        dataset.variables[name], location, write_lock=write_lock
+        dataset.variables[name], location, write_lock_factory=write_lock_factory
     )
 
 

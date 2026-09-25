@@ -32,6 +32,7 @@ fallback for an emulator that lacks them.
 """
 
 import dask
+import dask.array as da
 import numpy as np
 import pytest
 
@@ -93,6 +94,32 @@ class TestRealDataset:
         inetcdf.save(cube, dataset, compute=False)
         assert dataset.isopen()
         dataset.close()
+
+    def test_deferred_string_writes_are_encoded(self, tmp_path):
+        """A deferred unicode write into a borrowed dataset must reach the file intact.
+
+        ``NetCDFDataset.from_existing`` only wraps a dataset that lacks
+        ``THREAD_SAFE_FLAG``, so a borrowed ``DatasetWrapper`` keeps plain,
+        unencoded variables - and a write handle taken from one of those must
+        encode all the same, because writes have no selectable string
+        encoding. Asserting on the *file*, not on the handle's class: a handle
+        of the right class that still wrote the wrong bytes would pass a
+        type assertion. Unfixed, ``["abc", "def"]`` read back as
+        ``["aaa", "ddd"]``.
+        """
+        path = tmp_path / "strings.nc"
+        strings = np.array(["abc", "def"], dtype="U3")
+        # Lazy, and chunked, so that the save really is deferred to da.store.
+        cube = Cube(da.from_array(strings, chunks=1), long_name="strings")
+
+        dataset = threadsafe_nc.DatasetWrapper(path, mode="w", format="NETCDF4")
+        delayed = inetcdf.save(cube, dataset, compute=False)
+        dataset.close()
+        dask.compute(delayed)
+
+        result = iris.load_cube(path)
+        assert result.dtype.kind == "U"
+        np.testing.assert_array_equal(result.data, strings)
 
     def test_compute_true_is_refused(self, cube, tmp_path):
         path = tmp_path / "user.nc"
