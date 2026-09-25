@@ -6,8 +6,8 @@ These rules apply to all test files under this directory tree.
 
 ## Purpose
 
-This test suite validates Iris behaviour, metadata handling, and regressionc
-overage.  Keep changes focused, deterministic, and compatible with the
+This test suite validates Iris behaviour, metadata handling, and regression
+coverage.  Keep changes focused, deterministic, and compatible with the
 existing test style.
 
 

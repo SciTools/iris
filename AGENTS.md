@@ -92,7 +92,7 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 ## Testing
 
-- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
+- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific rules.
 
 - Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. (This is expected to encode a growing number of preferred coding practices, to enable productive collaboration with non-deterministic LLM agents).
 
@@ -173,8 +173,8 @@ strings.
 
 ## Changelog
 
-Changelog fragments lives under `chngelog/` and is built with towncrier via
-sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
+Changelog fragments live under `changelog/` and are built with towncrier
+via sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
 
 
 ## Documentation
@@ -197,8 +197,8 @@ make lockfiles
 
 - When creating a pull request a template is provided to ensure all checks are
   considered.
-- This project is configured to use pre-commit tht will ensure some checks are
-  performed automatically.
+- This project is configured to use pre-commit, which will ensure some checks
+  are performed automatically.
 - Keep changes focused; avoid unrelated refactors in the same PR.
 - Add or update tests for every change to production code.
 - Ensure a whatsnew fragment is added, see
