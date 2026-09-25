@@ -131,3 +131,111 @@ def test_license_headers():
         + "\n".join(all_violations)
     )
     assert not all_violations, message
+
+
+_DOCS_PAGE = """\
+.. z_reference:: Phrasebook
+   :tags: topic_interoperability
+
+   Information on terminology differences between Iris and similar packages.
+
+.. _phrasebook:
+
+Package Phrasebook
+==================
+
+.. readingtime::
+
+Body text.
+"""
+"""A documentation page carrying every piece of metadata Iris requires."""
+
+
+def test_docs_page_metadata():
+    """Check that all documentation pages carry their required metadata.
+
+    Logic lives in .hooks/check_docs_page_metadata.py (also used as a
+    pre-commit hook, and by the docs build via the page_metadata_validator
+    Sphinx extension).
+    """
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+    docs_src = Path(IRIS_REPO_DIRPATH) / "docs" / "src"
+
+    all_violations = check_docs_page_metadata.check_tree(docs_src)
+
+    message = "The following documentation pages are missing metadata:\n" + "\n".join(
+        all_violations
+    )
+    assert not all_violations, message
+
+
+def test_docs_page_metadata_clean():
+    """A fully populated page must be accepted, or the checks below prove nothing."""
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+
+    problems = check_docs_page_metadata.check_page(
+        "user_manual/reference/phrasebook", _DOCS_PAGE
+    )
+
+    assert problems == []
+
+
+@pytest.mark.parametrize(
+    ("page", "expected"),
+    [
+        pytest.param(
+            _DOCS_PAGE.replace(".. readingtime::\n", ""),
+            "Missing '.. readingtime::' directive",
+            id="missing_readingtime",
+        ),
+        pytest.param(
+            _DOCS_PAGE.replace(".. z_reference:: Phrasebook", "Phrasebook"),
+            "found 0.",
+            id="missing_item",
+        ),
+        pytest.param(
+            _DOCS_PAGE + _DOCS_PAGE,
+            "found 2.",
+            id="duplicate_item",
+        ),
+        pytest.param(
+            _DOCS_PAGE.replace(".. z_reference::", ".. tutorial::"),
+            "found type 'tutorial'",
+            id="wrong_type",
+        ),
+        pytest.param(
+            "\n" * 30 + _DOCS_PAGE,
+            "within first 25 lines",
+            id="item_too_far_down",
+        ),
+        pytest.param(
+            _DOCS_PAGE.replace(
+                "   Information on terminology differences between Iris and"
+                " similar packages.\n",
+                "",
+            ),
+            "non-empty content section",
+            id="empty_content",
+        ),
+        pytest.param(
+            _DOCS_PAGE.replace(":tags: topic_interoperability", ":tags: data-model"),
+            "'topic_xxx' tag",
+            id="missing_topic_tag",
+        ),
+    ],
+)
+def test_docs_page_metadata_detects(page, expected):
+    """Each way of breaking a page's metadata must be detected.
+
+    These are the faults that would otherwise only surface minutes into a
+    documentation build.
+    """
+    check_docs_page_metadata = _load_hook("check_docs_page_metadata")
+
+    problems = check_docs_page_metadata.check_page(
+        "user_manual/reference/phrasebook", page
+    )
+
+    assert any(expected in problem for problem in problems), (
+        f"Expected a problem containing {expected!r}; got: {problems}"
+    )

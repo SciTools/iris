@@ -1,0 +1,5 @@
+:user:`trexfeathers` moved the documentation page metadata rules - the
+``readingtime`` directive and the sphinx-needs item every Diataxis page
+carries - into ``.hooks/check_docs_page_metadata.py``, where they are shared
+by a new pre-commit hook and by the documentation build.  A missing directive
+is now reported in milliseconds, instead of several minutes into a build.

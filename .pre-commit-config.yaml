@@ -44,6 +44,17 @@ repos:
         language: python
         entry: python .hooks/check_categorised_warnings.py
         types: [python]
+    -   id: check-docs-page-metadata
+        name: Check docs page metadata
+        language: python
+        entry: python .hooks/check_docs_page_metadata.py
+        # The whole documentation source tree is walked on every run: it takes
+        #  milliseconds, and it catches pages broken by a change made
+        #  elsewhere, such as a rename.  Passing filenames would also require
+        #  admitting .rst to the global `files` list above, which would newly
+        #  expose every page to the formatting hooks.
+        pass_filenames: false
+        always_run: true
     -   id: check-python-versions
         name: Check Python version consistency
         language: python
