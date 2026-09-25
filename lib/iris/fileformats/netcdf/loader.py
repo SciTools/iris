@@ -42,6 +42,7 @@ import iris.coord_systems
 import iris.coords
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
+from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -246,6 +247,15 @@ def _get_cf_var_data(cf_var):
         # netcdf data container objects in other packages, such as xarray.
         # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
         result = cf_var.cf_data.emulated_data_array
+        if result.dtype.kind == "S":
+            # We must also perform any byte-to-string decoding since, in ncdata, the
+            #  emulating objects don't do this, and also don't support a
+            #  'set_auto_chartostring(True)'.
+            #  Therefore, do here what an EncodedVariable.__getitem__ would do : ..
+            # .. get details based on the file (type 'char') variable  ..
+            encoder = VariableEncoder.from_var(cf_var.cf_data.unencoded_variable)
+            # .. convert byte array to strings.
+            result = encoder.decode_bytes_to_stringarray(result)
     else:
         # Determine size of data; however can't do this for variable length (VLEN)
         # netCDF arrays as the size of the array can only be known by reading the

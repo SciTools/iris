@@ -64,6 +64,7 @@ import iris.exceptions
 import iris.fileformats.cf
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
 from iris.fileformats.netcdf._dataset import NetCDFDataset, NetCDFDatasetVariable
 import iris.util
 import iris.warnings
@@ -2616,6 +2617,16 @@ class Saver:
             # data to/from netcdf data container objects in other packages, such as
             # xarray.
             # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+            if cf_var.dtype.kind == "U":
+                # We also need to perform string-to-bytes encoding since, in ncdata,
+                #  the emulating objects don't do this, and also don't support a
+                #  'set_auto_chartostring(True)'.
+                # Therefore, do here what an EncodedVariable.__setitem__ would do : ..
+                #  .. get details from the file (char) variable to be written ..
+                encoder = VariableEncoder.from_var(cf_var.unencoded_variable)
+                #  .. apply encoding to get the bytes to write.
+                data = encoder.encode_strings_as_bytearray(data)
+
             cf_var.emulated_data_array = data
 
         else:

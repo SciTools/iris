@@ -92,7 +92,7 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 ## Testing
 
-- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
+- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific rules.
 
 - Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. (This is expected to encode a growing number of preferred coding practices, to enable productive collaboration with non-deterministic LLM agents).
 
@@ -173,8 +173,8 @@ strings.
 
 ## Changelog
 
-Changelog fragments lives under `chngelog/` and is built with towncrier via
-sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
+Changelog fragments live under `changelog/` and are built with towncrier
+via sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
 
 
 ## Documentation
@@ -197,8 +197,8 @@ make lockfiles
 
 - When creating a pull request a template is provided to ensure all checks are
   considered.
-- This project is configured to use pre-commit tht will ensure some checks are
-  performed automatically.
+- This project is configured to use pre-commit, which will ensure some checks
+  are performed automatically.
 - Keep changes focused; avoid unrelated refactors in the same PR.
 - Add or update tests for every change to production code.
 - Ensure a whatsnew fragment is added, see
@@ -247,13 +247,14 @@ make lockfiles
 - **Code of Conduct**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
-  structural pattern, critical bug fix, or persistent repository rule is
-  established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
-  make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the
-  edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
   component-specific fixes.

@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.netcdf._get_cf_var_data` function."""
 
+import dask.array
 import dask.array as da
 import numpy as np
 import pytest
@@ -145,12 +146,56 @@ class Test__get_cf_var_data(MockerMixin):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
-    def test_cf_data_emulation(self, mocker):
+    @pytest.mark.parametrize("is_realdata", [True, False], ids=["realdata", "lazydata"])
+    @pytest.mark.parametrize("is_string", [True, False], ids=["string", "numeric"])
+    def test_cf_data_emulation(self, mocker, is_realdata, is_string):
         # Check that a variable emulation object passes its real data directly.
-        emulated_data = mocker.Mock()
-        cf_var = self._make(chunksizes=None)
+        # ... or for string data, that it converts it, either lazy or real.
+        shape = (20, 30, 30)
+        array_spec = np.ndarray if is_realdata else da.Array
+        dtype = np.dtype("S1") if is_string else np.dtype("f4")
+        emulated_data = mocker.MagicMock(spec=array_spec, dtype=dtype, shape=shape)
+        cf_var = self._make(chunksizes=None, dtype=dtype, shape=shape)
         cf_var.cf_data.is_emulated = True
         cf_var.cf_data.emulated_data_array = emulated_data
+
+        if is_string:
+            # The encoding is described by the file variable beneath the
+            #  emulation, which is 'char' where the data read out is strings.
+            unencoded = mocker.Mock(
+                dtype=np.dtype("S1"),
+                dimensions=("dim_0", "dim_1", "string5"),
+                # None is what an absent _Encoding attribute yields: the
+                #  default encoding, and no "unsupported encoding" warning.
+                _Encoding=None,
+            )
+            # .name is a Mock constructor keyword, so it has to be set after.
+            unencoded.name = "DUMMY_VAR"
+            unencoded.group.return_value = mocker.Mock(
+                dimensions={"string5": mocker.Mock(size=5)}
+            )
+            cf_var.cf_data.unencoded_variable = unencoded
+
+            # detect that we added a translation to the data
+            ifnbd = "iris.fileformats.netcdf._bytecoding_datasets."
+            mock_decode = mocker.patch(ifnbd + "decode_bytesarray_to_stringarray")
+            mock_mapblocks = mocker.patch("dask.array.map_blocks")
+
         result = _get_cf_var_data(cf_var)
-        # This should get directly returned.
-        assert emulated_data is result
+
+        if not is_string:
+            # This should get directly returned.
+            assert result is emulated_data
+        else:
+            # Check that appropriate call was called
+            if is_realdata:
+                assert mock_decode.call_count == 1
+                assert result is mock_decode.return_value
+                call_args = mock_decode.call_args_list[0][0]
+                assert call_args[0] is emulated_data
+            else:
+                assert mock_mapblocks.call_count == 1
+                assert result is mock_mapblocks.return_value
+                call_args = mock_mapblocks.call_args_list[0][0]
+                assert call_args[0] is mock_decode
+                assert call_args[1] is emulated_data

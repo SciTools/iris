@@ -213,6 +213,24 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         return self._variable
 
     @property
+    def unencoded_variable(self):
+        """The backing variable, from beneath any byte-encoding wrapper.
+
+        :class:`~iris.fileformats.netcdf._bytecoding_datasets.EncodedVariable`
+        presents char data as strings one dimension shorter, so it cannot
+        describe the encoding it is hiding. Anything that needs the true,
+        on-disk ``dtype`` and character dimension - notably
+        :meth:`~iris.fileformats.netcdf._bytecoding_datasets.VariableEncoder.from_var`,
+        which rejects an ``EncodedVariable`` outright - wants this instead of
+        :attr:`variable`. Unwrapped variables are returned unchanged, so a
+        caller need not know which it has.
+
+        """
+        if isinstance(self._variable, _bytecoding_datasets.EncodedVariable):
+            return self._variable._contained_instance
+        return self._variable
+
+    @property
     def is_variable_length(self) -> bool:
         """Whether this is a netCDF variable-length (VLEN) type.
 

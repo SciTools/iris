@@ -6,8 +6,8 @@ These rules apply to all test files under this directory tree.
 
 ## Purpose
 
-This test suite validates Iris behaviour, metadata handling, and regressionc
-overage.  Keep changes focused, deterministic, and compatible with the
+This test suite validates Iris behaviour, metadata handling, and regression
+coverage.  Keep changes focused, deterministic, and compatible with the
 existing test style.
 
 
@@ -67,6 +67,24 @@ repository.
   while iterating on failures.
 
 
+### Doctests
+
+The pytest suite does not run them — nothing here covers the `>>>` examples
+in library docstrings (29 modules) or the user guide (30 files). Only Sphinx
+does:
+
+| Command | Cost |
+|---|---|
+| `nox -s doctest` | what CI runs: `make clean html`, then `make doctest` |
+| `cd docs/src && make doctest` | skips the gallery rebuild; faster, not identical to CI |
+
+Both take minutes, so run one once before finishing, and only if you touched
+a `>>>` example. Do not substitute `pytest --doctest-modules` or
+`python -m doctest`: 150 `testsetup::` / `testcode::` directives supply
+context only Sphinx applies, so plain doctest reports failures that are not
+real.
+
+
 ## Style and Lint in Tests
 
 - Follow Ruff formatting and linting used by the repository.
@@ -92,7 +110,9 @@ repository.
 - Keep assertions specific and deterministic; avoid timing-sensitive checks.
 - Avoid broad snapshot-style updates without explaining intent in the change.
 - Do not add network access in tests.
-- Do not weaken existing checks just to make tests pass.
+- Do not weaken existing checks just to make tests pass — but a test can pin
+  a *bug*, and correcting one is strengthening. Show by archaeology that the
+  expectation was wrong, invert rather than delete, and comment why.
 
 ## Graphics and Integration Notes
 
@@ -114,6 +134,14 @@ repository.
   back clean whether coverage is intact or absent. Treat any skip in the area
   you changed as a gap to close, usually missing `iris-test-data` or an
   optional dependency, rather than as background noise.
+- **Never compare warning totals.** Under `-n auto` they are not
+  reproducible — import-time deprecations are counted once per worker that
+  imports the module, so the total tracks work distribution. One unchanging
+  tree gave 6483, 6485, 6484, 6483, 6483. A warning delta is not evidence.
+- **Compare like with like.** Collection order affects error counts:
+  `integration/netcdf/test_coord_systems.py` reports ten errors in a tier
+  run and none in the full suite. A tier baseline says nothing about a
+  full-suite one.
 
 
 ## Scope Boundaries
@@ -125,15 +153,14 @@ repository.
   when requested.
 
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
-  structural pattern, critical bug fix, or persistent repository rule is
-  established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
-  make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the
-  edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
   component-specific fixes.
-
-

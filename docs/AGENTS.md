@@ -55,7 +55,7 @@ Build output goes to `docs/src/_build/html/`.
 
 ## Whatsnew Entries
 
-- See [`AGENTS.md`](../changelog/AGENTS.md) in the `/changelog` directory. 
+- See [`AGENTS.md`](../changelog/AGENTS.md) in the `/changelog` directory.
 
 
 ## RST / Sphinx Conventions
@@ -73,10 +73,33 @@ Build output goes to `docs/src/_build/html/`.
   standalone Python files executable by `matplotlib` / `sphinx-gallery`.
 
 
+## Page Metadata
+
+Every page's metadata is authored in a version-controlled file, never in
+build output:
+
+- pages under `docs/src/` state theirs in their own RST;
+- gallery pages state theirs in their script's module docstring;
+- API pages state theirs in the library module's docstring.
+
+Pages under `docs/src/` need a `.. readingtime::` directive. Every page with
+a Diataxis type — the `user_manual/` subdirectories, and all gallery and API
+pages — needs exactly one sphinx-needs item within its first 25 lines, with
+non-empty content and at least one `topic_*` tag (tags are separated by `;`).
+Copy the form from a sibling page.
+
+The rules live in `.hooks/check_docs_page_metadata.py`, and run both as the
+`check-docs-page-metadata` pre-commit hook and during the build. Prefer the
+hook: `pre-commit run check-docs-page-metadata` answers in milliseconds what
+a build takes minutes to tell you. Exemptions belong in that file's
+`READINGTIME_EXCEPTIONS`, and a new rule belongs there too — never in the
+Sphinx extension alone, or the two callers will disagree.
+
+
 ## Gallery Examples
 
 - Each gallery script must have a module-level docstring that becomes its
-  title and description.
+  title and description, and that carries the page's `how-to` item.
 - Scripts are grouped by subdirectory: `general/`, `meteorology/`,
   `oceanography/`.
 - Gallery tests in `docs/gallery_tests/` verify examples execute without
@@ -87,7 +110,8 @@ Build output goes to `docs/src/_build/html/`.
 
 ## Doctest / Inline Code Examples
 
-- Doctests in RST files are run via `make doctest` (from `docs/src/`).
+- How to run them, and what not to substitute, is under Doctests in
+  [`lib/iris/tests/AGENTS.md`](../lib/iris/tests/AGENTS.md).
 - Use `# doctest: +SKIP` sparingly and only when execution is genuinely
   impossible (e.g., requires a display).
 - Ensure all `>>>` examples produce the exact output shown, or use
@@ -120,13 +144,14 @@ Build output goes to `docs/src/_build/html/`.
      alias instead.
 
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
-  structural pattern, critical bug fix, or persistent repository rule is
-  established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
-  make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the
-  edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
   component-specific fixes.

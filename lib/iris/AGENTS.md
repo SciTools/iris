@@ -113,6 +113,10 @@ a human treats it as documentation.
   around. Never restate what the code plainly does.
 - Fix or delete any comment your change invalidates, even if you did not
   write it.
+- A comment claiming a branch is unreachable is a testable claim. Pin it
+  with a test or an `assert`, or restructure so it is true by construction.
+  Left as prose it goes stale unnoticed: one reading "the saver always
+  encodes" outlived its condition, and the branch it excused corrupted data.
 - Do not add docstrings or comments to code you did not otherwise change —
   but see the module docstring exemption below.
 - NumPy-style docstrings are mandatory and validated. State the contract:
@@ -142,6 +146,11 @@ Cover whichever apply:
 Leave out anything a reader or Sphinx can already derive: API listings,
 signatures, call sequences, per-release history. Explanation scoped to a
 single class belongs in that class's docstring instead.
+
+A public module's docstring is also published as an API page, so it must open
+with a `z_reference` item — a title, `:tags:` carrying at least one `topic_*`,
+and a one-line summary — within its first 25 lines. Copy the form from a
+neighbouring module; `pre-commit run check-docs-page-metadata` checks it.
 
 **Exemption to "do not document code you did not change":** if you had to work
 out how a subsystem behaves in order to edit it, write that understanding into
@@ -203,13 +212,14 @@ code in a private sibling module instead.
   added per [`../../changelog/AGENTS.md`](../../changelog/AGENTS.md).
 
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
-  structural pattern, critical bug fix, or persistent repository rule is
-  established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
-  make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the
-  edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
   component-specific fixes.
