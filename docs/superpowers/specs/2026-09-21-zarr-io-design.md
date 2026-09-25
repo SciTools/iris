@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Phase** | Design, awaiting approval |
-| **Progress** | 1 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298), in review); merge-back not started — see §12.1 |
+| **Progress** | 2 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) and [#7303](https://github.com/SciTools/iris/pull/7303), both in review); merge-back not started — see §12.1 |
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
@@ -1575,7 +1575,7 @@ on the relocation before them, and PR 7 depends on everything.
 | # | Title | State | Link |
 |---|---|---|---|
 | 1 | `iris.fileformats.cf` becomes a package, with tests first | In review | [#7298](https://github.com/SciTools/iris/pull/7298) |
-| 2 | `CFDataset`, and the CF variable classes rewritten against it | Drafted | — |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | In review | [#7303](https://github.com/SciTools/iris/pull/7303) |
 | 3 | Relocate the CF loader | Not started | — |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
