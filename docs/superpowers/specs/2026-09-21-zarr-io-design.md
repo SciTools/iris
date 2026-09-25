@@ -307,6 +307,9 @@ class CFDataset(ABC):
     def sync(self) -> None: ...
     def finalise(self) -> None: ...     # one-shot; NOT part of close()
     def close(self) -> None: ...
+
+    def __enter__(self) -> "CFDataset": ...     # returns self; concrete
+    def __exit__(self, *exc_info) -> None: ...  # calls close(); concrete
 ```
 
 Three members exist only to keep multi-process writing reachable later, and
@@ -1933,4 +1936,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Covered the write proxy (§4.5): no Zarr equivalent needed, `write_handle()` justified by present netCDF need, native Zarr regains the deferred saving NCZarr gave up, and the `da.store` return-type defect recorded as Q5. |
 | 2026-09-23 | Accepted all five findings of the #7292 review, all reproduced. Write alignment restated over shards; fill-value masking made version-aware and taken off the storage field; the base64 `_FillValue` corrected from "malformation" to xarray's convention, and now written as well as read; the read unit separated from the write unit; the Zarr cache keyed on `Array.metadata`. Tests named in §6; Q6 and Q7 opened. |
 | 2026-09-23 | Structural pass for readability. §4.4 and §4.5 given `####` subheadings throughout — they were 617 lines navigated only by run-in bold lead-ins, and `Encoding` had been nested under multi-process writes by accident. Design history recast from "an earlier draft said X" into the rule it implies ("do not do X, because Y"): same guidance against re-deriving the rejected answer, without depending on knowledge of a draft the reader never saw. No normative content changed. |
-| 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |
+| 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed`, `__enter__` and `__exit__` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |

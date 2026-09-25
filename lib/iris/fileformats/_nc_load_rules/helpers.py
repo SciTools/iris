@@ -1275,13 +1275,15 @@ def get_names(cf_coord_var, coord_name, attributes):
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
     """Return the CF variable representing the bounds of a coordinate variable."""
-    # Deliberately not `.attributes.get(...)`: for "newstyle" derived bounds
-    # (FUTURE.derived_bounds), iris.fileformats.cf._reader synthesises a
-    # `.bounds` link by assigning `cf_var.bounds = ...` directly on the
-    # CFVariable instance, bypassing `self.attributes` entirely. Plain
-    # attribute lookup finds that before `__getattr__` (and so `.attributes`)
-    # is ever consulted; `.attributes.get(...)` cannot see it and silently
-    # drops the derived-bounds link.
+    # `getattr` resolves through CFVariable.__getattr__ into `.attributes`,
+    # so it sees exactly what `.attributes.get(CF_ATTR_BOUNDS)` would. That
+    # includes the "newstyle" derived-bounds links (FUTURE.derived_bounds)
+    # that iris.fileformats.cf._reader synthesises: those are stored in
+    # `cf_var.attributes["bounds"]` like any other CF attribute, so there is
+    # nothing extra to look for here. _reader also *invalidates* a link by
+    # storing None under that key, which this call cannot tell apart from the
+    # default given here - fine, because both mean "no bounds", but anyone
+    # who comes to need the difference must subscript the mapping instead.
     attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
     attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 
