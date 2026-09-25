@@ -87,7 +87,8 @@ Build output goes to `docs/src/_build/html/`.
 
 ## Doctest / Inline Code Examples
 
-- Doctests in RST files are run via `make doctest` (from `docs/src/`).
+- How to run them, and what not to substitute, is under Doctests in
+  [`lib/iris/tests/AGENTS.md`](../lib/iris/tests/AGENTS.md).
 - Use `# doctest: +SKIP` sparingly and only when execution is genuinely
   impossible (e.g., requires a display).
 - Ensure all `>>>` examples produce the exact output shown, or use

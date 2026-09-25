@@ -67,6 +67,24 @@ repository.
   while iterating on failures.
 
 
+### Doctests
+
+The pytest suite does not run them — nothing here covers the `>>>` examples
+in library docstrings (29 modules) or the user guide (30 files). Only Sphinx
+does:
+
+| Command | Cost |
+|---|---|
+| `nox -s doctest` | what CI runs: `make clean html`, then `make doctest` |
+| `cd docs/src && make doctest` | skips the gallery rebuild; faster, not identical to CI |
+
+Both take minutes, so run one once before finishing, and only if you touched
+a `>>>` example. Do not substitute `pytest --doctest-modules` or
+`python -m doctest`: 150 `testsetup::` / `testcode::` directives supply
+context only Sphinx applies, so plain doctest reports failures that are not
+real.
+
+
 ## Style and Lint in Tests
 
 - Follow Ruff formatting and linting used by the repository.
