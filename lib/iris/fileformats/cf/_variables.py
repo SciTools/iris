@@ -80,9 +80,12 @@ _NCZARR_SCALAR_DIMENSION = "_scalar_"
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
 # Names __getattr__ must never resolve through self.attributes, because
-# reading self.attributes is how it resolves anything at all. Deliberately
-# not "every underscore-prefixed name": loader.py and saver.py both probe
-# for "_data_array", and that probe has to reach through.
+# reading self.attributes is how it resolves anything at all. Just those two,
+# and deliberately so: every other name that reaches __getattr__ is a CF
+# attribute name read from a file, which is the open-ended set this class
+# exists to present. Excluding a broader class of name - "every
+# underscore-prefixed name", say - would hide real CF attributes, "_Encoding"
+# and "_FillValue" among them.
 _GETATTR_RECURSION_GUARD = frozenset(["attributes", "cf_data"])
 
 
@@ -106,8 +109,9 @@ class CFVariable(metaclass=ABCMeta):
         """NetCDF variable name."""
 
         self.cf_data = data
-        """The variable's storage: a :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`.
+        """The variable's storage.
 
+        A :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`.
         ``_deprecated_netcdf_member`` is the only netCDF4-specific route out
         of this class; everything else goes through the format-agnostic
         interface.
@@ -130,11 +134,13 @@ class CFVariable(metaclass=ABCMeta):
         from sharing one mapping.
         """
 
-        """File source of the NetCDF content."""
         try:
-            self.filename = data.location
+            location = data.location
         except AttributeError:
-            self.filename = "<unknown_filename>"
+            location = "<unknown_filename>"
+
+        self.filename = location
+        """File source of the NetCDF content."""
 
         self.cf_group = None
         """Collection of CF-netCDF variables associated with this variable."""
@@ -286,7 +292,8 @@ class CFVariable(metaclass=ABCMeta):
         The one-cycle compatibility route for code that reached netCDF4 API
         through a CFVariable. Records nothing: this is not a CF attribute.
         The storage object decides what this means, and warns - see
-        :meth:`iris.fileformats.netcdf._dataset.NetCDFDatasetVariable.deprecated_netcdf_member`.
+        :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`'s
+        ``deprecated_netcdf_member``.
 
         """
         return self.cf_data.deprecated_netcdf_member(name)

@@ -101,6 +101,26 @@ class TestContents:
         assert reader.attributes is reader.attributes
 
 
+class _EmulatorWithoutIsopen:
+    """The least a borrowed emulator can be, and no ``isopen()``.
+
+    ``createVariable`` and ``close`` are what
+    :class:`~iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper` checks
+    for before agreeing to wrap an object; ``filepath`` is what
+    ``from_existing`` reads. Nothing here is exercised - the members exist so
+    that the wrap succeeds.
+    """
+
+    def createVariable(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def close(self):
+        raise NotImplementedError
+
+    def filepath(self):
+        return "<emulated>"
+
+
 class TestBorrowing:
     def test_from_existing_wraps_an_open_dataset(self, sample_path, sample_location):
         raw = _bytecoding_datasets.EncodedDataset(sample_path, mode="r")
@@ -139,6 +159,16 @@ class TestBorrowing:
             assert dataset.dataset._contained_instance is raw
         finally:
             raw.close()
+
+    def test_a_borrowed_emulator_without_isopen_reads_as_open(self):
+        # NetCDFDataset.closed asks the backing object whether it is open,
+        # and an emulator need not implement isopen() - ncdata's does, so
+        # nothing else in the suite reaches this branch. Taken to be open:
+        # the borrower has no better answer, and close() still overrides it.
+        dataset = _dataset.NetCDFDataset.from_existing(_EmulatorWithoutIsopen())
+        assert dataset.closed is False
+        dataset.close()
+        assert dataset.closed is True
 
     def test_from_existing_mode_is_stipulated_not_observed(self, sample_path):
         # netCDF4 exposes no public attribute recording a dataset's open

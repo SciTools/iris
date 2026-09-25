@@ -1211,7 +1211,13 @@ class Saver:
                             result = term_varname
                             # Follow links (if they exist) to find the bounds var.
                             termvar = self._dataset.variables.get(term_varname)
-                            boundsname = termvar.attributes.get("bounds")
+                            # An absent factory dependency has no variable name,
+                            # so there is nothing to follow: keep the fallback.
+                            boundsname = (
+                                None
+                                if termvar is None
+                                else termvar.attributes.get("bounds")
+                            )
                             if boundsname in self._dataset.variables:
                                 result = boundsname
                             return result

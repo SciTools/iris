@@ -165,9 +165,10 @@ def _raise(exception):
 class _EmulatedVariable:
     """A stand-in for the Xarray bridge's own variable object.
 
-    Never a real, file-backed :class:`~iris.fileformats.netcdf._thread_safe_nc.VariableWrapper`:
-    that class's ``__setattr__`` forwards every set to the actual netCDF4
-    object, so it cannot carry an ad-hoc ``_data_array`` of its own.
+    Never a real, file-backed
+    :class:`~iris.fileformats.netcdf._thread_safe_nc.VariableWrapper`: that
+    class's ``__setattr__`` forwards every set to the actual netCDF4 object,
+    so it cannot carry an ad-hoc ``_data_array`` of its own.
     """
 
     def ncattrs(self):
@@ -192,6 +193,15 @@ class TestNetCDFOnlyMembers:
     def test_emulated_data_array_raises_when_not_emulated(self, air):
         with pytest.raises(AttributeError, match="_data_array"):
             air.emulated_data_array
+
+    def test_setting_emulated_data_array_raises_when_not_emulated(self, air):
+        # The setter refuses for the same reason the getter does, and the
+        # consequence of not refusing is worse: VariableWrapper.__setattr__
+        # forwards to the contained object, so the set would write a file
+        # attribute named "_data_array".
+        with pytest.raises(AttributeError, match="_data_array"):
+            air.emulated_data_array = np.ones(3)
+        assert "_data_array" not in air.variable.ncattrs()
 
     def test_emulated_round_trip(self, sample_location):
         # The Xarray bridge hook, issue #4994: an emulating variable carries

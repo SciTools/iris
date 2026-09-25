@@ -241,6 +241,12 @@ class NetCDFDatasetVariable(CFDatasetVariable):
 
     @emulated_data_array.setter
     def emulated_data_array(self, value) -> None:
+        if not self.is_emulated:
+            # _thread_safe_nc.VariableWrapper.__setattr__ forwards every set
+            # to the contained object, so on a real netCDF variable this would
+            # write a file attribute named "_data_array"; refuse, as the
+            # getter does, rather than let a write reach the file.
+            raise AttributeError(_EMULATED_DATA_ARRAY)
         setattr(self._variable, _EMULATED_DATA_ARRAY, value)
 
     def deprecated_netcdf_member(self, name: str) -> Any:

@@ -205,6 +205,17 @@ class CFDatasetContract:
         variable = writable.create_variable("grid", np.dtype("i4"))
         assert variable.dimensions == ()
 
+    def test_unlimited_dimension_is_supported_or_refused(self, writable):
+        # The one member whose docstring sanctions two answers: a store with
+        # no unlimited concept - Zarr - refuses rather than inventing one.
+        # Either answer conforms; what does not conform is a third, such as
+        # quietly creating a fixed-length dimension instead.
+        try:
+            writable.create_dimension("t", None)
+        except NotImplementedError:
+            return
+        assert "t" in writable.dimensions
+
     def test_setitem_then_getitem(self, writable):
         writable.create_dimension("x", 3)
         variable = writable.create_variable("thing", np.dtype("f4"), ("x",))
