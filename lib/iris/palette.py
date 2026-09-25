@@ -98,7 +98,7 @@ def _default_cmap_norm(args, kwargs):
 
             # Add default color map to keyword arguments.
             if len(cmaps):
-                cmap = sorted(cmaps, reverse=True)[0]
+                cmap = max(cmaps)
                 kwargs["cmap"] = mpl_cm.get_cmap(cmap)
 
         # Perform default "norm" keyword behaviour.
