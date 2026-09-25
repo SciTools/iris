@@ -36,11 +36,20 @@ def _unique_id(request: pytest.FixtureRequest, test_call_counter) -> Callable:
     Used by :func:`iris.tests.graphics.check_graphic_caller` to ensure unique
     image names.
     """
-    id_sequence = [request.module.__name__, request.node.originalname]
+    # Backwards compatibility for existing gallery result naming.
+    gallery_compat = request.module.__name__.startswith("gallery_tests.")
+
+    if gallery_compat:
+        id_sequence = ["gallery_tests"]
+    else:
+        id_sequence = [request.module.__name__, request.node.originalname]
     if request.cls is not None:
         id_sequence.insert(-1, request.cls.__name__)
     if hasattr(request.node, "callspec"):
-        id_sequence.append(request.node.callspec.id)
+        callspec_id = request.node.callspec.id
+        if gallery_compat:
+            callspec_id = f"test_{callspec_id}"
+        id_sequence.append(callspec_id)
     test_id = ".".join(id_sequence)
 
     def generate_id():
