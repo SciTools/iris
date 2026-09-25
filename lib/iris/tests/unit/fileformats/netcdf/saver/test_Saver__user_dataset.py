@@ -16,6 +16,19 @@ open dataset in place of a path. Two kinds of caller do this:
 The second is the reason ``Saver`` may not assume its dataset is netCDF4,
 and it is entirely untested elsewhere.
 
+Saving through a ``CFDataset`` asks an emulating object for three members
+that the saver never used to reach for. All three are public netCDF4 API,
+and all three are now required of an emulator:
+
+* ``Dimension.size`` - the CF layer reads dimension lengths through it.
+  ``__len__`` is not an alternative, as ``_EmulatedDimension`` explains.
+* ``Dataset.ncattrs()`` - read once, as the dataset is wrapped.
+* ``Variable.ncattrs()`` - read once per variable, as each is wrapped.
+
+They are marked below where the emulators define them. This is an accepted
+consequence of the change, not an oversight: there is deliberately no
+fallback for an emulator that lacks them.
+
 """
 
 import dask
@@ -92,6 +105,7 @@ class TestRealDataset:
 class _EmulatedDimension:
     def __init__(self, size):
         self._size = size
+        # NEWLY REQUIRED OF AN EMULATOR, 1 of 3 - see the module docstring.
         # netCDF4.Dimension.size, which is how the length is read back. len()
         # is not an alternative: the emulator is put inside a _thread_safe_nc
         # wrapper, whose __getattr__ forwards named members but is never
@@ -132,6 +146,8 @@ class _EmulatedVariable:
         return self._attrs[name]
 
     def ncattrs(self):
+        # NEWLY REQUIRED OF AN EMULATOR, 2 of 3 - see the module docstring.
+        # Read once, as the variable is wrapped for the attribute mapping.
         return list(self._attrs)
 
     def chunking(self):
@@ -174,6 +190,8 @@ class _EmulatedDataset:
         return self._attrs[name]
 
     def ncattrs(self):
+        # NEWLY REQUIRED OF AN EMULATOR, 3 of 3 - see the module docstring.
+        # Read once, as the dataset is wrapped for the attribute mapping.
         return list(self._attrs)
 
     def sync(self):

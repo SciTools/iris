@@ -1070,7 +1070,13 @@ class Test_create_cf_grid_mapping(MockerMixin):
         saver._create_cf_grid_mapping(cube, variable)
 
         assert create_var_fn.call_count == 1
-        assert variable.grid_mapping, grid_variable.grid_mapping_name
+        # The data variable refers to the grid variable by name. Under
+        # extended grid mapping the reference is followed by the coordinates
+        # it applies to, so compare the name alone. The grid variable's own
+        # name comes back as bytes, from the ASCII coercion that every
+        # attribute write goes through.
+        referenced_name = variable.attributes["grid_mapping"].split(":")[0]
+        assert referenced_name == grid_variable.grid_mapping_name.decode()
         return grid_variable
 
     def _variable_attributes(self, coord_system):

@@ -699,7 +699,12 @@ class Saver:
             cf_patch = iris.site_configuration.get("cf_patch")
             if cf_patch is not None:
                 # Perform a CF patch of the dataset.
-                cf_patch(profile, self._dataset.dataset, cf_var_cube)
+                # A reserved iris.site_configuration hook, documented since
+                # Iris 1.3 as receiving netCDF4 objects - so both arguments
+                # are unwrapped, not just the dataset. A CFVariable would
+                # raise on setncattr() and, worse, silently swallow
+                # 'variable.name = value': it defines no __setattr__.
+                cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
             else:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
@@ -1003,7 +1008,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube : :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
             A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -1040,7 +1045,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube : :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
             A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -1061,7 +1066,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube : :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
             A cf variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -1108,7 +1113,7 @@ class Saver:
         ----------
         cube : :class:`iris.cube.Cube`
             A :class:`iris.cube.Cube` to be saved to a netCDF file.
-        cf_var_cube : :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
             CF variable cube representation.
         dimension_names : list
             Names associated with the dimensions of the cube.
@@ -2046,7 +2051,7 @@ class Saver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # The sixty-one assignments below set CF grid-mapping parameters by
+        # The sixty-three assignments below set CF grid-mapping parameters by
         # Python attribute assignment. Unlike every other attribute the saver
         # writes, they bypass the ASCII-to-bytes coercion, so moving them onto
         # .attributes would change the file. See finding F8; until then they
@@ -2272,7 +2277,7 @@ class Saver:
         cube : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
             A :class:`iris.cube.Cube`, :class:`iris.cube.CubeList` or list of
             cubes to be saved to a netCDF file.
-        cf_var_cube : :class:`netcdf.netcdf_variable`
+        cf_var_cube : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
             A cf variable cube representation.
 
         Returns
