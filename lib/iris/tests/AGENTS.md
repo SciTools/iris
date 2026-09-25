@@ -92,7 +92,9 @@ repository.
 - Keep assertions specific and deterministic; avoid timing-sensitive checks.
 - Avoid broad snapshot-style updates without explaining intent in the change.
 - Do not add network access in tests.
-- Do not weaken existing checks just to make tests pass.
+- Do not weaken existing checks just to make tests pass — but a test can pin
+  a *bug*, and correcting one is strengthening. Show by archaeology that the
+  expectation was wrong, invert rather than delete, and comment why.
 
 ## Graphics and Integration Notes
 
@@ -114,6 +116,14 @@ repository.
   back clean whether coverage is intact or absent. Treat any skip in the area
   you changed as a gap to close, usually missing `iris-test-data` or an
   optional dependency, rather than as background noise.
+- **Never compare warning totals.** Under `-n auto` they are not
+  reproducible — import-time deprecations are counted once per worker that
+  imports the module, so the total tracks work distribution. One unchanging
+  tree gave 6483, 6485, 6484, 6483, 6483. A warning delta is not evidence.
+- **Compare like with like.** Collection order affects error counts:
+  `integration/netcdf/test_coord_systems.py` reports ten errors in a tier
+  run and none in the full suite. A tier baseline says nothing about a
+  full-suite one.
 
 
 ## Scope Boundaries
