@@ -221,6 +221,9 @@ class TestAttributeAccess:
 
         assert cf_var.not_an_ncattr == 42
         nc_var.deprecated_netcdf_member.assert_called_once_with("not_an_ncattr")
+        # __getattr__ must not cache the value onto the instance - a second
+        # access has to reach the storage object again, not a stale copy.
+        assert "not_an_ncattr" not in cf_var.__dict__
         assert "not_an_ncattr" not in dict(cf_var.cf_attrs())
         assert "not_an_ncattr" not in dict(cf_var.cf_attrs_used())
 

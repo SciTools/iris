@@ -33,6 +33,10 @@ _PERMITTED_SUFFIXES = (
     # The test of NetCDFDataset.from_existing() wrapping a bare netCDF4.Dataset,
     # as the Xarray bridge hands to iris.save / CFReader.
     "iris/tests/unit/fileformats/netcdf/dataset/test_NetCDFDataset.py",
+    # The test that CFReader wraps a bare netCDF4.Dataset borrowed from a
+    # caller, decoding its character data - the same wrapping as above, but
+    # exercised through CFReader rather than NetCDFDataset directly.
+    "iris/tests/unit/fileformats/cf/test_CFReader__dataset.py",
     # The system test that checks netCDF4 is importable.
     "iris/tests/system_test.py",
 )

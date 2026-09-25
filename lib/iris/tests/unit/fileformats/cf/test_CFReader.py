@@ -636,6 +636,15 @@ class Test_init_and_lifecycle:
         with pytest.warns(iris.warnings.IrisLoadWarning, match="Optimise CF-netCDF"):
             CFReader("dummy.nc", warn=True)
 
+    def test_init_warns_for_netcdf3_when_requested_for_a_borrowed_dataset(self):
+        # The owned-path equivalent above pins CFReader passing warn= through
+        # to NetCDFDataset; this pins the same wiring on the from_existing
+        # branch, which is a separate call site in __init__.
+        self.dataset.file_format = "NETCDF3_CLASSIC"
+
+        with pytest.warns(iris.warnings.IrisLoadWarning, match="Optimise CF-netCDF"):
+            CFReader(self.dataset, warn=True)
+
     def test_init_with_no_meshes_trims_ugrid_variable_types(self, mocker):
         self.dataset.variables = {
             "a": netcdf_variable(mocker, "a", "x", np.float64),

@@ -375,14 +375,23 @@ class NetCDFDataset(CFDataset):
         instance._write_lock = None
         # netCDF4 exposes no public attribute recording a dataset's open
         # mode, so a borrowed dataset's true mode is unobservable: "r+" is a
-        # stipulation, not a reading. It is also the correct one for this
-        # PR's only caller, Saver (Task 12), a write path, and it is
-        # consistent with the wrapping just below - EncodedDataset is what
-        # __init__ picks for every mode except plain "r".
+        # stipulation, not a reading. There are two callers now - Saver
+        # (Task 12), a write path, and CFReader, which borrows read-only - and
+        # for the reader the stipulated "r+" is cosmetic: nothing in the
+        # library reads NetCDFDataset.mode but __repr__ below. "r+" remains
+        # the right stipulation regardless, because it is consistent with the
+        # wrapping just below - EncodedDataset is what __init__ picks for
+        # every mode except plain "r".
         instance._mode = "r+"
 
         if not hasattr(dataset, "THREAD_SAFE_FLAG"):
             # The wrappers forbid re-wrapping, so only wrap what is not one.
+            # Unconditional: unlike __init__, this does not consult
+            # _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ, so a caller who
+            # has turned decoding off cannot turn it off for a borrowed
+            # dataset. from_existing cannot tell read from write - mode is
+            # stipulated above, never observed - and the saver (Task 12), a
+            # write path with no such switch, needs the wrap regardless.
             dataset = _bytecoding_datasets.EncodedDataset.from_existing(dataset)
         instance._dataset = dataset
         instance._dataset.set_auto_chartostring(False)

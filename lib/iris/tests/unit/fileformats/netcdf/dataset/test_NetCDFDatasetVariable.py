@@ -119,6 +119,22 @@ class TestAttributes:
     def test_is_built_once(self, air):
         assert air.attributes is air.attributes
 
+    def test_values_are_read_once(self, mocker, sample_location):
+        # Pins the contract _NetCDFAttributes's own docstring states: values
+        # are read once, at construction, because the interface promises a
+        # mapping whose keys/items cost nothing. test_is_built_once above
+        # only pins that the mapping object is cached, not that its values
+        # are materialised rather than fetched again on every read - call
+        # counts are the only way to see that.
+        variable = mocker.Mock()
+        variable.ncattrs.return_value = ["units"]
+        variable.getncattr.return_value = "K"
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        _ = wrapped.attributes["units"]
+        _ = wrapped.attributes["units"]
+        assert variable.ncattrs.call_count == 1
+        assert variable.getncattr.call_count == 1
+
     def test_missing_key_raises_key_error(self, air):
         with pytest.raises(KeyError, match="nonesuch"):
             air.attributes["nonesuch"]
