@@ -12,12 +12,12 @@ from iris.coord_systems import PolarStereographic
 from iris.fileformats._nc_load_rules.helpers import (
     build_polar_stereographic_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 class TestBuildPolarStereographicCoordinateSystem:
     def test_valid_north(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,
@@ -40,8 +40,7 @@ class TestBuildPolarStereographicCoordinateSystem:
         assert cs == expected
 
     def test_valid_south(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=-90,
             scale_factor_at_projection_origin=1,
@@ -64,8 +63,7 @@ class TestBuildPolarStereographicCoordinateSystem:
         assert cs == expected
 
     def test_valid_with_standard_parallel(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             standard_parallel=30,
@@ -86,8 +84,7 @@ class TestBuildPolarStereographicCoordinateSystem:
         assert cs == expected
 
     def test_valid_with_false_easting_northing(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,
@@ -114,8 +111,7 @@ class TestBuildPolarStereographicCoordinateSystem:
         assert cs == expected
 
     def test_valid_nonzero_veritcal_lon(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             straight_vertical_longitude_from_pole=30,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,

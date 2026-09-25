@@ -10,12 +10,12 @@ build_mercator_coordinate_system`.
 import iris
 from iris.coord_systems import Mercator
 from iris.fileformats._nc_load_rules.helpers import build_mercator_coordinate_system
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 class TestBuildMercatorCoordinateSystem:
     def test_valid(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
@@ -34,8 +34,7 @@ class TestBuildMercatorCoordinateSystem:
         assert cs == expected
 
     def test_inverse_flattening(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             semi_major_axis=6377563.396,
             inverse_flattening=299.3249646,
@@ -55,8 +54,7 @@ class TestBuildMercatorCoordinateSystem:
         assert cs == expected
 
     def test_longitude_missing(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             semi_major_axis=6377563.396,
             inverse_flattening=299.3249646,
             standard_parallel=10,
@@ -74,8 +72,7 @@ class TestBuildMercatorCoordinateSystem:
         assert cs == expected
 
     def test_standard_parallel_missing(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,
@@ -92,8 +89,7 @@ class TestBuildMercatorCoordinateSystem:
         assert cs == expected
 
     def test_scale_factor_at_projection_origin(self, mocker):
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             semi_major_axis=6377563.396,
             semi_minor_axis=6356256.909,

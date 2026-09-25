@@ -9,8 +9,8 @@ from pytest_mock import MockType
 
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
-from iris.fileformats.cf import CFVariable
 from iris.loading import LOAD_PROBLEMS, LoadProblems
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 class Mixin:
@@ -30,9 +30,8 @@ class Mixin:
         self.build_func = mocker.MagicMock()
         self.build_func.return_value = "BUILT"
         self.add_method = mocker.MagicMock()
-        self.cf_var = mocker.MagicMock(spec=CFVariable)
+        self.cf_var = CFVariableDouble(**{self.attr_key: self.attr_value})
         self.cf_var.filename = self.filename
-        setattr(self.cf_var, self.attr_key, self.attr_value)
 
     def call(
         self,

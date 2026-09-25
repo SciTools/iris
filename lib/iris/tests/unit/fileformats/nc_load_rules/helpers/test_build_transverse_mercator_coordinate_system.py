@@ -12,7 +12,10 @@ from iris.coord_systems import TransverseMercator
 from iris.fileformats._nc_load_rules.helpers import (
     build_transverse_mercator_coordinate_system,
 )
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 
 
 class TestBuildTransverseMercatorCoordinateSystem(MockerMixin):
@@ -46,7 +49,7 @@ class TestBuildTransverseMercatorCoordinateSystem(MockerMixin):
             test_northing = 0
             test_scale_factor = 1.0
 
-        cf_grid_var = self.mocker.Mock(spec=[], **gridvar_props)
+        cf_grid_var = CFVariableDouble(**gridvar_props)
 
         cs = build_transverse_mercator_coordinate_system(None, cf_grid_var)
 

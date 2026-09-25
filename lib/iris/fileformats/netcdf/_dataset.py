@@ -1,0 +1,620 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""The netCDF implementation of the :mod:`iris.fileformats.cf.dataset` interface.
+
+This is the only module that knows both the CF interface and the netCDF4 API.
+Everything netCDF-specific that the CF layer used to reach through a
+:class:`~iris.fileformats.cf.CFVariable` - ``ncattrs``, ``getncattr``,
+``setncattr``, ``chunking()``, ``file_format``, ``createVariable``,
+``createDimension``, ``filepath()``, ``isopen()`` - either has a named member
+on the interface or lives here as a netCDF-only member.
+
+See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
+"""
+
+from collections.abc import Iterator, Mapping, MutableMapping
+from typing import Any
+import warnings
+
+import numpy as np
+
+from iris._deprecation import warn_deprecated
+from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
+import iris.warnings
+
+from . import _bytecoding_datasets, _dask_locks, _thread_safe_nc
+
+#: What ``netCDF4.Variable.chunking()`` answers for an unchunked variable.
+#: ``None`` means the same thing, and arrives from non-version-4 files.
+_CONTIGUOUS = "contiguous"
+
+#: The member an emulating variable carries instead of file storage. See
+#: https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
+_EMULATED_DATA_ARRAY = "_data_array"
+
+
+def _bytes_if_ascii(value):
+    """Return an ASCII string as bytes, and anything else unchanged.
+
+    netCDF4 stores a bytes attribute as NC_CHAR. Coercing on the way in is
+    what keeps Iris's string attributes to that type across file formats,
+    rather than leaving it to netCDF4's own str handling.
+
+    """
+    if isinstance(value, str):
+        try:
+            return value.encode(encoding="ascii")
+        except (AttributeError, UnicodeEncodeError):
+            pass
+    return value
+
+
+class _NetCDFAttributes(MutableMapping):
+    """A netCDF object's attributes as a mapping: read once, written through.
+
+    Values are read once, at construction, because the interface promises a
+    mapping whose ``keys`` and ``items`` cost nothing - attribute tracking asks
+    "which of these went unread?" on every variable of every loaded file, and
+    a lazily-fetching mapping would make that question expensive.
+
+    """
+
+    def __init__(self, target):
+        """Materialise the attributes of ``target``, a netCDF variable or dataset."""
+        self._target = target
+        self._values: dict[str, Any] = {}
+        for name in target.ncattrs():
+            try:
+                value = target.getncattr(name)
+            except AttributeError:
+                # ncattrs() can list a name that getncattr then refuses. The
+                # netCDF4 library does this for some malformed files, and
+                # cf/_reader.py's _getncattr tolerated it with this default.
+                value = ""
+            self._values[name] = value
+
+    def __getitem__(self, key: str) -> Any:
+        """Return ``key``'s value."""
+        return self._values[key]
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Set ``key``'s value, here and in the netCDF object."""
+        # Coerce on the way out only.  Caching the coerced value would make a
+        # just-written attribute read back as bytes, where the same attribute
+        # read from a file reads back as str.  See finding F12.
+        self._target.setncattr(key, _bytes_if_ascii(value))
+        self._values[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        """Remove ``key``, here and from the netCDF object."""
+        self._target.delncattr(key)
+        del self._values[key]
+
+    def __iter__(self) -> Iterator[str]:
+        """Return an iterator over the attribute names, in file order."""
+        return iter(self._values)
+
+    def __len__(self) -> int:
+        """Return the number of attributes."""
+        return len(self._values)
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return f"{self.__class__.__name__}({self._values!r})"
+
+
+class NetCDFDatasetVariable(CFDatasetVariable):
+    """One variable of a netCDF file, presented through the CF interface."""
+
+    def __init__(self, variable, location: str, *, write_lock_factory=None):
+        """Wrap ``variable``, a thread-safe netCDF variable wrapper.
+
+        Parameters
+        ----------
+        variable : :class:`~iris.fileformats.netcdf._thread_safe_nc.VariableWrapper`
+            The wrapped netCDF variable. May be an
+            :class:`~iris.fileformats.netcdf._bytecoding_datasets.EncodedVariable`,
+            whose shape, dimensions and dtype differ from the file's own for
+            character data; those are passed through, not reached around.
+        location : str
+            The path or URL of the dataset this variable belongs to.
+        write_lock_factory : callable, optional
+            A zero-argument callable returning the lock shared by every
+            variable of one dataset, called by :meth:`write_handle`. Supplied
+            by :class:`NetCDFDataset` as its
+            :meth:`~NetCDFDataset._write_lock_factory`. A callable rather than
+            the lock itself because making a lock is a write-path act that
+            fails outright under some Dask schedulers, and a variable exists
+            on the read path too - see :meth:`NetCDFDataset.write_lock`.
+
+        """
+        self._variable = variable
+        self._location = location
+        self._write_lock_factory = write_lock_factory
+        self._attributes = _NetCDFAttributes(variable)
+
+    @property
+    def name(self) -> str:
+        """The variable's name within its dataset."""
+        return self._variable.name
+
+    @property
+    def location(self) -> str:
+        """The path or URL of the dataset holding this variable."""
+        return self._location
+
+    @property
+    def dimensions(self) -> tuple:
+        """The names of the dimensions this variable spans, in order."""
+        return tuple(self._variable.dimensions)
+
+    @property
+    def shape(self) -> tuple:
+        """The variable's shape."""
+        return tuple(self._variable.shape)
+
+    @property
+    def dtype(self):
+        """The variable's stored data type, or ``str`` for a VLEN string type."""
+        return self._variable.dtype
+
+    @property
+    def size(self) -> int:
+        """The total number of elements in the variable."""
+        return self._variable.size
+
+    @property
+    def fill_value(self) -> Any:
+        """The variable's ``_FillValue`` attribute, or ``None`` if it has none."""
+        return self._attributes.get("_FillValue")
+
+    @property
+    def chunking(self) -> tuple | None:
+        """The variable's storage chunk shape, or ``None`` when unchunked.
+
+        netCDF answers ``None`` for a non-version-4 file and the string
+        ``"contiguous"`` for an unchunked version-4 variable. Both mean the
+        same thing to a caller choosing a Dask chunking, so both become
+        ``None``.
+
+        """
+        chunks = self._variable.chunking()
+        if chunks is None or chunks == _CONTIGUOUS:
+            return None
+        return tuple(chunks)
+
+    @property
+    def attributes(self) -> MutableMapping:
+        """The variable's CF attributes."""
+        return self._attributes
+
+    def __getitem__(self, keys) -> np.ndarray:
+        """Return the indexed portion of the variable's data."""
+        return self._variable[keys]
+
+    def __setitem__(self, keys, values) -> None:
+        """Write ``values`` into the indexed portion of the variable."""
+        self._variable[keys] = values
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return f"{self.__class__.__name__}({self.name!r}, {self.location!r})"
+
+    # netCDF-only members below: named here rather than reached for through
+    # getattr, so that a Zarr caller fails to import them rather than failing
+    # at run time with an AttributeError from somewhere unrelated.
+
+    @property
+    def variable(self):
+        """The backing thread-safe netCDF variable wrapper."""
+        return self._variable
+
+    @property
+    def unencoded_variable(self):
+        """The backing variable, from beneath any byte-encoding wrapper.
+
+        :class:`~iris.fileformats.netcdf._bytecoding_datasets.EncodedVariable`
+        presents char data as strings one dimension shorter, so it cannot
+        describe the encoding it is hiding. Anything that needs the true,
+        on-disk ``dtype`` and character dimension - notably
+        :meth:`~iris.fileformats.netcdf._bytecoding_datasets.VariableEncoder.from_var`,
+        which rejects an ``EncodedVariable`` outright - wants this instead of
+        :attr:`variable`. Unwrapped variables are returned unchanged, so a
+        caller need not know which it has.
+
+        """
+        if isinstance(self._variable, _bytecoding_datasets.EncodedVariable):
+            return self._variable._contained_instance
+        return self._variable
+
+    @property
+    def is_variable_length(self) -> bool:
+        """Whether this is a netCDF variable-length (VLEN) type.
+
+        Such a variable's total size cannot be known without reading it - see
+        https://github.com/Unidata/netcdf-c/issues/1893 - so the loader has to
+        guess whether it is worth making lazy.
+
+        """
+        datatype = getattr(self._variable, "datatype", None)
+        return isinstance(datatype, _thread_safe_nc.VLType)
+
+    @property
+    def is_emulated(self) -> bool:
+        """Whether an emulating object supplies this variable's data directly.
+
+        The Xarray bridge, https://github.com/SciTools/iris/issues/4994: the
+        "file" is an emulator and its variables carry their own arrays.
+
+        """
+        return hasattr(self._variable, _EMULATED_DATA_ARRAY)
+
+    @property
+    def emulated_data_array(self):
+        """The array an emulating variable carries instead of file storage."""
+        if not self.is_emulated:
+            # A plain netCDF4 variable's __getattr__ looks up ncattrs for an
+            # unknown name and raises its own, unrelated message; raise the
+            # one callers actually need to recognise.
+            raise AttributeError(_EMULATED_DATA_ARRAY)
+        return getattr(self._variable, _EMULATED_DATA_ARRAY)
+
+    @emulated_data_array.setter
+    def emulated_data_array(self, value) -> None:
+        if not self.is_emulated:
+            # _thread_safe_nc.VariableWrapper.__setattr__ forwards every set
+            # to the contained object, so on a real netCDF variable this would
+            # write a file attribute named "_data_array"; refuse, as the
+            # getter does, rather than let a write reach the file.
+            raise AttributeError(_EMULATED_DATA_ARRAY)
+        setattr(self._variable, _EMULATED_DATA_ARRAY, value)
+
+    def deprecated_netcdf_member(self, name: str) -> Any:
+        """Return a member of the backing netCDF variable wrapper, with a warning."""
+        # Fetch before warning, so that a name the wrapper does not have is an
+        # ordinary AttributeError. hasattr() probes arrive here, and a probe
+        # that comes back False has not used anything.
+        value = getattr(self._variable, name)
+        warn_deprecated(
+            f"Reaching netCDF variable member {name!r} through a CFVariable is "
+            "deprecated and will be removed in a future release. Use the CF "
+            "dataset interface instead - iris.fileformats.cf.dataset - or, for "
+            "a netCDF-only need, cf_var.cf_data.variable."
+        )
+        return value
+
+    def write_handle(self) -> Any:
+        """Return a picklable object supporting ``__setitem__``, for Dask stores.
+
+        It carries the file path and variable name rather than the open file,
+        reopening on each write, so that a worker can use it after the saver
+        that created it has closed its own handle.
+
+        The handle always encodes, whatever wrapper this variable arrived in.
+        Iris does not support selectable string encoding for writes - see
+        :class:`NetCDFDataset` - so this never needs to be a plain
+        :class:`~iris.fileformats.netcdf._thread_safe_nc.NetCDFWriteProxy`.
+        Choosing the proxy by wrapper type would be wrong as well as
+        unnecessary: :meth:`NetCDFDataset.from_existing` only wraps a dataset
+        that lacks ``THREAD_SAFE_FLAG``, so a borrowed
+        :class:`~iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper` keeps
+        plain, unencoded variables, and an unencoded handle for one of those
+        writes unicode straight at an NC_CHAR variable - a deferred save of
+        ``["abc", "def"]`` comes back as ``["aaa", "ddd"]``.
+        :class:`~iris.fileformats.netcdf._bytecoding_datasets.EncodedNetCDFWriteProxy`
+        accepts either wrapper, because it reads ``_contained_instance``, which
+        every :class:`~iris.fileformats.netcdf._thread_safe_nc._ThreadSafeWrapper`
+        has.
+
+        """
+        write_lock = None
+        if self._write_lock_factory is not None:
+            write_lock = self._write_lock_factory()
+        return _bytecoding_datasets.EncodedNetCDFWriteProxy(
+            self._location, self._variable, write_lock
+        )
+
+
+#: The formats that make CF loading slow, and that the user can convert away
+#: from with "nccopy".
+_LEGACY_FORMATS = ("NETCDF3_CLASSIC", "NETCDF3_64BIT")
+
+
+class NetCDFDataset(CFDataset):
+    """A netCDF file, presented through the CF interface."""
+
+    def __init__(
+        self,
+        location,
+        mode: str = "r",
+        *,
+        netcdf_format=None,
+        warn_legacy_format: bool = False,
+    ):
+        """Open a netCDF file.
+
+        Parameters
+        ----------
+        location : str or :class:`pathlib.Path`
+            The file's path or URL.
+        mode : str, default="r"
+            The netCDF4 open mode.
+        netcdf_format : str, optional
+            The netCDF format to create, when writing.
+        warn_legacy_format : bool, default=False
+            Whether to warn that a netCDF3 file would load faster if
+            converted. Only loading asks for this; the loader is where the
+            user can act on it.
+
+        """
+        # Set first, so that __del__ and close() are safe if opening fails.
+        self._dataset: _thread_safe_nc.DatasetWrapper | None = None
+        self._owned = True
+        self._closed = False
+        self._variables: dict[str, NetCDFDatasetVariable] | None = None
+        self._attributes: _NetCDFAttributes | None = None
+        self._write_lock = None
+
+        self._location = str(location)
+        self._mode = mode
+
+        if mode == "r" and not _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ:
+            # The user has turned string decoding off for reads. Writing has
+            # no such switch: the saver always encodes.
+            dataset_class = _thread_safe_nc.DatasetWrapper
+        else:
+            dataset_class = _bytecoding_datasets.EncodedDataset
+
+        # netCDF4.Dataset validates "format" against a fixed list and rejects
+        # None, so omit it entirely rather than passing the default through.
+        extra = {} if netcdf_format is None else {"format": netcdf_format}
+        self._dataset = dataset_class(location, mode=mode, **extra)
+
+        if warn_legacy_format:
+            self._warn_if_legacy_format()
+
+        # Turn off *any* automatic decoding by netCDF4 itself. Iris decodes
+        # byte data on its own terms, in _bytecoding_datasets. Inert on an
+        # EncodedDataset, which blocks the call; real on a DatasetWrapper.
+        self._dataset.set_auto_chartostring(False)
+
+    def _warn_if_legacy_format(self) -> None:
+        """Warn that this file would load faster in netCDF4 format, if it would."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        if self._dataset.file_format in _LEGACY_FORMATS:
+            warnings.warn(
+                "Optimise CF-netCDF loading by converting data from NetCDF3 "
+                'to NetCDF4 file format using the "nccopy" command.',
+                category=iris.warnings.IrisLoadWarning,
+            )
+
+    @classmethod
+    def from_existing(
+        cls, dataset, *, warn_legacy_format: bool = False
+    ) -> "NetCDFDataset":
+        """Wrap an already-open netCDF dataset, without taking ownership of it.
+
+        ``dataset`` may be a thread-safe wrapper, a bare
+        :class:`netCDF4.Dataset`, or any object emulating one - the Xarray
+        bridge passes the last of these. :meth:`close` will not release it,
+        because whoever opened it is still responsible for it.
+
+        Parameters
+        ----------
+        warn_legacy_format : bool, default=False
+            Whether to warn that a netCDF3 file would load faster if
+            converted. Only loading asks for this.
+
+        """
+        instance = cls.__new__(cls)
+        instance._owned = False
+        instance._closed = False
+        instance._variables = None
+        instance._attributes = None
+        instance._write_lock = None
+        # netCDF4 exposes no public attribute recording a dataset's open
+        # mode, so a borrowed dataset's true mode is unobservable: "r+" is a
+        # stipulation, not a reading. There are two callers now - Saver
+        # (Task 12), a write path, and CFReader, which borrows read-only - and
+        # for the reader the stipulated "r+" is cosmetic: nothing in the
+        # library reads NetCDFDataset.mode but __repr__ below. "r+" remains
+        # the right stipulation regardless, because it is consistent with the
+        # wrapping just below - EncodedDataset is what __init__ picks for
+        # every mode except plain "r".
+        instance._mode = "r+"
+
+        if not hasattr(dataset, "THREAD_SAFE_FLAG"):
+            # The wrappers forbid re-wrapping, so only wrap what is not one.
+            # Unconditional: unlike __init__, this does not consult
+            # _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ, so a caller who
+            # has turned decoding off cannot turn it off for a borrowed
+            # dataset. from_existing cannot tell read from write - mode is
+            # stipulated above, never observed - and the saver (Task 12), a
+            # write path with no such switch, needs the wrap regardless.
+            dataset = _bytecoding_datasets.EncodedDataset.from_existing(dataset)
+        instance._dataset = dataset
+        instance._dataset.set_auto_chartostring(False)
+        instance._location = str(dataset.filepath())
+
+        if warn_legacy_format:
+            instance._warn_if_legacy_format()
+
+        return instance
+
+    @property
+    def location(self) -> str:
+        """The file's path or URL."""
+        return self._location
+
+    @property
+    def mode(self) -> str:
+        """The mode the file was opened in."""
+        return self._mode
+
+    @property
+    def closed(self) -> bool:
+        """Whether the file has been released - by this object or by its owner.
+
+        The flag :meth:`close` sets is not the whole answer for a borrowed
+        dataset, which whoever opened it closes themselves. Ask the backing
+        object as well, when it can say: an emulating object need not
+        implement ``isopen()``, and is then taken to be open.
+
+        """
+        if self._closed:
+            return True
+        isopen = getattr(self._dataset, "isopen", None)
+        if isopen is None:
+            return False
+        return not isopen()
+
+    def _materialised_variables(self) -> dict[str, "NetCDFDatasetVariable"]:
+        """Return the wrapper mapping, building it from the file if need be."""
+        if self._variables is None:
+            # Only unset while __init__ or from_existing is still running.
+            assert self._dataset is not None
+            self._variables = {
+                name: NetCDFDatasetVariable(
+                    variable,
+                    self._location,
+                    write_lock_factory=self._write_lock_factory,
+                )
+                for name, variable in self._dataset.variables.items()
+            }
+        return self._variables
+
+    @property
+    def variables(self) -> Mapping:
+        """The file's variables, by name."""
+        return self._materialised_variables()
+
+    @property
+    def dimensions(self) -> Mapping:
+        """The file's dimension lengths, by name.
+
+        An unlimited dimension reports the number of records written so far,
+        which is what ``len()`` of a netCDF4 dimension gives and what every
+        caller in Iris - all of them membership tests - needs.
+
+        ``.size`` rather than ``len()``: :class:`~iris.fileformats.netcdf.
+        _thread_safe_nc.DimensionWrapper` is a composition wrapper whose
+        ``__getattr__`` forwards ordinary attribute lookups but is never
+        consulted for implicit dunder-protocol calls, so ``len(dimension)``
+        raises ``TypeError`` where ``dimension.size`` reaches the same value
+        through a normal attribute.
+
+        """
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        return {
+            name: dimension.size for name, dimension in self._dataset.dimensions.items()
+        }
+
+    @property
+    def attributes(self) -> MutableMapping:
+        """The file's global attributes."""
+        if self._attributes is None:
+            self._attributes = _NetCDFAttributes(self._dataset)
+        return self._attributes
+
+    def create_dimension(self, name: str, size: int | None) -> None:
+        """Declare a dimension of the given length, or unlimited for ``None``."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        self._dataset.createDimension(name, size)
+
+    def create_variable(
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+    ) -> NetCDFDatasetVariable:
+        """Create and return a new variable.
+
+        ``**encoding`` reaches :meth:`netCDF4.Dataset.createVariable`
+        unaltered: ``compression``, ``zlib``, ``complevel``, ``shuffle``,
+        ``chunksizes``, ``least_significant_digit`` and the rest.
+
+        """
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        variable = self._dataset.createVariable(
+            name, dtype, tuple(dimensions), fill_value=fill_value, **encoding
+        )
+        wrapped = NetCDFDatasetVariable(
+            variable, self._location, write_lock_factory=self._write_lock_factory
+        )
+        # Register in the mapping, materialising it first if it has not been
+        # built yet. Keeping an existing mapping in step is not enough on its
+        # own: the mapping has to hand back *this* object, because each
+        # NetCDFDatasetVariable caches its own copy of the attribute values.
+        # Two wrappers for one variable means an attribute written through one
+        # is missing from the other's mapping, and saver.py both creates a
+        # variable and later looks it up by name to write more attributes.
+        self._materialised_variables()[name] = wrapped
+        return wrapped
+
+    def sync(self) -> None:
+        """Flush buffered writes to the file."""
+        # Only unset while __init__ or from_existing is still running.
+        assert self._dataset is not None
+        self._dataset.sync()
+
+    def finalise(self) -> None:
+        """Do nothing: a netCDF file needs no completion step.
+
+        Kept so that callers can be written once. Zarr's consolidated metadata
+        is what this exists for - see finding F6.
+
+        """
+
+    def close(self) -> None:
+        """Close the file, if this object opened it."""
+        if self._owned and self._dataset is not None and not self._closed:
+            self._dataset.close()
+        self._closed = True
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return f"{self.__class__.__name__}({self.location!r}, mode={self.mode!r})"
+
+    # netCDF-only members below.
+
+    @property
+    def dataset(self):
+        """The backing thread-safe netCDF dataset wrapper."""
+        return self._dataset
+
+    @property
+    def write_lock(self):
+        """The lock every worker writing to this file must hold.
+
+        One per dataset, because under the threaded scheduler
+        :func:`iris.fileformats.netcdf._dask_locks.get_worker_lock` returns a
+        new :class:`threading.Lock` on each call, and two such locks exclude
+        nothing.
+
+        Made on first use, never at construction: ``get_worker_lock`` raises
+        :class:`~iris.fileformats.netcdf._dask_locks.DaskSchedulerTypeError`
+        for a Dask scheduler the *saver* does not support, and a read has no
+        quarrel with any scheduler. Reading this property is therefore a
+        write-path act; the read path must reach variables and attributes
+        without touching it.
+
+        """
+        if self._write_lock is None:
+            self._write_lock = _dask_locks.get_worker_lock(self._location)
+        return self._write_lock
+
+    def _write_lock_factory(self):
+        """Return :attr:`write_lock`, making it on the first call.
+
+        Handed to every :class:`NetCDFDatasetVariable` so that each can find
+        the one shared lock at the moment it builds a write handle, rather
+        than being given a lock it may never need. Bound to the dataset, so
+        every variable's call lands on the same :attr:`write_lock` - see that
+        property for why one lock per dataset is the requirement.
+
+        """
+        return self.write_lock

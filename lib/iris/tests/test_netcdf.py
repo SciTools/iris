@@ -24,6 +24,7 @@ import iris.std_names
 from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 import iris.util
 from iris.warnings import IrisCfSaveWarning
 
@@ -466,16 +467,13 @@ class TestNetCDFLoad:
 class TestNetCDFCRS:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        class Var:
-            pass
-
-        self.grid = Var()
+        self.grid = CFVariableDouble()
 
     def test_lat_lon_major_minor(self):
         major = 63781370
         minor = 63567523
-        self.grid.semi_major_axis = major
-        self.grid.semi_minor_axis = minor
+        self.grid.attributes["semi_major_axis"] = major
+        self.grid.attributes["semi_minor_axis"] = minor
         # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
         # so that it has the same signature as other coord builder routines.
         engine = None
@@ -484,7 +482,7 @@ class TestNetCDFCRS:
 
     def test_lat_lon_earth_radius(self):
         earth_radius = 63700000
-        self.grid.earth_radius = earth_radius
+        self.grid.attributes["earth_radius"] = earth_radius
         # NB 'build_coordinate_system' has an extra (unused) 'engine' arg, just
         # so that it has the same signature as other coord builder routines.
         engine = None

@@ -28,6 +28,16 @@ from iris.fileformats.cf import (
 import iris.warnings
 
 
+# CFVariable.attributes, and now identify() too, are built from a variable's
+# ncattrs()/getncattr() - see CFVariable.__init__ and CFReader._translate.
+# `netcdf_variable` below wires ncattrs()/getncattr() to a presence-keyed
+# dict of the CF-attribute keywords the caller passed here - fixed at this
+# call. A test that mutates or deletes one of these named attributes on the
+# returned mock afterwards - as a few in this file do, to simulate a variable
+# missing an attribute - changes only the raw Mock attribute, which neither
+# identify() nor `.attributes` ever reads again. To vary what a variable's
+# attributes are, pass the value to a fresh `netcdf_variable(...)` call
+# instead - see e.g. `test_derived_bounds_promotes_reference_terms` below.
 def netcdf_variable(
     mocker,
     name,
@@ -41,6 +51,12 @@ def netcdf_variable(
     grid_mapping=None,
     cell_measures=None,
     standard_name=None,
+    long_name=None,
+    mesh=None,
+    cf_role=None,
+    node_coordinates=None,
+    face_coordinates=None,
+    face_node_connectivity=None,
 ):
     """Return a mock NetCDF4 variable."""
     ndim = 0
@@ -49,18 +65,17 @@ def netcdf_variable(
         ndim = len(dimensions)
     else:
         dimensions = []
+    # Arbitrary but real: NetCDFDatasetVariable.shape/.ndim read straight
+    # through to these, once this mock is wrapped rather than read directly.
+    shape = tuple(1 for _ in range(ndim))
+    size = 1
 
     ugrid_identities = (
         CFUGridAuxiliaryCoordinateVariable.cf_identities
         + CFUGridConnectivityVariable.cf_identities
         + [CFUGridMeshVariable.cf_identity]
     )
-    ncvar = mocker.Mock(
-        name=name,
-        dimensions=dimensions,
-        ncattrs=mocker.Mock(return_value=[]),
-        ndim=ndim,
-        dtype=dtype,
+    members = dict(
         ancillary_variables=ancillary_variables,
         coordinates=coordinates,
         bounds=bounds,
@@ -69,7 +84,37 @@ def netcdf_variable(
         grid_mapping=grid_mapping,
         cell_measures=cell_measures,
         standard_name=standard_name,
+        long_name=long_name,
+        cf_role=cf_role,
         **{name: None for name in ugrid_identities},
+    )
+    # Each of these is one of the UGRID identities the sweep above defaults
+    # to None; the explicit keywords are what let a test set them.
+    members["mesh"] = mesh
+    members["node_coordinates"] = node_coordinates
+    members["face_coordinates"] = face_coordinates
+    members["face_node_connectivity"] = face_node_connectivity
+    # A None member stood for "no such attribute" when identify() read these
+    # with getattr(..., None). Now that it reads a mapping, absent means
+    # absent - so a None must not be listed.
+    attributes = {key: value for key, value in members.items() if value is not None}
+    ncvar = mocker.Mock(
+        name=name,
+        dimensions=dimensions,
+        ndim=ndim,
+        shape=shape,
+        size=size,
+        dtype=dtype,
+        ncattrs=mocker.Mock(return_value=list(attributes)),
+        getncattr=mocker.Mock(side_effect=attributes.__getitem__),
+        # A few tests in this file build a CFVariable straight from this
+        # mock, bypassing NetCDFDatasetVariable entirely; CFVariable.__init__
+        # reads `.attributes` directly, so it has to be present here too -
+        # harmless for the usual path, where NetCDFDatasetVariable computes
+        # its own `.attributes` from ncattrs()/getncattr() and never looks at
+        # this one.
+        attributes=attributes,
+        **members,
     )
     return ncvar
 
@@ -171,21 +216,21 @@ class Test_translate__formula_terms:
         group = cf_group.data_variables
         assert len(group) == 1
         assert list(group.keys()) == ["temp"]
-        assert group["temp"].cf_data is self.temp
+        assert group["temp"].cf_data.variable is self.temp
         # Check there are three coordinates.
         group = cf_group.coordinates
         assert len(group) == 3
         coordinates = ["height", "lat", "lon"]
         assert set(group.keys()) == set(coordinates)
         for name in coordinates:
-            assert group[name].cf_data is getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
         # Check there are three auxiliary coordinates.
         group = cf_group.auxiliary_coordinates
         assert len(group) == 3
         aux_coordinates = ["delta", "sigma", "orography"]
         assert set(group.keys()) == set(aux_coordinates)
         for name in aux_coordinates:
-            assert group[name].cf_data is getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
         # Check all the auxiliary coordinates are formula terms.
         formula_terms = cf_group.formula_terms
         assert set(group.items()) == set(formula_terms.items())
@@ -195,7 +240,7 @@ class Test_translate__formula_terms:
         bounds = ["height_bnds", "delta_bnds", "sigma_bnds"]
         assert set(group.keys()) == set(bounds)
         for name in bounds:
-            assert group[name].cf_data == getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
 
 
 class Test_build_cf_groups__formula_terms:
@@ -285,19 +330,19 @@ class Test_build_cf_groups__formula_terms:
         coordinates = ["height", "lat", "lon"]
         assert set(group.keys()) == set(coordinates)
         for name in coordinates:
-            assert group[name].cf_data is getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
         # Check the height coordinate is bounded.
         group = group["height"].cf_group
         assert len(group.bounds) == 1
         assert "height_bnds" in group.bounds
-        assert group["height_bnds"].cf_data is self.height_bnds
+        assert group["height_bnds"].cf_data.variable is self.height_bnds
         # Check there are five auxiliary coordinates.
         group = temp_cf_group.auxiliary_coordinates
         assert len(group) == 5
         aux_coordinates = ["delta", "sigma", "orography", "x", "y"]
         assert set(group.keys()) == set(aux_coordinates)
         for name in aux_coordinates:
-            assert group[name].cf_data is getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
         # Check all the auxiliary coordinates are formula terms.
         formula_terms = cf_group.formula_terms
         assert set(formula_terms.items()).issubset(list(group.items()))
@@ -309,7 +354,9 @@ class Test_build_cf_groups__formula_terms:
             aux_coord_group = group[name].cf_group
             assert len(aux_coord_group.bounds) == 1
             assert name_bnds in aux_coord_group.bounds
-            assert aux_coord_group[name_bnds].cf_data is getattr(self, name_bnds)
+            assert aux_coord_group[name_bnds].cf_data.variable is getattr(
+                self, name_bnds
+            )
 
     def test_promote_reference(self):
         cf_group = CFReader("dummy").cf_group
@@ -326,7 +373,7 @@ class Test_build_cf_groups__formula_terms:
         coordinates = ("lat", "lon")
         assert set(group.keys()) == set(coordinates)
         for name in coordinates:
-            assert group[name].cf_data == getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
 
     def test_formula_terms_ignore(self):
         self.orography.dimensions = ["lat", "wibble"]
@@ -334,7 +381,7 @@ class Test_build_cf_groups__formula_terms:
             cf_group = CFReader("dummy").cf_group
         group = cf_group.promoted
         assert list(group.keys()) == ["orography"]
-        assert group["orography"].cf_data == self.orography
+        assert group["orography"].cf_data.variable is self.orography
 
     def test_auxiliary_ignore(self):
         self.x.dimensions = ["lat", "wibble"]
@@ -344,11 +391,16 @@ class Test_build_cf_groups__formula_terms:
         group = cf_group.promoted
         assert set(group.keys()) == set(promoted)
         for name in promoted:
-            assert group[name].cf_data == getattr(self, name)
+            assert group[name].cf_data.variable is getattr(self, name)
 
-    def test_promoted_auxiliary_ignore(self):
+    def test_promoted_auxiliary_ignore(self, mocker):
         self.variables["wibble"] = self.wibble
-        self.orography.coordinates = "wibble"
+        # "coordinates" must be set at construction - see the module-level
+        # comment on netcdf_variable().
+        self.orography = netcdf_variable(
+            mocker, "orography", "lat lon", np.float64, coordinates="wibble"
+        )
+        self.variables["orography"] = self.orography
 
         with pytest.warns(match="Ignoring variable wibble") as warns:
             cf_group = CFReader("dummy").cf_group.promoted
@@ -356,7 +408,7 @@ class Test_build_cf_groups__formula_terms:
         promoted = ["wibble", "orography"]
         assert set(cf_group.keys()) == set(promoted)
         for name in promoted:
-            assert cf_group[name].cf_data == getattr(self, name)
+            assert cf_group[name].cf_data.variable is getattr(self, name)
         # we should have got 2 warnings
         assert len(warns.list) == 2
 
@@ -365,24 +417,40 @@ class Test_build_cf_groups__ugrid:
     @pytest.fixture(autouse=True)
     def _setup_class(self, mocker):
         # Replicating syntax from test_CFReader.Test_build_cf_groups__formula_terms.
-        self.mesh = netcdf_variable(mocker, "mesh", "", int)
+        # Mesh-recognition attributes are passed at construction, not set
+        # afterwards: identify() now reads through .attributes, which is
+        # fixed when netcdf_variable() builds ncattrs()/getncattr() - see the
+        # module-level comment above.
+        self.mesh = netcdf_variable(
+            mocker,
+            "mesh",
+            "",
+            int,
+            cf_role="mesh_topology",
+            node_coordinates="node_x node_y",
+            face_coordinates="face_x face_y",
+            face_node_connectivity="face_nodes",
+        )
         self.node_x = netcdf_variable(mocker, "node_x", "node", float)
         self.node_y = netcdf_variable(mocker, "node_y", "node", float)
         self.face_x = netcdf_variable(mocker, "face_x", "face", float)
         self.face_y = netcdf_variable(mocker, "face_y", "face", float)
-        self.face_nodes = netcdf_variable(mocker, "face_nodes", "face vertex", int)
+        self.face_nodes = netcdf_variable(
+            mocker,
+            "face_nodes",
+            "face vertex",
+            int,
+            cf_role="face_node_connectivity",
+        )
         self.levels = netcdf_variable(mocker, "levels", "levels", int)
         self.data = netcdf_variable(
-            mocker, "data", "levels face", float, coordinates="face_x face_y"
+            mocker,
+            "data",
+            "levels face",
+            float,
+            coordinates="face_x face_y",
+            mesh="mesh",
         )
-
-        # Add necessary attributes for mesh recognition.
-        self.mesh.cf_role = "mesh_topology"
-        self.mesh.node_coordinates = "node_x node_y"
-        self.mesh.face_coordinates = "face_x face_y"
-        self.mesh.face_node_connectivity = "face_nodes"
-        self.face_nodes.cf_role = "face_node_connectivity"
-        self.data.mesh = "mesh"
 
         self.variables = dict(
             mesh=self.mesh,
@@ -520,6 +588,8 @@ class Test_init_and_lifecycle:
             variables=self.variables,
             ncattrs=mocker.Mock(return_value=[]),
             filepath=mocker.Mock(return_value="in-memory.nc"),
+            set_auto_chartostring=mocker.Mock(),
+            isopen=mocker.Mock(return_value=True),
         )
         self.encoded_ds = mocker.patch(
             "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
@@ -543,7 +613,7 @@ class Test_init_and_lifecycle:
             False,
         )
         wrapper_ds = mocker.patch(
-            "iris.fileformats.cf._reader._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
             return_value=self.dataset,
         )
 
@@ -566,8 +636,20 @@ class Test_init_and_lifecycle:
         with pytest.warns(iris.warnings.IrisLoadWarning, match="Optimise CF-netCDF"):
             CFReader("dummy.nc", warn=True)
 
+    def test_init_warns_for_netcdf3_when_requested_for_a_borrowed_dataset(self):
+        # The owned-path equivalent above pins CFReader passing warn= through
+        # to NetCDFDataset; this pins the same wiring on the from_existing
+        # branch, which is a separate call site in __init__.
+        self.dataset.file_format = "NETCDF3_CLASSIC"
+
+        with pytest.warns(iris.warnings.IrisLoadWarning, match="Optimise CF-netCDF"):
+            CFReader(self.dataset, warn=True)
+
     def test_init_with_no_meshes_trims_ugrid_variable_types(self, mocker):
-        self.dataset.variables = {"a": object(), "b": mocker.Mock(mesh=None)}
+        self.dataset.variables = {
+            "a": netcdf_variable(mocker, "a", "x", np.float64),
+            "b": netcdf_variable(mocker, "b", "x", np.float64, mesh="my_mesh"),
+        }
 
         reader = CFReader("dummy.nc")
 
@@ -575,9 +657,10 @@ class Test_init_and_lifecycle:
 
         mesh_free = mocker.Mock(
             file_format="NetCDF4",
-            variables={},
+            variables={"a": netcdf_variable(mocker, "a", "x", np.float64)},
             ncattrs=mocker.Mock(return_value=[]),
             filepath=mocker.Mock(return_value="in-memory.nc"),
+            set_auto_chartostring=mocker.Mock(),
         )
         self.encoded_ds.return_value = mesh_free
         reader = CFReader("dummy.nc")
@@ -686,7 +769,12 @@ class Test_translate__formula_terms_derived_bounds:
         assert isinstance(cf_group["term"], CFAuxiliaryCoordinateVariable)
 
     def test_derived_bounds_skips_when_term_missing(self, mocker, future_context):
-        self.root_bnds.formula_terms = "a: missing_term"
+        # "formula_terms" must be set at construction - see the module-level
+        # comment on netcdf_variable().
+        self.root_bnds = netcdf_variable(
+            mocker, "z_bnds", "z bnds", np.float64, formula_terms="a: missing_term"
+        )
+        self.variables["z_bnds"] = self.root_bnds
         self._patch_encoded_dataset(mocker)
 
         with future_context:
@@ -699,7 +787,6 @@ class Test_translate__formula_terms_derived_bounds:
         self.root_bnds = netcdf_variable(mocker, "z_bnds", "_scalar_", np.float64)
         # With valid formula terms, the variable would instead be recorded
         #  correctly as a bounds variable.
-        del self.root_bnds.formula_terms
         self.variables["z_bnds"] = self.root_bnds
         self._patch_encoded_dataset(mocker)
 
@@ -792,19 +879,20 @@ class Test_translate__formula_terms_derived_bounds:
     def test_derived_bounds_promotes_reference_terms(
         self, mocker, future_context, standard_name
     ):
+        if not standard_name and isinstance(future_context, contextlib.nullcontext):
+            pytest.skip("Test only applicable when FUTURE context is enabled.")
+        # CFVariable.attributes is a snapshot taken at construction, so the
+        # "absent" case is built without standard_name from the start rather
+        # than deleted from the mock afterwards - a post-construction `del`
+        # is invisible to a CFVariable built from this mock either way.
         self.root = netcdf_variable(
             mocker,
             "z",
             "z",
             np.float64,
             formula_terms="a: pressure",
-            standard_name="custom_reference",
+            standard_name="custom_reference" if standard_name else None,
         )
-        if not standard_name:
-            if isinstance(future_context, contextlib.nullcontext):
-                pytest.skip("Test only applicable when FUTURE context is enabled.")
-            else:
-                del self.root.standard_name
         self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
         self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
         self._patch_encoded_dataset(mocker)
@@ -826,6 +914,54 @@ class Test_translate__formula_terms_derived_bounds:
         else:
             # Promotion step is skipped if standard_name is absent.
             assert "pressure" not in cf_group.promoted
+
+    def test_promotes_using_long_name_when_standard_name_empty(self, mocker):
+        # A present-but-empty standard_name is falsy, so the "or" in
+        # _reader.py falls through to long_name. Both go in the
+        # non-derived_bounds branch: under iris.FUTURE.derived_bounds the
+        # code takes the "continue" at :504 only when standard_name is
+        # *absent*, never reached here since "" is present, but the
+        # promotion machinery itself only runs outside that guard.
+        self.root = netcdf_variable(
+            mocker,
+            "z",
+            "z",
+            np.float64,
+            formula_terms="a: pressure",
+            standard_name="",
+            long_name="custom_reference",
+        )
+        self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
+        self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
+        self._patch_encoded_dataset(mocker)
+        mocker.patch.dict(
+            "iris.fileformats.cf.reference_terms",
+            {"custom_reference": "a"},
+            clear=False,
+        )
+
+        cf_group = CFReader("dummy.nc").cf_group
+
+        assert "pressure" in cf_group.promoted
+
+    def test_raises_when_standard_name_empty_and_long_name_absent(self, mocker):
+        # The one case ``.get("long_name")`` would survive: standard_name
+        # present-but-falsy forces the "or" to evaluate long_name, and with
+        # no long_name at all the subscript must raise KeyError.
+        self.root = netcdf_variable(
+            mocker,
+            "z",
+            "z",
+            np.float64,
+            formula_terms="a: pressure",
+            standard_name="",
+        )
+        self.pressure = netcdf_variable(mocker, "pressure", "z", np.float64)
+        self.variables = {"z": self.root, "pressure": self.pressure, "temp": self.data}
+        self._patch_encoded_dataset(mocker)
+
+        with pytest.raises(KeyError, match="long_name"):
+            CFReader("dummy.nc")
 
 
 class Test_translate__global_attributes_missing:
@@ -936,3 +1072,53 @@ class Test_build_cf_groups__private_edge_cases:
             assert "orog" not in self.reader.cf_group.promoted
         else:
             assert "orog" in self.reader.cf_group.promoted
+
+
+class TestSynthesisedBoundsLink:
+    """Pin the write-and-read-the-same-place invariant at unit level.
+
+    This class does not exercise `_reader.py` - it builds a
+    `CFAuxiliaryCoordinateVariable` directly and characterises
+    `TrackedAttributes` plus `CFVariable.__getattr__`: a write to
+    ``cf_var.attributes`` is a write to the one place
+    ``cf_var.<attribute>`` reads from, including when the written value is
+    `None`. `_reader.py`'s own synthesised-bounds writes at :327 and :345
+    are exercised by
+    `lib/iris/tests/integration/netcdf/derived_bounds/test_bounds_files.py`,
+    which fails three ways if either write is removed.
+    """
+
+    def test_a_written_bounds_link_is_visible_to_a_reader(self, mocker):
+        nc_var = mocker.MagicMock()
+        nc_var.attributes = {"units": "m"}
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        assert "bounds" not in cf_var.attributes
+        cf_var.attributes["bounds"] = "a_bnds"
+
+        assert cf_var.attributes["bounds"] == "a_bnds"
+        assert "bounds" in cf_var.attributes
+        assert cf_var.bounds == "a_bnds"
+
+    def test_a_written_bounds_link_overrides_the_file(self, mocker):
+        nc_var = mocker.MagicMock()
+        nc_var.attributes = {"bounds": "from_file"}
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        cf_var.attributes["bounds"] = "synthesised"
+        assert cf_var.bounds == "synthesised"
+
+    def test_a_bounds_link_set_to_none_still_reads_as_present(self, mocker):
+        # _reader.py:358 invalidates a broken link by setting it to None
+        # rather than deleting it, and the reads downstream check presence
+        # before value.
+        nc_var = mocker.MagicMock()
+        nc_var.attributes = {"bounds": "broken"}
+        nc_var.dimensions = ("model_level_number",)
+        cf_var = CFAuxiliaryCoordinateVariable("a", nc_var)
+
+        cf_var.attributes["bounds"] = None
+        assert "bounds" in cf_var.attributes
+        assert cf_var.attributes.get("bounds") is None

@@ -14,6 +14,7 @@ from iris.coord_systems import CoordSystem, GeogCS, ObliqueMercator, RotatedMerc
 from iris.fileformats._nc_load_rules.helpers import (
     build_oblique_mercator_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
 
 
 class ParamTuple(NamedTuple):
@@ -148,7 +149,7 @@ class TestAttributes:
         self.coord_system_args_expected = list(coord_system_kwargs_expected.values())
 
     def test_attributes(self, mocker):
-        cf_var_mock = mocker.Mock(spec=[], **self.nc_attributes)
+        cf_var_mock = CFVariableDouble(**self.nc_attributes)
         coord_system_mock = mocker.Mock(spec=self.expected_class)
         setattr(coord_systems, self.expected_class.__name__, coord_system_mock)
 
@@ -163,6 +164,6 @@ def test_deprecation(mocker):
         longitude_of_projection_origin=0.0,
         scale_factor_at_projection_origin=1.0,
     )
-    cf_var_mock = mocker.Mock(spec=[], **nc_attributes)
+    cf_var_mock = CFVariableDouble(**nc_attributes)
     with pytest.warns(IrisDeprecation, match="azimuth_of_central_line = 90"):
         _ = build_oblique_mercator_coordinate_system(None, cf_var_mock)

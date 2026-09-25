@@ -11,8 +11,11 @@ from iris.coords import CellMeasure
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_cell_measure
-from iris.fileformats.cf import CFMeasureVariable
 from iris.loading import LOAD_PROBLEMS
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    RealArrayCfData,
+)
 
 
 @pytest.fixture
@@ -28,23 +31,17 @@ def mock_engine(mocker):
 @pytest.fixture
 def mock_cf_cm_var(monkeypatch, mock_engine, mocker):
     data = np.arange(6)
-    output = mocker.Mock(
-        spec=CFMeasureVariable,
-        dimensions=("foo",),
-        scale_factor=1,
-        add_offset=0,
-        cf_name="wibble",
-        cf_data=mocker.MagicMock(chunking=mocker.Mock(return_value=None), spec=[]),
-        filename=mock_engine.filename,
-        standard_name=None,
-        long_name="wibble",
-        units="m2",
-        shape=data.shape,
-        size=np.prod(data.shape),
-        dtype=data.dtype,
-        __getitem__=lambda self, key: data[key],
-        cf_measure="area",
-    )
+    output = CFVariableDouble(standard_name=None, long_name="wibble", units="m2")
+    output.dimensions = ("foo",)
+    output.scale_factor = 1
+    output.add_offset = 0
+    output.cf_name = "wibble"
+    output.cf_data = RealArrayCfData(data)
+    output.filename = mock_engine.filename
+    output.shape = data.shape
+    output.size = np.prod(data.shape)
+    output.dtype = data.dtype
+    output.cf_measure = "area"
 
     # Create patch for deferred loading that prevents attempted
     # file access. This assumes that output is defined in the test case.

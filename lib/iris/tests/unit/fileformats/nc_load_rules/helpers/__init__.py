@@ -10,6 +10,10 @@
 import pytest
 from pytest_mock import MockerFixture
 
+from iris.fileformats.cf import CFDataVariable
+from iris.fileformats.cf._variables import _CF_ATTRS_IGNORE
+from iris.fileformats.cf.dataset import TrackedAttributes
+
 
 class MockerMixin:
     mocker: MockerFixture
@@ -17,3 +21,99 @@ class MockerMixin:
     @pytest.fixture(autouse=True)
     def _mocker_mixin_setup(self, mocker):
         self.mocker = mocker
+
+
+class CFVariableDouble:
+    """A minimal stand-in for :class:`iris.fileformats.cf.CFVariable`.
+
+    The loading rules read a CF variable's file attributes through exactly
+    two things: a real :class:`~iris.fileformats.cf.dataset.TrackedAttributes`
+    mapping at ``.attributes``, and ``CFVariable.__getattr__`` routing unknown
+    names to it. This double models both, so a test can read
+    ``double.some_name`` to build its own expected value and the production
+    code's ``double.attributes.get("some_name")`` resolves the identical
+    value from the same underlying mapping - unlike a flat
+    ``Mock(some_name=...)``, which has nothing behind ``.attributes`` at all.
+
+    Every keyword given becomes a CF attribute: present in ``.attributes``
+    and returned via plain attribute access (through ``__getattr__``). A name
+    not given raises ``AttributeError`` on plain access and, through
+    ``.attributes.get``, returns the caller's default - exactly as a real
+    missing file attribute would. Structural members that production
+    ``CFVariable`` exposes as plain instance attributes (``cf_name``,
+    ``cf_group``, ``cf_data``, ``filename``, ...) are not modelled here;
+    set them directly on the instance after construction, as real
+    ``CFVariable`` does outside ``.attributes``.
+    """
+
+    def __init__(self, **attributes):
+        # Seed with the same ignored names production CFVariable.__init__
+        # does: scale_factor, add_offset and friends must start already-read
+        # here too, or a test that puts one into a double sees it as unread
+        # (and so, e.g., surviving onto a built object's attributes) when a
+        # real load never would.
+        self.attributes = TrackedAttributes(dict(attributes), ignored=_CF_ATTRS_IGNORE)
+
+    def __getattr__(self, name):
+        # Mirrors production CFVariable.__getattr__'s recursion guard
+        # (_variables.py:86,275): "attributes" is what this method reads to
+        # resolve anything else, so it must never be resolved by this method
+        # itself. Without this, an instance with no "attributes" yet in its
+        # __dict__ - e.g. `cls.__new__(cls)` during copy/deepcopy/unpickling,
+        # then a `__setstate__` probe - recurses infinitely instead of
+        # raising AttributeError.
+        if name.startswith("__") or name == "attributes":
+            raise AttributeError(name)
+        try:
+            return self.attributes[name]
+        except KeyError:
+            raise AttributeError(name) from None
+
+    def __getitem__(self, key):
+        """Index the double's data, exactly as ``CFVariable.__getitem__`` does.
+
+        Real ``CFVariable.__getitem__`` returns ``self.cf_data[key]``; a test
+        that needs indexing sets ``.cf_data`` to an indexable data array, the
+        same way it sets any other structural member.
+        """
+        return self.cf_data[key]
+
+    def cf_attrs(self):
+        """Return all attribute name/value pairs, exactly as ``CFVariable`` does.
+
+        Used by the "last resort" raw-cube fallback (``build_raw_cube``), so a
+        double that hits that path still works without further setup.
+        """
+        attributes = self.attributes.untracked
+        return tuple((name, attributes[name]) for name in sorted(attributes))
+
+
+class RealArrayCfData:
+    """Wrap a real (non-lazy) array as a :class:`CFVariableDouble`'s ``cf_data``.
+
+    ``_get_cf_var_data`` reads ``cf_data.is_emulated`` and
+    ``cf_data.is_variable_length`` before it ever looks at size, so a double
+    backed directly by a plain array - as most of these tests are, since the
+    array given is the coordinate's real data rather than something read from
+    a file - needs this much of the storage interface even though the array
+    is always far too small to reach ``.chunking``/``.variable``, the two
+    members only the lazy-loading branch reads.
+    """
+
+    is_emulated = False
+    is_variable_length = False
+
+    def __init__(self, array):
+        self._array = array
+
+    def __getitem__(self, key):
+        return self._array[key]
+
+
+# A handful of call sites assert `isinstance(cf_var, CFDataVariable)` as a
+# sanity check on their own caller (e.g. `helpers.get_attr_units`, invoked
+# with `capture_invalid=True` only when building a Cube's own units). Register
+# the double as a virtual subclass so that check passes without inheriting
+# CFDataVariable's construction or behaviour - a double is not a real
+# CFDataVariable, but the loading rules only ever probe it with `isinstance`.
+CFDataVariable.register(CFVariableDouble)

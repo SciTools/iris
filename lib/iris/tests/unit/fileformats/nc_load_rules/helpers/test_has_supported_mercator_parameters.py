@@ -11,7 +11,10 @@ import re
 import warnings
 
 from iris.fileformats._nc_load_rules.helpers import has_supported_mercator_parameters
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+)
 
 
 class _EngineMixin(MockerMixin):
@@ -24,8 +27,7 @@ class _EngineMixin(MockerMixin):
 class TestHasSupportedMercatorParameters(_EngineMixin):
     def test_valid_base(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             false_easting=0,
             false_northing=0,
@@ -41,8 +43,7 @@ class TestHasSupportedMercatorParameters(_EngineMixin):
 
     def test_valid_false_easting_northing(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             false_easting=15,
             false_northing=10,
@@ -58,8 +59,7 @@ class TestHasSupportedMercatorParameters(_EngineMixin):
 
     def test_valid_standard_parallel(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=-90,
             false_easting=0,
             false_northing=0,
@@ -75,8 +75,7 @@ class TestHasSupportedMercatorParameters(_EngineMixin):
 
     def test_valid_scale_factor(self, mocker):
         cf_name = "mercator"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=0,
             false_easting=0,
             false_northing=0,
@@ -94,8 +93,7 @@ class TestHasSupportedMercatorParameters(_EngineMixin):
         # Scale factor and standard parallel cannot both be specified for
         # Mercator projections
         cf_name = "mercator"
-        cf_grid_var = mocker.Mock(
-            spec=[],
+        cf_grid_var = CFVariableDouble(
             longitude_of_projection_origin=0,
             false_easting=0,
             false_northing=0,

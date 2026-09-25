@@ -40,13 +40,15 @@ before anything that can raise, so the destructor is safe even if
 ``__init__`` fails part way.
 
 This is the one module in :mod:`iris.fileformats.cf` still coupled to
-:mod:`iris.fileformats.netcdf`: opening a file needs ``_thread_safe_nc`` and
-``_bytecoding_datasets``. Everything else in the package already works against
-any object that presents netCDF-like ``variables``, ``dimensions`` and
-``ncattrs``. Removing that last coupling -- replacing the direct dataset
-construction with a format-agnostic dataset abstraction, so that Zarr can be
-read by the same machinery -- is the subject of §4.2 of the native Zarr I/O
-design, ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+:mod:`iris.fileformats.netcdf`: opening a file means building a
+:class:`~iris.fileformats.netcdf._dataset.NetCDFDataset`. Everything else in
+the package works against the format-agnostic
+:class:`~iris.fileformats.cf.dataset.CFDataset` /
+:class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
+store can be read by the same machinery once a
+:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it
+-- see §4.2 of the native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 
@@ -58,7 +60,7 @@ import warnings
 
 import iris.exceptions
 import iris.fileformats._nc_load_rules.helpers as hh
-from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
+from iris.fileformats.netcdf._dataset import NetCDFDataset
 import iris.warnings
 
 from ._group import CFGroup
@@ -139,35 +141,23 @@ class CFReader:
             else:
                 self._filename = file_source
 
-            if _bytecoding_datasets.DECODE_TO_STRINGS_ON_READ:
-                ds_type = _bytecoding_datasets.EncodedDataset
-            else:
-                ds_type = _thread_safe_nc.DatasetWrapper
-
-            self._dataset = ds_type(self._filename, mode="r")
+            self._dataset = NetCDFDataset(
+                self._filename, mode="r", warn_legacy_format=warn
+            )
             self._own_file = True
         else:
             # We have been passed an open dataset.
             # We use it but don't own it (don't close it).
-            self._dataset = file_source
-            self._filename = self._dataset.filepath()
+            self._dataset = NetCDFDataset.from_existing(
+                file_source, warn_legacy_format=warn
+            )
+            self._filename = self._dataset.location
 
         #: Collection of CF-netCDF variables associated with this netCDF file
         self.cf_group = self.CFGroup()
 
         # Result of parsing "grid_mapping" attribute; mapping of coordinate_system => coordinates
         self._coord_system_mappings = {}
-
-        # Issue load optimisation warning.
-        if warn and self._dataset.file_format in [
-            "NETCDF3_CLASSIC",
-            "NETCDF3_64BIT",
-        ]:
-            warnings.warn(
-                "Optimise CF-netCDF loading by converting data from NetCDF3 "
-                'to NetCDF4 file format using the "nccopy" command.',
-                category=iris.warnings.IrisLoadWarning,
-            )
 
         self._check_monotonic = monotonic
 
@@ -177,9 +167,8 @@ class CFReader:
             self._with_ugrid = False
 
         # Read the variables in the dataset only once to reduce runtime.
-        ds = self._dataset
-        # Turn off *any* automatic decoding in the underlying netCDF4 dataset.
-        ds.set_auto_chartostring(False)
+        # NetCDFDataset.variables caches, so this is the same dict - and the
+        # same CFDatasetVariable objects - that _has_meshes just walked.
         variables = self._dataset.variables
         self._translate(variables)
         self._build_cf_groups(variables)
@@ -201,7 +190,8 @@ class CFReader:
     def _has_meshes(self):
         result = False
         for variable in self._dataset.variables.values():
-            if hasattr(variable, "mesh") or hasattr(variable, "node_coordinates"):
+            attributes = variable.attributes
+            if "mesh" in attributes or "node_coordinates" in attributes:
                 result = True
                 break
         return result
@@ -232,7 +222,7 @@ class CFReader:
         # Parse all instances of "grid_mapping" attributes and store in CFReader
         # This avoids re-parsing the grid_mappings each time they are needed.
         for nc_var in variables.values():
-            if grid_mapping_attr := getattr(nc_var, "grid_mapping", None):
+            if grid_mapping_attr := nc_var.attributes.get("grid_mapping"):
                 try:
                     cs_mappings = hh._parse_extended_grid_mapping(grid_mapping_attr)
                     self._coord_system_mappings[nc_var.name] = cs_mappings
@@ -270,11 +260,7 @@ class CFReader:
             )
 
         # Identify global netCDF attributes.
-        attr_dict = {
-            attr_name: _getncattr(self._dataset, attr_name, "")
-            for attr_name in self._dataset.ncattrs()
-        }
-        self.cf_group.global_attributes.update(attr_dict)
+        self.cf_group.global_attributes.update(dict(self._dataset.attributes))
 
         # Identify and register all CF formula terms.
         formula_terms = _CFFormulaTermsVariable.identify(variables)
@@ -301,12 +287,14 @@ class CFReader:
                     if cf_root_coord is None:
                         cf_root_coord = self.cf_group.auxiliary_coordinates.get(cf_root)
 
-                    root_bounds_name = getattr(cf_root_coord, "bounds", None)
                     # N.B. cf_root_coord may here be None, if the root var was not a
                     #  coord - that is ok, it will not have a 'bounds', we will skip it.
+                    root_bounds_name = None
+                    if cf_root_coord is not None:
+                        root_bounds_name = cf_root_coord.attributes.get("bounds")
                     if root_bounds_name in self.cf_group:
                         root_bounds_var = self.cf_group.get(root_bounds_name)
-                        if not hasattr(root_bounds_var, "formula_terms"):
+                        if "formula_terms" not in root_bounds_var.attributes:
                             # this is an invalid root bounds, according to CF, and therefore should be promoted into a cube
                             root_bounds_var._to_be_promoted = True
                         else:
@@ -322,7 +310,9 @@ class CFReader:
                                 (term_bounds_var,) = term_bounds_vars
                                 # N.B. bounds==main-var is valid CF for *no* bounds
                                 if term_bounds_var != cf_var:
-                                    cf_var.bounds = term_bounds_var.cf_name
+                                    cf_var.attributes["bounds"] = (
+                                        term_bounds_var.cf_name
+                                    )
                                     new_var = CFBoundaryVariable(
                                         term_bounds_var.cf_name, term_bounds_var.cf_data
                                     )
@@ -336,9 +326,9 @@ class CFReader:
                     if cf_name not in self.cf_group:
                         # If the formula term variable is not already in the group, add it as a coordinate.
                         new_var = CFAuxiliaryCoordinateVariable(cf_name, cf_var.cf_data)
-                        if iris.FUTURE.derived_bounds and hasattr(cf_var, "bounds"):
+                        if iris.FUTURE.derived_bounds and "bounds" in cf_var.attributes:
                             # Copy "old-style" derived bounds link
-                            new_var.bounds = cf_var.bounds
+                            new_var.attributes["bounds"] = cf_var.attributes["bounds"]
                         self.cf_group[cf_name] = new_var
 
                     self.cf_group[cf_name].add_formula_term(cf_root, cf_term)
@@ -347,14 +337,16 @@ class CFReader:
             for cf_root in all_roots:
                 # Invalidate "broken" bounds connections
                 root_var = self.cf_group[cf_root]
-                if getattr(root_var, "formula_terms", None) and getattr(
-                    root_var, "bounds", None
+                if root_var.attributes.get("formula_terms") and root_var.attributes.get(
+                    "bounds"
                 ):
-                    root_bounds_var = self.cf_group.get(root_var.bounds)
-                    if not getattr(root_bounds_var, "formula_terms", None):
+                    root_bounds_var = self.cf_group.get(root_var.attributes["bounds"])
+                    if root_bounds_var is None or not root_bounds_var.attributes.get(
+                        "formula_terms"
+                    ):
                         # This means it is *not* a valid bounds var, according to CF, and so therefore we are
                         # invalidating the bounds.
-                        root_var.bounds = None
+                        root_var.attributes["bounds"] = None
 
         # Determine the CF data variables.
         data_variable_names = (
@@ -436,13 +428,14 @@ class CFReader:
 
             if iris.FUTURE.derived_bounds:
                 # Include bounds of every variable, within cf_group attached to the variable.
-                if hasattr(cf_variable, "bounds"):
-                    if cf_variable.bounds not in cf_group:
-                        bounds_var = self.cf_group.get(cf_variable.bounds)
+                if "bounds" in cf_variable.attributes:
+                    bounds_name = cf_variable.attributes["bounds"]
+                    if bounds_name not in cf_group:
+                        bounds_var = self.cf_group.get(bounds_name)
                         if bounds_var:
                             # TODO: warning if span fails
                             if bounds_var.spans(cf_variable):
-                                cf_group[cf_variable.bounds] = bounds_var
+                                cf_group[bounds_name] = bounds_var
 
             # Build CF data variable relationships.
             if isinstance(cf_variable, CFDataVariable):
@@ -457,7 +450,7 @@ class CFReader:
                     }
                 )
                 # Add appropriate "dimensionless" CF coordinate variables.
-                coordinates_attr = getattr(cf_variable, "coordinates", "")
+                coordinates_attr = cf_variable.attributes.get("coordinates", "")
                 cf_group.update(
                     {
                         cf_name: self.cf_group[cf_name]
@@ -494,9 +487,12 @@ class CFReader:
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
                 cf_root_var = self.cf_group[cf_root]
                 if iris.FUTURE.derived_bounds:
-                    if not hasattr(cf_root_var, "standard_name"):
+                    if "standard_name" not in cf_root_var.attributes:
                         continue
-                name = cf_root_var.standard_name or cf_root_var.long_name
+                name = (
+                    cf_root_var.attributes["standard_name"]
+                    or cf_root_var.attributes["long_name"]
+                )
                 terms = reference_terms.get(name, [])
                 if isinstance(terms, str) or not isinstance(terms, Iterable):
                     terms = [terms]
@@ -538,12 +534,3 @@ class CFReader:
     def __del__(self):
         # Be sure to close dataset when CFReader is destroyed / garbage-collected.
         self._close()
-
-
-def _getncattr(dataset, attr, default=None):
-    """Wrap `netCDF4.Dataset.getncattr` to make it behave more like `getattr`."""
-    try:
-        value = dataset.getncattr(attr)
-    except AttributeError:
-        value = default
-    return value

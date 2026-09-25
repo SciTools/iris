@@ -18,6 +18,10 @@ import pytest
 
 import iris
 from iris import FUTURE, sample_data_path
+from iris.aux_factory import HybridHeightFactory
+from iris.coords import AuxCoord, DimCoord
+from iris.cube import Cube
+from iris.fileformats.netcdf._thread_safe_nc import DatasetWrapper
 from iris.tests._shared_utils import assert_CDL
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
@@ -220,3 +224,57 @@ def test_save_primary_cf_style(
     assert_CDL(
         request=request, netcdf_filename=nc_filepath, reference_filename=cdl_filepath
     )
+
+
+@pytest.fixture
+def cube_with_absent_orography():
+    """Return a hybrid-height cube whose factory has no orography.
+
+    :class:`~iris.aux_factory.HybridHeightFactory` documents ``orography`` as
+    optional, so a saved ``formula_terms`` can name a dependency that was
+    never written as a variable.
+    """
+    cube = Cube(np.zeros(3, dtype="f8"), standard_name="air_temperature", units="K")
+    delta = DimCoord(
+        np.arange(3.0),
+        long_name="level_height",
+        var_name="level_height",
+        units="m",
+        bounds=np.array([[0.0, 1.0], [1.0, 2.0], [2.0, 3.0]]),
+    )
+    sigma = AuxCoord(
+        np.linspace(1.0, 0.0, 3),
+        long_name="sigma",
+        var_name="sigma",
+        units="1",
+        bounds=np.array([[1.0, 0.75], [0.75, 0.25], [0.25, 0.0]]),
+    )
+    cube.add_dim_coord(delta, 0)
+    cube.add_aux_coord(sigma, 0)
+    cube.add_aux_factory(HybridHeightFactory(delta=delta, sigma=sigma, orography=None))
+    return cube
+
+
+def test_save_absent_factory_dependency(cube_with_absent_orography, tmp_ncdir):
+    """Save a factory with an absent dependency, with derived bounds enabled.
+
+    The bounds ``formula_terms`` is built by following each term variable's
+    ``bounds`` link, and an absent dependency has no term variable to follow.
+    Asserts on the file rather than on the save completing: the terms this
+    writes are the pre-existing behaviour being preserved, not an improvement
+    on it, and a fix that silently dropped ``orog`` would also not raise.
+    """
+    nc_filepath = tmp_ncdir / "test_save_absent_orography.nc"
+
+    with FUTURE.context(derived_bounds=True):
+        iris.save(cube_with_absent_orography, nc_filepath)
+
+    dataset = DatasetWrapper(nc_filepath)
+    try:
+        formula_terms = dataset.variables["level_height"].formula_terms
+        bounds_formula_terms = dataset.variables["level_height_bnds"].formula_terms
+    finally:
+        dataset.close()
+
+    assert formula_terms == "a: level_height b: sigma orog: None"
+    assert bounds_formula_terms == "a: level_height_bnds b: sigma_bnds orog: None"

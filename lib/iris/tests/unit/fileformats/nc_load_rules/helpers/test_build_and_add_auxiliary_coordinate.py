@@ -17,9 +17,12 @@ from iris.coords import AuxCoord
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
-from iris.fileformats.cf import CFVariable
 from iris.loading import LOAD_PROBLEMS
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableDouble,
+    MockerMixin,
+    RealArrayCfData,
+)
 
 
 class TestBoundsVertexDim(MockerMixin):
@@ -48,20 +51,16 @@ class TestBoundsVertexDim(MockerMixin):
             cube_parts=dict(coordinates=[]),
         )
 
-        self.cf_coord_var = mocker.Mock(
-            spec=CFVariable,
-            dimensions=dimension_names,
-            cf_name="wibble",
-            cf_data=cf_data,
-            filename=self.engine.filename,
-            standard_name=None,
-            long_name="wibble",
-            units="km",
-            shape=points.shape,
-            size=np.prod(points.shape),
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
+        self.cf_coord_var = CFVariableDouble(
+            standard_name=None, long_name="wibble", units="km"
         )
+        self.cf_coord_var.dimensions = dimension_names
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.filename = self.engine.filename
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.size = np.prod(points.shape)
+        self.cf_coord_var.dtype = points.dtype
 
         expected_bounds, _ = self._make_array_and_cf_data(
             mocker, dimension_names=("foo", "bar", "nv")
@@ -119,18 +118,14 @@ class TestBoundsVertexDim(MockerMixin):
             mocker, dimension_names, rollaxis=rollaxis
         )
         bounds *= 1000  # Convert to metres.
-        cf_bounds_var = self.mocker.Mock(
-            spec=CFVariable,
-            dimensions=dimension_names,
-            cf_name="wibble_bnds",
-            cf_data=cf_data,
-            filename=self.engine.filename,
-            units="m",
-            shape=bounds.shape,
-            size=np.prod(bounds.shape),
-            dtype=bounds.dtype,
-            __getitem__=lambda self, key: bounds[key],
-        )
+        cf_bounds_var = CFVariableDouble(units="m")
+        cf_bounds_var.dimensions = dimension_names
+        cf_bounds_var.cf_name = "wibble_bnds"
+        cf_bounds_var.cf_data = RealArrayCfData(bounds)
+        cf_bounds_var.filename = self.engine.filename
+        cf_bounds_var.shape = bounds.shape
+        cf_bounds_var.size = np.prod(bounds.shape)
+        cf_bounds_var.dtype = bounds.dtype
 
         return cf_bounds_var
 
@@ -169,8 +164,20 @@ class TestDtype(MockerMixin):
     def _setup(self, mocker):
         # Create coordinate cf variables and pyke engine.
         points = np.arange(6).reshape(2, 3)
-        cf_data = mocker.MagicMock(_FillValue=None, shape=points.shape)
-        cf_data.chunking = mocker.MagicMock(return_value=points.shape)
+        # `cf_data` must support both `.chunking` (the lazy-loading path,
+        # forced on by `deferred_load_patch` below, which also needs
+        # `.variable` for the proxy it builds) and real indexing (via
+        # `CFVariableDouble.__getitem__`, which reads `self.cf_data[key]`
+        # exactly as production `CFVariable.__getitem__` does).
+        cf_data = mocker.MagicMock(
+            _FillValue=None,
+            shape=points.shape,
+            is_emulated=False,
+            is_variable_length=False,
+            chunking=points.shape,
+            variable=mocker.MagicMock(shape=points.shape),
+        )
+        cf_data.__getitem__ = mocker.MagicMock(side_effect=lambda key: points[key])
 
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
@@ -179,20 +186,16 @@ class TestDtype(MockerMixin):
             cube_parts=dict(coordinates=[]),
         )
 
-        self.cf_coord_var = mocker.Mock(
-            spec=CFVariable,
-            dimensions=("foo", "bar"),
-            cf_name="wibble",
-            cf_data=cf_data,
-            filename=self.engine.filename,
-            standard_name=None,
-            long_name="wibble",
-            units="m",
-            shape=points.shape,
-            size=np.prod(points.shape),
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
+        self.cf_coord_var = CFVariableDouble(
+            standard_name=None, long_name="wibble", units="m"
         )
+        self.cf_coord_var.dimensions = ("foo", "bar")
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = cf_data
+        self.cf_coord_var.filename = self.engine.filename
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.size = np.prod(points.shape)
+        self.cf_coord_var.dtype = points.dtype
 
     @contextlib.contextmanager
     def deferred_load_patch(self):
@@ -211,8 +214,8 @@ class TestDtype(MockerMixin):
         yield
 
     def test_scale_factor_add_offset_int(self):
-        self.cf_coord_var.scale_factor = 3
-        self.cf_coord_var.add_offset = 5
+        self.cf_coord_var.attributes["scale_factor"] = 3
+        self.cf_coord_var.attributes["add_offset"] = 5
 
         build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
 
@@ -220,7 +223,7 @@ class TestDtype(MockerMixin):
         assert coord.dtype.kind == "i"
 
     def test_scale_factor_float(self):
-        self.cf_coord_var.scale_factor = 3.0
+        self.cf_coord_var.attributes["scale_factor"] = 3.0
 
         with self.deferred_load_patch():
             build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
@@ -229,7 +232,7 @@ class TestDtype(MockerMixin):
         assert coord.dtype.kind == "f"
 
     def test_add_offset_float(self):
-        self.cf_coord_var.add_offset = 5.0
+        self.cf_coord_var.attributes["add_offset"] = 5.0
 
         with self.deferred_load_patch():
             build_and_add_auxiliary_coordinate(self.engine, self.cf_coord_var)
@@ -251,44 +254,35 @@ class TestCoordConstruction:
 
         points = np.arange(6)
         units = "days since 1970-01-01"
-        self.cf_coord_var = mocker.Mock(
-            spec=CFVariable,
-            dimensions=("foo",),
-            scale_factor=1,
-            add_offset=0,
-            cf_name="wibble",
-            cf_data=mocker.MagicMock(chunking=mocker.Mock(return_value=None), spec=[]),
-            filename=self.engine.filename,
+        self.cf_coord_var = CFVariableDouble(
             standard_name=None,
             long_name="wibble",
             units=units,
             calendar=None,
-            shape=points.shape,
-            size=np.prod(points.shape),
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
         )
+        self.cf_coord_var.dimensions = ("foo",)
+        self.cf_coord_var.scale_factor = 1
+        self.cf_coord_var.add_offset = 0
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.filename = self.engine.filename
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.size = np.prod(points.shape)
+        self.cf_coord_var.dtype = points.dtype
 
         bounds = np.arange(12).reshape(6, 2)
-        cf_data = mocker.MagicMock(chunking=mocker.Mock(return_value=None))
-        # we want to mock the absence of flag attributes to helpers.get_attr_units
-        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
-        del cf_data.flag_values
-        del cf_data.flag_masks
-        del cf_data.flag_meanings
-        self.cf_bounds_var = mocker.Mock(
-            spec=CFVariable,
-            dimensions=("x", "nv"),
-            scale_factor=1,
-            add_offset=0,
-            cf_name="wibble_bnds",
-            cf_data=cf_data,
-            units=units,
-            shape=bounds.shape,
-            size=np.prod(bounds.shape),
-            dtype=bounds.dtype,
-            __getitem__=lambda self, key: bounds[key],
-        )
+        # No flag_values/flag_masks/flag_meanings: their absence from
+        # `.attributes` is what tells helpers.get_attr_units this is not a
+        # flag variable.
+        self.cf_bounds_var = CFVariableDouble(units=units)
+        self.cf_bounds_var.dimensions = ("x", "nv")
+        self.cf_bounds_var.scale_factor = 1
+        self.cf_bounds_var.add_offset = 0
+        self.cf_bounds_var.cf_name = "wibble_bnds"
+        self.cf_bounds_var.cf_data = RealArrayCfData(bounds)
+        self.cf_bounds_var.shape = bounds.shape
+        self.cf_bounds_var.size = np.prod(bounds.shape)
+        self.cf_bounds_var.dtype = bounds.dtype
         self.bounds = bounds
 
         # Create patch for deferred loading that prevents attempted
