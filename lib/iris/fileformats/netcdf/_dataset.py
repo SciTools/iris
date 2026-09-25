@@ -414,12 +414,23 @@ class NetCDFDataset(CFDataset):
 
     @property
     def closed(self) -> bool:
-        """Whether :meth:`close` has already released the file."""
-        return self._closed
+        """Whether the file has been released - by this object or by its owner.
 
-    @property
-    def variables(self) -> Mapping:
-        """The file's variables, by name."""
+        The flag :meth:`close` sets is not the whole answer for a borrowed
+        dataset, which whoever opened it closes themselves. Ask the backing
+        object as well, when it can say: an emulating object need not
+        implement ``isopen()``, and is then taken to be open.
+
+        """
+        if self._closed:
+            return True
+        isopen = getattr(self._dataset, "isopen", None)
+        if isopen is None:
+            return False
+        return not isopen()
+
+    def _materialised_variables(self) -> dict[str, "NetCDFDatasetVariable"]:
+        """Return the wrapper mapping, building it from the file if need be."""
         if self._variables is None:
             # Only unset while __init__ or from_existing is still running.
             assert self._dataset is not None
@@ -430,6 +441,11 @@ class NetCDFDataset(CFDataset):
                 for name, variable in self._dataset.variables.items()
             }
         return self._variables
+
+    @property
+    def variables(self) -> Mapping:
+        """The file's variables, by name."""
+        return self._materialised_variables()
 
     @property
     def dimensions(self) -> Mapping:
@@ -484,10 +500,14 @@ class NetCDFDataset(CFDataset):
         wrapped = NetCDFDatasetVariable(
             variable, self._location, write_lock=self.write_lock
         )
-        if self._variables is not None:
-            # Keep an already-materialised mapping in step, rather than
-            # leaving it stale for the rest of the dataset's life.
-            self._variables[name] = wrapped
+        # Register in the mapping, materialising it first if it has not been
+        # built yet. Keeping an existing mapping in step is not enough on its
+        # own: the mapping has to hand back *this* object, because each
+        # NetCDFDatasetVariable caches its own copy of the attribute values.
+        # Two wrappers for one variable means an attribute written through one
+        # is missing from the other's mapping, and saver.py both creates a
+        # variable and later looks it up by name to write more attributes.
+        self._materialised_variables()[name] = wrapped
         return wrapped
 
     def sync(self) -> None:

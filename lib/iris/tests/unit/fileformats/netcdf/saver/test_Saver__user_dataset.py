@@ -92,6 +92,11 @@ class TestRealDataset:
 class _EmulatedDimension:
     def __init__(self, size):
         self._size = size
+        # netCDF4.Dimension.size, which is how the length is read back. len()
+        # is not an alternative: the emulator is put inside a _thread_safe_nc
+        # wrapper, whose __getattr__ forwards named members but is never
+        # consulted for the len() protocol.
+        self.size = size
 
     def __len__(self):
         return self._size

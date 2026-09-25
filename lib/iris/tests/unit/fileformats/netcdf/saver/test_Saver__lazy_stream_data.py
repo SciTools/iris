@@ -16,8 +16,7 @@ import dask.array as da
 import numpy as np
 import pytest
 
-import iris.fileformats.netcdf._bytecoding_datasets as bytecoding_datasets
-import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+import iris.fileformats.netcdf._dataset as dataset_module
 from iris.fileformats.netcdf.saver import Saver
 
 
@@ -61,18 +60,15 @@ class Test__lazy_stream_data:
     @staticmethod
     def mock_var(shape, with_data_array, mocker):
         # Create a test cf_var object.
-        # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
-        if with_data_array:
-            extra_properties = {"_data_array": mocker.sentinel.initial_data_array}
-        else:
-            extra_properties = {}
+        # 'is_emulated' is now a declared property rather than the presence of
+        # a '_data_array' member, so it can simply be set.
         mock_cfvar = mocker.MagicMock(
-            spec=threadsafe_nc.VariableWrapper,
+            spec=dataset_module.NetCDFDatasetVariable,
             shape=tuple(shape),
             dtype=np.dtype(np.float32),
-            _contained_instance=mocker.Mock(dtype="f4"),
-            **extra_properties,
+            is_emulated=with_data_array,
         )
+        mock_cfvar.write_handle.return_value = mocker.sentinel.write_handle
         # Give the mock cf-var a name property, as required by '_lazy_stream_data'.
         # This *can't* be an extra kwarg to MagicMock __init__, since that already
         # defines a specific 'name' kwarg, with a different purpose.
@@ -108,12 +104,14 @@ class Test__lazy_stream_data:
         if data_form == "lazydata":
             result_data, result_writer = saver._delayed_writes[0]
             assert result_data is data
-            assert isinstance(result_writer, threadsafe_nc.NetCDFWriteProxy)
+            # What kind of handle it is is the dataset's business, and is
+            # tested in test_NetCDFDataset__write.py.
+            assert result_writer is mocker.sentinel.write_handle
         elif data_form == "realdata":
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
-            cf_var._data_array == mocker.sentinel.exact_data_array
+            assert cf_var.emulated_data_array is data
 
     def test_lazy_data_save_nczarr_uses_preclose_write_list(
         self, data_form, compute, mocker, tmp_path
@@ -148,5 +146,7 @@ class Test__lazy_stream_data:
         saver.__exit__(None, None, None)
 
         store_patch.assert_called_once_with([source], [target])
-        saver._dataset.sync.assert_called_once_with()
-        saver._dataset.close.assert_called_once_with()
+        # Saver._dataset is a NetCDFDataset now, so the mock that records the
+        # calls is the netCDF dataset it opened, one level down.
+        saver._dataset.dataset.sync.assert_called_once_with()
+        saver._dataset.dataset.close.assert_called_once_with()

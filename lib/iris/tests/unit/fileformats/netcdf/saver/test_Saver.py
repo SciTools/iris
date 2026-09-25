@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.fileformats.netcdf.Saver` class."""
 
-import collections
 from contextlib import contextmanager
 from pathlib import Path
 from types import ModuleType
@@ -32,6 +31,7 @@ from iris.coords import AncillaryVariable, AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.netcdf import Saver, _thread_safe_nc
 from iris.fileformats.netcdf import _bytecoding_datasets as ds_wrappers
+from iris.fileformats.netcdf._dataset import NetCDFDatasetVariable
 from iris.tests import _shared_utils
 from iris.tests._shared_utils import assert_CDL
 import iris.tests.stock as stock
@@ -217,22 +217,18 @@ class Test_write:
 
     def test_zlib(self, mocker):
         cube = self._simple_cube(">f4")
-        api = mocker.patch("iris.fileformats.netcdf.saver.bytecoding_datasets")
-        # Define mocked default fill values to prevent deprecation warning (#4374).
-        api.default_fillvals = collections.defaultdict(lambda: -99.0)
+        api = mocker.patch("iris.fileformats.netcdf._dataset._bytecoding_datasets")
         # Mock the apparent dtype of mocked variables, to avoid an error.
-        ref = api.DatasetWrapper.return_value
-        ref = ref.createVariable.return_value
-        ref.dtype = np.dtype(np.float32)
+        dataset = api.EncodedDataset.return_value
+        dataset.createVariable.return_value.dtype = np.dtype(np.float32)
         # NOTE: use compute=False as otherwise it gets in a pickle trying to construct
         # a fill-value report on a non-compliant variable in a non-file (!)
         with Saver("/dummy/path", "NETCDF4", compute=False) as saver:
             saver.write(cube, zlib=True)
-        dataset = api.EncodedDataset.return_value
         create_var_call = mocker.call(
             "air_pressure_anomaly",
             np.dtype("float32"),
-            ["dim0", "dim1"],
+            ("dim0", "dim1"),
             fill_value=None,
             shuffle=True,
             least_significant_digit=None,
@@ -276,7 +272,7 @@ class Test_write:
                 tgt,
                 # Use 'wraps' to allow the patched methods to function as normal
                 #  - the patch object just acts as a 'spy' on its calls.
-                wraps=saver._dataset.createVariable,
+                wraps=saver._dataset.dataset.createVariable,
             )
             saver.write(cube, **compression_kwargs)
 
@@ -316,7 +312,7 @@ class Test_write:
                 tgt,
                 # Use 'wraps' to allow the patched methods to function as normal
                 #  - the patch object just acts as a 'spy' on its calls.
-                wraps=saver._dataset.createVariable,
+                wraps=saver._dataset.dataset.createVariable,
             )
             saver.write(cube, **compression_kwargs)
 
@@ -356,7 +352,7 @@ class Test_write:
                 tgt,
                 # Use 'wraps' to allow the patched methods to function as normal
                 #  - the patch object just acts as a 'spy' on its calls.
-                wraps=saver._dataset.createVariable,
+                wraps=saver._dataset.dataset.createVariable,
             )
             saver.write(cube, **compression_kwargs)
 
@@ -506,24 +502,26 @@ class Test__create_cf_bounds(MockerMixin):
         saver._ensure_valid_dtype.return_value = self.mocker.Mock(
             shape=coord.bounds.shape, dtype=coord.bounds.dtype
         )
-        var = self.mocker.MagicMock(spec=ds_wrappers.EncodedVariable)
+        var = self.mocker.MagicMock(spec=NetCDFDatasetVariable)
+        var.attributes = {}
+        var.dimensions = ("time",)
 
         # Make the main call.
         Saver._create_cf_bounds(saver, coord, var, "time")
 
-        # Test the call of _setncattr in _create_cf_bounds.
-        setncattr_call = self.mocker.call(
-            property_name, boundsvar_name.encode(encoding="ascii")
-        )
-        assert setncattr_call == var.setncattr.call_args
+        # Test the attribute written by _create_cf_bounds. The ASCII-to-bytes
+        # coercion now happens inside _NetCDFAttributes.__setitem__, and is
+        # tested there; this plain dict stands in for one, so the value
+        # arrives as given.
+        assert var.attributes[property_name] == boundsvar_name
 
-        # Test the call of createVariable in _create_cf_bounds.
+        # Test the call of create_variable in _create_cf_bounds.
         dataset = saver._dataset
         expected_dimensions = var.dimensions + ("bnds",)
         create_var_call = self.mocker.call(
             boundsvar_name, coord.bounds.dtype, expected_dimensions
         )
-        assert create_var_call == dataset.createVariable.call_args
+        assert create_var_call == dataset.create_variable.call_args
 
     def test_set_bounds_default(self):
         self._check_bounds_setting(climatological=False)
@@ -742,8 +740,10 @@ class _Common__check_attribute_compliance:
     def check_attribute_compliance_call(self, value, file_type="NETCDF4"):
         self.set_attribute(value)
         with Saver("nonexistent test file", file_type) as saver:
-            # Get the Mock to work properly.
-            saver._dataset.file_format = file_type
+            # Get the Mock to work properly. The format is read from the
+            # netCDF dataset itself, through Saver's escape hatch; setting it
+            # on the NetCDFDataset would bind an attribute nothing consults.
+            saver._dataset.dataset.file_format = file_type
             saver.check_attribute_compliance(self.container, self.data_dtype)
 
 
@@ -1050,12 +1050,19 @@ class Test_create_cf_grid_mapping(MockerMixin):
             def setncattr(self, name, attr):
                 setattr(self, name, attr)
 
+            def ncattrs(self):
+                # A variable the dataset wraps is asked for its attributes as
+                # it is wrapped; this one starts with none.
+                return []
+
         # Calls the actual NetCDF saver with appropriate mocking, returning
         # the grid variable that gets created.
         grid_variable = NCMock(name="NetCDFVariable")
         create_var_fn = self.mocker.Mock(side_effect=[grid_variable])
-        dataset = self.mocker.Mock(variables=[], createVariable=create_var_fn)
-        variable = NCMock()
+        # 'variables' is a mapping, as netCDF4 presents it: the saver looks
+        # names up in it to avoid a grid-mapping variable name collision.
+        dataset = self.mocker.Mock(variables={}, createVariable=create_var_fn)
+        variable = NCMock(attributes={})
 
         saver = Saver(dataset, "NETCDF4", compute=False)
 
