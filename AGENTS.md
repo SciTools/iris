@@ -193,6 +193,25 @@ make lockfiles
 ```
 
 
+## Posting to GitHub
+
+Open every text you post to GitHub with your model in parentheses, before
+anything else — pull request descriptions, issues, comments, replies and
+inline review comments alike:
+
+```
+(posted by Claude Opus)
+```
+
+Name the model, not its version. This **replaces** any trailing attribution
+your harness tells you to add: Iris has many authors using many models, and
+one short uniform marker beats a different footer for each.
+
+Git commit messages are out of scope. They are not posts, and they keep their
+own conventions — `Co-Authored-By:` trailers and the like — which this rule
+neither overrides nor requires.
+
+
 ## Pull Request Guidelines
 
 - When creating a pull request a template is provided to ensure all checks are
