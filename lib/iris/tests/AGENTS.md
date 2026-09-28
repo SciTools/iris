@@ -38,6 +38,27 @@ existing test style.
 - Avoid over-mocking; prefer realistic Cube/Coord setup via shared helpers.
 
 
+## Docstrings in Tests
+
+A test docstring is notes, not published documentation. numpydoc does not run
+here and `D205`/`D401` are relaxed, so drop the ceremony — no imperative mood,
+no summary-line ritual; fragments and shorthand are correct.
+
+When a test pins a trap that library code points at (see
+[`../AGENTS.md`](../AGENTS.md)), its docstring carries the detail: what is
+surprising, the smallest concrete evidence, the cause. Not the investigation.
+Under ~6 lines.
+
+```python
+def test_write_handle_encodes_char_data():
+    """Unencoded proxy writes unicode at an NC_CHAR variable.
+
+    Deferred save of ["abc", "def"] returns ["aaa", "ddd"].
+    from_existing only wraps a dataset lacking THREAD_SAFE_FLAG.
+    """
+```
+
+
 ## Running Tests
 
 `-n auto` is **not** in `addopts`. Pass it yourself or the run is serial:
@@ -110,6 +131,9 @@ real.
 - Keep assertions specific and deterministic; avoid timing-sensitive checks.
 - Avoid broad snapshot-style updates without explaining intent in the change.
 - Do not add network access in tests.
+- Never name an artefact of how the work was done — a review finding, a task
+  or plan number, a phase — in a test name, docstring or comment. Cite an
+  issue, a pull request, a design document, or the convention's section.
 - Do not weaken existing checks just to make tests pass — but a test can pin
   a *bug*, and correcting one is strengthening. Show by archaeology that the
   expectation was wrong, invert rather than delete, and comment why.
