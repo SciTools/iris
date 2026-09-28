@@ -7,6 +7,7 @@
 from pathlib import Path
 import warnings
 
+import dask.array as da
 import netCDF4
 import numpy as np
 import pytest
@@ -18,6 +19,9 @@ from iris.fileformats.netcdf._bytecoding_datasets import (
     EncodedDataset,
     EncodedGroup,
     EncodedVariable,
+    VariableEncoder,
+    decode_bytesarray_to_stringarray,
+    encode_stringarray_as_bytearray,
 )
 from iris.fileformats.netcdf._thread_safe_nc import (
     DatasetWrapper,
@@ -25,6 +29,10 @@ from iris.fileformats.netcdf._thread_safe_nc import (
     VariableWrapper,
 )
 import iris.tests._shared_utils as testutils
+from iris.tests.integration.netcdf.test_stringdata import (
+    convert_bytearray_to_strings,
+    convert_strings_to_chararray,
+)
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisCfLoadWarning, IrisCfSaveWarning
 

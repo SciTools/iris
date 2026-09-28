@@ -59,7 +59,7 @@ class Test__lazy_stream_data:
         return Saver(filename=filepath, netcdf_format="NETCDF4", compute=compute)
 
     @staticmethod
-    def mock_var(shape, with_data_array, mocker):
+    def mock_var(shape, with_data_array, mocker, dtype=np.dtype(np.float32)):
         # Create a test cf_var object.
         # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
         if with_data_array:
@@ -69,7 +69,7 @@ class Test__lazy_stream_data:
         mock_cfvar = mocker.MagicMock(
             spec=threadsafe_nc.VariableWrapper,
             shape=tuple(shape),
-            dtype=np.dtype(np.float32),
+            dtype=dtype,
             _contained_instance=mocker.Mock(dtype="f4"),
             **extra_properties,
         )
@@ -113,7 +113,60 @@ class Test__lazy_stream_data:
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
-            cf_var._data_array == mocker.sentinel.exact_data_array
+            assert cf_var._data_array is data
+
+    @pytest.mark.parametrize("is_realdata", [True, False], ids=["realdata", "lazydata"])
+    @pytest.mark.parametrize("is_string", [True, False], ids=["string", "numeric"])
+    def test_data_save_emulated_data_array(
+        self, is_realdata, is_string, mocker, tmp_path
+    ):
+        """Emulated variables receive arrays directly, with string data encoded."""
+        saver = self.saver(compute=False, data_form="emulateddata", tmp_path=tmp_path)
+
+        shape = (20, 30, 30)
+        dtype = np.dtype("U1") if is_string else np.dtype("f4")
+        data_spec = np.ndarray if is_realdata else da.Array
+        data = mocker.MagicMock(spec=data_spec, dtype=dtype, shape=shape)
+        cf_var = self.mock_var(
+            shape,
+            with_data_array=True,
+            mocker=mocker,
+            dtype=dtype,
+        )
+
+        if is_string:
+            contained = cf_var._contained_instance
+            contained.name = "<mock_contained>"
+            contained.dtype = np.dtype("S1")
+            contained.dimensions = ("x", "strlen")
+            mock_group = mocker.Mock()
+            mock_group.dimensions = {"strlen": mocker.Mock(size=5)}
+            contained.group.return_value = mock_group
+
+            ifnbd = "iris.fileformats.netcdf._bytecoding_datasets."
+            mock_encode = mocker.patch(ifnbd + "encode_stringarray_as_bytearray")
+            mock_mapblocks = mocker.patch("dask.array.map_blocks")
+
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
+
+        assert cf_var.__setitem__.call_count == 0
+        assert len(saver._delayed_writes) == 0
+        assert len(saver._nczarr_writes) == 0
+
+        if not is_string:
+            assert cf_var._data_array is data
+        else:
+            if is_realdata:
+                assert mock_encode.call_count == 1
+                assert cf_var._data_array is mock_encode.return_value
+                call_args = mock_encode.call_args_list[0][0]
+                assert call_args[0] is data
+            else:
+                assert mock_mapblocks.call_count == 1
+                assert cf_var._data_array is mock_mapblocks.return_value
+                call_args = mock_mapblocks.call_args_list[0][0]
+                assert call_args[0] is mock_encode
+                assert call_args[1] is data
 
     def test_lazy_data_save_nczarr_uses_preclose_write_list(
         self, data_form, compute, mocker, tmp_path
