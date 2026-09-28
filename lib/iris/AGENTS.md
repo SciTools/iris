@@ -26,7 +26,8 @@ wrapping; correct for that deliberately.
 
 1. Write code that can be understood from the file in front of you.
 2. Name things so they can be found by exact text search.
-3. Prefer explicit and slightly verbose over implicit and clever.
+3. Prefer explicit and slightly verbose over implicit and clever. This
+   governs code, never prose: comments and docstrings are terse.
 4. Prefer duplication over an abstraction you are not confident in.
 5. Match surrounding Iris idioms even where you would choose differently.
 6. Every comment and docstring must still be true after your edit.
@@ -125,6 +126,53 @@ a human treats it as documentation.
   `# See https://github.com/SciTools/iris/issues/1234`.
 
 
+### Brevity
+
+- Minimise every section of every docstring, by subtraction. Sentence by
+  sentence, ask what breaks if it is gone; most rationale survives its own
+  deletion. Then ask who each surviving sentence is for — a **user** calling
+  the thing, a **maintainer** not breaking it, or a **reviewer** you are
+  answering. Only the first belongs here; the second goes to the module
+  docstring or a test, the third to the pull request.
+- Write notes, not an essay. Fragments are correct, articles are optional,
+  shorthand is welcome. Say what holds; do not restate the signature, defend
+  the design against an alternative nobody proposed, or narrate how you found
+  out. Contract first, caveat second, rationale last, so that anything
+  overlong is at least skippable.
+- "Be generous" applies to module docstrings only.
+- A comment runs one to three lines. A fourth is the alarm bell: the fact has
+  outgrown the site and wants a better home.
+- One fact, one place — for prose. A comment you would paste at a second site
+  belongs in the class or module docstring instead; pasted at a third it is
+  certainly misplaced. Labels are the exception: a short fixed marker that
+  indexes rather than explains (`# netCDF-only members below.`) is meant to
+  repeat, and should read identically at every site. A repeated sentence of
+  reasoning is not a label.
+- Docstring a dunder only when it says something the signature does not.
+  `D105` is permanently ignored and numpydoc excludes `__repr__`, `__eq__`
+  and `__ne__` — "Return a string representation." is noise nothing asked for.
+
+
+## Facts Learned by Debugging
+
+Most over-long comments in Iris were written after the code already worked. A
+test failed, you investigated, you found something surprising and true, and
+you wrote it down at the line that taught you it. The fact is worth keeping.
+That line is the worst place to keep it, and you are, just then, the reader
+least able to judge how much of it belongs in the file. Assume too much.
+
+- A surprise a test can pin becomes **the test** — named for the trap, detail
+  in its docstring, the source keeping one line that names it. This is the
+  only home that fails loudly when it stops being true.
+- A surprise no test can pin — a library quirk, an invariant, a coupling —
+  goes in the module docstring's traps.
+- A surprise caused by an external bug keeps the URL, not a retelling.
+- Never cite an artefact of how the work was done: a review finding, a task
+  or plan number, a phase, a checklist item. These resolve to nothing for a
+  later reader and nothing checks they still mean anything. Cite an issue, a
+  pull request, a design document, or the section of the convention.
+
+
 ## Module Docstrings Carry the Explanation
 
 Prose explaining a subsystem belongs in the module docstring. Inline comments
@@ -207,6 +255,9 @@ code in a private sibling module instead.
   re-staged and the run repeated until clean.
 - New and changed public functions have type hints and NumPy docstrings.
 - No comment or docstring was left stale by the change.
+- If you debugged during this change, re-read the diff as someone who was not
+  there. Comments added after the first working version are where verbosity
+  collects.
 - Laziness behaviour is preserved and documented.
 - Tests updated per [`tests/AGENTS.md`](tests/AGENTS.md); changelog fragment
   added per [`../../changelog/AGENTS.md`](../../changelog/AGENTS.md).
