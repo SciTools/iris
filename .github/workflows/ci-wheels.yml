@@ -87,7 +87,7 @@ jobs:
         env_name: ${{ env.ENV_NAME }}
 
     - name: "conda install"
-      uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5
+      uses: conda-incubator/setup-miniconda@be893c923ea9cf1cf7cd510fbdde27c7e18cbdcb
       with:
         miniforge-version: latest
         channels: conda-forge,defaults

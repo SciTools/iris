@@ -3,6 +3,8 @@ v3.16 (13 Aug 2026)
 
 .. include:: /whatsnew/3.16/highlights.rst
 
+.. include:: /whatsnew/3.16/3.16.1.rst
+
 ✨ Features
 ~~~~~~~~~~~
 
@@ -113,6 +115,12 @@ v3.16 (13 Aug 2026)
   **fragments** (the section following the ``#`` character) -
   :func:`~iris.io.decode_uri` now returns a 3-part tuple: ``scheme``, ``path``,
   and ``fragment``.
+
+- :fa:`code-pull-request` :pull:`7098`: :user:`pp-mo`, :user:`trexfeathers`, :user:`ukmo-ccbunney` and :user:`pt331`
+  changed the internal logic by which string dtypes are recognised to be more consistent.
+  This means that some string type variables which would previously have loaded as
+  coordinates now load as cubes.
+  :ref:`char_and_string_datatypes`. (:far:`circle-dot` :issue:`6309`)
 
 
 
