@@ -69,7 +69,12 @@ class Test___init___data:
     def test_matrix(self):
         # Subclasses of np.ndarray should be coerced back to np.ndarray.
         # (Except for np.ma.MaskedArray.)
-        data = np.matrix([[1, 2, 3], [4, 5, 6]])
+        # Create a custom ndarray subclass to replace deprecated np.matrix.
+        class NdArraySubclass(np.ndarray):
+            pass
+        
+        data_base = np.array([[1, 2, 3], [4, 5, 6]])
+        data = data_base.view(NdArraySubclass)
         cube = Cube(data)
         assert type(cube.data) is np.ndarray
         _shared_utils.assert_array_equal(cube.data, data)
