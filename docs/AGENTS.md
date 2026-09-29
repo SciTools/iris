@@ -71,6 +71,10 @@ Build output goes to `docs/src/_build/html/`.
   ``:func:`iris.load` ``, etc.
 - Gallery scripts live under `docs/gallery_code/` and must be valid
   standalone Python files executable by `matplotlib` / `sphinx-gallery`.
+- Published prose must never cite an artefact of how the work was done — a
+  review finding, a task or plan number, a phase. These resolve to nothing
+  for a reader. Cite an issue, a pull request, a design document, or the
+  convention's section. The same applies to changelog fragments.
 
 
 ## Page Metadata
