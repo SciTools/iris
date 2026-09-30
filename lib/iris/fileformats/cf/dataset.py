@@ -11,27 +11,22 @@
 
 :class:`CFDataset` and :class:`CFDatasetVariable` are what the rest of the CF
 layer is written against. They are deliberately small: only what the
-:class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF
-saver actually need, with one implementation per storage format
-(:mod:`iris.fileformats.netcdf._dataset` today, Zarr next).
+``CFVariable`` classes, the CF loader and the CF saver actually need, with one
+implementation per storage format.
 
-The split that matters is ``attributes`` versus everything else. A netCDF
-variable presents ``units`` - a CF attribute read from the file - and
-``dimensions`` - a property of the storage - through the same attribute syntax,
-and a caller cannot tell which is which. Here, CF attributes are only ever
-reached through ``attributes``, and storage properties are named, typed
-members.
+These classes are more restrictive than a netCDF variable about what can be
+reached through attribute syntax. netCDF presents ``units``, a CF attribute
+read from the file, and ``dimensions``, a property of the storage, the same
+way, and a caller cannot tell which is which. Here the property ``attributes``
+is the only route to a CF attribute, and every storage property is a named,
+typed member.
 
-``attributes`` is an open-ended set of data keys read from a file, with no
-schema to enumerate, which is why :class:`TrackedAttributes` exists and why
-:meth:`~iris.fileformats.cf.CFVariable.__getattr__` is allowed to forward to
-it. Tracking is the load-bearing part: Iris decides which file attributes
-survive onto a loaded cube by asking which ones the loading rules did *not*
-read, so a read that goes unrecorded silently leaks a CF-reserved attribute
-onto the cube.
-
-See sections 4.2, 4.3 and 4.5 of
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+The property ``attributes`` holds an open-ended set of data keys read from a
+file, with no schema to enumerate, which is why :class:`TrackedAttributes`
+exists and why ``CFVariable.__getattr__`` is allowed to forward to it.
+Tracking is the load-bearing part: Iris decides which file attributes survive
+onto a loaded cube by asking which ones the loading rules did *not* read, so a
+read that goes unrecorded silently leaks a CF-reserved attribute onto the cube.
 
 """
 
@@ -55,11 +50,9 @@ class TrackedAttributes(MutableMapping):
     """A variable's attributes, recording which of them have been looked up.
 
     Single-key lookups record: :meth:`__getitem__`, :meth:`get` and
-    :meth:`__contains__` - the last because ``hasattr(cf_var, name)`` marks an
-    attribute used today, by reaching ``__getattr__``. Bulk access does not:
-    iteration, :meth:`keys`, :meth:`values`, :meth:`items` and :func:`len`
-    leave the record alone, and :attr:`untracked` is the explicit escape hatch
-    for a single-key lookup that must not count.
+    :meth:`__contains__`. Bulk access does not: iteration, :meth:`keys`,
+    :meth:`values`, :meth:`items` and :func:`len` leave the record alone.
+    :attr:`untracked` reads a single key without recording it.
 
     """
 
@@ -148,13 +141,7 @@ class CFDatasetVariable(ABC):
     @property
     @abstractmethod
     def location(self) -> str:
-        """The path or URL of the dataset holding this variable.
-
-        Repeated from :attr:`CFDataset.location` with the same meaning, so that
-        a variable can label a message or a data proxy without a reference back
-        to its dataset.
-
-        """
+        """The path or URL of the dataset holding this variable."""
 
     @property
     @abstractmethod
@@ -169,14 +156,7 @@ class CFDatasetVariable(ABC):
     @property
     @abstractmethod
     def dtype(self) -> np.dtype:
-        """The variable's stored data type.
-
-        Usually a :class:`numpy.dtype`. netCDF's variable-length string type
-        reports the builtin :class:`str` instead, and
-        :func:`iris.fileformats.netcdf.loader._get_cf_var_data` branches on
-        that, so it is passed through rather than normalised.
-
-        """
+        """A :class:`numpy.dtype`, or :class:`str` for a variable-length string."""
 
     @property
     @abstractmethod
@@ -225,7 +205,7 @@ class CFDatasetVariable(ABC):
         """Return the length of the variable's leading dimension."""
         if not self.shape:
             # netCDF4.Variable.__len__ raises exactly this for a scalar, and
-            # CFVariable.__len__ forwards to it today.
+            # CFVariable.__len__ forwards to it.
             msg = "len() of unsized object"
             raise TypeError(msg)
         return self.shape[0]
@@ -234,9 +214,8 @@ class CFDatasetVariable(ABC):
         """Return a netCDF4-only member of the object backing this variable.
 
         The one-release compatibility route for code that reached netCDF4 API
-        through a :class:`~iris.fileformats.cf.CFVariable`. A store with no
-        backing netCDF4 object has nothing to offer and raises, which is the
-        correct answer rather than a special case.
+        through a ``CFVariable``. A store with no backing netCDF4 object raises
+        :class:`AttributeError`.
 
         """
         raise AttributeError(name)
@@ -290,10 +269,9 @@ class CFDataset(ABC):
     ) -> "CFDatasetVariable":
         """Create and return a new variable.
 
-        ``**encoding`` is storage-specific by nature - ``zlib``, ``complevel``
-        and ``chunksizes`` for netCDF; ``compressors``, ``chunks`` and
-        ``shards`` for Zarr - so each implementation documents the keys it
-        accepts, and generic CF code never constructs them.
+        ``**encoding`` is storage-specific: ``zlib``, ``complevel`` and
+        ``chunksizes`` for netCDF; ``compressors``, ``chunks`` and ``shards``
+        for Zarr.
 
         """
 

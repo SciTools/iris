@@ -46,9 +46,7 @@ the package works against the format-agnostic
 :class:`~iris.fileformats.cf.dataset.CFDataset` /
 :class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
 store can be read by the same machinery once a
-:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it
--- see §4.2 of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it.
 
 """
 
@@ -166,9 +164,6 @@ class CFReader:
             self._trim_ugrid_variable_types()
             self._with_ugrid = False
 
-        # Read the variables in the dataset only once to reduce runtime.
-        # NetCDFDataset.variables caches, so this is the same dict - and the
-        # same CFDatasetVariable objects - that _has_meshes just walked.
         variables = self._dataset.variables
         self._translate(variables)
         self._build_cf_groups(variables)

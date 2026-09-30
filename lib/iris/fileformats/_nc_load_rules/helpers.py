@@ -678,13 +678,6 @@ def build_and_add_names(engine: Engine) -> None:
             engine.cube.attributes["invalid_standard_name"] = invalid_std_name
 
     _ = _add_or_capture(
-        # `_build_name_var` returns `cf_var.cf_name` - a structural member,
-        # not a file attribute - so the `attr_key="cf_name"` capture branch in
-        # `_add_or_capture` can only be reached if that plain attribute lookup
-        # itself raises. It doesn't today; if `_build_name_var` ever grows
-        # logic that can fail, this would capture `{"cf_name": None}` via
-        # `cf_var.attributes["cf_name"]`, which is a KeyError (cf_name is
-        # never in `.attributes`), not a meaningful value.
         build_func=partial(_build_name_var, engine.cf_var),
         add_method=setter("var_name"),
         cf_var=engine.cf_var,
@@ -1275,15 +1268,6 @@ def get_names(cf_coord_var, coord_name, attributes):
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
     """Return the CF variable representing the bounds of a coordinate variable."""
-    # `getattr` resolves through CFVariable.__getattr__ into `.attributes`,
-    # so it sees exactly what `.attributes.get(CF_ATTR_BOUNDS)` would. That
-    # includes the "newstyle" derived-bounds links (FUTURE.derived_bounds)
-    # that iris.fileformats.cf._reader synthesises: those are stored in
-    # `cf_var.attributes["bounds"]` like any other CF attribute, so there is
-    # nothing extra to look for here. _reader also *invalidates* a link by
-    # storing None under that key, which this call cannot tell apart from the
-    # default given here - fine, because both mean "no bounds", but anyone
-    # who comes to need the difference must subscript the mapping instead.
     attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
     attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
 

@@ -79,13 +79,9 @@ _NCZARR_SCALAR_DIMENSION = "_scalar_"
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
 
-# Names __getattr__ must never resolve through self.attributes, because
-# reading self.attributes is how it resolves anything at all. Just those two,
-# and deliberately so: every other name that reaches __getattr__ is a CF
-# attribute name read from a file, which is the open-ended set this class
-# exists to present. Excluding a broader class of name - "every
-# underscore-prefixed name", say - would hide real CF attributes, "_Encoding"
-# and "_FillValue" among them.
+# __getattr__ resolves a name by reading self.attributes, so these two names
+# cannot be resolved that way. Every other name reaching __getattr__ is a CF
+# attribute read from a file, "_Encoding" and "_FillValue" included.
 _GETATTR_RECURSION_GUARD = frozenset(["attributes", "cf_data"])
 
 
@@ -123,14 +119,14 @@ class CFVariable(metaclass=ABCMeta):
         """The variable's CF attributes, and a record of which have been read.
 
         The only place CF attributes live. ``__getattr__`` forwards here, so
-        ``cf_var.units`` and ``cf_var.attributes["units"]`` are the same read
-        and count once. What was read decides what survives onto the loaded
+        ``cf_var.units`` and ``cf_var.attributes["units"]`` perform the same
+        read and are recorded once. What was read decides what survives onto the
         cube - see :func:`iris.fileformats.netcdf.loader._add_unused_attributes`.
 
         Copied from ``data.attributes``, not a view onto it:
         :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`'s
-        mapping writes through to the file, and a plain ``dict`` is what
-        keeps two :class:`CFVariable` built over the same storage object
+        mapping writes through to the file, and a plain ``dict`` is what keeps
+        two instances of :class:`CFVariable` built over the same storage object
         from sharing one mapping.
         """
 
@@ -194,8 +190,7 @@ class CFVariable(metaclass=ABCMeta):
         """Whether this variable is scalar, in either spelling of scalar.
 
         NetCDF gives a zero-dimensional variable no dimensions at all.
-        NCZarr gives it one, named ``_scalar_``. The two mean the same
-        thing, and every ``spans`` implementation has to treat them alike.
+        NCZarr gives it one, named ``_scalar_``. The two mean the same thing.
 
         """
         return not self.dimensions or self.dimensions == (_NCZARR_SCALAR_DIMENSION,)
@@ -266,12 +261,11 @@ class CFVariable(metaclass=ABCMeta):
     def __getattr__(self, name):
         """Return the named CF attribute, as read from the file.
 
-        The open-ended half of this class. CF attribute names are data read
-        from a file, not API, so they cannot be declared - which is what
-        justifies ``__getattr__`` here at all. It resolves only against
+        CF attribute names are data read from a file, not API, so they cannot
+        be declared as properties. This method resolves only against
         :attr:`attributes`; everything structural is a declared property
-        above. Reading through it records the attribute as used, exactly as
-        ``cf_var.attributes[name]`` does.
+        above. Reading through this method records the attribute as used,
+        exactly as ``cf_var.attributes[name]`` does.
 
         """
         if name.startswith("__") or name in _GETATTR_RECURSION_GUARD:
