@@ -171,6 +171,10 @@ least able to judge how much of it belongs in the file. Assume too much.
   or plan number, a phase, a checklist item. These resolve to nothing for a
   later reader and nothing checks they still mean anything. Cite an issue, a
   pull request, a design document, or the section of the convention.
+- Never cite something that decays silently: a line number in another file, a
+  count of call sites. Any edit above the line retargets the citation, any new
+  call site falsifies the count, and nothing checks either. Name the function,
+  class or constant instead — greppable, and it survives edits above it.
 - Write the fact, not your side of the argument about it. Three tells that
   you have written a reply: a negation whose positive was never stated
   ("passed through, not reached around"); a "therefore" or "so" whose premise
