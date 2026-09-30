@@ -224,6 +224,16 @@ neither overrides nor requires.
 [`changelog/AGENTS.md`](changelog/AGENTS.md)
 
 
+## Responding to Review
+
+A reviewer has not read every `AGENTS.md`; you have. Before actioning a
+comment, check whether the thing objected to is something these files
+explicitly sanction. If it is, reply with the rule and the file it lives in,
+and let a human settle it — complying silently turns one reviewer's
+preference into a change against a written convention, and nothing catches it
+afterwards.
+
+
 ## Critical Development Gotchas
 
 1. **xfail_strict Behavior**: Tests marked `@pytest.mark.xfail` that now PASS
