@@ -28,6 +28,9 @@ Tracking is the load-bearing part: Iris decides which file attributes survive
 onto a loaded cube by asking which ones the loading rules did *not* read, so a
 read that goes unrecorded silently leaks a CF-reserved attribute onto the cube.
 
+See sections 4.2, 4.3 and 4.5 of
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
 """
 
 from abc import ABC, abstractmethod
