@@ -110,13 +110,14 @@ Realising data is the caller's decision, never a library function's.
 ## Conform to the Specification, Not to the Sample File
 
 Iris implements published conventions — CF, UGRID, Zarr, netCDF. Sample files
-are evidence that a code path gets exercised, not authority for what it should
-do. Derive behaviour from the convention's text and cite the section; before
-claiming a file taught you something general, check whether the convention
-already says it. When a real file disagrees with the convention, the file is
-wrong: warn (`iris.warnings`) naming the variable and the offending value,
-and carry on. Do not reshape the reader around one publisher's output; raise
-only where the data cannot be interpreted at all.
+are evidence that a code path gets exercised, not authority for what it does.
+
+- Derive behaviour from the convention's text and cite the section. Before
+  claiming a file taught you something general, check the convention first.
+- When a real file disagrees with the convention, the file is wrong: warn
+  (`iris.warnings`) naming the variable and the offending value, and carry on.
+- Do not reshape the reader around one publisher's output. Raise only where
+  the data cannot be interpreted at all.
 
 
 ## Comments and Docstrings
@@ -257,13 +258,12 @@ code in a private sibling module instead.
 
 - Dynamically generated attributes, methods or module members.
 - `eval`, `exec`, or `getattr` string dispatch in library code.
-- Metaclasses, or `__getattr__` used to invent behaviour. `__getattr__` has
-  one legitimate use: presenting an open-ended set of *data* keys read from
-  a file as attributes, as `CFVariable` does over CF-netCDF attributes. It
-  must forward to a declared `Mapping`, that `Mapping` must be the path
-  library code takes, and the docstring must say so. Note the cost: a class
-  with `__getattr__` makes mypy stop checking *every* attribute on it and
-  its subclasses, so confining it is what keeps the rest of the class typed.
+- Metaclasses, or `__getattr__` used to invent behaviour. Its one legitimate
+  use is presenting an open-ended set of *data* keys read from a file as
+  attributes (`CFVariable` over CF-netCDF attributes): it must forward to a
+  declared `Mapping` that library code also uses directly, and say so in the
+  docstring. `__getattr__` stops mypy checking *every* attribute on the class
+  and its subclasses, so confining it keeps the rest of the class typed.
 - Silent `except Exception: pass`.
 - Boolean flags that switch a function between two unrelated behaviours —
   write two functions.
