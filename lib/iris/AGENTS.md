@@ -171,6 +171,11 @@ least able to judge how much of it belongs in the file. Assume too much.
   or plan number, a phase, a checklist item. These resolve to nothing for a
   later reader and nothing checks they still mean anything. Cite an issue, a
   pull request, a design document, or the section of the convention.
+- Write the fact, not your side of the argument about it. Three tells that
+  you have written a reply: a negation whose positive was never stated
+  ("passed through, not reached around"); a "therefore" or "so" whose premise
+  is not in the file; a term of art that appears exactly once in the
+  repository. Each answers a question the reader has not asked.
 
 
 ## Module Docstrings Carry the Explanation
@@ -257,7 +262,8 @@ code in a private sibling module instead.
 - No comment or docstring was left stale by the change.
 - If you debugged during this change, re-read the diff as someone who was not
   there. Comments added after the first working version are where verbosity
-  collects.
+  collects — and where a comment turns into a reply to a conversation the
+  reader never had.
 - Laziness behaviour is preserved and documented.
 - Tests updated per [`tests/AGENTS.md`](tests/AGENTS.md); changelog fragment
   added per [`../../changelog/AGENTS.md`](../../changelog/AGENTS.md).
