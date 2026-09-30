@@ -116,14 +116,21 @@ a human treats it as documentation.
   write it.
 - A comment claiming a branch is unreachable is a testable claim. Pin it
   with a test or an `assert`, or restructure so it is true by construction.
-  Left as prose it goes stale unnoticed: one reading "the saver always
-  encodes" outlived its condition, and the branch it excused corrupted data.
+  Left as prose it goes stale unnoticed.
 - Do not add docstrings or comments to code you did not otherwise change —
   but see the module docstring exemption below.
 - NumPy-style docstrings are mandatory and validated. State the contract:
   units, shapes, laziness, mutation, exceptions raised.
 - Link non-obvious workarounds to their source:
   `# See https://github.com/SciTools/iris/issues/1234`.
+- Never cite an artefact of how the work was done: a review finding, a task
+  or plan number, a phase, a checklist item. These resolve to nothing for a
+  later reader and nothing checks they still mean anything. Cite an issue, a
+  pull request, a design document, or the section of the convention.
+- Never cite something that decays silently: a line number in another file, a
+  count of call sites. Any edit above the line retargets the citation, any new
+  call site falsifies the count, and nothing checks either. Name the function,
+  class or constant instead — greppable, and it survives edits above it.
 
 
 ### Brevity
@@ -139,7 +146,6 @@ a human treats it as documentation.
   the design against an alternative nobody proposed, or narrate how you found
   out. Contract first, caveat second, rationale last, so that anything
   overlong is at least skippable.
-- "Be generous" applies to module docstrings only.
 - A comment runs one to three lines. A fourth is the alarm bell: the fact has
   outgrown the site and wants a better home.
 - One fact, one place — for prose. A comment you would paste at a second site
@@ -167,14 +173,6 @@ least able to judge how much of it belongs in the file. Assume too much.
 - A surprise no test can pin — a library quirk, an invariant, a coupling —
   goes in the module docstring's traps.
 - A surprise caused by an external bug keeps the URL, not a retelling.
-- Never cite an artefact of how the work was done: a review finding, a task
-  or plan number, a phase, a checklist item. These resolve to nothing for a
-  later reader and nothing checks they still mean anything. Cite an issue, a
-  pull request, a design document, or the section of the convention.
-- Never cite something that decays silently: a line number in another file, a
-  count of call sites. Any edit above the line retargets the citation, any new
-  call site falsifies the count, and nothing checks either. Name the function,
-  class or constant instead — greppable, and it survives edits above it.
 - Write the fact, not your side of the argument about it. Three tells that
   you have written a reply: a negation whose positive was never stated
   ("passed through, not reached around"); a "therefore" or "so" whose premise
@@ -189,8 +187,9 @@ scatter one argument across dozens of sites; a companion Markdown file is
 validated by nothing and rots unseen. Only the docstring is read on every
 visit, published by Sphinx, checked by numpydoc, and reviewed in the diff.
 
-Be generous: sixty lines of orientation above a two-thousand-line module is
-cheap, read once per visit rather than once per call site. Not a tutorial.
+Be generous here, and only here: sixty lines of orientation above a
+two-thousand-line module is cheap, read once per visit rather than once per
+call site. Not a tutorial.
 
 Cover whichever apply:
 
