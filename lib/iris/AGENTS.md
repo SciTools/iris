@@ -89,8 +89,22 @@ does not exist.
 - Replace repeated magic strings with module-level constants.
 - Return one documented type. Do not write functions whose return type
   depends on an argument's value. Iris has some legacy examples; add no more.
-- State laziness in the docstring: whether the result is lazy, and whether
-  the call realises data.
+
+
+## Laziness
+
+Realising data is the caller's decision, never a library function's.
+
+- Use the `core_*` accessors when you do not care which you have:
+  `core_data()` on a cube, `core_points()` / `core_bounds()` on a coord. They
+  return real or lazy without realising either. Reach for `.data` only to
+  return a result the caller asked to realise.
+- A lazy input gives a lazy output. State in the docstring whether the result
+  is lazy and whether the call realises data.
+- Never realise to inspect: `shape`, `dtype` and `ndim` are on the lazy array,
+  and `has_lazy_data()` / `has_lazy_points()` answer which you have.
+- Build graphs whole-array with `iris._lazy_data` — `map_complete_blocks`,
+  `lazy_elementwise`, `as_lazy_data`. Per-slice graph building is expensive.
 
 
 ## Conform to the Specification, Not to the Sample File
