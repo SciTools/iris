@@ -153,9 +153,7 @@ class TestTheSwap:
 
 
 class TestAttributesAreASnapshot:
-    """Finding F11.
-
-    ``NetCDFDatasetVariable.attributes`` writes through to the file, which is
+    """``NetCDFDatasetVariable.attributes`` writes through to the file, which is
     right for the saver and wrong for the reader: CFReader synthesises a
     "bounds" link during load, on a file it opened read-only. CFVariable
     therefore takes a copy.
@@ -170,9 +168,7 @@ class TestAttributesAreASnapshot:
 
 
 class TestAttributeTrackingAcrossReset:
-    """Review Focus 3.
-
-    CFReader reads attributes while classifying variables, then calls
+    """CFReader reads attributes while classifying variables, then calls
     ``cf_attrs_reset()`` so the rules start from a clean record. Until this
     PR, ``__getattr__`` cached the value on the instance, so a read after the
     reset found the cache and was never recorded - and an attribute Iris had

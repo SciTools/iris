@@ -14,7 +14,7 @@ from iris.tests.unit.fileformats.cf.dataset.contract import (
 
 
 class TestNetCDFDatasetContract(CFDatasetContract):
-    """The netCDF side of the contract. PR 4 adds the Zarr side."""
+    """The netCDF side of the contract."""
 
     @pytest.fixture
     def readable(self, tmp_path):

@@ -9,8 +9,8 @@ supply the three fixtures it declares, and every test here runs against it.
 The class deliberately has no ``Test`` prefix, so pytest does not collect it
 where it is written, only where it is subclassed.
 
-Spec section 6: the interface is only worth having if both sides of it agree,
-and agreement is cheapest to check by asking the same questions twice.
+The interface is only worth having if both sides of it agree, and agreement
+is cheapest to check by asking the same questions twice.
 
 Deliberately not exercised here: :meth:`CFDatasetVariable.deprecated_netcdf_member`.
 It is an explicitly netCDF4-specific compatibility escape hatch, so asserting
@@ -201,7 +201,7 @@ class CFDatasetContract:
         assert writable.variables["thing"].name == created.name
 
     def test_create_variable_without_dimensions(self, writable):
-        # Finding F4: saver.py:2080 supplies only a name and a dtype.
+        # saver.py creates a grid variable with only a name and a dtype.
         variable = writable.create_variable("grid", np.dtype("i4"))
         assert variable.dimensions == ()
 
@@ -230,22 +230,11 @@ class CFDatasetContract:
             assert reader.variables["air_temperature"].attributes["comment"] == "added"
 
     def test_write_handle_works_after_close(self, writable, reopen):
-        # Not asserted here: that `handle` itself survives a pickle round
-        # trip. CFDatasetVariable.write_handle's docstring requires it,
-        # because it is what a Dask worker receives as a da.store target -
-        # but the handle carries a backend-injected lock
-        # (NetCDFDataset.write_lock) whose type depends on the active Dask
-        # scheduler, and under the default threaded scheduler that lock is
-        # an unpicklable threading.Lock which is, in practice, never
-        # pickled: _dask_locks.get_worker_lock only returns a picklable
-        # dask.distributed.Lock under the distributed scheduler, which is
-        # also the only scheduler that ever ships a handle to another
-        # process. A round-trip assertion here would wrongly fail a correct
-        # backend under the default scheduler. What an implementation
-        # actually owes is that the handle itself captures no unpicklable
-        # state of its own - no open file, store handle or live connection -
-        # which is what this test approximates by proving the handle still
-        # works once the dataset that created it has closed.
+        # Not asserted: that the handle survives a pickle round trip. Under
+        # the default threaded scheduler its lock is an unpicklable
+        # threading.Lock, and only the distributed scheduler - which supplies
+        # a picklable one - ever ships a handle to another process. Using the
+        # handle after close is the portable approximation.
         populate(writable)
         handle = writable.variables["air_temperature"].write_handle()
         writable.close()

@@ -104,7 +104,7 @@ class TestData:
 class TestAttributes:
     def test_is_a_plain_mutable_mapping(self, air):
         # Tracking belongs to CFVariable, not here: a CFDatasetVariable can
-        # have two CFVariables promoted over it - see finding F1.
+        # have two CFVariables promoted over it.
         assert isinstance(air.attributes, MutableMapping)
         assert not hasattr(air.attributes, "read")
 

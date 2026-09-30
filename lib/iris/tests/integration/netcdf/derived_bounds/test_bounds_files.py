@@ -260,9 +260,8 @@ def test_save_absent_factory_dependency(cube_with_absent_orography, tmp_ncdir):
 
     The bounds ``formula_terms`` is built by following each term variable's
     ``bounds`` link, and an absent dependency has no term variable to follow.
-    Asserts on the file rather than on the save completing: the terms this
-    writes are the pre-existing behaviour being preserved, not an improvement
-    on it, and a fix that silently dropped ``orog`` would also not raise.
+    Asserts on the file rather than on the save completing, because a fix
+    that silently dropped ``orog`` would also not raise.
     """
     nc_filepath = tmp_ncdir / "test_save_absent_orography.nc"
 

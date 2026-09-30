@@ -67,8 +67,8 @@ class TestCreateVariable:
         assert "air" in grid.variables
 
     def test_dimensions_default_to_scalar(self, writer):
-        # saver.py:2080 creates a grid-mapping variable with no dimensions at
-        # all, and passes only a name and a dtype - see finding F4.
+        # saver.py creates a grid-mapping variable with no dimensions at all,
+        # passing only a name and a dtype.
         variable = writer.create_variable("grid", np.int32)
         assert variable.dimensions == ()
         assert variable.shape == ()
@@ -222,8 +222,8 @@ class TestAttributeWrites:
 
 
 class TestNonAsciiAttributes:
-    """Review Focus 5. The coercion's except branch, which is the common one
-    for real-world metadata: degree signs, accented names, superscripts.
+    """The coercion's except branch, which is the common one for real-world
+    metadata: degree signs, accented names, superscripts.
     """
 
     @pytest.mark.parametrize(

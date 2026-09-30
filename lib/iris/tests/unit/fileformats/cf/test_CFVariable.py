@@ -140,9 +140,8 @@ class TestSpans:
 class TestIsScalar:
     """Direct tests of the single definition of "scalar" that spans() shares.
 
-    _is_scalar() is this task's produced interface: PR 4's Zarr backend
-    reads it rather than restating the rule, so it is tested directly and
-    not only through spans().
+    A Zarr backend reads _is_scalar() rather than restating the rule, so it
+    is tested directly and not only through spans().
     """
 
     def test_no_dimensions_is_scalar(self, nc_var):
@@ -202,9 +201,9 @@ class TestAttributeAccess:
         assert "coordinates" not in cf_var.__dict__
 
     def test_attributes_are_a_snapshot_taken_at_construction(self, nc_var):
-        # Finding F11. Copied, not wrapped: the storage object's mapping
-        # writes through to the file, and CFReader synthesises a "bounds"
-        # link on a file it opened read-only.
+        # Copied, not wrapped: the storage object's mapping writes through
+        # to the file, and CFReader synthesises a "bounds" link on a file it
+        # opened read-only.
         cf_var = CFVariableSub("foo", nc_var)
 
         nc_var.attributes["units"] = "K"
@@ -215,7 +214,7 @@ class TestAttributeAccess:
 
     def test_getattr_of_a_non_attribute_reaches_the_variable(self, nc_var):
         # The one-cycle compatibility route, now delegated to the storage
-        # object - which is also what warns. See Step 15.
+        # object - which is also what warns.
         nc_var.deprecated_netcdf_member.return_value = 42
         cf_var = CFVariableSub("foo", nc_var)
 
@@ -366,7 +365,7 @@ SHADOWED_NAMES = ["filename", "cf_name", "spans", "attributes", "cf_data"]
 
 
 class TestShadowedAttributeNames:
-    """Review Focus 1. Spec section 4.3's known limitation, pinned."""
+    """A CF attribute cannot displace a CFVariable member of the same name."""
 
     @pytest.fixture
     def shadowing(self, nc_var):
@@ -416,7 +415,7 @@ class TestShadowedAttributeNames:
 
 
 class TestGetattrAndHasattr:
-    """Review Focus 2. The two call shapes the loading rules actually use."""
+    """The two call shapes the loading rules actually use."""
 
     def test_getattr_with_a_default_finds_the_attribute(self, nc_var):
         cf_var = CFVariableSub("foo", nc_var)
@@ -478,9 +477,9 @@ class TestGetattrAndHasattr:
 
 
 class TestReadAfterReset:
-    """Review Focus 3. The cache removal's whole point, at unit scale.
+    """The cache removal's whole point, at unit scale.
 
-    Task 11, Step 1 pins the same behaviour end to end, on a real file.
+    test_CFReader__dataset.py pins the same behaviour on a real file.
     """
 
     def test_a_re_read_after_reset_counts_again(self, nc_var):

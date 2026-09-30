@@ -191,7 +191,7 @@ class TestGridMappingAttributes:
 
     Every other attribute the saver writes goes through the CF attribute
     mapping. These do not - they are set straight onto the netCDF4 variable,
-    because doing otherwise would change their type in the file (finding F8).
+    because doing otherwise would change their type in the file.
     That makes a mistake in one of them silent: assigning to the wrong object,
     or misspelling the object, leaves a stray Python attribute and no
     attribute in the file at all.

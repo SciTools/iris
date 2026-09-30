@@ -39,7 +39,7 @@ class TestWhatRecordsARead:
         assert "units" in tracked.read
 
     def test_contains_records_a_hit(self, tracked):
-        # hasattr(cf_var, name) goes through __getattr__ today and marks the
+        # hasattr(cf_var, name) goes through __getattr__ and marks the
         # attribute used; the mapping form has to do the same.
         assert "units" in tracked
         assert "units" in tracked.read

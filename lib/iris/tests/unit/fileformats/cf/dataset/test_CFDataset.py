@@ -123,7 +123,7 @@ class TestConcreteDefaults:
 
     def test_len_of_a_scalar_matches_netcdf4(self):
         # netCDF4.Variable raises TypeError, and CFVariable.__len__ forwards
-        # to it today, so anything catching that keeps working.
+        # to it, so anything catching that keeps working.
         class Scalar(MinimalVariable):
             shape = ()
 
