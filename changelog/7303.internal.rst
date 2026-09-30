@@ -1,5 +1,1 @@
-:user:`trexfeathers` introduced :class:`iris.fileformats.cf.dataset.CFDataset`
-and :class:`iris.fileformats.cf.dataset.CFDatasetVariable`, a format-agnostic
-description of a CF-conforming array store, and rewrote the CF variable classes
-against it.  ``iris.fileformats.netcdf.saver.VariableEmulator`` is no longer
-used and has been removed.
+:user:`trexfeathers` removed ``iris.fileformats.netcdf.saver.VariableEmulator``.
