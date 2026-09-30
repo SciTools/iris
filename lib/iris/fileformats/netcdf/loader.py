@@ -659,7 +659,6 @@ def _translate_constraints_to_var_callback(constraints):
                     expected = getattr(constraint, name)
                     if name != "STASH" and expected != "none":
                         if name == "var_name":
-                            # Iris's name for it; not a file attribute at all.
                             actual = cf_datavar.cf_name
                         elif name in cf_datavar.attributes:
                             actual = cf_datavar.attributes[name]

@@ -280,19 +280,7 @@ class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
     pass
 
 
-class VariableEmulator(typing.Protocol):
-    """Duck-type-hinting for a ncdata object.
-
-    https://github.com/pp-mo/ncdata
-    """
-
-    _data_array: np.typing.ArrayLike
-    shape: tuple[int, ...]
-
-
-# A saver variable is whatever the dataset hands back. For netCDF that is a
-# NetCDFDatasetVariable, whether it wraps a real file variable or an
-# emulating object - see VariableEmulator, above.
+# TODO: becomes a Union once a Zarr CFDataset implementation exists.
 CFVariable = NetCDFDatasetVariable
 
 
@@ -404,9 +392,7 @@ class Saver:
                 )
                 raise ValueError(msg)
 
-            # from_existing() handles the thread-safety wrapping, including the
-            # case of an object that only emulates a dataset and carries no
-            # wrapper of its own.
+            # from_existing() handles the thread-safety wrapping.
             self._dataset = NetCDFDataset.from_existing(filename)
 
             # In this case the dataset gives a filepath, not the other way around.
@@ -444,9 +430,7 @@ class Saver:
                 else:
                     raise
 
-        # One lock for the whole file, shared with every variable of it. A
-        # second get_worker_lock() call would hand back a different
-        # threading.Lock under the threaded scheduler, excluding nothing.
+        # One lock for the whole file, shared with every variable of it.
         self.file_write_lock = self._dataset.write_lock
 
     def __enter__(self):
@@ -1212,8 +1196,6 @@ class Saver:
                             result = term_varname
                             # Follow links (if they exist) to find the bounds var.
                             termvar = self._dataset.variables.get(term_varname)
-                            # An absent factory dependency has no variable name,
-                            # so there is nothing to follow: keep the fallback.
                             boundsname = (
                                 None
                                 if termvar is None
@@ -2058,11 +2040,9 @@ class Saver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # The sixty-three assignments below set CF grid-mapping parameters by
-        # Python attribute assignment. Unlike every other attribute the saver
-        # writes, they bypass the ASCII-to-bytes coercion, so moving them onto
-        # .attributes would change the file. See finding F8; until then they
-        # need the netCDF4 variable itself.
+        # Assignments to properties of grid_variable bypass the ASCII-to-bytes
+        # coercion that .attributes applies, so moving them there would change
+        # the file. They need the netCDF4 variable itself.
         grid_variable = cf_var_grid.variable
 
         def add_ellipsoid(ellipsoid):
@@ -2645,6 +2625,7 @@ class Saver:
                     data: np.typing.ArrayLike,
                     cf_var: NetCDFDatasetVariable,
                 ) -> None:
+                    # TODO: recheck once Zarr behaviour is settled.
                     # Ask the variable for something a worker can stream into
                     # after this file is closed.  What that is is the backend's
                     # business: netCDF reopens the file, Zarr will hand back the
