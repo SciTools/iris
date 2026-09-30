@@ -365,7 +365,10 @@ SHADOWED_NAMES = ["filename", "cf_name", "spans", "attributes", "cf_data"]
 
 
 class TestShadowedAttributeNames:
-    """A CF attribute cannot displace a CFVariable member of the same name."""
+    """A CF attribute cannot displace a CFVariable member of the same name.
+
+    Spec section 4.3's known limitation, pinned.
+    """
 
     @pytest.fixture
     def shadowing(self, nc_var):

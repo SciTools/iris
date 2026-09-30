@@ -18,6 +18,8 @@ construction. :meth:`NetCDFDataset.from_existing` serves both paths and
 cannot tell them apart, so it stipulates an open mode rather than observing
 one, and always wraps for byte encoding.
 
+See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
 """
 
 from collections.abc import Iterator, Mapping, MutableMapping

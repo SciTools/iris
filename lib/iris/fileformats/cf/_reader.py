@@ -46,7 +46,9 @@ the package works against the format-agnostic
 :class:`~iris.fileformats.cf.dataset.CFDataset` /
 :class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
 store can be read by the same machinery once a
-:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it.
+:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it
+-- see §4.2 of the native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

@@ -9,8 +9,8 @@ supply the three fixtures it declares, and every test here runs against it.
 The class deliberately has no ``Test`` prefix, so pytest does not collect it
 where it is written, only where it is subclassed.
 
-The interface is only worth having if both sides of it agree, and agreement
-is cheapest to check by asking the same questions twice.
+Spec section 6: the interface is only worth having if both sides of it agree,
+and agreement is cheapest to check by asking the same questions twice.
 
 Deliberately not exercised here: :meth:`CFDatasetVariable.deprecated_netcdf_member`.
 It is an explicitly netCDF4-specific compatibility escape hatch, so asserting
