@@ -35,8 +35,9 @@ class TestCreateDimension:
         assert writer.dimensions["x"] == 5
 
     def test_none_means_unlimited(self, writer):
-        # saver.py:829 passes None for a dimension the user asked to make
-        # unlimited. It reads back as zero-length until records are written.
+        # Saver._create_cf_dimensions passes None for a dimension the user
+        # asked to make unlimited. It reads back as zero-length until records
+        # are written.
         writer.create_dimension("t", None)
         assert writer.dimensions["t"] == 0
         assert writer.dataset.dimensions["t"].isunlimited()
@@ -58,10 +59,10 @@ class TestCreateVariable:
     def test_updates_an_already_materialised_variables_cache(self, grid):
         # Pins that create_variable keeps an already-materialised .variables
         # mapping current, rather than leaving it stale. saver.py's
-        # variable-naming collision loops (":1566", ":1698", ":1852",
-        # ":1908", ":2294") read `.variables` repeatedly while creating
-        # variables, so a stale cache here would let a name collision go
-        # undetected.
+        # variable-naming collision loops - `while <name> in
+        # self._dataset.variables: <name> = self._increment_name(<name>)` -
+        # read `.variables` repeatedly while creating variables, so a stale
+        # cache here would let a name collision go undetected.
         assert "air" not in grid.variables  # materialise the cache first
         grid.create_variable("air", np.dtype("f4"), ("y", "x"))
         assert "air" in grid.variables
@@ -74,7 +75,7 @@ class TestCreateVariable:
         assert variable.shape == ()
 
     def test_dimensions_may_be_a_list(self, grid):
-        # saver.py:1938 and :1983 pass a list, not a tuple.
+        # Saver._create_generic_cf_array_var passes element_dims, a list.
         variable = grid.create_variable("air", np.dtype("f4"), ["y", "x"])
         assert variable.dimensions == ("y", "x")
 

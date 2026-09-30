@@ -1111,7 +1111,7 @@ class TestSynthesisedBoundsLink:
         assert cf_var.bounds == "synthesised"
 
     def test_a_bounds_link_set_to_none_still_reads_as_present(self, mocker):
-        # _reader.py:358 invalidates a broken link by setting it to None
+        # CFReader._translate invalidates a broken link by setting it to None
         # rather than deleting it, and the reads downstream check presence
         # before value.
         nc_var = mocker.MagicMock()

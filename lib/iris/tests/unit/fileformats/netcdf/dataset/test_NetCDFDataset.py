@@ -200,8 +200,8 @@ class TestBorrowing:
 class TestAutoChartostring:
     """Iris decodes byte data itself, so netCDF4 must not do it first.
 
-    CFReader turned this off on every dataset it opened (_reader.py:182).
-    The dataset now does it, so no caller has to remember.
+    ``CFReader`` used to call ``set_auto_chartostring(False)`` on every
+    dataset it opened. The dataset now does it, so no caller has to remember.
     """
 
     def test_turned_off_on_an_opened_dataset(self, sample_path, mocker):
