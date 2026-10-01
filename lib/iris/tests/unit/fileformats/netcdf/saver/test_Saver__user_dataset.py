@@ -10,7 +10,7 @@ open dataset in place of a path. Two kinds of caller do this:
 * one holding a real, open netCDF4 dataset, who wants Iris to add to it;
 * one holding an object that merely *looks* like a netCDF4 dataset, and
   collects what Iris writes rather than storing it. This is how
-  https://github.com/pp-mo/ncdata translates between Iris and Xarray, added
+  https://github.com/SciTools/ncdata translates between Iris and Xarray, added
   for https://github.com/SciTools/iris/issues/4994.
 
 The second is the reason ``Saver`` may not assume its dataset is netCDF4,
