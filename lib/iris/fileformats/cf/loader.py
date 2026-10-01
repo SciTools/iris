@@ -355,6 +355,9 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
+    # Deferred import: iris.fileformats.netcdf.saver imports the CF layer, so
+    # importing it here at module scope would close the loop. PR 5 moves the
+    # saver and this becomes a plain import.
     from iris.fileformats.netcdf.saver import Saver
 
     if Saver._DATALESS_ATTRNAME in cf_var.attributes:
