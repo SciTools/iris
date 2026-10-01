@@ -5327,6 +5327,7 @@ x            -               -
         sample_points: Iterable[tuple[AuxCoord | DimCoord | str, np.typing.ArrayLike]],
         scheme: iris.analysis.InterpolationScheme,
         collapse_scalar: bool = True,
+        trajectory: bool = False,
     ) -> Cube:
         """Interpolate from this :class:`~iris.cube.Cube` to the given sample points.
 
@@ -5352,6 +5353,15 @@ x            -               -
         collapse_scalar : bool, default=True
             Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.
+        trajectory : bool, default=False
+            If True, treat the sample points as paired trajectory points
+            rather than forming a Cartesian product grid. The i-th position
+            of each coordinate array is interpolated together as a single
+            sample point. When True, the raw interpolated
+            :class:`~numpy.ndarray` is returned instead of a
+            :class:`~iris.cube.Cube`; coordinate reconstruction is the
+            caller's responsibility (see
+            :func:`iris.analysis.trajectory.interpolate`).
 
         Returns
         -------
@@ -5416,7 +5426,7 @@ x            -               -
             )
         coords, points = zip(*sample_points)
         interp = scheme.interpolator(self, coords)  # type: ignore[arg-type]
-        return interp(points, collapse_scalar=collapse_scalar)
+        return interp(points, collapse_scalar=collapse_scalar, trajectory=trajectory)
 
     def regrid(self, grid: Cube, scheme: iris.analysis.RegriddingScheme) -> Cube:
         r"""Regrid this :class:`~iris.cube.Cube` on to the given target `grid`.
