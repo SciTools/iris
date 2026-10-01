@@ -134,9 +134,10 @@ real.
 - Never name an artefact of how the work was done — a review finding, a task
   or plan number, a phase — in a test name, docstring or comment. Cite an
   issue, a pull request, a design document, or the convention's section.
-- Never cite a line number in another file, or a count of call sites. Both
-  decay silently as that file is edited, and nothing checks them. Name the
-  function, class or constant instead.
+- Never cite a line number in another file, a count of call sites, or a time
+  relative to writing ("this PR", "before this branch"). All decay silently,
+  and nothing checks them. Name the function, class, constant or pull request
+  number instead — a test outlives the branch that added it.
 - Do not weaken existing checks just to make tests pass — but a test can pin
   a *bug*, and correcting one is strengthening. Show by archaeology that the
   expectation was wrong, invert rather than delete, and comment why.
