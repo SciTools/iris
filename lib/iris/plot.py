@@ -754,6 +754,11 @@ def _shift_plot_sections(u_object, u, v):
     endpoints = points[1:, :2]
     proj_x, proj_y, _ = tgt_proj.transform_points(src_crs, u, v).T
 
+    # Wrap proj_x into range -180..+180, as that's what the following logic needs.
+    # N.B. upto cartopy v0.26, this was true anyway, but has since changed.
+    # see : https://github.com/SciTools/cartopy/issues/2747
+    proj_x = (proj_x + 540.0) % 360.0 - 180.0
+
     # Calculate the inverse geodesic for each pair of points in turn, and
     # convert the start point's azimuth into a vector in the source coordinate
     # system.
@@ -1891,6 +1896,11 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     -------
     :class:`~matplotlib.animation.FuncAnimation` object suitable for saving and or plotting.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     >>> import iris
@@ -1903,11 +1913,6 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> cube_iter = my_cube.slices(("longitude", "latitude"))
     >>> ani = iplt.animate(cube_iter, qplt.contourf)
     >>> iplt.show()
-
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     kwargs.setdefault("interval", 100)

@@ -1,0 +1,2 @@
+:user:`trexfeathers` modernised the Iris gallery tests, and set several to skip
+if using the incompatible combination of PROJ>=9.8 and Cartopy<0.26.

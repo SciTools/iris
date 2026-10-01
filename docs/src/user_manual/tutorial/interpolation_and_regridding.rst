@@ -10,11 +10,14 @@
   import numpy as np
   import iris
   import warnings
-  warnings.simplefilter('ignore')
+
+  warnings.simplefilter("ignore")
 
 =================================
 Cube Interpolation and Regridding
 =================================
+
+.. readingtime::
 
 Iris provides powerful cube-aware interpolation and regridding functionality,
 exposed through Iris cube methods. This functionality is provided by building

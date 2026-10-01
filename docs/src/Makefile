@@ -55,6 +55,7 @@ html-quick:
 clean:
 	-rm -rf $(BUILDDIR)
 	-rm -rf $(SRCDIR)/generated
+	-rm -rf $(SRCDIR)/gallery_carousel.txt
 
 doctest:
 	$(SPHINXBUILD) -b doctest $(ALLSPHINXOPTS) $(BUILDDIR)/doctest

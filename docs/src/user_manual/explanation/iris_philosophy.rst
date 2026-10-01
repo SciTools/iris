@@ -9,6 +9,8 @@
 Iris' Philosophy
 ****************
 
+.. readingtime::
+
 .. _code-maintenance:
 
 Code Maintenance

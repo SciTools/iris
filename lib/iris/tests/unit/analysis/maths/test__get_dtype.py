@@ -12,7 +12,7 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 
 
-class Test:
+class TestGetDtype:
     def _check_call(self, obj, expected_dtype):
         result = _get_dtype(obj)
         assert expected_dtype == result

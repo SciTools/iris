@@ -3,6 +3,8 @@
 Token GitHub App
 ----------------
 
+.. readingtime::
+
 .. note::
 
    This section of the documentation is applicable only to GitHub `SciTools`_

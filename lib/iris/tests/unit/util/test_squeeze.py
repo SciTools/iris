@@ -10,7 +10,7 @@ import iris
 import iris.tests.stock as stock
 
 
-class Test:
+class TestSqueeze:
     @pytest.fixture(autouse=True)
     def _setup(self):
         self.cube = stock.simple_2d_w_multidim_and_scalars()

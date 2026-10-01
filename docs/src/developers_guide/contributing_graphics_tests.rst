@@ -5,6 +5,8 @@
 Adding or Updating Graphics Tests
 =================================
 
+.. readingtime::
+
 .. note::
 
   If a large number of images tests are failing due to an update to the

@@ -5,10 +5,10 @@ dimensions:
 	time = 360 ;
 variables:
 	short air_temperature(time, latitude, longitude) ;
-		air_temperature:scale_factor = 0.00242575f ;
-		air_temperature:add_offset = 261.648f ;
 		air_temperature:standard_name = "air_temperature" ;
 		air_temperature:units = "K" ;
+		air_temperature:scale_factor = 0.00242575f ;
+		air_temperature:add_offset = 261.648f ;
 		air_temperature:um_stash_source = "m01s03i236" ;
 		air_temperature:cell_methods = "time: maximum (interval: 1 hour)" ;
 		air_temperature:grid_mapping = "latitude_longitude" ;
@@ -53,10 +53,10 @@ variables:
 		precipitation_flux:grid_mapping = "latitude_longitude" ;
 		precipitation_flux:coordinates = "forecast_period forecast_reference_time" ;
 	ushort air_temperature_0(time, latitude, longitude) ;
-		air_temperature_0:scale_factor = 0.002014167f ;
-		air_temperature_0:add_offset = 176.7872f ;
 		air_temperature_0:standard_name = "air_temperature" ;
 		air_temperature_0:units = "K" ;
+		air_temperature_0:scale_factor = 0.002014167f ;
+		air_temperature_0:add_offset = 176.7872f ;
 		air_temperature_0:um_stash_source = "m01s03i236" ;
 		air_temperature_0:cell_methods = "time: minimum (interval: 1 hour)" ;
 		air_temperature_0:grid_mapping = "latitude_longitude" ;

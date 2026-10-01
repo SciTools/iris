@@ -9,6 +9,9 @@
 
 Iris' Mesh Partner Packages
 ****************************
+
+.. readingtime::
+
 Python is an easy to use language and has formed a very strong collaborative
 scientific community, which is why Iris is written in Python. *Performant*
 Python relies on calls down to low level languages like C, which is ideal for

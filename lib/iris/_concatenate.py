@@ -102,6 +102,11 @@ class _CoordMetaData(
         bounds_dtype = (
             coord.core_bounds().dtype if coord.core_bounds() is not None else None
         )
+        # Ignore string width; joined coordinates promote to a common width.
+        if points_dtype.kind in ("U", "S"):
+            points_dtype = np.dtype(points_dtype.kind)
+        if bounds_dtype is not None and bounds_dtype.kind in ("U", "S"):
+            bounds_dtype = np.dtype(bounds_dtype.kind)
         kwargs = {}
         # Add scalar flag metadata.
         kwargs["scalar"] = coord.core_points().size == 1

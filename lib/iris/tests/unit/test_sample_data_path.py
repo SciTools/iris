@@ -5,7 +5,7 @@
 """Unit tests for :func:`iris.sample_data_path` class."""
 
 import os
-import os.path
+from pathlib import Path
 
 import pytest
 
@@ -30,7 +30,7 @@ class TestIrisSampleData_path:
         sample_file.touch()
 
         mocker.patch("iris_sample_data.path", self.sample_dir)
-        result = sample_data_path(os.path.basename(sample_file))
+        result = sample_data_path(sample_file.name)
         assert result == str(sample_file)
 
     def test_file_not_found(self, mocker):
@@ -41,16 +41,16 @@ class TestIrisSampleData_path:
     def test_file_absolute(self, mocker):
         mocker.patch("iris_sample_data.path", self.sample_dir)
         with pytest.raises(ValueError, match="Absolute path"):
-            sample_data_path(os.path.abspath("foo"))
+            sample_data_path(Path("foo").absolute())
 
     def test_glob_ok(self, mocker):
         sample_path = self.sample_dir / "sample.txt"
         sample_path.touch()
 
-        sample_glob = "?" + os.path.basename(sample_path)[1:]
+        sample_glob = "?" + Path(sample_path).name[1:]
         mocker.patch("iris_sample_data.path", self.sample_dir)
         result = sample_data_path(sample_glob)
-        assert result == os.path.join(self.sample_dir, sample_glob)
+        assert result == str(Path(self.sample_dir) / sample_glob)
 
     def test_glob_not_found(self, mocker):
         mocker.patch("iris_sample_data.path", self.sample_dir)
@@ -60,7 +60,7 @@ class TestIrisSampleData_path:
     def test_glob_absolute(self, mocker):
         mocker.patch("iris_sample_data.path", self.sample_dir)
         with pytest.raises(ValueError, match="Absolute path"):
-            sample_data_path(os.path.abspath("foo.*"))
+            sample_data_path(Path("foo.*").absolute())
 
 
 class TestIrisSampleDataMissing:

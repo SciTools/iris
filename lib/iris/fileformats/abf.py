@@ -20,7 +20,7 @@ The documentation for this file format can be found
 import calendar
 import datetime
 import glob
-import os.path
+from pathlib import Path
 
 import numpy as np
 import numpy.ma as ma
@@ -82,7 +82,7 @@ class ABFField:
             field = ABFField("AVHRRBUVI01.1985feba.abl")
 
         """
-        basename = os.path.basename(filename)
+        basename = Path(filename).name
         if len(basename) != 24:
             raise ValueError(
                 "ABFField expects a filename of 24 characters: {}".format(basename)
@@ -100,7 +100,7 @@ class ABFField:
 
     def _read(self):
         """Read the field from the given filename."""
-        basename = os.path.basename(self._filename)
+        basename = Path(self._filename).name
         self.version = int(basename[9:11])
         self.year = int(basename[12:16])
         self.month = basename[16:19]

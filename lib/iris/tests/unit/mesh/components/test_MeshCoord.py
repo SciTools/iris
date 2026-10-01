@@ -16,7 +16,9 @@ from iris._lazy_data import as_lazy_data, is_lazy_data
 from iris.common.metadata import CoordMetadata
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
+from iris.experimental import mesh_coord_indexing
 from iris.mesh import Connectivity, MeshCoord, MeshXY
+from iris.mesh.components import _MeshIndexSet, _MeshXYMixin
 from iris.tests._shared_utils import (
     assert_array_all_close,
     assert_array_almost_equal,
@@ -231,7 +233,6 @@ class Test__copy:
 
 class Test__getitem__:
     def test_slice_wholeslice_1tuple(self):
-        # The only slicing case that we support, to enable cube slicing.
         meshcoord = sample_meshcoord()
         meshcoord2 = meshcoord[:,]
         assert meshcoord2 is not meshcoord
@@ -240,15 +241,95 @@ class Test__getitem__:
         assert meshcoord2.mesh is meshcoord.mesh
 
     def test_slice_whole_slice_singlekey(self):
-        # A slice(None) also fails, if not presented in a 1-tuple.
+        # A slice(None) fails, if not presented in a 1-tuple.
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:]
 
     def test_fail_slice_part(self):
         meshcoord = sample_meshcoord()
-        with pytest.raises(ValueError, match="Cannot index"):
+        with pytest.raises(
+            ValueError,
+            match="MeshCoord indexing expected a Slice or 1-dimensional index array. Got: <class 'slice'>",
+        ):
             meshcoord[:1]
+
+    def test_scalar_index_default_mode(self):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+        result = meshcoord[(0,)]
+
+        assert isinstance(result, AuxCoord)
+        assert result.shape == (1,)
+        assert result.points[0] == 3100
+
+    @pytest.mark.parametrize(
+        ("mode", "expected_mesh_type"),
+        [
+            (mesh_coord_indexing.Options.NEW_MESH, MeshXY),
+            (mesh_coord_indexing.Options.MESH_INDEX_SET, _MeshIndexSet),
+        ],
+    )
+    def test_scalar_index_mesh_modes(self, mode, expected_mesh_type):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+
+        with mesh_coord_indexing.SETTING.context(mode):
+            result = meshcoord[(0,)]
+
+        assert isinstance(result, MeshCoord)
+        assert isinstance(result.mesh, expected_mesh_type)
+        assert result.shape == (1,)
+        assert result.points[0] == 3100
+
+    def test_new_mesh_mode(self):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+
+        with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
+            result = meshcoord[([0, 2],)]
+
+        assert isinstance(result, MeshCoord)
+        assert isinstance(result.mesh, MeshXY)
+        assert result.mesh is not meshcoord.mesh
+        assert result.shape == (2,)
+
+    def test_mesh_index_set_mode(self):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+
+        with mesh_coord_indexing.SETTING.context(
+            mesh_coord_indexing.Options.MESH_INDEX_SET
+        ):
+            result = meshcoord[([0, 2],)]
+
+        assert isinstance(result, MeshCoord)
+        assert isinstance(result.mesh, _MeshIndexSet)
+        assert result.mesh.mesh is meshcoord.mesh
+        assert result.mesh.location == meshcoord.location
+        assert result.shape == (2,)
+
+    def test_mesh_index_set_mode_reindex_from_existing_index_set(self):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+
+        with mesh_coord_indexing.SETTING.context(
+            mesh_coord_indexing.Options.MESH_INDEX_SET
+        ):
+            first = meshcoord[([0, 1],)]
+            second = first[([0],)]
+
+        assert isinstance(first.mesh, _MeshIndexSet)
+        assert isinstance(second.mesh, _MeshIndexSet)
+        assert second.mesh.mesh is meshcoord.mesh
+        assert second.shape == (1,)
+
+    def test_bad_indexing_setting(self, monkeypatch):
+        meshcoord = sample_meshcoord(location="face", axis="x")
+        monkeypatch.setattr(mesh_coord_indexing.SETTING, "_value", "bad_value")
+
+        with pytest.raises(
+            NotImplementedError, match="Unsupported mesh_coord_indexing"
+        ):
+            meshcoord[([0],)]
 
 
 class Test__str_repr:

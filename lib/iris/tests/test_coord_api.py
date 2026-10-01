@@ -419,10 +419,14 @@ class TestDimCoordCreation:
         with pytest.raises(ValueError, match="must be scalar or 1-dim"):
             iris.coords.DimCoord([[1, 2, 3], [4, 5, 6]])
         # monotonic points
-        with pytest.raises(ValueError, match="must be strictly monotonic"):
+        with pytest.raises(
+            iris.exceptions.MonotonicityError, match="must be strictly monotonic"
+        ):
             iris.coords.DimCoord([1, 2, 99, 4, 5])
         # monotonic bounds
-        with pytest.raises(ValueError, match="direction of monotonicity"):
+        with pytest.raises(
+            iris.exceptions.MonotonicityError, match="direction of monotonicity"
+        ):
             iris.coords.DimCoord([1, 2, 3], bounds=[[1, 12], [2, 9], [3, 6]])
         # masked points
         emsg = "points array must not be masked"
@@ -778,7 +782,9 @@ class TestGuessBounds:
         coord = iris.coords.AuxCoord.from_coord(coord)
         coord.points = points
         coord.bounds = None
-        with pytest.raises(ValueError, match="Need monotonic points"):
+        with pytest.raises(
+            iris.exceptions.MonotonicityError, match="Need monotonic points"
+        ):
             coord.guess_bounds()
 
 

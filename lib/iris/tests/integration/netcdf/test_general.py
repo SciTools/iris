@@ -5,7 +5,6 @@
 """Integration tests for loading and saving netcdf files."""
 
 from itertools import repeat
-import os.path
 from pathlib import Path
 import warnings
 
@@ -124,7 +123,7 @@ class TestCellMethod_unknown:
         cube = Cube([1, 2], long_name="odd_phenomenon")
         cube.add_cell_method(CellMethod(method="oddity", coords=("x",)))
         temp_dirpath = tmp_path_factory.mktemp("test")
-        temp_filepath = os.path.join(temp_dirpath, "tmp.nc")
+        temp_filepath = str(Path(temp_dirpath) / "tmp.nc")
         iris.save(cube, temp_filepath)
         with warnings.catch_warnings(record=True) as warning_records:
             iris.load(temp_filepath)

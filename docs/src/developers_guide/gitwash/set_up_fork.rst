@@ -6,6 +6,8 @@
 Set up Your Fork
 ================
 
+.. readingtime::
+
 First you follow the instructions for :ref:`forking`.
 
 Overview

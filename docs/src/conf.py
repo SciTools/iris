@@ -79,13 +79,13 @@ if on_rtd:
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
+# documentation root, use pathlib.Path().absolute() to make it absolute, like shown here.
 
 # custom sphinx extensions
-sys.path.append(os.path.abspath("sphinxext"))
+sys.path.append(str(Path("sphinxext").absolute()))
 
 # add some sample files from the developers guide..
-sys.path.append(os.path.abspath(os.path.join("developers_guide")))
+sys.path.append(str(Path("developers_guide").absolute()))
 
 # why isn't the iris path added to it is discoverable too?  We dont need to,
 # the sphinext to generate the api rst knows where the source is.  If it
@@ -152,24 +152,27 @@ rst_epilog = f"""
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "sphinx.ext.todo",
-    "sphinx.ext.duration",
-    "sphinx.ext.coverage",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.autosummary",
-    "sphinx.ext.doctest",
-    "sphinx.ext.extlinks",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
-    "sphinx_copybutton",
-    "sphinx.ext.napoleon",
-    "sphinx_design",
-    "sphinx_gallery.gen_gallery",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "readingtime",
+    "readingtime_validator",
+    "sphinx.ext.autodoc",
+    "sphinx.ext.autosummary",
+    "sphinx.ext.coverage",
+    "sphinx.ext.doctest",
+    "sphinx.ext.duration",
+    "sphinx.ext.extlinks",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.napoleon",
+    "sphinx.ext.todo",
+    "sphinx.ext.viewcode",
+    "sphinx_changelog",
+    "sphinx_copybutton",
+    "sphinx_design",
+    "sphinx_gallery.gen_gallery",
     "sphinx_needs",
-    "user_manual_directives",
     "sphinx_reredirects",
+    "user_manual_directives",
 ]
 
 if skip_api == "1":
@@ -177,6 +180,47 @@ if skip_api == "1":
 else:
     extensions.extend(["sphinxcontrib.apidoc"])
     extensions.extend(["api_rst_formatting"])
+
+# -- sphinx-llm ---------------------------------------------------------------
+# See https://github.com/NVIDIA/sphinx-llm
+
+if on_rtd:
+    autolog("[READTHEDOCS] [sphinx_llm.txt] Loading extension and configuring.")
+    extensions.append("sphinx_llm.txt")
+
+    llms_txt_enabled = True
+    llms_txt_build_parallel = True
+    llms_txt_suffix_mode = "auto"
+    llms_txt_full_build = True
+    llms_txt_description = "A powerful, format-agnostic, community-driven Python package for analysing and visualising Earth science data"
+
+# -- sphinx-sitemap ----------------------------------------------------------
+# See https://sphinx-sitemap.readthedocs.io/en/latest/index.html
+
+if on_rtd and rtd_version in ["latest", "stable"]:
+    extensions.append("sphinx_sitemap")
+
+    html_baseurl = f"https://scitools-iris.readthedocs.io/en/{rtd_version}/"
+    autolog(
+        "[READTHEDOCS] [sphinx_sitemap] {} = {}".format("html_baseurl", html_baseurl)
+    )
+
+    sitemap_show_lastmod = True
+    sitemap_url_scheme = "{link}"
+    sitemap_excludes = [
+        "search.html",
+        "genindex.html",
+        "_modules/*",
+        "py-modindex.html",
+        "*/sg_execution_times.html",
+    ]
+else:
+    autolog(
+        (
+            "[sphinx_sitemap] Must be running on READTHEDOCS and version is "
+            "either 'latest' or 'stable', skipping sitemap creation."
+        )
+    )
 
 # -- Napoleon extension -------------------------------------------------------
 # See https://sphinxcontrib-napoleon.readthedocs.io/en/latest/sphinxcontrib.napoleon.html
@@ -196,7 +240,7 @@ napoleon_custom_sections = None
 
 # -- copybutton extension -----------------------------------------------------
 # See https://sphinx-copybutton.readthedocs.io/en/latest/
-copybutton_prompt_text = r">>> |\.\.\. "
+copybutton_prompt_text = r">>> |\.\.\. |\$ |\> "
 copybutton_prompt_is_regexp = True
 copybutton_line_continuation_character = "\\"
 
@@ -211,7 +255,7 @@ autodoc_default_options = {
     "members": True,
     "member-order": "alphabetical",
     "undoc-members": True,
-    "private-members": False,
+    "private-members": "_MeshIndexSet",
     "special-members": False,
     # Enums are most valuable when documented as concisely as possible.
     "inherited-members": "Enum,IntEnum,ReprEnum,StrEnum",
@@ -269,7 +313,13 @@ intersphinx_mapping = {
     "pandas": ("https://pandas.pydata.org/docs/", None),
     "python": ("https://docs.python.org/3/", None),
     "pyvista": ("https://docs.pyvista.org/", None),
-    "scipy": ("https://docs.scipy.org/doc/scipy/", None),
+    # For scipy, get the inventory from the static site because it can be slow and
+    # sometimes times out when fetching from the docs site.
+    # https://github.com/scipy/docs.scipy.org/issues/102
+    "scipy": (
+        "https://docs.scipy.org/doc/scipy/",
+        "https://static.scipy.org/doc/scipy/objects.inv",
+    ),
 }
 
 # The name of the Pygments (syntax highlighting) style to use.
@@ -285,8 +335,8 @@ plot_formats = [
 # See https://www.sphinx-doc.org/en/master/usage/extensions/extlinks.html
 
 extlinks = {
-    "issue": ("https://github.com/SciTools/iris/issues/%s", "Issue #%s"),
-    "pull": ("https://github.com/SciTools/iris/pull/%s", "PR #%s"),
+    "issue": ("https://github.com/SciTools/iris/issues/%s", "#%s"),
+    "pull": ("https://github.com/SciTools/iris/pull/%s", "#%s"),
     "discussion": (
         "https://github.com/SciTools/iris/discussions/%s",
         "Discussion #%s",
@@ -318,7 +368,7 @@ html_theme = "pydata_sphinx_theme"
 html_sidebars = {
     "**": [
         "custom_sidebar_logo_version",
-        "search-field",
+        "sidebar-collapse",
         "sidebar-nav-bs",
         "sidebar-ethical-ads",
     ]
@@ -333,8 +383,7 @@ html_theme_options = {
     "show_toc_level": 2,
     "show_prev_next": True,
     "navbar_align": "content",
-    # removes the search box from the top bar
-    "navbar_persistent": [],
+    "navbar_persistent": ["search-field"],
     # TODO: review if 6 links is too crowded.
     "header_links_before_dropdown": 6,
     "github_url": "https://github.com/SciTools/iris",
@@ -407,9 +456,15 @@ html_context = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
 html_style = "theme_override.css"
+html_css_files = [
+    "changelog.css",
+    "readingtime.css",
+]
 
 # list of sources to exclude from the build.
-exclude_patterns = []
+exclude_patterns = [
+    "**/highlights.rst",
+]
 
 # -- sphinx-gallery config ----------------------------------------------------
 # See https://sphinx-gallery.github.io/stable/configuration.html
@@ -448,6 +503,8 @@ sphinx_gallery_conf = {
     # force gallery building, unless overridden (see src/Makefile)
     "plot_gallery": "'True'",
     "reset_modules": f"{reset_modules.__name__}.{reset_modules.__name__}",
+    # disable the computation reports
+    "write_computation_times": False,
 }
 
 # -----------------------------------------------------------------------------

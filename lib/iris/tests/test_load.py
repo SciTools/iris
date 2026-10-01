@@ -9,7 +9,7 @@ import pathlib
 import pytest
 
 import iris
-from iris.fileformats.netcdf import _thread_safe_nc
+from iris.fileformats.netcdf import _bytecoding_datasets
 import iris.io
 from iris.tests import _shared_utils
 
@@ -180,10 +180,10 @@ class TestOPeNDAP:
         filename = _shared_utils.get_data_path(
             ("NetCDF", "global", "xyt", "SMALL_total_column_co2.nc")
         )
-        fake_dataset = _thread_safe_nc.DatasetWrapper(filename)
+        fake_dataset = _bytecoding_datasets.EncodedDataset(filename)
 
         dataset_loader = mocker.patch(
-            "iris.fileformats.netcdf._thread_safe_nc.DatasetWrapper",
+            "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset",
             return_value=fake_dataset,
         )
         next(iris.io.load_http([self.url], callback=None))

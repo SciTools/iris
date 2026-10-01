@@ -99,30 +99,30 @@ class TestCells:
         # NOTE: These comparisons intentionally use explicit operators to ensure each
         # rich comparison method (__eq__, __ne__, __lt__, __le__, __gt__, __ge__) is
         # exercised.
-        self.d = iris.coords.Cell(1.9, None)
-        assert self.d == 1.9
-        assert not self.d == [1.5, 1.9]
-        assert not self.d != 1.9
-        assert self.d >= 1.9
-        assert self.d <= 1.9
-        assert not self.d > 1.9
-        assert not self.d < 1.9
-        assert self.d not in [1.5, 3.5]
-        assert self.d in [1.5, 1.9]
+        d = iris.coords.Cell(1.9, None)
+        assert d == 1.9
+        assert not d == [1.5, 1.9]
+        assert not d != 1.9
+        assert d >= 1.9
+        assert d <= 1.9
+        assert not d > 1.9
+        assert not d < 1.9
+        assert d not in [1.5, 3.5]
+        assert d in [1.5, 1.9]
 
-        assert self.d != 1
-        assert not self.d == 1
-        assert not self.d >= 2
-        assert not self.d <= 1
-        assert self.d > 1
-        assert self.d < 2
+        assert d != 1
+        assert not d == 1
+        assert not d >= 2
+        assert not d <= 1
+        assert d > 1
+        assert d < 2
 
         # Ensure the Cell's operators return NotImplemented.
         class Terry:
             pass
 
-        assert self.d.__eq__(Terry()) == NotImplemented
-        assert self.d.__ne__(Terry()) == NotImplemented
+        assert d.__eq__(Terry()) == NotImplemented
+        assert d.__ne__(Terry()) == NotImplemented
 
     def test_numpy_int_equality(self):
         dtypes = (np.int_, np.int16, np.int32, np.int64)
@@ -146,65 +146,65 @@ class TestCells:
             assert cell == val, dtype
 
     def test_coord_bounds_cmp(self):
-        self.e = iris.coords.Cell(0.7, [1.1, 1.9])
-        assert self.e == 1.6
-        assert not self.e != 1.6
-        assert self.e >= 1.9
-        assert self.e <= 1.9
-        assert not self.e > 1.9
-        assert not self.e < 1.9
+        e = iris.coords.Cell(0.7, [1.1, 1.9])
+        assert e == 1.6
+        assert not e != 1.6
+        assert e >= 1.9
+        assert e <= 1.9
+        assert not e > 1.9
+        assert not e < 1.9
 
-        assert self.e not in [1.0, 3.5]
-        assert self.e in [1.5, 1.9]
-        assert self.e != 1
-        assert not self.e == 1
-        assert not self.e >= 2
-        assert not self.e <= 1
-        assert self.e > 1
-        assert self.e < 2
+        assert e not in [1.0, 3.5]
+        assert e in [1.5, 1.9]
+        assert e != 1
+        assert not e == 1
+        assert not e >= 2
+        assert not e <= 1
+        assert e > 1
+        assert e < 2
 
     def test_cell_cell_cmp(self):
-        self.e = iris.coords.Cell(1)
-        self.f = iris.coords.Cell(1)
+        e = iris.coords.Cell(1)
+        f = iris.coords.Cell(1)
 
-        assert self.e == self.f
-        assert hash(self.e) == hash(self.f)
+        assert e == f
+        assert hash(e) == hash(f)
 
-        self.e = iris.coords.Cell(1)
-        self.f = iris.coords.Cell(1, [0, 2])
+        e = iris.coords.Cell(1)
+        f = iris.coords.Cell(1, [0, 2])
 
-        assert not self.e == self.f
-        assert hash(self.e) != hash(self.f)
+        assert not e == f
+        assert hash(e) != hash(f)
 
-        self.e = iris.coords.Cell(1, [0, 2])
-        self.f = iris.coords.Cell(1, [0, 2])
+        e = iris.coords.Cell(1, [0, 2])
+        f = iris.coords.Cell(1, [0, 2])
 
-        assert self.e == self.f
-        assert hash(self.e) == hash(self.f)
+        assert e == f
+        assert hash(e) == hash(f)
 
-        self.e = iris.coords.Cell(1, [0, 2])
-        self.f = iris.coords.Cell(1, [2, 0])
+        e = iris.coords.Cell(1, [0, 2])
+        f = iris.coords.Cell(1, [2, 0])
 
-        assert self.e == self.f
-        assert hash(self.e) == hash(self.f)
+        assert e == f
+        assert hash(e) == hash(f)
 
-        self.e = iris.coords.Cell(0.7, [1.1, 1.9])
-        self.f = iris.coords.Cell(0.8, [1.1, 1.9])
+        e = iris.coords.Cell(0.7, [1.1, 1.9])
+        f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        assert not self.e == self.f
-        assert hash(self.e) != hash(self.f)
-        assert not self.e > self.f
-        assert self.e <= self.f
-        assert self.f >= self.e
-        assert not self.f < self.e
+        assert not e == f
+        assert hash(e) != hash(f)
+        assert not e > f
+        assert e <= f
+        assert f >= e
+        assert not f < e
 
-        self.e = iris.coords.Cell(0.9, [2, 2.1])
-        self.f = iris.coords.Cell(0.8, [1.1, 1.9])
+        e = iris.coords.Cell(0.9, [2, 2.1])
+        f = iris.coords.Cell(0.8, [1.1, 1.9])
 
-        assert self.e > self.f
-        assert not self.e <= self.f
-        assert not self.f >= self.e
-        assert self.f < self.e
+        assert e > f
+        assert not e <= f
+        assert not f >= e
+        assert f < e
 
     def test_cmp_contig(self):
         # Test cells that share an edge

@@ -1,6 +1,6 @@
 """Plot a cube with a Brewer colour palette using iris.quickplot.contourf()."""
 
-import matplotlib.cm as mpl_cm
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 
 import iris
@@ -10,7 +10,7 @@ fname = iris.sample_data_path("air_temp.pp")
 temperature_cube = iris.load_cube(fname)
 
 # Load a Cynthia Brewer palette.
-brewer_cmap = mpl_cm.get_cmap("brewer_OrRd_09")
+brewer_cmap = mpl.colormaps["brewer_OrRd_09"]
 
 # Draw the contours, with n-levels set for the map colours (9).
 # NOTE: needed as the map is non-interpolated, but matplotlib does not provide

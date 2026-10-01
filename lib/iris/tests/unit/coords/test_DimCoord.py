@@ -9,17 +9,22 @@ but can only be tested on concrete instances (DimCoord or AuxCoord).
 
 """
 
+from cf_units import Unit
+import cftime
 import numpy as np
 import numpy.ma as ma
 import pytest
 
 from iris.coords import DimCoord
+from iris.exceptions import MonotonicityError
 from iris.tests import _shared_utils
 from iris.tests.unit.coords import (
     CoordTestMixin,
     coords_all_dtypes_and_lazynesses,
     lazyness_string,
 )
+
+DATETIME_CALENDARS = ["standard", "gregorian", "proleptic_gregorian"]
 
 
 class DimCoordTestMixin(CoordTestMixin):
@@ -76,7 +81,7 @@ class Test__init__(DimCoordTestMixin):
 
     def test_fail_nonmonotonic(self):
         msg = "must be strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             DimCoord([1, 2, 0, 3])
 
     def test_no_masked_pts_real(self):
@@ -508,7 +513,7 @@ class Test_points__setter(DimCoordTestMixin):
         # Setting real points requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = "strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             coord.points = np.array([3.0, 1.0, 2.0])
         _shared_utils.assert_array_equal(coord.points, self.pts_real)
 
@@ -573,7 +578,7 @@ class Test_bounds__setter(DimCoordTestMixin):
         # Setting real bounds requires that they are monotonic.
         coord = DimCoord(self.pts_real, bounds=self.bds_real)
         msg = "strictly monotonic"
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(MonotonicityError, match=msg):
             coord.bounds = np.array([[3.0, 2.0], [1.0, 0.0], [2.0, 1.0]])
         _shared_utils.assert_array_equal(coord.bounds, self.bds_real)
 
@@ -604,3 +609,55 @@ class Test_bounds__setter(DimCoordTestMixin):
         bnds = np.transpose([np.arange(4, 0, -1), np.arange(5, 1, -1)])
         coord = DimCoord(pts, bounds=bnds)
         _shared_utils.assert_array_equal(coord.bounds, bnds[:, ::-1])
+
+
+@pytest.mark.parametrize(
+    "calendar",
+    [*DATETIME_CALENDARS, "360_day"],
+)
+def test_cells__temporal_real_datetime(calendar):
+    epoch = "hours since 1970-01-01 00:00:00"
+    coord = DimCoord(
+        [100],
+        standard_name="time",
+        units=Unit(epoch, calendar=calendar),
+        bounds=[[99, 101]],
+    )
+
+    if calendar in DATETIME_CALENDARS:
+        result = [cell for cell in coord.cells(pydate=True)]
+        assert len(result) == 1
+        (cell,) = result
+        assert isinstance(cell.point, cftime.real_datetime)
+        left, right = cell.bound
+        assert isinstance(left, cftime.real_datetime)
+        assert isinstance(right, cftime.real_datetime)
+    else:
+        emsg = "Illegal calendar or reference date for python datetime"
+        with pytest.raises(ValueError, match=emsg):
+            _ = [cell for cell in coord.cells(pydate=True)]
+
+
+@pytest.mark.parametrize(
+    "calendar",
+    [*DATETIME_CALENDARS, "360_day"],
+)
+def test_cell__temporal_real_datetime(calendar):
+    epoch = "hours since 1970-01-01 00:00:00"
+    coord = DimCoord(
+        [100],
+        standard_name="time",
+        units=Unit(epoch, calendar=calendar),
+        bounds=[[99, 101]],
+    )
+
+    if calendar in DATETIME_CALENDARS:
+        result = coord.cell(0, pydate=True)
+        assert isinstance(result.point, cftime.real_datetime)
+        left, right = result.bound
+        assert isinstance(left, cftime.real_datetime)
+        assert isinstance(right, cftime.real_datetime)
+    else:
+        emsg = "Illegal calendar or reference date for python datetime"
+        with pytest.raises(ValueError, match=emsg):
+            _ = coord.cell(0, pydate=True)

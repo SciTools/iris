@@ -3,7 +3,7 @@ version: 2
 build:
   os: "ubuntu-22.04"
   tools:
-    python: "mambaforge-22.9"
+    python: "miniforge3-latest"
   jobs:
     post_checkout:
       # The SciTools/iris repository is shallow i.e., has a .git/shallow,

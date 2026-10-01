@@ -104,6 +104,7 @@ class TestMappingSubRegion(_shared_utils.GraphicsTest):
         # make the data smaller to speed things up.
         self.cube = cube[::10, ::10]
 
+    @_shared_utils.skip_proj_9_8_incompatible
     def test_simple(self):
         # First sub-plot
         plt.subplot(221)
@@ -187,6 +188,7 @@ class TestBoundedCube(_shared_utils.GraphicsTest):
         self.cube.coord("latitude").guess_bounds()
         self.cube.coord("longitude").guess_bounds()
 
+    @_shared_utils.skip_proj_9_8_incompatible
     def test_pcolormesh(self):
         # pcolormesh can only be drawn in native coordinates (or more
         # specifically, in coordinates that don't wrap).
@@ -230,6 +232,7 @@ class TestLimitedAreaCube(_shared_utils.GraphicsTest):
         iplt.outline(self.cube)
         self.check_graphic()
 
+    @_shared_utils.skip_proj_9_8_incompatible
     def test_scatter(self):
         iplt.points(self.cube)
         plt.gca().coastlines("110m")

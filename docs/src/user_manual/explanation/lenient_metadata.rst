@@ -8,6 +8,8 @@
 Lenient Metadata
 ****************
 
+.. readingtime::
+
 This section discusses lenient metadata; what it is, what it means, and how you
 can perform **lenient** rather than **strict** operations with your metadata.
 
@@ -38,6 +40,7 @@ Strict Behaviour
 .. testsetup:: strict-behaviour
 
     import iris
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     latitude = cube.coord("latitude")
 
@@ -148,6 +151,7 @@ Lenient Behaviour
 .. testsetup:: lenient-behaviour
 
     import iris
+
     cube = iris.load_cube(iris.sample_data_path("A1B_north_america.nc"))
     latitude = cube.coord("latitude")
 

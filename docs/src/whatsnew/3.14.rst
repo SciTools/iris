@@ -25,7 +25,7 @@ This document explains the changes made to Iris for this release
      :func:`~iris.cube.Cube.convert_units`, :func:`~iris.cube.Cube.subset` and
      :func:`~iris.cube.Cube.slices`.
 
-   * Added the utility :func:`~iris.util.mask_cube_from_shape`, superceding
+   * Added the utility :func:`~iris.util.mask_cube_from_shape`, superseding
      :func:`~iris.util.mask_cube_from_shapefile` and adding the ability to handle
      shapefiles that use different coordinate systems to the cube they are being
      applied to, adding the ability to handle additional Point and Line shape types
@@ -159,7 +159,7 @@ v3.14.1 (05 Dec 2025)
    of parallel operation; so a dataset containing ~100 chunks could be around
    0.5 seconds slower to load or save. This regression will NOT be fixed within
    Iris - doing so would introduce unacceptable complexity and potential
-   concurrency problems. The regession has been reported to the NetCDF team; it
+   concurrency problems. The regression has been reported to the NetCDF team; it
    is hoped that a future ``libnetcdf`` release will recover the original
    performance. See `netcdf-c#3183`_ for more details. (:pull:`6747`)
 

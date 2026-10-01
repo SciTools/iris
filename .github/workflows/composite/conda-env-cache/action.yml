@@ -23,13 +23,16 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/cache@v5
+    - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
       id: conda-env-cache
       with:
         path: ${{ env.CONDA }}/envs/${{ inputs.env_name }}
         key: ${{ runner.os }}-conda-env-${{ inputs.env_name }}-p${{ inputs.cache_period }}-b${{ inputs.cache_build }}
 
     - if: steps.conda-env-cache.outputs.cache-hit != 'true'
+      env:
+        INPUTS_ENV_NAME: ${{ inputs.env_name }}
+        INPUTS_INSTALL_PACKAGES: ${{ inputs.install_packages }}
       shell: bash
       run: |
-        conda install --quiet --name ${{ inputs.env_name }} ${{ inputs.install_packages }}
+        conda install --quiet --name ${INPUTS_ENV_NAME} ${INPUTS_INSTALL_PACKAGES}

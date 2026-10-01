@@ -5,7 +5,7 @@
 """Test function :func:`iris.util.test_file_is_newer`."""
 
 import os
-import os.path
+from pathlib import Path
 
 import pytest
 
@@ -17,7 +17,7 @@ class TestFileIsNewer:
 
     def _name2path(self, filename):
         """Add the temporary dirpath to a filename to make a full path."""
-        return os.path.join(self.temp_dir, filename)
+        return str(Path(self.temp_dir) / filename)
 
     @pytest.fixture(autouse=True)
     def _setup(self, tmp_path):

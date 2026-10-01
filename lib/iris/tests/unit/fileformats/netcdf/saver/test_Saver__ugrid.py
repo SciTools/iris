@@ -19,6 +19,7 @@ from iris.coords import AuxCoord
 from iris.cube import Cube, CubeList
 from iris.fileformats.netcdf import _thread_safe_nc
 from iris.mesh import Connectivity, MeshXY, save_mesh
+from iris.mesh.components import _MeshIndexSet
 from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
 
@@ -398,12 +399,12 @@ class TestSaveUgrid__cube:
         # into the iris.fileformats.netcdf.saver. Also we want to check that the
         # compression kwargs are passed into the NetCDF4 createVariable method
         patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         # No need to patch this NetCDF4 variable to compensate for the previous patch
         # on createVariable, which doesn't actually create the variable.
         mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         cube = make_cube(var_name=(var_name := "a"))
         compression_kwargs = {
@@ -776,10 +777,10 @@ class TestSaveUgrid__mesh:
 
         """
         patch = mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.createVariable",
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.createVariable",
         )
         mocker.patch(
-            "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper.variables"
+            "iris.fileformats.netcdf.saver.bytecoding_datasets.EncodedDataset.variables"
         )
         mesh = make_mesh()
         compression_kwargs = {
@@ -1354,6 +1355,42 @@ class TestSaveUgrid__mesh:
                 "Mesh2d_edge",
                 "Mesh2d_0_edge_N_nodes",
             ]
+
+    def test_mesh_no_standard_name_coords_saves_as_unknown(self, check_save_mesh):
+        # Tests when the coords of a mesh don't contain a standard that it is possible to save
+        # and that the saved coords are marked as "unknown"
+        face_lat = AuxCoord([2])
+        face_lon = AuxCoord([2])
+        node_lat = AuxCoord([0, 0, 4])
+        node_lon = AuxCoord([0, 4, 2])
+        face_node_conn = [[0, 1, 2]]
+
+        connectivity = Connectivity(
+            indices=face_node_conn,
+            cf_role="face_node_connectivity",
+        )
+        mesh = MeshXY(
+            topology_dimension=2,
+            node_coords_and_axes=[(node_lat, "y"), (node_lon, "x")],
+            connectivities=[connectivity],
+            face_coords_and_axes=[(face_lat, "y"), (face_lon, "x")],
+        )
+
+        filepath = check_save_mesh(mesh)
+        _, vars = scan_dataset(filepath)
+
+        expected_coord_names = ("unknown", "unknown_0", "unknown_1", "unknown_2")
+        for expected_coord_name in expected_coord_names:
+            assert expected_coord_name in vars
+
+    def test_fail_mesh_index_set(self, check_save_mesh):
+        mesh = make_mesh(n_faces=3, n_edges=2)
+        index_set = _MeshIndexSet([0, 2], mesh=mesh, location="face")
+
+        with pytest.raises(
+            ValueError, match="_MeshIndexSet saving is not yet supported"
+        ):
+            _ = check_save_mesh(index_set)
 
 
 # WHEN MODIFYING THIS MODULE, CHECK IF ANY CORRESPONDING CHANGES ARE NEEDED IN

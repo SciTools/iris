@@ -8,6 +8,9 @@
 ==============
 Dataless Cubes
 ==============
+
+.. readingtime::
+
 It is possible for a cube to exist without a data payload.
 In this case ``cube.data`` is ``None``, instead of containing an array (real or lazy) as
 usual.

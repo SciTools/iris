@@ -49,6 +49,11 @@ def izip(*cubes, **kwargs):
     -------
     An iterator over a collection of tuples that contain the resulting subcubes.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
         >>> e_content, e_density = iris.load_cubes(
@@ -58,11 +63,6 @@ def izip(*cubes, **kwargs):
         ...                                         coords=['grid_latitude',
         ...                                                 'grid_longitude']):
         ...    pass
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if not cubes:

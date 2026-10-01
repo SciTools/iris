@@ -102,7 +102,7 @@ class Test___init____validation(ThreeDimCube):
             iris.coords.AuxCoord([0, 3, 2], long_name="non-monotonic"), 1
         )
         msg = "Cannot interpolate over the non-monotonic coordinate non-monotonic."
-        with pytest.raises(ValueError, match=msg):
+        with pytest.raises(iris.exceptions.MonotonicityError, match=msg):
             RectilinearInterpolator(self.cube, ["non-monotonic"], LINEAR, EXTRAPOLATE)
 
 

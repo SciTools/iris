@@ -1086,6 +1086,20 @@ class Test_rolling_window:
         )
         _shared_utils.assert_masked_array_equal(expected_result, res_cube.data)
 
+    def test_lazy_aux_coord(self):
+        window = 2
+        self.cube.add_aux_coord(AuxCoord(da.arange(6), long_name="lazy_extra"), 0)
+        res_cube = self.cube.rolling_window("val", iris.analysis.MEAN, window, mdtol=0)
+        result_coord = res_cube.coord("lazy_extra")
+        assert result_coord.has_lazy_points()
+        assert result_coord.has_lazy_bounds()
+        expected = AuxCoord(
+            np.array([0.5, 1.5, 2.5, 3.5, 4.5]),
+            bounds=np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]),
+            long_name="lazy_extra",
+        )
+        assert result_coord == expected
+
     def test_ancillary_variables_and_cell_measures_kept(self, dataless):
         if dataless:
             self.cube.data = None
@@ -1129,6 +1143,38 @@ class Test_rolling_window:
         if not dataless:
             _shared_utils.assert_array_equal(res_cube.data, [55])
         assert res_cube.units == "kg s"
+
+    def test_step(self):
+        res_cube = self.cube.rolling_window("val", SUM, 3, step=2)
+        _shared_utils.assert_array_equal(res_cube.data, [3, 9])
+
+    def test_invalid_step(self):
+        with pytest.raises(ValueError, match="`step` must be at least 1."):
+            self.cube.rolling_window("val", SUM, 3, step=0)
+
+    def test_step_coord(self, dataless):
+        if dataless:
+            self.cube.data = None
+        # Rolling window with a step applied to the coordinates.
+        res_cube = self.cube.rolling_window("val", self.mock_agg, 3, step=2)
+        val_coord = DimCoord(
+            np.array([1, 3]),
+            bounds=np.array([[0, 2], [2, 4]]),
+            long_name="val",
+            units="s",
+        )
+        month_coord = AuxCoord(
+            np.array(["jan|feb|mar", "mar|apr|may"]),
+            bounds=np.array(
+                [
+                    ["jan", "mar"],
+                    ["mar", "may"],
+                ]
+            ),
+            long_name="month",
+        )
+        assert res_cube.coord("val") == val_coord
+        assert res_cube.coord("month") == month_coord
 
 
 class Test_slices_dim_order:
@@ -2563,6 +2609,22 @@ class Test_mesh:
         result = self.cube.mesh
         assert result is None
 
+    def test_mesh_scalar_index(self):
+        # Test correct scalar indexing of a mesh dimension.
+        from iris.experimental.mesh_coord_indexing import SETTING, Options
+
+        cube = self.cube
+        mesh_dim = cube.mesh_dim()
+        indexing = [slice(None)] * cube.ndim
+        indexing[mesh_dim] = 0
+        with SETTING.context(Options.MESH_INDEX_SET):
+            result = cube[tuple(indexing)]
+        assert result.mesh is not None
+        assert result.mesh_dim() is None
+        mesh_coords = result.coords(mesh_coords=True)
+        for mesh_coord in mesh_coords:
+            assert mesh_coord.shape == (1,)
+
 
 class Test_location:
     @pytest.fixture(autouse=True)
@@ -3081,6 +3143,39 @@ class Test_coord_division_units:
         aux = AuxCoord(1, long_name="length", units="metres")
         cube = Cube(1, units="seconds")
         assert (aux / cube).units == "m.s-1"
+
+
+class Test__getitem_DimCoord:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        cube = Cube(np.arange(6).reshape(2, 3))
+        x_coord = DimCoord(points=np.array([2, 3, 4]), long_name="x")
+        cube.add_dim_coord(x_coord, 1)
+        x_coord_aux = DimCoord(points=np.array([2, 3, 4]), long_name="x_aux")
+        cube.add_aux_coord(x_coord_aux, 1)
+        y_coord = DimCoord(points=np.array([5, 6]), long_name="y")
+        cube.add_dim_coord(y_coord, 0)
+        z_coord = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="z")
+        cube.add_aux_coord(z_coord, [0, 1])
+        self.cube = cube
+
+    def test_dim_coords_2d(self):
+        result = self.cube[0:2, 0:2]
+        assert len(result.dim_coords) == 2
+        for ix, size in enumerate(result.shape):
+            assert result.coord(dim_coords=True, dimensions=ix).shape == (size,)
+        assert result.coord("x_aux").shape == (result.shape[0],)
+
+    def test_dim_coord_1d(self):
+        result = self.cube[0, 0:2]
+        assert len(result.dim_coords) == 1
+        assert result.dim_coords[0].shape == result.shape
+        assert result.coord("x_aux").shape == (result.shape[0],)
+
+    def test_demote(self):
+        result = self.cube[:, [0, 2, 1]]
+        assert len(result.dim_coords) == 1
+        assert result.coords(dimensions=1, dim_coords=True) == []
 
 
 class Test__getitem_CellMeasure:
@@ -3620,6 +3715,16 @@ class Test__eq__data:
         cube2 = Cube([True, True])
         assert cube1 != cube2
 
+    def test_data_string_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "c"])
+        assert cube1 == cube2
+
+    def test_data_string_not_eq(self):
+        cube1 = Cube(["a", "b", "c"])
+        cube2 = Cube(["a", "b", "d"])
+        assert cube1 != cube2
+
 
 class Test__eq__meta:
     def test_ancillary_fail(self):
@@ -3989,3 +4094,85 @@ class Test_is_dataless:
     def test_without_data(self):
         cube = Cube(data=None, shape=self.shape)
         assert cube.is_dataless()
+
+
+class Test_coord_dims:
+    """Tests for :meth:`iris.cube.Cube.coord_dims`."""
+
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        # Build a 3D cube with dimension coordinates and auxiliary
+        # coordinates spanning one and multiple dimensions.
+
+        # Set-up the cube.
+        data = np.arange(24).reshape(2, 3, 4)
+        cube = Cube(data)
+
+        # Set-up the DimCoords and add them to the cube.
+        x_coord = DimCoord(points=np.array([0, 1]), long_name="x")
+        y_coord = DimCoord(points=np.array([0, 1, 2]), long_name="y")
+        z_coord = DimCoord(points=np.array([0, 1, 2, 3]), long_name="z")
+        cube.add_dim_coord(x_coord, 0)
+        cube.add_dim_coord(y_coord, 1)
+        cube.add_dim_coord(z_coord, 2)
+
+        # Set-up the AuxCoords and add them to the cube.
+        aux_1d = AuxCoord(points=np.array([0, 1]), long_name="aux_1d")
+        aux_2d = AuxCoord(points=np.arange(6).reshape(2, 3), long_name="aux_2d")
+        cube.add_aux_coord(aux_1d, 0)
+        cube.add_aux_coord(aux_2d, (0, 1))
+
+        # Assign them all to class variables.
+        self.cube = cube
+        self.x_coord = x_coord
+        self.aux_1d = aux_1d
+        self.aux_2d = aux_2d
+
+    def test_dim_coord(self):
+        # A dimension coordinate is found by object identity.
+        assert self.cube.coord_dims(self.x_coord) == (0,)
+
+    def test_string_name(self):
+        # A coordinate may be looked up by its string name.
+        assert self.cube.coord_dims("y") == (1,)
+
+    def test_aux_coord_single_dim(self):
+        # An auxiliary coordinate spanning a single dimension.
+        assert self.cube.coord_dims(self.aux_1d) == (0,)
+
+    def test_aux_coord_multiple_dims(self):
+        # An auxiliary coordinate spanning multiple dimensions.
+        assert self.cube.coord_dims(self.aux_2d) == (0, 1)
+
+    @pytest.fixture
+    def aux_factory(self):
+        # Dependencies for a hybrid-height derived coordinate ("altitude").
+        delta = AuxCoord(points=np.array([0, 1]), long_name="delta", units="m")
+        sigma = AuxCoord(points=np.array([0, 1]), long_name="sigma")
+        orography = AuxCoord(
+            np.arange(12).reshape(3, 4), units="m", long_name="orography"
+        )
+        self.cube.add_aux_coord(delta, 0)
+        self.cube.add_aux_coord(sigma, 0)
+        self.cube.add_aux_coord(orography, (1, 2))
+        factory = HybridHeightFactory(delta=delta, sigma=sigma, orography=orography)
+        self.cube.add_aux_factory(factory)
+        return factory
+
+    def test_aux_factory(self, aux_factory):
+        # A derived coordinate provided by an aux factory.
+        derived_coord = aux_factory.make_coord(self.cube.coord_dims)
+        assert self.cube.coord_dims(derived_coord) == (0, 1, 2)
+
+    def test_equivalent_coord_not_instance(self):
+        # An equivalent coordinate (same metadata, different instance) is
+        # resolved via the fallback coordinate lookup.
+        equivalent = self.x_coord.copy()
+        assert equivalent is not self.x_coord
+        assert self.cube.coord_dims(equivalent) == (0,)
+
+    def test_no_match_raises(self):
+        # A coordinate that is not on the cube and matches nothing raises.
+        missing = DimCoord(points=np.array([0, 1]), long_name="missing")
+        with pytest.raises(CoordinateNotFoundError):
+            self.cube.coord_dims(missing)

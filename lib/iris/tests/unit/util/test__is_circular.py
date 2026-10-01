@@ -17,7 +17,7 @@ from iris.util import _is_circular
         pytest.param(False, id="without_bounds"),
     ],
 )
-class Test:
+class TestIsCircular:
     @staticmethod
     def _calc_bounds(points):
         diff = np.diff(points).mean()

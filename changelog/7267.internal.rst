@@ -1,0 +1,1 @@
+:user:`rcomer` moved the developers' conda yaml file.  It is now ``environment.yml`` in the repository root directory.  (:issue:`7205`)

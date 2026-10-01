@@ -223,12 +223,13 @@ def contourf(cube, *args, **kwargs):
 
         contour(cube, V)
 
-    Keywords
-    --------
-    colorbar : bool, default=True
-        If True, an appropriate colorbar will be added to the plot.
+    Parameters
+    ----------
+    colorbar : bool, optional
+        If True, an appropriate colorbar will be added to the plot. Defaults to True.
 
-    See :func:`iris.plot.contourf` for details of valid keyword arguments.
+    **kwargs : dict, optional
+        See :func:`iris.plot.contourf` for details of other valid keyword arguments.
 
     Notes
     -----
@@ -280,17 +281,19 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None, footer=None
 def pcolor(cube, *args, **kwargs):
     """Draw a labelled pseudocolor plot based on the given Cube.
 
-    Keywords
-    --------
-    colorbar : bool, default=True
-        If True, an appropriate colorbar will be added to the plot.
+    Parameters
+    ----------
+    colorbar : bool, optional
+        If True, an appropriate colorbar will be added to the plot. Defaults to True.
 
-    See :func:`iris.plot.pcolor` for details of valid keyword arguments.
+    **kwargs : dict, optional
+        See :func:`iris.plot.pcolor` for details of other valid keyword arguments.
 
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
     See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     """
     coords = kwargs.get("coords")
     axes = kwargs.get("axes")
@@ -305,12 +308,13 @@ def pcolor(cube, *args, **kwargs):
 def pcolormesh(cube, *args, **kwargs):
     """Draw a labelled pseudocolour plot based on the given Cube.
 
-    Keywords
-    --------
-    colorbar : bool, default=True
-        If True, an appropriate colorbar will be added to the plot.
+    Parameters
+    ----------
+    colorbar : bool, optional
+        If True, an appropriate colorbar will be added to the plot. Defaults to True.
 
-    See :func:`iris.plot.pcolormesh` for details of valid keyword arguments.
+    **kwargs : dict, optional
+        See :func:`iris.plot.pcolormesh` for details of other valid keyword arguments.
 
     Notes
     -----

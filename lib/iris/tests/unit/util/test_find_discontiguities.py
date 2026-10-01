@@ -21,7 +21,7 @@ def full2d_global():
 
 
 @_shared_utils.skip_data
-class Test:
+class TestFindDiscontiguities:
     @pytest.fixture(autouse=True)
     def _setup(self):
         # Set up a 2d lat-lon cube with 2d coordinates that have been

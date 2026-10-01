@@ -6,6 +6,8 @@
 Configure Git
 =============
 
+.. readingtime::
+
 .. _git-config-basic:
 
 Overview

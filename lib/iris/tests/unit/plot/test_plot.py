@@ -96,7 +96,7 @@ class TestTrajectoryWrap:
         # Remove Path.STOP vertices
         everts = expected.vertices[np.where(expected.codes != Path.STOP)]
         averts = actual.vertices[np.where(actual.codes != Path.STOP)]
-        _shared_utils.assert_array_almost_equal(everts, averts)
+        _shared_utils.assert_array_almost_equal(everts, averts, decimal=5)
         _shared_utils.assert_array_equal(expected.codes, actual.codes)
 
     def check_paths(self, expected_path, expected_path_crs, lines, axes):

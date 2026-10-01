@@ -91,6 +91,20 @@ def create_shape_mask(
         If the geometry CRS does not match the cube CRS, and the geometry is transformed
         to the cube CRS using pyproj.
 
+    Warnings
+    --------
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.
+
+    Shape geometries can be checked prior to masking using the :func:`is_geometry_valid`.
+
+    See Also
+    --------
+    :func:`is_geometry_valid`
+        Check the validity of a shape geometry.
+
     Notes
     -----
     For best masking results, both the :class:`iris.cube.Cube` _and_ masking geometry should have a
@@ -110,19 +124,6 @@ def create_shape_mask(
     a `minimum_weight` > 0 *and* `all_touched` is set to `True`. This is because
     `all_touched=True` is equivalent to `minimum_weight=0`.
 
-    Warnings
-    --------
-    Because shape vectors are inherently Cartesian in nature, they contain no inherent
-    understanding of the spherical geometry underpinning geographic coordinate systems.
-    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
-    are not supported by this function** to avoid unexpected masking behaviour.
-
-    Shape geometries can be checked prior to masking using the :func:`is_geometry_valid`.
-
-    See Also
-    --------
-    :func:`is_geometry_valid`
-        Check the validity of a shape geometry.
     """
     # Check cube is a Cube
     if not isinstance(cube, iris.cube.Cube):  # type: ignore[unreachable]
@@ -458,16 +459,16 @@ def _make_raster_cube_transform(
 ) -> Affine:
     """Create a rasterio transform for the cube.
 
+    Returns
+    -------
+    :class:`affine.Affine`
+        An affine transform object that maps the geometry domain onto the cube domain.
+
     Raises
     ------
     CoordinateNotRegularError
         If the cube dimension coordinates are not regular,
         such that :func:`iris.util.regular_step` returns an error.
-
-    Returns
-    -------
-    :class:`affine.Affine`
-        An affine transform object that maps the geometry domain onto the cube domain.
     """
     x_points = x_coord.points
     y_points = y_coord.points

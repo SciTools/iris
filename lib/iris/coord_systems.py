@@ -337,8 +337,8 @@ class GeogCS(CoordSystem):
     def _globe(self):
         """A representation of this CRS as a Cartopy Globe.
 
-        Note
-        ----
+        Notes
+        -----
         This property is created when required and then cached for speed. That
         cached value is cleared when an assignment is made to a property of the
         class that invalidates the cache.
@@ -359,8 +359,8 @@ class GeogCS(CoordSystem):
     def _crs(self):
         """A representation of this CRS as a Cartopy CRS.
 
-        Note
-        ----
+        Notes
+        -----
         This property is created when required and then cached for speed. That
         cached value is cleared when an assignment is made to a property of the
         class that invalidates the cache.

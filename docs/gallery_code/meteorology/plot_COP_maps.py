@@ -26,7 +26,7 @@ References
 
 """  # noqa: D205, D212, D400
 
-import os.path
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -40,7 +40,7 @@ def cop_metadata_callback(cube, field, filename):
     """Add an "Experiment" coordinate which comes from the filename."""
     # Extract the experiment name (such as A1B or E1) from the filename (in
     # this case it is just the start of the file name, before the first ".").
-    fname = os.path.basename(filename)  # filename without path.
+    fname = Path(filename).name  # filename without path.
     experiment_label = fname.split(".")[0]
 
     # Create a coordinate with the experiment label in it...

@@ -4,13 +4,17 @@
 name: ci-template-check
 
 on:
-  pull_request_target:
+  pull_request_target:  # zizmor: ignore[dangerous-triggers]
     branches:
       - main
 
+permissions: {}
+
 jobs:
   prompt-share:
-    uses: scitools/workflows/.github/workflows/ci-template-check.yml@2026.04.2
-    secrets: inherit
+    uses: scitools/workflows/.github/workflows/ci-template-check.yml@28aea7a3a1eb58e1bbf9b1d9c8cb2de07892b67e
+    secrets:
+      AUTH_APP_ID: ${{ secrets.AUTH_APP_ID }}
+      AUTH_APP_PRIVATE_KEY: ${{ secrets.AUTH_APP_PRIVATE_KEY }}
     with:
       pr_number: ${{ github.event.pull_request.number }}

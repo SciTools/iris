@@ -24,13 +24,13 @@ class TestExpandFilespecs:
             file_path.write_text("anything")
 
     def test_absolute_path(self):
-        result = iio.expand_filespecs([os.path.join(self.tmpdir, "*")])
-        expected = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+        result = iio.expand_filespecs([str(Path(self.tmpdir) / "*")])
+        expected = [str(Path(self.tmpdir) / fname) for fname in self.fnames]
         assert result == expected
 
     def test_double_slash(self):
-        product = iio.expand_filespecs(["//" + os.path.join(self.tmpdir, "*")])
-        predicted = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+        product = iio.expand_filespecs([str("//" / Path(self.tmpdir) / "*")])
+        predicted = [str(Path(self.tmpdir) / fname) for fname in self.fnames]
         assert product == predicted
 
     def test_relative_path(self):
@@ -38,7 +38,7 @@ class TestExpandFilespecs:
         try:
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["*"])
-            item_in = [os.path.join(self.tmpdir, fname) for fname in self.fnames]
+            item_in = [str(Path(self.tmpdir) / fname) for fname in self.fnames]
             assert item_out == item_in
         finally:
             os.chdir(cwd)
@@ -50,10 +50,10 @@ class TestExpandFilespecs:
         # this can be used with PP files to ensure that there is
         # a surface reference).
         patterns = [
-            os.path.join(self.tmpdir, "a.*"),
-            os.path.join(self.tmpdir, "b.*"),
+            str(Path(self.tmpdir) / "a.*"),
+            str(Path(self.tmpdir) / "b.*"),
         ]
-        expected = [os.path.join(self.tmpdir, fname) for fname in ["a.foo", "b.txt"]]
+        expected = [str(Path(self.tmpdir) / fname) for fname in ["a.foo", "b.txt"]]
         result = iio.expand_filespecs(patterns)
         assert result == expected
         result = iio.expand_filespecs(patterns[::-1])
@@ -62,7 +62,7 @@ class TestExpandFilespecs:
     def test_no_files_found(self):
         msg = r"\/no_exist.txt\" didn\'t match any files"
         with pytest.raises(IOError, match=msg):
-            iio.expand_filespecs([os.path.join(self.tmpdir, "no_exist.txt")])
+            iio.expand_filespecs([str(Path(self.tmpdir) / "no_exist.txt")])
 
     def test_files_and_none(self):
         emsg = (
@@ -79,13 +79,13 @@ class TestExpandFilespecs:
         with pytest.raises(IOError, match=re.escape(emsg)):
             iio.expand_filespecs(
                 [
-                    os.path.join(self.tmpdir, "does_not_exist.txt"),
-                    os.path.join(self.tmpdir, "*"),
+                    str(Path(self.tmpdir) / "does_not_exist.txt"),
+                    str(Path(self.tmpdir) / "*"),
                 ]
             )
 
     def test_false_bool_absolute(self):
-        msg = os.path.join(self.tmpdir, "no_exist.txt")
+        msg = str(Path(self.tmpdir) / "no_exist.txt")
         (result,) = iio.expand_filespecs([msg], False)
         assert result == msg
 
@@ -101,7 +101,7 @@ class TestExpandFilespecs:
         try:
             os.chdir(self.tmpdir)
             item_out = iio.expand_filespecs(["no_exist.txt"], False)
-            item_in = [os.path.join(self.tmpdir, "no_exist.txt")]
+            item_in = [str(Path(self.tmpdir) / "no_exist.txt")]
             assert item_out == item_in
         finally:
             os.chdir(cwd)

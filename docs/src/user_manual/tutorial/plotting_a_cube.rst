@@ -9,6 +9,8 @@
 Plotting a Cube
 ===============
 
+.. readingtime::
+
 Iris utilises the power of Python's 
 `Matplotlib <https://matplotlib.org/>`_ package in order to generate 
 high quality, production ready 1D and 2D plots. 

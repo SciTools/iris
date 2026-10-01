@@ -1,0 +1,1 @@
+:user:`stephenworsley` fixed the default value for ``TEST_DATA_DIR``.

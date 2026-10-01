@@ -5,6 +5,8 @@
 Releases
 ========
 
+.. readingtime::
+
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
 Below is :ref:`iris_development_releases_steps`, followed by some prose on the
@@ -88,6 +90,11 @@ New features shall not be included in a patch release, these are for bug fixes.
 A patch release does not require a release candidate, but the rest of the
 release process is to be followed.
 
+As mentioned in :ref:`release_branch`: branch/commit management is much simpler
+if the patch changes are **first merged into the release branch** -
+e.g. ``v1.9.x`` - and are only added to ``main`` during :ref:`merge_back` (post
+release).
+
 
 Before Release
 --------------
@@ -110,6 +117,8 @@ from the `latest CF standard names`_.
 
 The Release
 -----------
+
+.. _release_branch:
 
 Release Branch
 ~~~~~~~~~~~~~~
@@ -193,6 +202,8 @@ of the new release. Ideally this would be updated before the release, but
 the DOI for the new version is only available once the release has been
 created in GitHub.
 
+.. _merge_back:
+
 Merge Back
 ~~~~~~~~~~
 
@@ -258,7 +269,7 @@ Ensure that the artifacts are successfully uploaded and available on
 from PyPI::
 
     > conda deactivate
-    > conda env create --file ./requirements/iris.yml
+    > conda env create
     > . activate iris-dev
     > python -m pip install --no-deps scitools-iris
 

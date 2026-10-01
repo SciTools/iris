@@ -4,6 +4,9 @@
 
 Benchmarking
 ============
+
+.. readingtime::
+
 Iris includes architecture for benchmarking performance and other metrics of
 interest. This is done using the `Airspeed Velocity`_ (ASV) package.
 
