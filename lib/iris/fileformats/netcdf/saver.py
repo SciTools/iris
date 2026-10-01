@@ -2040,7 +2040,7 @@ class Saver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # Assignments to properties of grid_variable bypass the ASCII-to-bytes
+        # Assignments to properties of ``grid_variable`` bypass the ASCII-to-bytes
         # coercion that .attributes applies, so moving them there would change
         # the file. They need the netCDF4 variable itself.
         grid_variable = cf_var_grid.variable
