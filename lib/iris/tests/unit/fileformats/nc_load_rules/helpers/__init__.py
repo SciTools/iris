@@ -110,10 +110,32 @@ class RealArrayCfData:
         return self._array[key]
 
 
-# A handful of call sites assert `isinstance(cf_var, CFDataVariable)` as a
-# sanity check on their own caller (e.g. `helpers.get_attr_units`, invoked
-# with `capture_invalid=True` only when building a Cube's own units). Register
-# the double as a virtual subclass so that check passes without inheriting
-# CFDataVariable's construction or behaviour - a double is not a real
-# CFDataVariable, but the loading rules only ever probe it with `isinstance`.
-CFDataVariable.register(CFVariableDouble)
+class _MinimalStorage:
+    """The least a :class:`~iris.fileformats.cf.CFVariable` can be built over.
+
+    ``CFVariable.__init__`` reads ``attributes`` (copied into a fresh
+    :class:`~iris.fileformats.cf.dataset.TrackedAttributes`) and ``location``
+    (which becomes ``filename``); ``dtype`` is read later, by the read-only
+    ``CFVariable.dtype`` property. Nothing else here is needed to build one.
+    """
+
+    def __init__(self, attributes, location, dtype):
+        self.attributes = attributes
+        self.location = location
+        self.dtype = dtype
+
+
+def real_cf_data_variable(name="wibble", location="DUMMY", dtype=float, **attributes):
+    """Build a genuine :class:`~iris.fileformats.cf.CFDataVariable`.
+
+    ``get_attr_units`` asserts ``isinstance(cf_var, cf.CFDataVariable)`` on the
+    ``capture_invalid=True`` branch it takes when building a Cube's own units.
+    :class:`CFVariableDouble` cannot satisfy that assert - it deliberately does
+    not inherit from ``CFDataVariable`` - so a test reaching that branch builds
+    a real one here instead, over storage minimal enough to construct inline.
+
+    Prefer :class:`CFVariableDouble` everywhere else. The real class takes its
+    ``dtype``, ``shape``, ``ndim`` and ``size`` from storage through read-only
+    properties, so a test cannot simply assign them.
+    """
+    return CFDataVariable(name, _MinimalStorage(dict(attributes), location, dtype))

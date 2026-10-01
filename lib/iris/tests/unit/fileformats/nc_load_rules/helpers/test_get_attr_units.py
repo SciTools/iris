@@ -17,6 +17,7 @@ from iris.tests import _shared_utils
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
     CFVariableDouble,
     MockerMixin,
+    real_cf_data_variable,
 )
 from iris.warnings import IrisCfLoadWarning
 
@@ -28,15 +29,19 @@ class TestGetAttrUnits(MockerMixin):
 
         cf_group = self.mocker.Mock(global_attributes=global_attributes)
 
-        cf_var = CFVariableDouble(
+        # A real CFDataVariable, not a CFVariableDouble, because test_capture
+        # below passes capture_invalid=True - and that branch of
+        # get_attr_units opens by asserting isinstance(cf_var,
+        # cf.CFDataVariable). The other tests here share it for want of a
+        # reason to differ.
+        cf_var = real_cf_data_variable(
+            name="sound_frequency",
+            dtype=np.float64,
             standard_name=None,
             long_name=None,
             units="\u266b",
             cell_methods=None,
         )
-        cf_var.cf_name = "sound_frequency"
-        cf_var.filename = "DUMMY"
-        cf_var.dtype = np.float64
         cf_var.cf_group = cf_group
         return cf_var
 
