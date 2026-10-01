@@ -2,7 +2,12 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.fileformats.netcdf._get_cf_var_data` function."""
+"""Unit tests for :func:`iris.fileformats.cf.loader._get_cf_var_data`.
+
+The function is format-agnostic, but the only ``CFDatasetVariable`` that
+exists today is the netCDF one, so the mocks here are netCDF-shaped. PR 6
+adds the Zarr implementation and these become the shared cases.
+"""
 
 from functools import partial
 
@@ -13,8 +18,8 @@ import pytest
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
+from iris.fileformats.cf.loader import CHUNK_CONTROL, _get_cf_var_data
 import iris.fileformats.netcdf._dataset
-from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats import MockerMixin
 import iris.warnings

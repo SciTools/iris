@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.fileformats.netcdf._load_aux_factory` function."""
+"""Unit tests for :func:`iris.fileformats.cf.loader._load_aux_factory`."""
 
 import re
 import warnings
@@ -12,7 +12,7 @@ import pytest
 
 from iris.coords import DimCoord
 from iris.cube import Cube
-from iris.fileformats.netcdf.loader import _load_aux_factory
+from iris.fileformats.cf.loader import _load_aux_factory
 from iris.tests.unit.fileformats import MockerMixin
 from iris.warnings import IrisFactoryCoordNotFoundWarning
 
