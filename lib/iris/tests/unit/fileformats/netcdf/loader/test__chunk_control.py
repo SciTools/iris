@@ -12,7 +12,9 @@ import pytest
 
 import iris
 from iris.cube import CubeList
+import iris.fileformats.cf
 from iris.fileformats.netcdf import loader
+import iris.fileformats.netcdf._dataset
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL
 import iris.tests.stock as istk
 
@@ -194,7 +196,7 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma, mocker):
     from our own chunking behaviour.
     """
     message = "Mock called, rest of test unneeded"
-    as_lazy_data = mocker.patch("iris.fileformats.netcdf.loader.as_lazy_data")
+    as_lazy_data = mocker.patch("iris.fileformats.netcdf._dataset.as_lazy_data")
     as_lazy_data.side_effect = RuntimeError(message)
     with CHUNK_CONTROL.as_dask():
         try:
@@ -203,7 +205,11 @@ def test_as_dask(tmp_filepath, save_cubelist_with_sigma, mocker):
             if str(e) != message:
                 raise e
     as_lazy_data.assert_called_with(
-        mocker.ANY, meta=mocker.ANY, chunks="auto", cache_key=mocker.ANY
+        mocker.ANY,
+        meta=mocker.ANY,
+        chunks="auto",
+        dims_fixed=None,
+        cache_key=mocker.ANY,
     )
 
 
@@ -222,3 +228,73 @@ def test_pinned_optimisation(tmp_filepath, save_cubelist_with_sigma):
     assert sigma.shape == (4,)
     assert sigma.lazy_points().chunksize == (2,)
     assert sigma.lazy_bounds().chunksize == (2, 2)
+
+
+class TestChunksFromChunkControl:
+    @staticmethod
+    def _cf_var(mocker, chunking, shape=(2, 3, 4), cls=None):
+        if cls is None:
+            cls = iris.fileformats.cf.CFDataVariable
+        dimensions = tuple(f"dim_{i}" for i in range(len(shape)))
+        cf_data = mocker.MagicMock(
+            spec=iris.fileformats.netcdf._dataset.NetCDFDatasetVariable,
+            chunking=chunking,
+            dimensions=dimensions,
+        )
+        return mocker.MagicMock(
+            spec=cls,
+            cf_data=cf_data,
+            cf_name="DUMMY_VAR",
+            shape=shape,
+            dimensions=dimensions,
+        )
+
+    def test_as_dask_defers_everything_to_dask(self, mocker):
+        cf_var = self._cf_var(mocker, chunking=None)
+        with CHUNK_CONTROL.as_dask():
+            assert loader._chunks_from_chunk_control(cf_var) == ("auto", None)
+
+    def test_default_unchunked_uses_the_shape(self, mocker):
+        cf_var = self._cf_var(mocker, chunking=None)
+        chunks, dims_fixed = loader._chunks_from_chunk_control(cf_var)
+        assert chunks == [2, 3, 4]
+        assert dims_fixed == (None,)
+
+    def test_from_file_adopts_and_fixes_the_store_chunking(self, mocker):
+        cf_var = self._cf_var(mocker, chunking=(1, 3, 4))
+        with CHUNK_CONTROL.from_file():
+            chunks, dims_fixed = loader._chunks_from_chunk_control(cf_var)
+        assert chunks == [1, 3, 4]
+        assert tuple(bool(flag) for flag in dims_fixed) == (True, True, True)
+
+    def test_from_file_refuses_an_unchunked_data_variable(self, mocker):
+        cf_var = self._cf_var(mocker, chunking=None)
+        with CHUNK_CONTROL.from_file():
+            with pytest.raises(KeyError, match="pre-existing chunk specifications"):
+                loader._chunks_from_chunk_control(cf_var)
+
+    def test_from_file_accepts_an_unchunked_coordinate(self, mocker):
+        # Only the cube's data variable is required to carry a chunking; an
+        # auxiliary coordinate that does not is normal.
+        cf_var = self._cf_var(
+            mocker,
+            chunking=None,
+            cls=iris.fileformats.cf.CFAuxiliaryCoordinateVariable,
+        )
+        with CHUNK_CONTROL.from_file():
+            chunks, _ = loader._chunks_from_chunk_control(cf_var)
+        assert chunks == [2, 3, 4]
+
+
+def test_from_file_still_loads_a_small_unchunked_cube(tmp_path, mocker):
+    # The KeyError sits behind the "small enough to read whole" shortcut, so a
+    # small contiguous cube loads under from_file() today. Hoisting the check
+    # into the CF layer, which is where the "is this the data variable" fact
+    # lives, would break this - so pin it.
+    mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 5000)
+    path = str(tmp_path / "small.nc")
+    iris.save(istk.simple_3d(), path)
+    with CHUNK_CONTROL.from_file():
+        cube = next(loader.load_cubes(path))
+    assert cube.shape == (2, 3, 4)
+    assert not cube.has_lazy_data()

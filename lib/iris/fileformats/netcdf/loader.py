@@ -26,7 +26,6 @@ import warnings
 
 import numpy as np
 
-from iris._lazy_data import as_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
     HybridHeightFactory,
@@ -41,8 +40,7 @@ import iris.config
 import iris.coord_systems
 import iris.coords
 import iris.fileformats.cf
-from iris.fileformats.netcdf import _bytecoding_datasets, _thread_safe_nc
-from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
+from iris.fileformats.netcdf import _bytecoding_datasets
 from iris.fileformats.netcdf.saver import _CF_ATTRS
 import iris.io
 import iris.util
@@ -225,170 +223,97 @@ def _get_actual_dtype(cf_var):
 # mostly done for speed improvement.  See https://github.com/SciTools/iris/pull/5069
 _LAZYVAR_MIN_BYTES = 5000
 
-# A stab in the dark at the mean length of the "ragged dimension" for netCDF "variable
-# length arrays" (`NetCDF.VLType` type). Total array size is unknown until the variable is
-# read in. Making this number bigger makes it more likely an array will be loaded lazily.
-_MEAN_VL_ARRAY_LEN = 10
+
+def _chunks_from_chunk_control(cf_var):
+    """Return the ``(chunks, dims_fixed)`` pair for a lazy array of this variable.
+
+    This is the one piece of a lazy array that is CF's business rather than the
+    storage's: how big the dask chunks should be, given the store's own chunking
+    and whatever :data:`CHUNK_CONTROL` context is active.
+
+    Parameters
+    ----------
+    cf_var : :class:`iris.fileformats.cf.CFVariable`
+        The variable the array is being built for.
+
+    Returns
+    -------
+    tuple
+        ``("auto", None)`` in :attr:`ChunkControl.Modes.AS_DASK`, otherwise a
+        list of chunk sizes and a tuple of per-dimension "fixed" flags, both
+        shaped for :func:`iris._lazy_data.as_lazy_data`.
+
+    Raises
+    ------
+    KeyError
+        In :attr:`ChunkControl.Modes.FROM_FILE`, when ``cf_var`` is a cube's
+        data variable and the store offers no chunking to adopt.
+
+    """
+    if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
+        return "auto", None
+
+    # Get the chunking specified for the variable : this is either a shape, or
+    # None if the variable is unchunked.
+    chunks = cf_var.cf_data.chunking
+    if chunks is None:
+        # Unchunked : either a non-version-4 file, or a contiguous
+        # version-4 variable. Neither offers a chunking to adopt.
+        if CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE and isinstance(
+            cf_var, iris.fileformats.cf.CFDataVariable
+        ):
+            raise KeyError(
+                f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
+                f" Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
+                f" behaviour outside of a context manager. "
+            )
+        # Equivalent to chunks=None, but value required by chunking control
+        chunks = list(cf_var.shape)
+    else:
+        # The chunk-control block below assigns into this.
+        chunks = list(chunks)
+
+    # Modify the chunking in the context of an active chunking control.
+    # N.B. settings specific to this named var override global ('*') ones.
+    dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
+        cf_var.cf_name
+    ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
+    dims = cf_var.dimensions
+    if CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE:
+        dims_fixed = np.ones(len(dims), dtype=bool)
+    elif not dim_chunks:
+        dims_fixed = None
+    else:
+        # Modify the chunks argument, and pass in a list of 'fixed' dims, for
+        # any of our dims which are controlled.
+        dims_fixed = np.zeros(len(dims), dtype=bool)
+        for i_dim, dim_name in enumerate(dims):
+            dim_chunksize = dim_chunks.get(dim_name)
+            if dim_chunksize:
+                if dim_chunksize == -1:
+                    chunks[i_dim] = cf_var.shape[i_dim]
+                else:
+                    chunks[i_dim] = dim_chunksize
+                dims_fixed[i_dim] = True
+    if dims_fixed is None:
+        dims_fixed = [dims_fixed]
+    return chunks, tuple(dims_fixed)
 
 
 def _get_cf_var_data(cf_var):
     """Get an array representing the data of a CF variable.
 
-    This is typically a lazy array based around a NetCDFDataProxy, but if the variable
-    is "sufficiently small", we instead fetch the data as a real (numpy) array.
-    The latter is especially valuable for scalar coordinates, which are otherwise
+    This is typically a lazy array, but if the variable is "sufficiently small"
+    the storage fetches the data as a real (numpy) array instead. The latter is
+    especially valuable for scalar coordinates, which are otherwise
     unnecessarily slow + wasteful of memory.
 
+    The store builds the array; this supplies the one decision that is CF's and
+    not the store's, namely what chunking a lazy result should have. See section
+    4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
     """
-    if cf_var.cf_data.is_emulated:
-        # The variable is not an actual netCDF4 file variable, but an emulating
-        # object with an attached data array (either numpy or dask), which can be
-        # returned immediately as-is.  This is used as a hook to translate data to/from
-        # netcdf data container objects in other packages, such as xarray.
-        # See https://github.com/SciTools/iris/issues/4994 "Xarray bridge".
-        result = cf_var.cf_data.emulated_data_array
-        if result.dtype.kind == "S":
-            # We must also perform any byte-to-string decoding since, in ncdata, the
-            #  emulating objects don't do this, and also don't support a
-            #  'set_auto_chartostring(True)'.
-            #  Therefore, do here what an EncodedVariable.__getitem__ would do : ..
-            # .. get details based on the file (type 'char') variable  ..
-            encoder = VariableEncoder.from_var(cf_var.cf_data.unencoded_variable)
-            # .. convert byte array to strings.
-            result = encoder.decode_bytes_to_stringarray(result)
-    else:
-        # Determine size of data; however can't do this for variable length (VLEN)
-        # netCDF arrays as the size of the array can only be known by reading the
-        # data; see https://github.com/Unidata/netcdf-c/issues/1893.
-        # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
-        if cf_var.cf_data.is_variable_length:
-            msg = (
-                f"NetCDF variable `{cf_var.cf_name}` is a variable length type of kind {cf_var.dtype} "
-                "thus the total data size cannot be known in advance. This may affect the lazy loading "
-                "of the data."
-            )
-            warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
-
-            # Give user the chance to pass a hint of the average variable length array size via
-            # the chunk control context manager. This allows for better decisions to be made on
-            # whether the data should be lazy-loaded or not.
-            mean_vl_array_len = _MEAN_VL_ARRAY_LEN
-            if CHUNK_CONTROL.mode is not CHUNK_CONTROL.Modes.AS_DASK:
-                if chunks := CHUNK_CONTROL.var_dim_chunksizes.get(cf_var.cf_name):
-                    if vl_chunk_hint := chunks.get("_vl_hint"):
-                        mean_vl_array_len = vl_chunk_hint
-
-            # Special handling for strings (`str` type) as these don't have an itemsize attribute;
-            # assume 4 bytes which is sufficient for unicode character storage
-            itemsize = 4 if cf_var.dtype is str else cf_var.dtype.itemsize
-
-            # For `VLType` cf_var.size will just return the known dimension size.
-            total_bytes = cf_var.size * mean_vl_array_len * itemsize
-        else:
-            # Normal NCVariable type:
-            total_bytes = cf_var.size * cf_var.dtype.itemsize
-
-        if total_bytes < _LAZYVAR_MIN_BYTES:
-            # Don't make a lazy array, as it will cost more memory AND more time to access.
-            result = cf_var[:]
-
-            # Special handling of masked scalar value; this will be returned as
-            # an `np.ma.masked` instance which will lose the original dtype.
-            # Workaround for this it return a 1-element masked array of the
-            # correct dtype. Note: this is not an issue for masked arrays,
-            # only masked scalar values.
-            if result is np.ma.masked:
-                result = np.ma.masked_all(1, dtype=cf_var.dtype)
-        else:
-            # Get lazy chunked data out of a cf variable.
-            # Creates Dask wrappers around data arrays for any cube components which
-            # can have lazy values, e.g. Cube, Coord, CellMeasure, AuxiliaryVariable.
-            dtype = _get_actual_dtype(cf_var)
-
-            # Make a data-proxy that mimics array access and can fetch from the file.
-            # Note: Special handling needed for "variable length string" types which
-            # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
-            if getattr(cf_var.dtype, "kind", None) == "U":
-                # Special handling for "string variables".
-                fill_value = ""
-            else:
-                fill_dtype = "S1" if cf_var.dtype is str else cf_var.dtype.str[1:]
-                fill_value = cf_var.attributes.get(
-                    "_FillValue", _thread_safe_nc.default_fillvals[fill_dtype]
-                )
-
-            # Switch type of proxy, based on type of variable.
-            # It is done this way, instead of using an instance variable, because the
-            #  limited nature of the wrappers makes a stateful choice awkward,
-            #  e.g. especially, "variable.group()" is *not* the parent DatasetWrapper.
-            if isinstance(
-                cf_var.cf_data.variable, _bytecoding_datasets.EncodedVariable
-            ):
-                proxy_class = _bytecoding_datasets.EncodedNetCDFDataProxy
-            else:
-                proxy_class = _thread_safe_nc.NetCDFDataProxy
-
-            proxy = proxy_class(
-                cf_var.cf_data.variable, dtype, cf_var.filename, fill_value
-            )
-            # Get the chunking specified for the variable : this is either a shape, or
-            # None if the variable is unchunked.
-            if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
-                result = as_lazy_data(
-                    proxy, meta=proxy.dask_meta, chunks="auto", cache_key=repr(proxy)
-                )
-            else:
-                chunks = cf_var.cf_data.chunking
-                if chunks is None:
-                    # Unchunked : either a non-version-4 file, or a contiguous
-                    # version-4 variable. Neither offers a chunking to adopt.
-                    if (
-                        CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE
-                        and isinstance(cf_var, iris.fileformats.cf.CFDataVariable)
-                    ):
-                        raise KeyError(
-                            f"{cf_var.cf_name} does not contain pre-existing chunk specifications."
-                            f" Instead, you might wish to use CHUNK_CONTROL.set(), or just use default"
-                            f" behaviour outside of a context manager. "
-                        )
-                    # Equivalent to chunks=None, but value required by chunking control
-                    chunks = list(cf_var.shape)
-                else:
-                    # The chunk-control block below assigns into this.
-                    chunks = list(chunks)
-
-                # Modify the chunking in the context of an active chunking control.
-                # N.B. settings specific to this named var override global ('*') ones.
-                dim_chunks = CHUNK_CONTROL.var_dim_chunksizes.get(
-                    cf_var.cf_name
-                ) or CHUNK_CONTROL.var_dim_chunksizes.get("*")
-                dims = cf_var.dimensions
-                if CHUNK_CONTROL.mode is ChunkControl.Modes.FROM_FILE:
-                    dims_fixed = np.ones(len(dims), dtype=bool)
-                elif not dim_chunks:
-                    dims_fixed = None
-                else:
-                    # Modify the chunks argument, and pass in a list of 'fixed' dims, for
-                    # any of our dims which are controlled.
-                    dims_fixed = np.zeros(len(dims), dtype=bool)
-                    for i_dim, dim_name in enumerate(dims):
-                        dim_chunksize = dim_chunks.get(dim_name)
-                        if dim_chunksize:
-                            if dim_chunksize == -1:
-                                chunks[i_dim] = cf_var.shape[i_dim]
-                            else:
-                                chunks[i_dim] = dim_chunksize
-                            dims_fixed[i_dim] = True
-                if dims_fixed is None:
-                    dims_fixed = [dims_fixed]
-                result = as_lazy_data(
-                    proxy,
-                    meta=proxy.dask_meta,
-                    chunks=chunks,
-                    dims_fixed=tuple(dims_fixed),
-                    cache_key=repr(proxy),
-                )
-    return result
+    return cf_var.cf_data.read_data(partial(_chunks_from_chunk_control, cf_var))
 
 
 class _OrderedAddableList(list):

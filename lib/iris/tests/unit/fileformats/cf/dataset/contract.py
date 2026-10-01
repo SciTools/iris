@@ -178,6 +178,20 @@ class CFDatasetContract:
             and all(isinstance(size, int | np.integer) for size in chunking)
         )
 
+    def test_read_data_returns_the_data(self, variable):
+        result = variable.read_data(lambda: (None, None))
+        np.testing.assert_array_equal(np.asarray(result), CONTRACT_DATA)
+
+    def test_read_data_leaves_the_policy_alone_for_a_small_variable(self, variable):
+        # The chunking policy raises under CHUNK_CONTROL.from_file() for an
+        # unchunked variable. A variable small enough to read whole must reach
+        # its data without ever asking, or `from_file` would start rejecting
+        # small cubes that load today.
+        def policy():
+            raise AssertionError("chunking policy consulted for a small variable")
+
+        variable.read_data(policy)
+
     def test_scalar_variable(self, scalar):
         assert scalar.dimensions == ()
         assert scalar.shape == ()

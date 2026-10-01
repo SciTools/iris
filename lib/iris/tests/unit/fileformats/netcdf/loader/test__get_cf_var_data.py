@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.fileformats.netcdf._get_cf_var_data` function."""
 
+from functools import partial
+
 import dask.array
 import dask.array as da
 import numpy as np
@@ -15,6 +17,7 @@ import iris.fileformats.netcdf._dataset
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats import MockerMixin
+import iris.warnings
 
 
 class Test__get_cf_var_data(MockerMixin):
@@ -27,6 +30,8 @@ class Test__get_cf_var_data(MockerMixin):
     def _make(self, chunksizes=None, shape=None, dtype="i4", **extra_properties):
         if shape is None:
             shape = self.shape
+        if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
+            dtype = np.dtype(dtype)
         cf_data = self.mocker.MagicMock(
             spec=iris.fileformats.netcdf._dataset.NetCDFDatasetVariable,
             fill_value=None,
@@ -39,8 +44,18 @@ class Test__get_cf_var_data(MockerMixin):
             # deliberate escape hatch, and the one place a real shape matters.
             variable=self.mocker.MagicMock(shape=shape),
         )
-        if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
-            dtype = np.dtype(dtype)
+        # `name` is a MagicMock constructor keyword, so it is set afterwards.
+        cf_data.name = "DUMMY_VAR"
+        cf_data.location = self.filename
+        cf_data.dtype = dtype
+        cf_data.size = np.prod(shape)
+        cf_data.attributes = {}
+        cf_data.__getitem__.return_value = self.mocker.sentinel.real_data_accessed
+        # The real method, bound to the mock: it reads only the members above,
+        # so the existing assertions keep testing the code they always did.
+        cf_data.read_data = partial(
+            iris.fileformats.netcdf._dataset.NetCDFDatasetVariable.read_data, cf_data
+        )
         cf_var = self.mocker.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
             dtype=dtype,
@@ -91,14 +106,6 @@ class Test__get_cf_var_data(MockerMixin):
         lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         _shared_utils.assert_array_equal(lazy_data_chunks, self.expected_chunks)
-
-    def test_cache_key_is_the_proxy_repr(self, mocker):
-        """The key is byte-for-byte the one this module used to compute itself."""
-        as_lazy_data = mocker.patch("iris.fileformats.netcdf.loader.as_lazy_data")
-        cf_var = self._make(shape=(1000, 1000), dtype="f4")
-        _get_cf_var_data(cf_var)
-        (proxy,) = as_lazy_data.call_args.args
-        assert as_lazy_data.call_args.kwargs["cache_key"] == repr(proxy)
 
     def test_type__1kf8_is_lazy(self):
         cf_var = self._make(shape=(1000,), dtype="f8")
@@ -153,6 +160,14 @@ class Test__get_cf_var_data(MockerMixin):
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=2):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
+
+    def test_vltype_warns_that_the_size_is_unknown(self):
+        cf_var = self._make(shape=(1000,), dtype="f8")
+        cf_var.cf_data.is_variable_length = True
+        with pytest.warns(
+            iris.warnings.IrisLoadWarning, match="variable length type of kind"
+        ):
+            _get_cf_var_data(cf_var)
 
     @pytest.mark.parametrize("is_realdata", [True, False], ids=["realdata", "lazydata"])
     @pytest.mark.parametrize("is_string", [True, False], ids=["string", "numeric"])

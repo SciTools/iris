@@ -8,6 +8,7 @@ build_auxilliary_coordinate`.
 """
 
 import contextlib
+from functools import partial
 
 import numpy as np
 import pytest
@@ -17,6 +18,7 @@ from iris.coords import AuxCoord
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
+import iris.fileformats.netcdf._dataset
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
     CFVariableStandIn,
@@ -172,6 +174,8 @@ class TestDtype(MockerMixin):
         cf_data = mocker.MagicMock(
             _FillValue=None,
             shape=points.shape,
+            size=points.size,
+            dtype=points.dtype,
             is_emulated=False,
             is_variable_length=False,
             chunking=points.shape,
@@ -196,6 +200,15 @@ class TestDtype(MockerMixin):
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.size = np.prod(points.shape)
         self.cf_coord_var.dtype = points.dtype
+
+        # read_data now reads scale_factor/add_offset off the storage's own
+        # attributes (F9), so cf_data shares the coord's TrackedAttributes
+        # rather than carrying a second, independent copy.
+        cf_data.location = self.cf_coord_var.filename
+        cf_data.attributes = self.cf_coord_var.attributes
+        cf_data.read_data = partial(
+            iris.fileformats.netcdf._dataset.NetCDFDatasetVariable.read_data, cf_data
+        )
 
     @contextlib.contextmanager
     def deferred_load_patch(self):
