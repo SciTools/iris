@@ -92,6 +92,14 @@ class Test__get_cf_var_data(MockerMixin):
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
         _shared_utils.assert_array_equal(lazy_data_chunks, self.expected_chunks)
 
+    def test_cache_key_is_the_proxy_repr(self, mocker):
+        """The key is byte-for-byte the one this module used to compute itself."""
+        as_lazy_data = mocker.patch("iris.fileformats.netcdf.loader.as_lazy_data")
+        cf_var = self._make(shape=(1000, 1000), dtype="f4")
+        _get_cf_var_data(cf_var)
+        (proxy,) = as_lazy_data.call_args.args
+        assert as_lazy_data.call_args.kwargs["cache_key"] == repr(proxy)
+
     def test_type__1kf8_is_lazy(self):
         cf_var = self._make(shape=(1000,), dtype="f8")
         var_data = _get_cf_var_data(cf_var)

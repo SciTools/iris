@@ -262,7 +262,9 @@ class LRUCache:
 CACHE = LRUCache(MAX_CACHE_SIZE)
 
 
-def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
+def as_lazy_data(
+    data, chunks=None, asarray=False, meta=None, dims_fixed=None, *, cache_key=None
+):
     """Convert the input array `data` to a :class:`dask.array.Array`.
 
     Parameters
@@ -284,6 +286,11 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
         If set, a list of values equal in length to 'chunks' or data.ndim.
         'True' values indicate a dimension which can not be changed, i.e. the
         result for that index must equal the value in 'chunks' or data.shape.
+    cache_key : str, optional
+        If given, a string identifying `data` well enough that two calls
+        presenting the same string, chunking and `meta` may share one Dask
+        array. Callers wrapping a file-backed proxy pass ``repr(proxy)``.
+        Requires `meta`.
 
     Returns
     -------
@@ -299,8 +306,6 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
     but reduced by a factor if that exceeds the dask default chunksize.
 
     """
-    from iris.fileformats.netcdf._thread_safe_nc import NetCDFDataProxy
-
     if isinstance(data, ma.core.MaskedConstant):
         data = ma.masked_array(data.data, mask=data.mask)
 
@@ -309,6 +314,10 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
             "For performance reasons, `meta` cannot be `None` if `data` is "
             "anything other than a Numpy or Dask array."
         )
+
+    if cache_key is not None and meta is None:
+        msg = "`meta` is required when `cache_key` is given: it forms part of the key."
+        raise ValueError(msg)
 
     if chunks != "auto":
         if chunks is None:
@@ -328,13 +337,14 @@ def as_lazy_data(data, chunks=None, asarray=False, meta=None, dims_fixed=None):
                 dims_fixed=dims_fixed,
             )
 
-    # Define a cache key for caching arrays created from NetCDFDataProxy objects.
-    # Creating new Dask arrays is relatively slow, therefore caching is beneficial
-    # if many cubes in the same file share coordinate arrays.
-    if isinstance(data, NetCDFDataProxy):
-        key = (repr(data), chunks, asarray, meta.dtype, type(meta))
-    else:
+    # Define a cache key for caching arrays created from data proxies. Creating
+    # new Dask arrays is relatively slow, therefore caching is beneficial if many
+    # cubes in the same file share coordinate arrays. The caller decides what
+    # identifies its data, so this module needs to know no file format.
+    if cache_key is None:
         key = None
+    else:
+        key = (cache_key, chunks, asarray, meta.dtype, type(meta))
 
     if is_lazy_data(data):
         result = data

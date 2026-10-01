@@ -334,7 +334,9 @@ def _get_cf_var_data(cf_var):
             # Get the chunking specified for the variable : this is either a shape, or
             # None if the variable is unchunked.
             if CHUNK_CONTROL.mode is ChunkControl.Modes.AS_DASK:
-                result = as_lazy_data(proxy, meta=proxy.dask_meta, chunks="auto")
+                result = as_lazy_data(
+                    proxy, meta=proxy.dask_meta, chunks="auto", cache_key=repr(proxy)
+                )
             else:
                 chunks = cf_var.cf_data.chunking
                 if chunks is None:
@@ -384,6 +386,7 @@ def _get_cf_var_data(cf_var):
                     meta=proxy.dask_meta,
                     chunks=chunks,
                     dims_fixed=tuple(dims_fixed),
+                    cache_key=repr(proxy),
                 )
     return result
 
