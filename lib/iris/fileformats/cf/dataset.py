@@ -11,7 +11,7 @@
 
 :class:`CFDataset` and :class:`CFDatasetVariable` are what the rest of the CF
 layer is written against. They are deliberately small: only what the
-:class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF 
+:class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF
 saver actually need, with one implementation per storage format.
 
 These classes are more restrictive than a netCDF variable about what can be

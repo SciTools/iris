@@ -9,7 +9,7 @@ supply the three fixtures it declares, and every test here runs against it.
 The class deliberately has no ``Test`` prefix, so pytest does not collect it
 where it is written, only where it is subclassed.
 
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md`` section 6: the interface 
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md`` section 6: the interface
 is only worth having if both sides of it agree,
 and agreement is cheapest to check by asking the same questions twice.
 
