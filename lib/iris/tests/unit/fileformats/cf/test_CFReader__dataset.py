@@ -79,9 +79,9 @@ def char_path(tmp_path):
 
 
 class TestABorrowedBareDataset:
-    """A behaviour change from before this branch.
+    """A behaviour change made in #7303.
 
-    Before this branch, ``CFReader`` stored a borrowed dataset untouched
+    Before #7303, ``CFReader`` stored a borrowed dataset untouched
     (``self._dataset = file_source``), so a bare ``netCDF4.Dataset`` - what
     the Xarray bridge hands to ``iris.load``, per ``loader.py``'s docstring -
     kept its character data as raw bytes. ``NetCDFDataset.from_existing`` now
@@ -116,8 +116,7 @@ class TestTheSwap:
             assert isinstance(reader._dataset, _dataset.NetCDFDataset)
 
     def test_cf_data_is_a_cf_dataset_variable(self, sample_path):
-        # The whole point of the PR: nothing downstream of here needs to know
-        # the file is netCDF.
+        # Nothing downstream of here needs to know the file is netCDF.
         with CFReader(str(sample_path)) as reader:
             assert isinstance(reader.cf_group["air"].cf_data, CFDatasetVariable)
 
@@ -169,8 +168,8 @@ class TestAttributesAreASnapshot:
 
 class TestAttributeTrackingAcrossReset:
     """CFReader reads attributes while classifying variables, then calls
-    ``cf_attrs_reset()`` so the rules start from a clean record. Until this
-    PR, ``__getattr__`` cached the value on the instance, so a read after the
+    ``cf_attrs_reset()`` so the rules start from a clean record. Until #7303,
+    ``__getattr__`` cached the value on the instance, so a read after the
     reset found the cache and was never recorded - and an attribute Iris had
     in fact consumed was still reported unused, and so was copied onto the
     cube as if the file had volunteered it.
@@ -193,8 +192,6 @@ class TestAttributeTrackingAcrossReset:
             assert "units" not in dict(time.cf_attrs_unused())
 
     def test_an_unread_attribute_reaches_the_cube(self, sample_path):
-        # Named for what this pins, not the stronger claim it does not: see
-        # the comment below on the "only" direction.
         cube = iris.load_cube(str(sample_path))
 
         # "title" is a global attribute: build_and_add_global_attributes
@@ -205,15 +202,6 @@ class TestAttributeTrackingAcrossReset:
         assert cube.attributes == {"title": "a sample file", "comment": UNREAD_COMMENT}
         assert cube.coord("time").attributes == {"comment": UNREAD_COMMENT}
 
-        # Known gap: this does not pin the complementary "only" direction -
-        # that *no* read attribute reaches the cube. Every attribute this
-        # fixture's variables read ("units", "standard_name", "coordinates",
-        # "bounds") is also in saver.py's _CF_ATTRS, so _add_unused_attributes
-        # (loader.py) filters them out before tracking is ever consulted;
-        # mutating cf_attrs_unused() to cf_attrs_used() fails this test, but
-        # mutating it to attributes.untracked.items() - tracking made blind,
-        # so everything counts as unused - still passes. Pinning "only" would
-        # need a non-_CF_ATTRS attribute the load rules genuinely read and
-        # record, e.g. a UGRID or grid-mapping attribute, which means adding
-        # a mesh or a grid mapping to a fixture whose subject is attribute
-        # tracking, and would change what the file loads into.
+        # This does not pin the reverse: that no attribute Iris *read* reaches
+        # the cube. Every attribute read here is in saver.py's _CF_ATTRS, and
+        # _add_unused_attributes drops those before tracking is consulted.

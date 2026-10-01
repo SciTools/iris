@@ -336,13 +336,10 @@ class TestTypedProperties:
 
     @pytest.mark.parametrize("name", list(TYPED_PROPERTIES))
     def test_a_file_attribute_colliding_with_a_typed_property(self, nc_var, name):
-        # A deliberate, accepted difference from pre-PR behaviour. The old
-        # __getattr__ recorded such a name as read before forwarding to the
-        # netCDF4 variable, so _add_unused_attributes dropped it and a
-        # legitimate user attribute silently vanished from the loaded cube -
-        # even though the value returned was never the file's. A declared
-        # property now short-circuits __getattr__ entirely, nothing is
-        # recorded, and the attribute survives onto the cube.
+        # A deliberate change in #7303. Before it, __getattr__ recorded the
+        # name as read, so _add_unused_attributes dropped a legitimate user
+        # attribute from the cube - though the value returned was never the
+        # file's. A declared property now short-circuits __getattr__.
         nc_var.attributes = {name: f"file value of {name}"}
         nc_var.shape = (3, 4)
         nc_var.dtype = np.dtype("f4")

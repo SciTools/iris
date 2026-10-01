@@ -917,11 +917,7 @@ class Test_translate__formula_terms_derived_bounds:
 
     def test_promotes_using_long_name_when_standard_name_empty(self, mocker):
         # A present-but-empty standard_name is falsy, so the "or" in
-        # _reader.py falls through to long_name. Both go in the
-        # non-derived_bounds branch: under iris.FUTURE.derived_bounds the
-        # code takes the "continue" at :504 only when standard_name is
-        # *absent*, never reached here since "" is present, but the
-        # promotion machinery itself only runs outside that guard.
+        # _reader.py's formula_terms promotion loop falls through to long_name.
         self.root = netcdf_variable(
             mocker,
             "z",
