@@ -163,7 +163,7 @@ def _raise(exception):
 
 
 class _EmulatedVariable:
-    """A stand-in for the Xarray bridge's own variable object.
+    """A stand-in for ncdata's own variable object.
 
     Never a real, file-backed
     :class:`~iris.fileformats.netcdf._thread_safe_nc.VariableWrapper`: that
@@ -204,8 +204,8 @@ class TestNetCDFOnlyMembers:
         assert "_data_array" not in air.variable.ncattrs()
 
     def test_emulated_round_trip(self, sample_location):
-        # The Xarray bridge hook, issue #4994: an emulating variable carries
-        # its own array instead of file storage.
+        # The emulation hook ncdata uses (issue #4994): an emulating variable
+        # carries its own array instead of file storage.
         variable = _EmulatedVariable()
         wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
         variable._data_array = np.zeros(3)

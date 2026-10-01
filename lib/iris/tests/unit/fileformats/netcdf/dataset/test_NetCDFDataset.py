@@ -88,11 +88,10 @@ class TestContents:
         assert air.write_handle().lock is reader.write_lock
 
     def test_materialising_variables_makes_no_write_lock(self, reader):
-        # Making a lock is a write-path act: _dask_locks.get_worker_lock()
-        # raises DaskSchedulerTypeError for a scheduler the *saver* does not
-        # support, naming the saver, and a pure load has no quarrel with any
-        # scheduler. Reading variables and attributes must therefore leave
-        # the lock unmade. See NetCDFDataset.write_lock.
+        # Making a lock is a write-path act: for an unsupported scheduler
+        # _dask_locks.get_worker_lock() raises DaskSchedulerTypeError saying
+        # "not supported by the Iris netcdf saver" - wrong for a pure load,
+        # which has no quarrel with any scheduler. See NetCDFDataset.write_lock.
         assert sorted(reader.variables) == ["air_temperature", "height", "label"]
         assert dict(reader.attributes) == SAMPLE_GLOBALS
         assert reader.variables["air_temperature"].attributes is not None
@@ -161,8 +160,8 @@ class TestBorrowing:
             raw.close()
 
     def test_from_existing_wraps_a_bare_netcdf4_dataset(self, sample_path):
-        # What the Xarray bridge hands iris.save / CFReader: an object with
-        # the netCDF4 API but no thread-safe wrapper around it.
+        # What ncdata hands iris.save / CFReader: an object with the netCDF4
+        # API but no thread-safe wrapper around it.
         import netCDF4
 
         raw = netCDF4.Dataset(sample_path, mode="r")

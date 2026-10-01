@@ -83,7 +83,7 @@ class TestABorrowedBareDataset:
 
     Before #7303, ``CFReader`` stored a borrowed dataset untouched
     (``self._dataset = file_source``), so a bare ``netCDF4.Dataset`` - what
-    the Xarray bridge hands to ``iris.load``, per ``loader.py``'s docstring -
+    ncdata hands to ``iris.load``, per ``loader.py``'s docstring -
     kept its character data as raw bytes. ``NetCDFDataset.from_existing`` now
     wraps anything lacking ``THREAD_SAFE_FLAG`` in an ``EncodedDataset``
     regardless of the caller's own decoding preference, so the same bare

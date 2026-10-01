@@ -31,7 +31,7 @@ _PERMITTED_SUFFIXES = (
     # The tests for the bytecoding dataset wrapper.
     "iris/tests/unit/fileformats/netcdf/test_bytecoding_datasets.py",
     # The test of NetCDFDataset.from_existing() wrapping a bare netCDF4.Dataset,
-    # as the Xarray bridge hands to iris.save / CFReader.
+    # as ncdata hands to iris.save / CFReader.
     "iris/tests/unit/fileformats/netcdf/dataset/test_NetCDFDataset.py",
     # The test that CFReader wraps a bare netCDF4.Dataset borrowed from a
     # caller, decoding its character data - the same wrapping as above, but
