@@ -1,3 +1,0 @@
-:user:`trexfeathers` extended the ``AGENTS.md`` ban on citations that decay
-silently to cover references relative to when they were written, such as
-"this PR" or "currently".
