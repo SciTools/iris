@@ -11,8 +11,8 @@
 
 :class:`CFDataset` and :class:`CFDatasetVariable` are what the rest of the CF
 layer is written against. They are deliberately small: only what the
-``CFVariable`` classes, the CF loader and the CF saver actually need, with one
-implementation per storage format.
+:class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF 
+saver actually need, with one implementation per storage format.
 
 These classes are more restrictive than a netCDF variable about what can be
 reached through attribute syntax. netCDF presents ``units``, a CF attribute
@@ -23,7 +23,8 @@ typed member.
 
 The property ``attributes`` holds an open-ended set of data keys read from a
 file, with no schema to enumerate, which is why :class:`TrackedAttributes`
-exists and why ``CFVariable.__getattr__`` is allowed to forward to it.
+exists and why :class:`~iris.fileformats.cf.CFVariable`
+:meth:`~iris.fileformats.cf.CFVariable.__getattr__` is allowed to forward to it.
 Tracking is the load-bearing part: Iris decides which file attributes survive
 onto a loaded cube by asking which ones the loading rules did *not* read, so a
 read that goes unrecorded silently leaks a CF-reserved attribute onto the cube.
