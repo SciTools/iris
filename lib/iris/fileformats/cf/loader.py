@@ -14,7 +14,11 @@ This module is the CF half of what used to be
 :class:`~iris.fileformats.cf.CFVariable` objects a
 :class:`~iris.fileformats.cf.CFReader` produced, runs the loading rules over
 them and returns :class:`~iris.cube.Cube` objects. None of that is specific to
-netCDF, and nothing here imports netCDF4.
+netCDF, and nothing here imports netCDF4 - though three deferred imports still
+reach back into :mod:`iris.fileformats.netcdf` for now: ``saver._CF_ATTRS``
+and ``saver.Saver``, because the saver has not moved yet (PR 5), and
+``loader.DEBUG``, which never moves (see below). Each is commented at its own
+call site with why and, where relevant, when it goes.
 
 Where a storage format *does* show through - reading a variable's array - the
 work is delegated to :meth:`~iris.fileformats.cf.dataset.CFDatasetVariable.read_data`,

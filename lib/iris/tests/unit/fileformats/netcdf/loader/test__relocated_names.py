@@ -32,6 +32,16 @@ def test_the_message_names_the_new_location(name):
         getattr(netcdf_loader, name)
 
 
+def test_the_warning_points_at_the_caller():
+    # warn_deprecated's default stacklevel=2 would name this module's own
+    # __getattr__ - an extra frame PEP 562 inserts between the caller and
+    # warn_deprecated - rather than the line below. Pin the fix: the warning
+    # must be attributed to *this* file, not to netcdf/loader.py.
+    with pytest.warns(IrisDeprecation) as record:
+        netcdf_loader.CHUNK_CONTROL
+    assert record[0].filename == __file__
+
+
 @pytest.mark.parametrize("name", RELOCATED)
 def test_the_alias_is_the_same_object(name):
     # Spec 4.8: "The alias is the same object, not a copy, so existing code
@@ -44,9 +54,33 @@ def test_the_alias_is_the_same_object(name):
 def test_importing_the_module_does_not_warn():
     # Spec 4.8: "Warnings are emitted on use, not on import, so simply
     # importing iris.fileformats.netcdf stays quiet."
-    with warnings.catch_warnings():
-        warnings.simplefilter("error")
-        importlib.reload(importlib.import_module("iris.fileformats.netcdf"))
+    #
+    # Reloads this module, not the whole iris.fileformats.netcdf package: the
+    # package's own body only *fetches* DEBUG/NetCDFDataProxy/load_cubes as
+    # already-bound names from this (unreloaded) submodule, so reloading the
+    # package would never re-execute the code this test means to exercise.
+    # Confirmed: reloading just this module leaves the shared
+    # "iris.fileformats.netcdf" logger's handler list untouched (the
+    # StreamHandler-per-call side effect lives in the package's __init__, in
+    # iris.config.get_logger, not here), so there is no handler-leak risk to
+    # guard against on this path.
+    #
+    # Reloading *does* rebuild `load_cubes` as a brand new function object,
+    # though, and that is consequential: iris.fileformats.netcdf.load_cubes -
+    # bound once, at the package's own first import, and the handler
+    # iris.fileformats.FORMAT_AGENT registered at Iris startup - keeps
+    # pointing at the *old* one, while iris.fileformats.netcdf.ugrid_load's
+    # load_meshes recognises netCDF sources by `==` identity against this
+    # module's (new, post-reload) one. Left unrestored, that silently breaks
+    # mesh loading for the rest of the process - confirmed by reproducing the
+    # failure directly before adding this restore.
+    original_load_cubes = netcdf_loader.load_cubes
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            importlib.reload(netcdf_loader)
+    finally:
+        netcdf_loader.load_cubes = original_load_cubes
 
 
 def test_an_unrelated_name_raises_without_warning():

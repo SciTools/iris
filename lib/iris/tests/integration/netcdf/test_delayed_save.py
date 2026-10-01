@@ -14,6 +14,7 @@ import numpy as np
 import pytest
 
 import iris
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d

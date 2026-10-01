@@ -20,6 +20,7 @@ import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 import iris.exceptions
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf import (
     DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,

@@ -44,7 +44,8 @@ import iris.warnings
 # module rather than by value, so that assigning to it here still works.
 DEBUG = False
 
-# Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
+# Get the logger (shared logger for all in 'iris.fileformats.netcdf') and
+# _bytecoding_datasets, needed by NetCDFDataProxy just below.
 from . import _bytecoding_datasets, logger
 
 # An expected part of the public loader API, but includes thread safety
@@ -95,7 +96,12 @@ def __getattr__(name):
     warn_deprecated(
         f"iris.fileformats.netcdf.loader.{name} has moved to "
         f"iris.fileformats.cf.loader.{name}, because it is not specific to "
-        "netCDF. The name here will be removed in a future release."
+        "netCDF. The name here will be removed in a future release.",
+        # warn_deprecated's default stacklevel=2 points at the line below,
+        # inside this function - PEP 562 means that line is a genuine call
+        # frame, not the user's code. One level further out reaches the
+        # line that actually read the attribute.
+        stacklevel=3,
     )
     return getattr(cf_loader, name)
 
