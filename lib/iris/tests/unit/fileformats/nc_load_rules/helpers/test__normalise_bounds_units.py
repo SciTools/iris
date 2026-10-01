@@ -15,7 +15,7 @@ from iris.fileformats._nc_load_rules.helpers import (
 )
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
 )
 from iris.warnings import IrisCfLoadWarning
@@ -30,8 +30,8 @@ class Test(MockerMixin):
 
     def _make_cf_bounds_var(
         self, units: str | None = None, unitless: bool = False
-    ) -> CFVariableDouble:
-        """Construct a double CF bounds variable.
+    ) -> CFVariableStandIn:
+        """Construct a stand-in CF bounds variable.
 
         Deliberately no ``flag_values``/``flag_masks``/``flag_meanings``: their
         absence from ``.attributes`` is what tells ``helpers.get_attr_units``
@@ -44,9 +44,9 @@ class Test(MockerMixin):
         if not unitless:
             attrs["units"] = units
 
-        cf_var = CFVariableDouble(**attrs)
+        cf_var = CFVariableStandIn(**attrs)
         # cf_name/dtype are structural members of a real CFVariable, not CF
-        # attributes, so CFVariableDouble doesn't declare them - mypy can't
+        # attributes, so CFVariableStandIn doesn't declare them - mypy can't
         # see that setting them here is exactly what the docstring prescribes.
         cf_var.cf_name = CF_NAME  # type: ignore[attr-defined]
         cf_var.dtype = float  # type: ignore[attr-defined]
@@ -55,7 +55,7 @@ class Test(MockerMixin):
     def test_unitless(self) -> None:
         """Test bounds variable with no units."""
         cf_bounds_var = self._make_cf_bounds_var(unitless=True)
-        # cf_bounds_var is deliberately a CFVariableDouble, not a real
+        # cf_bounds_var is deliberately a CFVariableStandIn, not a real
         # CFBoundaryVariable - see the class docstring. Repeated below at
         # every other call for the same reason.
         result = _normalise_bounds_units(

@@ -11,7 +11,7 @@ import numpy as np
 
 from iris.fileformats._nc_load_rules.helpers import get_names
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
 )
 
@@ -31,7 +31,7 @@ class TestGetNames(MockerMixin):
     """
 
     def _make_cf_var(self, standard_name, long_name, cf_name):
-        cf_var = CFVariableDouble(
+        cf_var = CFVariableStandIn(
             standard_name=standard_name,
             long_name=long_name,
             units="degrees",

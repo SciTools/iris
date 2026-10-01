@@ -10,7 +10,7 @@ import pytest
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules.helpers import build_and_add_names
 from iris.loading import LOAD_PROBLEMS
-from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableStandIn
 
 
 @pytest.fixture
@@ -20,7 +20,7 @@ def mock_engine(mocker):
         "comment": "Mocked test object",
     }
     cf_group = mocker.Mock(global_attributes=global_attributes)
-    cf_var = CFVariableDouble(
+    cf_var = CFVariableStandIn(
         standard_name=None,
         long_name=None,
         units="m",

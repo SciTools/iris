@@ -23,15 +23,15 @@ class MockerMixin:
         self.mocker = mocker
 
 
-class CFVariableDouble:
+class CFVariableStandIn:
     """A minimal stand-in for :class:`iris.fileformats.cf.CFVariable`.
 
     The loading rules read a CF variable's file attributes through exactly
     two things: a real :class:`~iris.fileformats.cf.dataset.TrackedAttributes`
     mapping at ``.attributes``, and ``CFVariable.__getattr__`` routing unknown
-    names to it. This double models both, so a test can read
-    ``double.some_name`` to build its own expected value and the production
-    code's ``double.attributes.get("some_name")`` resolves the identical
+    names to it. This class models both, so a test can read
+    ``stand_in.some_name`` to build its own expected value and the production
+    code's ``stand_in.attributes.get("some_name")`` resolves the identical
     value from the same underlying mapping - unlike a flat
     ``Mock(some_name=...)``, which has nothing behind ``.attributes`` at all.
 
@@ -49,7 +49,7 @@ class CFVariableDouble:
     def __init__(self, **attributes):
         # Seed with the same ignored names production CFVariable.__init__
         # does: scale_factor, add_offset and friends must start already-read
-        # here too, or a test that puts one into a double sees it as unread
+        # here too, or a test that puts one into a stand-in sees it as unread
         # (and so, e.g., surviving onto a built object's attributes) when a
         # real load never would.
         self.attributes = TrackedAttributes(dict(attributes), ignored=_CF_ATTRS_IGNORE)
@@ -70,7 +70,7 @@ class CFVariableDouble:
             raise AttributeError(name) from None
 
     def __getitem__(self, key):
-        """Index the double's data, exactly as ``CFVariable.__getitem__`` does.
+        """Index the stand-in's data, exactly as ``CFVariable.__getitem__`` does.
 
         Real ``CFVariable.__getitem__`` returns ``self.cf_data[key]``; a test
         that needs indexing sets ``.cf_data`` to an indexable data array, the
@@ -82,17 +82,17 @@ class CFVariableDouble:
         """Return all attribute name/value pairs, exactly as ``CFVariable`` does.
 
         Used by the "last resort" raw-cube fallback (``build_raw_cube``), so a
-        double that hits that path still works without further setup.
+        stand-in that hits that path still works without further setup.
         """
         attributes = self.attributes.untracked
         return tuple((name, attributes[name]) for name in sorted(attributes))
 
 
 class RealArrayCfData:
-    """Wrap a real (non-lazy) array as a :class:`CFVariableDouble`'s ``cf_data``.
+    """Wrap a real (non-lazy) array as a :class:`CFVariableStandIn`'s ``cf_data``.
 
     ``_get_cf_var_data`` reads ``cf_data.is_emulated`` and
-    ``cf_data.is_variable_length`` before it ever looks at size, so a double
+    ``cf_data.is_variable_length`` before it ever looks at size, so a stand-in
     backed directly by a plain array - as most of these tests are, since the
     array given is the coordinate's real data rather than something read from
     a file - needs this much of the storage interface even though the array
@@ -130,11 +130,11 @@ def real_cf_data_variable(name="wibble", location="DUMMY", dtype=float, **attrib
 
     ``get_attr_units`` asserts ``isinstance(cf_var, cf.CFDataVariable)`` on the
     ``capture_invalid=True`` branch it takes when building a Cube's own units.
-    :class:`CFVariableDouble` cannot satisfy that assert - it deliberately does
+    :class:`CFVariableStandIn` cannot satisfy that assert - it deliberately does
     not inherit from ``CFDataVariable`` - so a test reaching that branch builds
     a real one here instead, over storage minimal enough to construct inline.
 
-    Prefer :class:`CFVariableDouble` everywhere else. The real class takes its
+    Prefer :class:`CFVariableStandIn` everywhere else. The real class takes its
     ``dtype``, ``shape``, ``ndim`` and ``size`` from storage through read-only
     properties, so a test cannot simply assign them.
     """

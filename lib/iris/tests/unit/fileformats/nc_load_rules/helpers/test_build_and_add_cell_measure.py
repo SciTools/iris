@@ -13,7 +13,7 @@ from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_cell_measure
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     RealArrayCfData,
 )
 
@@ -31,7 +31,7 @@ def mock_engine(mocker):
 @pytest.fixture
 def mock_cf_cm_var(monkeypatch, mock_engine, mocker):
     data = np.arange(6)
-    output = CFVariableDouble(standard_name=None, long_name="wibble", units="m2")
+    output = CFVariableStandIn(standard_name=None, long_name="wibble", units="m2")
     output.dimensions = ("foo",)
     output.scale_factor = 1
     output.add_offset = 0

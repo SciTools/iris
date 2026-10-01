@@ -13,7 +13,7 @@ from iris.fileformats._nc_load_rules.helpers import (
     build_geostationary_coordinate_system,
 )
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
 )
 
@@ -52,7 +52,7 @@ class TestBuildGeostationaryCoordinateSystem(MockerMixin):
 
         cf_grid_var_kwargs = non_ellipsoid_kwargs.copy()
         cf_grid_var_kwargs.update(ellipsoid_kwargs)
-        cf_grid_var = CFVariableDouble(**cf_grid_var_kwargs)
+        cf_grid_var = CFVariableStandIn(**cf_grid_var_kwargs)
         cs = build_geostationary_coordinate_system(None, cf_grid_var)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
         expected = Geostationary(ellipsoid=ellipsoid, **non_ellipsoid_kwargs)

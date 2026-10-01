@@ -13,7 +13,7 @@ from iris.fileformats._nc_load_rules.helpers import (
     build_vertical_perspective_coordinate_system,
 )
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
 )
 
@@ -47,7 +47,7 @@ class TestBuildVerticalPerspectiveCoordinateSystem(MockerMixin):
             test_easting = 0
             test_northing = 0
 
-        cf_grid_var = CFVariableDouble(**cf_grid_var_kwargs)
+        cf_grid_var = CFVariableStandIn(**cf_grid_var_kwargs)
         ellipsoid = iris.coord_systems.GeogCS(**ellipsoid_kwargs)
 
         cs = build_vertical_perspective_coordinate_system(None, cf_grid_var)

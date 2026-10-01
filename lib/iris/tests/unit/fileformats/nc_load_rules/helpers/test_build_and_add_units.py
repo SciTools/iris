@@ -15,7 +15,7 @@ from iris.tests.unit.fileformats.nc_load_rules.helpers import real_cf_data_varia
 
 @pytest.fixture
 def mock_cf_data_var():
-    # A real CFDataVariable, not a CFVariableDouble: build_and_add_units calls
+    # A real CFDataVariable, not a CFVariableStandIn: build_and_add_units calls
     # get_attr_units with capture_invalid=True, whose first act is to assert
     # isinstance(cf_var, cf.CFDataVariable).
     return real_cf_data_variable(units="kelvin")

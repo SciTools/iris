@@ -13,7 +13,7 @@ from iris.fileformats._nc_load_rules.helpers import (
     build_stereographic_coordinate_system,
 )
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
 )
 
@@ -47,7 +47,7 @@ class TestBuildStereographicCoordinateSystem(MockerMixin):
             test_easting = 0
             test_northing = 0
 
-        cf_grid_var = CFVariableDouble(**gridvar_props)
+        cf_grid_var = CFVariableStandIn(**gridvar_props)
 
         cs = build_stereographic_coordinate_system(None, cf_grid_var)
 

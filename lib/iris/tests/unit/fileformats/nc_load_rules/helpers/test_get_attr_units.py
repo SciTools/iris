@@ -15,7 +15,7 @@ from iris.fileformats._nc_load_rules.helpers import get_attr_units
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
     real_cf_data_variable,
 )
@@ -29,7 +29,7 @@ class TestGetAttrUnits(MockerMixin):
 
         cf_group = self.mocker.Mock(global_attributes=global_attributes)
 
-        # A real CFDataVariable, not a CFVariableDouble, because test_capture
+        # A real CFDataVariable, not a CFVariableStandIn, because test_capture
         # below passes capture_invalid=True - and that branch of
         # get_attr_units opens by asserting isinstance(cf_var,
         # cf.CFDataVariable). The other tests here share it for want of a
@@ -85,7 +85,7 @@ class TestGetAttrUnits(MockerMixin):
         second assertion below is the one that catches that regression - the
         first alone would still pass.
         """
-        cf_var = CFVariableDouble(units="1", flag_values="1, 2, 3")
+        cf_var = CFVariableStandIn(units="1", flag_values="1, 2, 3")
         cf_var.cf_name = "flag_var"
 
         attr_units = get_attr_units(cf_var, {})

@@ -10,15 +10,15 @@ from iris.coords import CellMethod
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
 from iris.loading import LOAD_PROBLEMS
-from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableStandIn
 
 
 @pytest.fixture
 def mock_cf_data_var(mocker):
-    double = CFVariableDouble(cell_methods="time: mean")
-    double.cf_name = "wibble"
-    double.filename = "DUMMY"
-    return double
+    stand_in = CFVariableStandIn(cell_methods="time: mean")
+    stand_in.cf_name = "wibble"
+    stand_in.filename = "DUMMY"
+    return stand_in
 
 
 @pytest.fixture

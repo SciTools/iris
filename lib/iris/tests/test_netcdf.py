@@ -24,7 +24,7 @@ import iris.std_names
 from iris.tests import _shared_utils
 import iris.tests.stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
-from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableDouble
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableStandIn
 import iris.util
 from iris.warnings import IrisCfSaveWarning
 
@@ -467,7 +467,7 @@ class TestNetCDFLoad:
 class TestNetCDFCRS:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.grid = CFVariableDouble()
+        self.grid = CFVariableStandIn()
 
     def test_lat_lon_major_minor(self):
         major = 63781370

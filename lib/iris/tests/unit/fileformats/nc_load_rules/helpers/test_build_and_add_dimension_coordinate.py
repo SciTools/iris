@@ -16,7 +16,7 @@ from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coordinate
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
     RealArrayCfData,
 )
@@ -64,7 +64,7 @@ class RulesTestMixin(MockerMixin):
         # No flag_values/flag_masks/flag_meanings: their absence from
         # `.attributes` is what tells helpers.get_attr_units this is not a
         # flag variable.
-        result = CFVariableDouble(units=units, calendar=None)
+        result = CFVariableStandIn(units=units, calendar=None)
         result.dimensions = dimensions
         result.cf_name = "wibble_bnds"
         result.cf_data = RealArrayCfData(bounds)
@@ -90,7 +90,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         self.monkeypatch = pytest.MonkeyPatch()
 
     def _set_cf_coord_var(self, points):
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None,
             long_name="wibble",
             units="days since 1970-01-01",
@@ -340,7 +340,7 @@ class TestBoundsVertexDim(RulesTestMixin):
     def _setup(self, mocker):
         # Create test coordinate cf variable.
         points = np.arange(6)
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None, long_name="wibble", units="km"
         )
         self.cf_coord_var.dimensions = ("foo",)
@@ -433,7 +433,7 @@ class TestCircular(RulesTestMixin):
 
     def _make_vars(self, points, bounds=None, units="degrees"):
         points = np.array(points)
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None, long_name="wibble", units=units
         )
         self.cf_coord_var.dimensions = ("foo",)
@@ -523,7 +523,7 @@ class TestCircularScalar(RulesTestMixin):
         # the cf var is (), rather than (1,).
         points = np.array([0.0])
         units = "degrees"
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None, long_name="wibble", units=units
         )
         self.cf_coord_var.dimensions = ()

@@ -19,7 +19,7 @@ from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_auxiliary_coordinate
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats.nc_load_rules.helpers import (
-    CFVariableDouble,
+    CFVariableStandIn,
     MockerMixin,
     RealArrayCfData,
 )
@@ -51,7 +51,7 @@ class TestBoundsVertexDim(MockerMixin):
             cube_parts=dict(coordinates=[]),
         )
 
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None, long_name="wibble", units="km"
         )
         self.cf_coord_var.dimensions = dimension_names
@@ -118,7 +118,7 @@ class TestBoundsVertexDim(MockerMixin):
             mocker, dimension_names, rollaxis=rollaxis
         )
         bounds *= 1000  # Convert to metres.
-        cf_bounds_var = CFVariableDouble(units="m")
+        cf_bounds_var = CFVariableStandIn(units="m")
         cf_bounds_var.dimensions = dimension_names
         cf_bounds_var.cf_name = "wibble_bnds"
         cf_bounds_var.cf_data = RealArrayCfData(bounds)
@@ -167,7 +167,7 @@ class TestDtype(MockerMixin):
         # `cf_data` must support both `.chunking` (the lazy-loading path,
         # forced on by `deferred_load_patch` below, which also needs
         # `.variable` for the proxy it builds) and real indexing (via
-        # `CFVariableDouble.__getitem__`, which reads `self.cf_data[key]`
+        # `CFVariableStandIn.__getitem__`, which reads `self.cf_data[key]`
         # exactly as production `CFVariable.__getitem__` does).
         cf_data = mocker.MagicMock(
             _FillValue=None,
@@ -186,7 +186,7 @@ class TestDtype(MockerMixin):
             cube_parts=dict(coordinates=[]),
         )
 
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None, long_name="wibble", units="m"
         )
         self.cf_coord_var.dimensions = ("foo", "bar")
@@ -254,7 +254,7 @@ class TestCoordConstruction:
 
         points = np.arange(6)
         units = "days since 1970-01-01"
-        self.cf_coord_var = CFVariableDouble(
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None,
             long_name="wibble",
             units=units,
@@ -274,7 +274,7 @@ class TestCoordConstruction:
         # No flag_values/flag_masks/flag_meanings: their absence from
         # `.attributes` is what tells helpers.get_attr_units this is not a
         # flag variable.
-        self.cf_bounds_var = CFVariableDouble(units=units)
+        self.cf_bounds_var = CFVariableStandIn(units=units)
         self.cf_bounds_var.dimensions = ("x", "nv")
         self.cf_bounds_var.scale_factor = 1
         self.cf_bounds_var.add_offset = 0
