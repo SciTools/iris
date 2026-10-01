@@ -20,7 +20,7 @@ class Test_aggregated_by:
             ("NetCDF", "testing", "small_theta_colpex.nc")
         )
         # While loading, "turn off" loading small variables as real data.
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         cube = iris.load_cube(problem_test_file, "air_potential_temperature")
         # Test aggregating by aux coord, notably the `forecast_period` aux
         # coord on `cube`, whose `_points` attribute is a lazy array.

@@ -223,7 +223,7 @@ class TestDtype(MockerMixin):
             new=patched__getitem__,
         )
         # While loading, "turn off" loading small variables as real data.
-        self.mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        self.mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         yield
 
     def test_scale_factor_add_offset_int(self):

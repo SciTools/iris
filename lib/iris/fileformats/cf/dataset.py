@@ -195,8 +195,13 @@ class CFDatasetVariable(ABC):
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
         """Return this variable's data, lazily where a lazy array is worth it.
 
-        The one route by which the CF loader obtains arrays, so that a new
-        storage format is a new implementation of this method and nothing else.
+        The one route by which the CF loader obtains arrays, so a new storage
+        format mainly needs a new implementation of this method. An
+        implementation is expected to share the CF-layer chunking helpers in
+        :mod:`iris.fileformats.cf.loader` - ``_get_actual_dtype`` for a lazy
+        result's dtype and ``_LAZYVAR_MIN_BYTES`` for the small-array cutoff -
+        as :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+        does, rather than reinventing them.
 
         ``chunking_policy`` is called with no arguments and returns the
         ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once

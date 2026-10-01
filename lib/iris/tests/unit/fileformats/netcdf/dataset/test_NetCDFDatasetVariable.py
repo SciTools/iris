@@ -13,8 +13,8 @@ import pytest
 
 from iris._deprecation import IrisDeprecation
 from iris.fileformats.cf.dataset import CFDatasetVariable
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf import _bytecoding_datasets, _dataset, _thread_safe_nc
-import iris.fileformats.netcdf.loader
 
 from .conftest import SAMPLE_AIR, SAMPLE_LABELS
 
@@ -228,13 +228,13 @@ class TestReadData:
         np.testing.assert_array_equal(result, SAMPLE_AIR)
 
     def test_large_variable_is_lazy(self, air, mocker):
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         result = air.read_data(lambda: ([1, 4], (False, False)))
         assert isinstance(result, da.Array)
         np.testing.assert_array_equal(result.compute(), SAMPLE_AIR)
 
     def test_cache_key_is_the_proxy_repr(self, air, mocker):
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         as_lazy_data = mocker.patch("iris.fileformats.netcdf._dataset.as_lazy_data")
         air.read_data(lambda: ([1, 4], (False, False)))
         (proxy,) = as_lazy_data.call_args.args
@@ -278,14 +278,14 @@ class TestReadData:
         finally:
             dataset.close()
 
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         with CFReader(str(path)) as reader:
             cf_var = reader.cf_group["thing"]
             before = {name for name, _ in cf_var.cf_attrs_unused()}
             assert before == {"units"}, (
                 "the four CF-reserved names should start out marked as read"
             )
-            iris.fileformats.netcdf.loader._get_cf_var_data(cf_var)
+            iris.fileformats.cf.loader._get_cf_var_data(cf_var)
             after = {name for name, _ in cf_var.cf_attrs_unused()}
         assert after == before
 

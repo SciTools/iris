@@ -36,8 +36,8 @@ import iris.coords
 from iris.cube import Cube
 import iris.exceptions
 import iris.fileformats.cf as cf
+from iris.fileformats.cf.loader import _get_cf_var_data
 import iris.fileformats.netcdf
-from iris.fileformats.netcdf.loader import _get_cf_var_data
 from iris.loading import LOAD_PROBLEMS, LoadProblems
 import iris.std_names
 import iris.util

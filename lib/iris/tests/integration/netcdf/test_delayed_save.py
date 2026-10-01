@@ -44,10 +44,10 @@ class Test__lazy_stream_data:
     def all_vars_lazy(self):
         # For the operation of these tests, we want to force all netcdf variables
         # to load as lazy data, i.e. **don't** use real data for 'small' ones.
-        old_value = iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES
-        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+        old_value = iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES
+        iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = 0
         yield
-        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = old_value
+        iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = old_value
 
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["SaveImmediate", "SaveDelayed"])

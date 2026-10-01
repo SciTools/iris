@@ -301,7 +301,7 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         # reaches this module through iris.fileformats.cf._reader, so a
         # module-level import would be a cycle; and the tests patch
         # _LAZYVAR_MIN_BYTES on the module object.
-        from iris.fileformats.netcdf import loader
+        from iris.fileformats.cf import loader
 
         if self.is_emulated:
             # The variable is not an actual netCDF4 file variable, but an
