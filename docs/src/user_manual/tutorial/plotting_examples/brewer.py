@@ -1,7 +1,3 @@
-# Copyright Iris contributors
-#
-# This file is part of Iris and is released under the BSD license.
-# See LICENSE in the root of the repository for full licensing details.
 """Plot a chart of all Brewer colour schemes."""
 
 import matplotlib.pyplot as plt

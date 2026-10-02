@@ -400,6 +400,9 @@ max-complexity = 22
 # https://docs.astral.sh/ruff/rules
 # All test scripts
 
+"docs/src/user_manual/tutorial/*.py" = [
+    "CPY001",  # Missing license header
+]
 "lib/iris/tests/*.py" = [
     # https://docs.astral.sh/ruff/rules/undocumented-public-module/
     "D100",  # Missing docstring in public module
