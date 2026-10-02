@@ -127,7 +127,7 @@ def test_load_does_not_need_a_worker_lock(tmp_path):
     that is the configuration a user hits - and configuring it is the whole
     trigger: the failure was at lock construction during the load, before any
     compute. No worker process is in fact spawned, because this file is below
-    ``loader._LAZYVAR_MIN_BYTES`` and so loads eagerly, which is what keeps
+    ``cf.loader._LAZYVAR_MIN_BYTES`` and so loads eagerly, which is what keeps
     the test quick and deterministic under pytest.
     """
     path = tmp_path / "process_scheduler.nc"

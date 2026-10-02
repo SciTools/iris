@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Phase** | Design, awaiting approval |
-| **Progress** | 2 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) and [#7303](https://github.com/SciTools/iris/pull/7303), both in review); merge-back not started — see §12.1 |
+| **Progress** | 3 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) and [#7303](https://github.com/SciTools/iris/pull/7303) merged; [#7316](https://github.com/SciTools/iris/pull/7316) in review); merge-back not started — see §12.1 |
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
@@ -1574,9 +1574,9 @@ on the relocation before them, and PR 7 depends on everything.
 
 | # | Title | State | Link |
 |---|---|---|---|
-| 1 | `iris.fileformats.cf` becomes a package, with tests first | In review | [#7298](https://github.com/SciTools/iris/pull/7298) |
-| 2 | `CFDataset`, and the CF variable classes rewritten against it | In review | [#7303](https://github.com/SciTools/iris/pull/7303) |
-| 3 | Relocate the CF loader | Not started | — |
+| 1 | `iris.fileformats.cf` becomes a package, with tests first | Merged | [#7298](https://github.com/SciTools/iris/pull/7298) |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
+| 3 | Relocate the CF loader | In review | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
 | 6 | Zarr saving | Not started | — |
@@ -1906,6 +1906,34 @@ not been written yet.
   `test_CFReader__dataset.py`. Both need a genuinely bare, unwrapped
   `netCDF4.Dataset`, which is precisely the input whose handling changed.
 
+**2026-10-01 — during PR 3**
+
+- `load_cubes` stays in `iris.fileformats.netcdf.loader`. Opening a list of
+  file sources is the format's own business, and §4.8 lists
+  `netcdf.load_cubes` among the names that do not move. It imports the four
+  CF-layer functions it drives.
+- `DEBUG` stays too, and the moved `_load_cube_inner` reaches back for it
+  through the module. §4.8 lists it as a name that does not move, and it is a
+  flag users set by assignment: a module `__getattr__` can forward a read but
+  cannot intercept a write (PEP 562 defines no `__setattr__` hook), so
+  forwarding it would have made `netcdf.loader.DEBUG = True` silently stop
+  working. Only `CHUNK_CONTROL` and `ChunkControl` are forwarded.
+- The storage seam is one method, `CFDatasetVariable.read_data(chunking_policy)`,
+  taking a zero-argument callable that the implementation invokes only once
+  the result is known to be lazy. The alternative — hoisting the
+  `CHUNK_CONTROL.from_file()` check into the CF layer, which is where the
+  "is this the cube's data variable" fact lives — would have made small
+  unchunked cubes raise `KeyError` where they load today, because that check
+  sits behind the "small enough to read whole" shortcut.
+- `as_lazy_data` takes its cache key from the caller rather than testing
+  `isinstance(data, NetCDFDataProxy)`. This is the `cache_key=` change §4.4
+  called for, landed here because the CF loader cannot import a netCDF proxy
+  class.
+- `_LAZYVAR_MIN_BYTES` moves with the loader and is repointed at all eight of
+  its call sites rather than aliased. It is private, so no deprecation is
+  owed — and several of those sites *assign* to it, which an alias could not
+  have supported.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -1937,3 +1965,6 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-23 | Accepted all five findings of the #7292 review, all reproduced. Write alignment restated over shards; fill-value masking made version-aware and taken off the storage field; the base64 `_FillValue` corrected from "malformation" to xarray's convention, and now written as well as read; the read unit separated from the write unit; the Zarr cache keyed on `Array.metadata`. Tests named in §6; Q6 and Q7 opened. |
 | 2026-09-23 | Structural pass for readability. §4.4 and §4.5 given `####` subheadings throughout — they were 617 lines navigated only by run-in bold lead-ins, and `Encoding` had been nested under multi-process writes by accident. Design history recast from "an earlier draft said X" into the rule it implies ("do not do X, because Y"): same guidance against re-deriving the rejected answer, without depending on knowledge of a draft the reader never saw. No normative content changed. |
 | 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed`, `__enter__` and `__exit__` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |
+| 2026-10-01 | PR 3 built. The CF loader relocated to `iris.fileformats.cf.loader`; `load_cubes`, `NetCDFDataProxy` and `DEBUG` stayed. `CFDatasetVariable.read_data` added as the storage seam; `as_lazy_data` gained `cache_key=`. Five decisions logged. |
+| 2026-10-02 | PR 3 raised as #7316. §12.1 records it, and #7298 corrected to Merged. |
+| 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |

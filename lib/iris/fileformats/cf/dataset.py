@@ -36,6 +36,7 @@ See sections 4.2, 4.3 and 4.5 of
 
 from abc import ABC, abstractmethod
 from collections.abc import (
+    Callable,
     ItemsView,
     Iterable,
     Iterator,
@@ -189,6 +190,30 @@ class CFDatasetVariable(ABC):
     @abstractmethod
     def __setitem__(self, keys, values) -> None:
         """Write ``values`` into the indexed portion of the variable."""
+
+    @abstractmethod
+    def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
+        """Return this variable's data, lazily where a lazy array is worth it.
+
+        The one route by which the CF loader obtains arrays, so a new storage
+        format mainly needs a new implementation of this method. An
+        implementation is expected to share the CF-layer chunking helpers in
+        :mod:`iris.fileformats.cf.loader` - ``_get_actual_dtype`` for a lazy
+        result's dtype and ``_LAZYVAR_MIN_BYTES`` for the small-array cutoff -
+        as :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+        does, rather than reinventing them. Read ``_LAZYVAR_MIN_BYTES`` through
+        the module object (``loader._LAZYVAR_MIN_BYTES``), not by
+        ``from ... import _LAZYVAR_MIN_BYTES``, so that tests can patch the
+        cutoff.
+
+        ``chunking_policy`` is called with no arguments and returns the
+        ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once
+        the result is known to be lazy: under
+        :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` it raises for
+        a variable the store has not chunked, and a variable small enough to
+        read whole must reach its data without raising.
+
+        """
 
     @abstractmethod
     def write_handle(self) -> Any:

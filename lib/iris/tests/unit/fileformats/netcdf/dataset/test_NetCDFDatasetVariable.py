@@ -7,11 +7,13 @@
 from collections.abc import MutableMapping
 import warnings
 
+import dask.array as da
 import numpy as np
 import pytest
 
 from iris._deprecation import IrisDeprecation
 from iris.fileformats.cf.dataset import CFDatasetVariable
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf import _bytecoding_datasets, _dataset, _thread_safe_nc
 
 from .conftest import SAMPLE_AIR, SAMPLE_LABELS
@@ -213,6 +215,79 @@ class TestNetCDFOnlyMembers:
         np.testing.assert_array_equal(wrapped.emulated_data_array, np.zeros(3))
         wrapped.emulated_data_array = np.ones(3)
         np.testing.assert_array_equal(variable._data_array, np.ones(3))
+
+
+def _unreachable_policy():
+    raise AssertionError("chunking policy consulted when the result is not lazy")
+
+
+class TestReadData:
+    def test_small_variable_is_real(self, air):
+        result = air.read_data(_unreachable_policy)
+        assert isinstance(result, np.ndarray)
+        np.testing.assert_array_equal(result, SAMPLE_AIR)
+
+    def test_large_variable_is_lazy(self, air, mocker):
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
+        result = air.read_data(lambda: ([1, 4], (False, False)))
+        assert isinstance(result, da.Array)
+        np.testing.assert_array_equal(result.compute(), SAMPLE_AIR)
+
+    def test_cache_key_is_the_proxy_repr(self, air, mocker):
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
+        as_lazy_data = mocker.patch("iris.fileformats.netcdf._dataset.as_lazy_data")
+        air.read_data(lambda: ([1, 4], (False, False)))
+        (proxy,) = as_lazy_data.call_args.args
+        assert as_lazy_data.call_args.kwargs["cache_key"] == repr(proxy)
+
+    def test_emulated_array_is_returned_as_it_stands(self, sample_location):
+        # The ncdata emulation hook, issue #4994: the emulating object's own
+        # array is the answer, with no reading and no proxy.
+        variable = _EmulatedVariable()
+        variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        result = wrapped.read_data(_unreachable_policy)
+        assert result is variable._data_array
+
+    def test_emulated_array_builds_no_proxy(self, sample_location, mocker):
+        proxy_class = mocker.patch.object(_thread_safe_nc, "NetCDFDataProxy")
+        variable = _EmulatedVariable()
+        variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped.read_data(_unreachable_policy)
+        assert proxy_class.call_count == 0
+
+    def test_reading_data_changes_no_attribute_tracking(self, tmp_path, mocker):
+        # Which file attributes survive onto a cube is decided by which ones
+        # the loading rules did *not* read. read_data reads three CF-reserved
+        # names off the untracked storage mapping; this is only safe because
+        # those names are pre-marked as read. Pin that, because the failure is
+        # a silent leak onto cube.attributes.
+        from iris.fileformats.cf import CFReader
+
+        path = tmp_path / "packed.nc"
+        dataset = _thread_safe_nc.DatasetWrapper(path, mode="w", format="NETCDF4")
+        try:
+            dataset.createDimension("x", 4)
+            var = dataset.createVariable("thing", "i2", ("x",), fill_value=-1)
+            var.setncattr("scale_factor", np.float32(0.5))
+            var.setncattr("add_offset", np.float32(2.0))
+            var.setncattr("missing_value", np.int16(-1))
+            var.setncattr("units", "K")
+            var[:] = np.arange(4, dtype="i2")
+        finally:
+            dataset.close()
+
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
+        with CFReader(str(path)) as reader:
+            cf_var = reader.cf_group["thing"]
+            before = {name for name, _ in cf_var.cf_attrs_unused()}
+            assert before == {"units"}, (
+                "the four CF-reserved names should start out marked as read"
+            )
+            iris.fileformats.cf.loader._get_cf_var_data(cf_var)
+            after = {name for name, _ in cf_var.cf_attrs_unused()}
+        assert after == before
 
 
 class TestDeprecatedNetcdfMember:

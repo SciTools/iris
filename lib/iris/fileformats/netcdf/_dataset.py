@@ -29,6 +29,7 @@ import warnings
 import numpy as np
 
 from iris._deprecation import warn_deprecated
+from iris._lazy_data import as_lazy_data
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
@@ -40,6 +41,12 @@ _CONTIGUOUS = "contiguous"
 
 #: The member an ncdata emulating variable carries instead of file storage.
 _EMULATED_DATA_ARRAY = "_data_array"
+
+# A stab in the dark at the mean length of the "ragged dimension" for netCDF
+# "variable length arrays" (`NetCDF.VLType` type). Total array size is unknown
+# until the variable is read in. Making this number bigger makes it more likely
+# an array will be loaded lazily.
+_MEAN_VL_ARRAY_LEN = 10
 
 
 def _bytes_if_ascii(value):
@@ -269,6 +276,138 @@ class NetCDFDatasetVariable(CFDatasetVariable):
             write_lock = self._write_lock_factory()
         return _bytecoding_datasets.EncodedNetCDFWriteProxy(
             self._location, self._variable, write_lock
+        )
+
+    def read_data(self, chunking_policy):
+        """Return this variable's data, lazily where a lazy array is worth it.
+
+        Parameters
+        ----------
+        chunking_policy : callable
+            Called with no arguments, returning the ``(chunks, dims_fixed)``
+            pair to build a lazy array with. It is called only once this method
+            has decided the result will be lazy: under
+            :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` the
+            policy raises for a variable the store has not chunked, and a
+            variable small enough to read whole must not raise.
+
+        Returns
+        -------
+        numpy.ndarray or dask.array.Array
+            Real data for a small variable, lazy data otherwise.
+
+        """
+        # Deferred, and the module rather than its members: iris.fileformats.cf
+        # reaches this module through iris.fileformats.cf._reader, so a
+        # module-level import would be a cycle; and the tests patch
+        # _LAZYVAR_MIN_BYTES on the module object.
+        from iris.fileformats.cf import loader
+
+        if self.is_emulated:
+            # The variable is not an actual netCDF4 file variable, but an
+            # emulating object with an attached data array (either numpy or
+            # dask), which can be returned immediately as-is. This is the hook
+            # ncdata (https://github.com/SciTools/ncdata) uses to translate data
+            # to and from other packages' netCDF data containers.
+            # See https://github.com/SciTools/iris/issues/4994.
+            result = self.emulated_data_array
+            if result.dtype.kind == "S":
+                # We must also perform any byte-to-string decoding since, in
+                #  ncdata, the emulating objects don't do this, and also don't
+                #  support a 'set_auto_chartostring(True)'.
+                #  Therefore, do here what an EncodedVariable.__getitem__ would
+                #  do : ..
+                # .. get details based on the file (type 'char') variable  ..
+                encoder = _bytecoding_datasets.VariableEncoder.from_var(
+                    self.unencoded_variable
+                )
+                # .. convert byte array to strings.
+                result = encoder.decode_bytes_to_stringarray(result)
+            return result
+
+        # Determine size of data; however can't do this for variable length (VLEN)
+        # netCDF arrays as the size of the array can only be known by reading the
+        # data; see https://github.com/Unidata/netcdf-c/issues/1893.
+        # Note: "Variable length" netCDF types have a datatype of `nc.VLType`.
+        if self.is_variable_length:
+            msg = (
+                f"NetCDF variable `{self.name}` is a variable length type of kind "
+                f"{self.dtype} "
+                "thus the total data size cannot be known in advance. This may affect "
+                "the lazy loading of the data."
+            )
+            warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
+
+            # Give user the chance to pass a hint of the average variable length array
+            # size via the chunk control context manager. This allows for better
+            # decisions to be made on whether the data should be lazy-loaded or not.
+            mean_vl_array_len = _MEAN_VL_ARRAY_LEN
+            chunk_control = loader.CHUNK_CONTROL
+            if chunk_control.mode is not chunk_control.Modes.AS_DASK:
+                if chunks := chunk_control.var_dim_chunksizes.get(self.name):
+                    if vl_chunk_hint := chunks.get("_vl_hint"):
+                        mean_vl_array_len = vl_chunk_hint
+
+            # Special handling for strings (`str` type) as these don't have an
+            # itemsize attribute; assume 4 bytes which is sufficient for unicode
+            # character storage
+            itemsize = 4 if self.dtype is str else self.dtype.itemsize
+
+            # For `VLType` self.size will just return the known dimension size.
+            total_bytes = self.size * mean_vl_array_len * itemsize
+        else:
+            # Normal NCVariable type:
+            total_bytes = self.size * self.dtype.itemsize
+
+        if total_bytes < loader._LAZYVAR_MIN_BYTES:
+            # Don't make a lazy array, as it will cost more memory AND more time
+            # to access.
+            result = self[:]
+
+            # Special handling of masked scalar value; this will be returned as
+            # an `np.ma.masked` instance which will lose the original dtype.
+            # Workaround for this it return a 1-element masked array of the
+            # correct dtype. Note: this is not an issue for masked arrays,
+            # only masked scalar values.
+            if result is np.ma.masked:
+                result = np.ma.masked_all(1, dtype=self.dtype)
+            return result
+
+        # Get lazy chunked data out of a cf variable.
+        # Creates Dask wrappers around data arrays for any cube components which
+        # can have lazy values, e.g. Cube, Coord, CellMeasure, AuxiliaryVariable.
+        dtype = loader._get_actual_dtype(self)
+
+        # Make a data-proxy that mimics array access and can fetch from the file.
+        # Note: Special handling needed for "variable length string" types which
+        # return a dtype of `str`, rather than a numpy type; use `S1` in this case.
+        if getattr(self.dtype, "kind", None) == "U":
+            # Special handling for "string variables".
+            fill_value = ""
+        else:
+            fill_dtype = "S1" if self.dtype is str else self.dtype.str[1:]
+            fill_value = self.attributes.get(
+                "_FillValue", _thread_safe_nc.default_fillvals[fill_dtype]
+            )
+
+        # Switch type of proxy, based on type of variable.
+        # It is done this way, instead of using an instance variable, because the
+        #  limited nature of the wrappers makes a stateful choice awkward,
+        #  e.g. especially, "variable.group()" is *not* the parent DatasetWrapper.
+        if isinstance(self.variable, _bytecoding_datasets.EncodedVariable):
+            proxy_class = _bytecoding_datasets.EncodedNetCDFDataProxy
+        else:
+            proxy_class = _thread_safe_nc.NetCDFDataProxy
+
+        proxy = proxy_class(self.variable, dtype, self.location, fill_value)
+
+        chunks, dims_fixed = chunking_policy()
+        return as_lazy_data(
+            proxy,
+            meta=proxy.dask_meta,
+            chunks=chunks,
+            dims_fixed=dims_fixed,
+            cache_key=repr(proxy),
         )
 
 

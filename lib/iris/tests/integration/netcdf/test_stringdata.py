@@ -20,6 +20,7 @@ import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 import iris.exceptions
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf import (
     DECODE_TO_STRINGS_ON_READ,
     SUPPORTED_ENCODINGS,
@@ -30,10 +31,10 @@ from iris.fileformats.netcdf import (
 @pytest.fixture(scope="module")
 def all_lazy_auxcoords():
     """Ensure that *all* aux-coords are loaded lazily, even really small ones."""
-    old_minlazybytes = iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES
-    iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+    old_minlazybytes = iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES
+    iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = 0
     yield
-    iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = old_minlazybytes
+    iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = old_minlazybytes
 
 
 N_XDIM = 3
@@ -403,7 +404,7 @@ class TestWriteEncodings:
     def lazy_data(self, request, mocker):
         is_lazy = request.param == "allLazy"
         if is_lazy:
-            mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+            mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         return is_lazy
 
     @pytest.fixture(params=["dataAsStrings", "dataAsBytes"])
