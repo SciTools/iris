@@ -5,8 +5,10 @@
 """Unit tests for :func:`iris.fileformats.cf.loader._get_cf_var_data`.
 
 The function is format-agnostic, but the only ``CFDatasetVariable`` that
-exists today is the netCDF one, so the mocks here are netCDF-shaped. PR 6
-adds the Zarr implementation and these become the shared cases.
+exists today is the netCDF one, so the mocks here are netCDF-shaped. Zarr
+loading (see section 5 of
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``) adds a second
+implementation and these become the shared cases.
 """
 
 from functools import partial

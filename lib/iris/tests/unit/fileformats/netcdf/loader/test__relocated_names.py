@@ -9,6 +9,7 @@
 """
 
 import importlib
+from unittest import mock
 import warnings
 
 import pytest
@@ -101,6 +102,35 @@ def test_debug_is_not_relocated():
         warnings.simplefilter("error")
         assert netcdf_loader.DEBUG is False
     assert "DEBUG" not in netcdf_loader._RELOCATED_NAMES
+
+
+@pytest.mark.parametrize("name", RELOCATED)
+def test_dir_includes_the_relocated_name(name):
+    # A module __getattr__ forwards reads but is invisible to dir(), so
+    # __dir__ has to union the relocated names in by hand.
+    assert name in dir(netcdf_loader)
+
+
+def test_dir_still_includes_a_name_that_genuinely_lives_here():
+    # Pin that __dir__ adds the relocated names rather than replacing the
+    # real module listing.
+    assert "load_cubes" in dir(netcdf_loader)
+    assert "DEBUG" in dir(netcdf_loader)
+
+
+def test_mock_patch_on_the_old_path_is_a_silent_no_op():
+    # mock.patch("iris.fileformats.netcdf.loader.CHUNK_CONTROL", ...)
+    # succeeds, because patch simply sets an attribute here - the same
+    # mechanism test_assignment_to_a_relocated_name_does_not_reach_the_new_home
+    # pins for a plain assignment. Production code reads
+    # iris.fileformats.cf.loader.CHUNK_CONTROL, so the patch never reaches it.
+    # A downstream test suite patching the old path would go green while
+    # testing nothing - this test states that limitation rather than leaving
+    # a future reader to discover it the hard way.
+    original = cf_loader.CHUNK_CONTROL
+    with mock.patch("iris.fileformats.netcdf.loader.CHUNK_CONTROL", "patched"):
+        assert netcdf_loader.CHUNK_CONTROL == "patched"
+        assert cf_loader.CHUNK_CONTROL is original
 
 
 def test_assignment_to_a_relocated_name_does_not_reach_the_new_home():

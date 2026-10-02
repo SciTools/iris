@@ -16,7 +16,8 @@ This module is the CF half of what used to be
 them and returns :class:`~iris.cube.Cube` objects. None of that is specific to
 netCDF, and nothing here imports netCDF4 - though three deferred imports still
 reach back into :mod:`iris.fileformats.netcdf` for now: ``saver._CF_ATTRS``
-and ``saver.Saver``, because the saver has not moved yet (PR 5), and
+and ``saver.Saver``, because the saver's own relocation is still to come (see
+section 5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``), and
 ``loader.DEBUG``, which never moves (see below). Each is commented at its own
 call site with why and, where relevant, when it goes.
 
@@ -179,8 +180,10 @@ def _add_unused_attributes(iris_object, cf_var):
     from iris.fileformats._nc_load_rules.helpers import _add_or_capture
 
     # Deferred import: iris.fileformats.netcdf.saver imports the CF layer, so
-    # importing it here at module scope would close the loop. PR 5 moves the
-    # saver and this becomes a plain import.
+    # importing it here at module scope would close the loop. Once the saver
+    # is relocated (see section 5 of
+    # docs/superpowers/specs/2026-09-21-zarr-io-design.md), this becomes a
+    # plain import.
     from iris.fileformats.netcdf.saver import _CF_ATTRS
     from iris.loading import LoadProblems
 
@@ -356,8 +359,10 @@ def _load_cube_inner(engine, cf, cf_var, filename):
 
     """Create the cube associated with the CF-netCDF data variable."""
     # Deferred import: iris.fileformats.netcdf.saver imports the CF layer, so
-    # importing it here at module scope would close the loop. PR 5 moves the
-    # saver and this becomes a plain import.
+    # importing it here at module scope would close the loop. Once the saver
+    # is relocated (see section 5 of
+    # docs/superpowers/specs/2026-09-21-zarr-io-design.md), this becomes a
+    # plain import.
     from iris.fileformats.netcdf.saver import Saver
 
     if Saver._DATALESS_ATTRNAME in cf_var.attributes:

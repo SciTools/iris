@@ -201,9 +201,9 @@ class TestDtype(MockerMixin):
         self.cf_coord_var.size = np.prod(points.shape)
         self.cf_coord_var.dtype = points.dtype
 
-        # read_data now reads scale_factor/add_offset off the storage's own
-        # attributes (F9), so cf_data shares the coord's TrackedAttributes
-        # rather than carrying a second, independent copy.
+        # read_data reads scale_factor/add_offset off the storage's own
+        # attributes, so cf_data shares the coord's TrackedAttributes rather
+        # than carrying a second, independent copy.
         cf_data.location = self.cf_coord_var.filename
         cf_data.attributes = self.cf_coord_var.attributes
         cf_data.read_data = partial(

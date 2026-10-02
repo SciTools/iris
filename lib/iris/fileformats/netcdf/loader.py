@@ -62,6 +62,12 @@ NetCDFDataProxy = _bytecoding_datasets.EncodedNetCDFDataProxy
 #: Read-only: a module ``__getattr__`` cannot intercept assignment, so a name
 #: that users *set* must keep its definition here instead. ``DEBUG`` is the
 #: one such name, and is deliberately absent from this set.
+#:
+#: The same limitation means ``mock.patch("iris.fileformats.netcdf.loader."
+#: "CHUNK_CONTROL", ...)`` succeeds and is a silent no-op: ``mock.patch``
+#: creates the attribute on this module, while production code reads
+#: ``iris.fileformats.cf.loader.CHUNK_CONTROL``. Patch
+#: :mod:`iris.fileformats.cf.loader` instead.
 _RELOCATED_NAMES = frozenset({"CHUNK_CONTROL", "ChunkControl"})
 
 
@@ -104,6 +110,22 @@ def __getattr__(name):
         stacklevel=3,
     )
     return getattr(cf_loader, name)
+
+
+def __dir__():
+    """List module attributes, including the relocated names.
+
+    A module ``__getattr__`` forwards reads of the relocated names, but does
+    not make them discoverable: PEP 562 does not extend to ``dir()``,
+    :func:`inspect.getmembers`, or tab-completion, so this fills the gap.
+
+    Returns
+    -------
+    list of str
+        The real module globals, unioned with the relocated names.
+
+    """
+    return sorted(set(globals()) | _RELOCATED_NAMES)
 
 
 def load_cubes(file_sources, callback=None, constraints=None):

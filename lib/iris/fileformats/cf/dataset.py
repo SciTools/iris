@@ -201,7 +201,10 @@ class CFDatasetVariable(ABC):
         :mod:`iris.fileformats.cf.loader` - ``_get_actual_dtype`` for a lazy
         result's dtype and ``_LAZYVAR_MIN_BYTES`` for the small-array cutoff -
         as :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
-        does, rather than reinventing them.
+        does, rather than reinventing them. Read ``_LAZYVAR_MIN_BYTES`` through
+        the module object (``loader._LAZYVAR_MIN_BYTES``), not by
+        ``from ... import _LAZYVAR_MIN_BYTES``, so that tests can patch the
+        cutoff.
 
         ``chunking_policy`` is called with no arguments and returns the
         ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once
