@@ -80,7 +80,7 @@ jobs:
         echo "LOCK_FILE=requirements/locks/py$(echo ${{ matrix.python-version }} | tr -d '.')-linux-64.lock" >> ${GITHUB_ENV}
 
     - name: "conda package cache"
-      uses: ./.github/workflows/composite/conda-pkg-cache
+      uses: $/.github/workflows/composite/conda-pkg-cache
       with:
         cache_build: 0
         cache_period: ${{ env.CACHE_PERIOD }}
@@ -96,7 +96,7 @@ jobs:
         use-only-tar-bz2: true
 
     - name: "conda environment cache"
-      uses: ./.github/workflows/composite/conda-env-cache
+      uses: $/.github/workflows/composite/conda-env-cache
       with:
         cache_build: 0
         cache_period: ${{ env.CACHE_PERIOD }}
@@ -104,7 +104,7 @@ jobs:
         install_packages: "nox pip"
 
     - name: "nox cache"
-      uses: ./.github/workflows/composite/nox-cache
+      uses: $/.github/workflows/composite/nox-cache
       with:
         cache_build: 1
         env_name: ${{ env.ENV_NAME }}

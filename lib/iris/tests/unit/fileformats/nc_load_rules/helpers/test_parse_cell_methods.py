@@ -64,14 +64,10 @@ class Test:
 
     def test_comment(self):
         cell_method_strings = [
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time : maximum (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time : mean (interval: 1 day comment: second bit)",
-            "time : maximum (interval: 1 hr comment: first bit) "
-            "time : mean (interval: 1 day comment: second bit)",
+            "time: maximum (interval: 1 hr comment: first bit) time: mean (interval: 1 day comment: second bit)",
+            "time : maximum (interval: 1 hr comment: first bit) time: mean (interval: 1 day comment: second bit)",
+            "time: maximum (interval: 1 hr comment: first bit) time : mean (interval: 1 day comment: second bit)",
+            "time : maximum (interval: 1 hr comment: first bit) time : mean (interval: 1 day comment: second bit)",
         ]
         expected = (
             CellMethod(
@@ -125,10 +121,8 @@ class Test:
             # "time: maximum (interval: 1 hr comment: first bit "
             # "time: mean (interval: 1 day comment: second bit)",
             "time",
-            "time: (interval: 1 hr comment: first bit) "
-            "time: mean (interval: 1 day comment: second bit)",
-            "time: maximum (interval: 1 hr comment: first bit) "
-            "time: (interval: 1 day comment: second bit)",
+            "time: (interval: 1 hr comment: first bit) time: mean (interval: 1 day comment: second bit)",
+            "time: maximum (interval: 1 hr comment: first bit) time: (interval: 1 day comment: second bit)",
         ]
         for cell_method_str in cell_method_strings:
             msg = (
