@@ -15,6 +15,10 @@ Subdirectory AGENTS.md files take precedence for their subtrees:
 For a map of where code lives and how data flows, see
 [`lib/iris/ARCHITECTURE.md`](lib/iris/ARCHITECTURE.md).
 
+Everything you write for a person to read — chat replies, commit messages,
+pull request bodies, issues, specs, plans, docstrings and comments — follows
+[`.github/WRITING.md`](.github/WRITING.md). Read it before writing prose.
+
 
 ## Project Overview
 
@@ -210,6 +214,12 @@ one short uniform marker beats a different footer for each.
 Git commit messages are out of scope. They are not posts, and they keep their
 own conventions — `Co-Authored-By:` trailers and the like — which this rule
 neither overrides nor requires.
+
+**Never hard-wrap a GitHub post.** One paragraph is one line; GitHub wraps to
+the reader's window.
+
+Collapsed sections, alerts, permalinks and the shape of a pull request body
+are in [`.github/WRITING.md`](.github/WRITING.md).
 
 
 ## Pull Request Guidelines

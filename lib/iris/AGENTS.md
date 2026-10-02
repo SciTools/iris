@@ -9,6 +9,10 @@ For **where code lives and how data flows**, read
 [`ARCHITECTURE.md`](ARCHITECTURE.md) before exploring unfamiliar subsystems.
 It is an orientation map only; algorithm detail belongs in module docstrings.
 
+For **how to build the prose itself** — every comment, docstring and commit
+message here, as well as anything posted to GitHub — read
+[`WRITING.md`](../../.github/WRITING.md).
+
 
 ## Why This File Exists
 
@@ -138,14 +142,10 @@ a human treats it as documentation.
   units, shapes, laziness, mutation, exceptions raised.
 - Link non-obvious workarounds to their source:
   `# See https://github.com/SciTools/iris/issues/1234`.
-- Never cite an artefact of how the work was done: a review finding, a task
-  or plan number, a phase, a checklist item. These resolve to nothing for a
-  later reader and nothing checks they still mean anything. Cite an issue, a
-  pull request, a design document, or the section of the convention.
-- Never cite what decays silently: a line number in another file, a count of
-  call sites, a time relative to writing ("this PR", "currently", "the new
-  behaviour"). Nothing checks any of them, and your "now" is never the
-  reader's. Name the function, class, constant or pull request.
+- Cite only what a later reader can still resolve: an issue, a pull request,
+  a design document, a section of the convention. Everything else decays
+  unchecked. [`WRITING.md`](../../.github/WRITING.md) lists what decays and
+  what to write instead.
 
 
 ### Brevity
@@ -188,11 +188,8 @@ least able to judge how much of it belongs in the file. Assume too much.
 - A surprise no test can pin — a library quirk, an invariant, a coupling —
   goes in the module docstring's traps.
 - A surprise caused by an external bug keeps the URL, not a retelling.
-- Write the fact, not your side of the argument about it. Three tells that
-  you have written a reply: a negation whose positive was never stated
-  ("passed through, not reached around"); a "therefore" or "so" whose premise
-  is not in the file; a term of art that appears exactly once in the
-  repository. Each answers a question the reader has not asked.
+- Write the fact, not your side of the argument about it. The tells that you
+  have written a reply are in [`WRITING.md`](../../.github/WRITING.md).
 
 
 ## Module Docstrings Carry the Explanation
