@@ -7,14 +7,18 @@ get_attr_units`.
 
 """
 
+import cf_units
 import numpy as np
 import pytest
 
 from iris.fileformats._nc_load_rules.helpers import get_attr_units
-from iris.fileformats.cf import CFDataVariable
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import _shared_utils
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableStandIn,
+    MockerMixin,
+    real_cf_data_variable,
+)
 from iris.warnings import IrisCfLoadWarning
 
 
@@ -25,18 +29,20 @@ class TestGetAttrUnits(MockerMixin):
 
         cf_group = self.mocker.Mock(global_attributes=global_attributes)
 
-        cf_var = self.mocker.MagicMock(
-            spec=CFDataVariable,
-            cf_name="sound_frequency",
-            cf_data=self.mocker.Mock(spec=[]),
-            filename="DUMMY",
+        # A real CFDataVariable, not a CFVariableStandIn, because test_capture
+        # below passes capture_invalid=True - and that branch of
+        # get_attr_units opens by asserting isinstance(cf_var,
+        # cf.CFDataVariable). The other tests here share it for want of a
+        # reason to differ.
+        cf_var = real_cf_data_variable(
+            name="sound_frequency",
+            dtype=np.float64,
             standard_name=None,
             long_name=None,
             units="\u266b",
-            dtype=np.float64,
             cell_methods=None,
-            cf_group=cf_group,
         )
+        cf_var.cf_group = cf_group
         return cf_var
 
     def test_unicode_character(self):
@@ -67,3 +73,22 @@ class TestGetAttrUnits(MockerMixin):
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert load_problem.loaded == {"units": "\u266b"}
+
+    def test_flag_values_untracked(self):
+        """Presence of flag_values must force NO_UNIT_STRING without recording a read.
+
+        This is the load-bearing assertion for the untracked probe in
+        `get_attr_units` (`name in cf_var.attributes.untracked`): if that
+        probe is ever simplified to `name in cf_var.attributes` (a tracked
+        read), `flag_values`/`flag_masks`/`flag_meanings` would stop being
+        copied onto loaded cubes by `_add_unused_attributes`, silently. The
+        second assertion below is the one that catches that regression - the
+        first alone would still pass.
+        """
+        cf_var = CFVariableStandIn(units="1", flag_values="1, 2, 3")
+        cf_var.cf_name = "flag_var"
+
+        attr_units = get_attr_units(cf_var, {})
+
+        assert attr_units == cf_units._NO_UNIT_STRING
+        assert "flag_values" not in cf_var.attributes.read

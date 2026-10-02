@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Phase** | Design, awaiting approval |
-| **Progress** | 1 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298), in review); merge-back not started — see §12.1 |
+| **Progress** | 2 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) and [#7303](https://github.com/SciTools/iris/pull/7303), both in review); merge-back not started — see §12.1 |
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
@@ -274,34 +274,42 @@ need.
 class CFDatasetVariable(ABC):
     """One named array in a CF-conforming dataset."""
     name: str
+    location: str                      # the dataset's path or URL; F2
     dimensions: tuple[str, ...]
     shape: tuple[int, ...]
     dtype: np.dtype
     size: int
     fill_value: Any | None
     chunking: tuple[int, ...] | None   # None when the store is unchunked
-    attributes: MutableMapping[str, Any]   # materialised once; tracks reads
+    attributes: MutableMapping[str, Any]   # materialised once
 
     def __getitem__(self, keys) -> np.ndarray: ...
     def __setitem__(self, keys, values) -> None: ...
+    def __len__(self) -> int: ...       # defaults to self.shape[0]; F5
+    ndim: int                           # defaults to len(self.shape)
 
     def write_handle(self) -> Any: ...  # picklable __setitem__ target; see 4.5
+    def deprecated_netcdf_member(self, name: str) -> Any: ...   # see 4.3
 
 
 class CFDataset(ABC):
     """A CF-conforming array store, open for reading or writing."""
     location: str                       # path or URL, for messages and proxies
     mode: str                           # "r" | "r+" | "a" | "w" | "w-"; 4.5
+    closed: bool                        # F3
     variables: Mapping[str, CFDatasetVariable]
     dimensions: Mapping[str, int]
     attributes: MutableMapping[str, Any]
 
-    def create_dimension(self, name: str, size: int) -> None: ...
-    def create_variable(self, name, dtype, dimensions, *,
+    def create_dimension(self, name: str, size: int | None) -> None: ...
+    def create_variable(self, name, dtype, dimensions=(), *,
                         fill_value=None, **encoding) -> CFDatasetVariable: ...
     def sync(self) -> None: ...
     def finalise(self) -> None: ...     # one-shot; NOT part of close()
     def close(self) -> None: ...
+
+    def __enter__(self) -> "CFDataset": ...     # returns self; concrete
+    def __exit__(self, *exc_info) -> None: ...  # calls close(); concrete
 ```
 
 Three members exist only to keep multi-process writing reachable later, and
@@ -309,7 +317,31 @@ are explained in §4.5: `write_handle`, `mode` and `finalise`. They cost
 almost nothing now — `mode` is a string the implementations already track
 internally, `write_handle` returns `self` for Zarr, and `finalise` is a no-op
 for netCDF — and their absence is what would force a breaking interface
-change later.
+change later. `finalise` is defined but not yet called: PR 2 left
+`Saver.__exit__` alone rather than guess at an ordering only Zarr can
+exercise, and PR 6 wires it.
+
+`attributes` is materialised once and does *not* track reads. Tracking is a
+`CFVariable` concern, because `CFReader` builds a second `CFVariable` over
+the same backing variable when it promotes one, and the two must keep
+independent read sets (§4.3). `CFDatasetVariable.attributes` is therefore a
+plain mapping, and `CFVariable.attributes` is a tracking view over it. The
+view's class, `TrackedAttributes`, lives in `cf/dataset.py` beside the two
+abstract classes, because it is part of the same contract.
+
+`location` repeats `CFDataset.location` on the variable so that a variable
+can name its own file without a back-reference to its dataset. It is
+load-bearing: it is the `path` of a read proxy, and so part of the dask
+array cache key, and it is what `LOAD_PROBLEMS.record()` reports.
+
+`closed` is on the interface because `Saver.complete()` has to refuse to run
+until the file is released, and `isopen()` is netCDF vocabulary. A dataset
+the caller opened is closed by the caller, so an implementation answers from
+the store where it can, not only from its own flag.
+
+`create_dimension` accepts `size=None` to request an unlimited dimension; a
+store with no such concept raises. `create_variable`'s `dimensions` defaults
+to `()`, because grid-mapping variables are scalar.
 
 The split that matters is `attributes` versus everything else. Today
 `cf_var.units` might be a CF attribute or a netCDF property and the caller
@@ -383,6 +415,12 @@ Move the reads to `.attributes` and the tracking must move with them, or every
 CF-reserved attribute silently leaks onto loaded cubes. `.attributes` is
 therefore a tracking mapping, not a plain `dict`, and PR 1's tests must pin
 `cf_attrs_unused()` before PR 2 touches it.
+
+`CFVariable.attributes` is a `TrackedAttributes` view, constructed per
+`CFVariable` over a snapshot of `cf_data.attributes`. It records reads —
+which is how `cf_attrs_unused()` decides what reaches `cube.attributes` —
+and it is a snapshot rather than a live view because a backend's attribute
+mapping may write through to the file, and loading must never write.
 
 ### 4.4 Reading
 
@@ -1537,7 +1575,7 @@ on the relocation before them, and PR 7 depends on everything.
 | # | Title | State | Link |
 |---|---|---|---|
 | 1 | `iris.fileformats.cf` becomes a package, with tests first | In review | [#7298](https://github.com/SciTools/iris/pull/7298) |
-| 2 | `CFDataset`, and the CF variable classes rewritten against it | Not started | — |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | In review | [#7303](https://github.com/SciTools/iris/pull/7303) |
 | 3 | Relocate the CF loader | Not started | — |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
@@ -1587,6 +1625,7 @@ closing keywords live (§5).
 | Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing |
 | Q6 | The `as_lazy_data` cache is process-wide and keyed on metadata, so it cannot detect a store whose chunk contents changed under identical metadata. Should it be scoped to a load session instead? | Metadata identity closes the cases that were reproduced (§4.4) and matches the netCDF key's existing strength, so it ships. Session scoping is the durable fix and would cover both formats | §4.4 | Nothing |
 | Q7 | Iris writes a floating `_FillValue` as base64 to stay readable by xarray, deviating from CF §2.5.1. Should the deviation be raised with the CF-Zarr conventions group rather than carried privately? | Carry it now, since the alternative is unreadable output; take it upstream to zarr-conventions/CF so the convention settles rather than each reader guessing | §4.4, §4.5 | Nothing |
+| Q8 | `_add_grid_mapping_to_dataset` sets sixty-three CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -1813,6 +1852,60 @@ Every one of these is now a named test in §6. The cross-reader test that
 catches the third was already promised there before the review; it had simply
 not been written yet.
 
+**2026-09-24 — during PR 2**
+
+- `CFDatasetVariable.attributes` does not track reads; `CFVariable` does.
+  Two `CFVariable`s can share one backing variable, and they must not share
+  a read set.
+- `CFVariable.attributes` is a snapshot. A backend attribute mapping writes
+  through to the file, and a read-mode load must not write.
+- The `spans` gap §5 called a latent bug is unreachable from Iris:
+  `_NCZARR_SCALAR_DIMENSION` only ever appears alone, so the `len == 1`
+  guard it lacks can never fire. PR 2 characterises the behaviour instead of
+  changing it, and the "one behaviour change" §5 allows is spent elsewhere.
+- Saving a coordinate attribute whose name collides with a netCDF4 Python
+  member — `shape`, `size`, `dtype`, `name`, `dimensions`, `mask` — now
+  writes it, where the `hasattr()` "don't clobber" check used to drop it
+  silently. This is the saver-side half of the same defect the `__getattr__`
+  rewrite fixes on the load side.
+- `finalise()` is on the interface but unwired until PR 6.
+- The five declared properties — `dimensions`, `shape`, `ndim`, `dtype` and
+  `size` — stay typed properties on `CFVariable` and keep resolving to the
+  storage object. What changed is that the read is no longer *recorded*, so a
+  file attribute of one of those names is no longer consumed and now reaches
+  `cube.attributes`. A different mechanism from the bullet above, with the
+  same headline; the two must not be described as one.
+- A name `ncattrs()` lists but `getncattr()` cannot fetch yields `""` rather
+  than raising, so a malformed file that used to fail now loads. The netCDF
+  dataset layer already shipped that leniency, and two answers for the same
+  malformed file depending on which layer read it is worse than one lenient
+  answer.
+- CF attribute reads move from attribute access to a `Mapping` subscript, so
+  an absent name raises `KeyError` where it used to raise `AttributeError`.
+  Accepted as the cost of making `.attributes` the path library code takes.
+- `CFReader` writes its synthesised `bounds` link into the attributes mapping,
+  so a formula-term or derived-bounds variable that falls back to
+  `build_raw_cube` carries that key into `IRIS_RAW`. Accepted rather than
+  filtering inside `build_raw_cube`, which reads the mapping unfiltered by
+  design.
+- A borrowed *bare* `netCDF4.Dataset` — one that is not already an Iris
+  wrapper — is now wrapped in an `EncodedDataset`, so a borrow behaves like
+  every other input and character data decodes. The wrapping is
+  unconditional and does not consult `DECODE_TO_STRINGS_ON_READ`.
+- A dataset that *emulates* netCDF4 must now expose three more members:
+  `Dimension.size`, `Dataset.ncattrs()` and `Variable.ncattrs()`. No
+  `getattr` fallback was added — all three are public `netCDF4` API, and
+  `lib/iris/AGENTS.md` bans defensive wrapping for an unconfirmed problem.
+  Unverified against ncdata, which is not installed in `iris-dev`.
+- `cf_patch` keeps receiving netCDF4 objects. Both the dataset and the
+  variable handed to the hook are the netCDF4 ones, not the CF dataset
+  wrappers, because the hook's documented contract is netCDF4 attribute
+  assignment.
+- Two test modules join `_PERMITTED_SUFFIXES` in
+  `.hooks/check_netcdf4_imports.py` — `test_NetCDFDataset.py` and
+  `test_CFReader__dataset.py`. Both need a genuinely bare, unwrapped
+  `netCDF4.Dataset`, which is precisely the input whose handling changed.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -1843,3 +1936,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-22 | Covered the write proxy (§4.5): no Zarr equivalent needed, `write_handle()` justified by present netCDF need, native Zarr regains the deferred saving NCZarr gave up, and the `da.store` return-type defect recorded as Q5. |
 | 2026-09-23 | Accepted all five findings of the #7292 review, all reproduced. Write alignment restated over shards; fill-value masking made version-aware and taken off the storage field; the base64 `_FillValue` corrected from "malformation" to xarray's convention, and now written as well as read; the read unit separated from the write unit; the Zarr cache keyed on `Array.metadata`. Tests named in §6; Q6 and Q7 opened. |
 | 2026-09-23 | Structural pass for readability. §4.4 and §4.5 given `####` subheadings throughout — they were 617 lines navigated only by run-in bold lead-ins, and `Encoding` had been nested under multi-process writes by accident. Design history recast from "an earlier draft said X" into the rule it implies ("do not do X, because Y"): same guidance against re-deriving the rejected answer, without depending on knowledge of a draft the reader never saw. No normative content changed. |
+| 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed`, `__enter__` and `__exit__` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |

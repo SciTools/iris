@@ -51,7 +51,7 @@ class TestCoordAttributes(MockerMixin):
             cf_group[name] = self.mocker.Mock(cf_attrs_unused=cf_attrs_unused)
         cf = self.mocker.Mock(cf_group=cf_group)
 
-        cf_data = self.mocker.Mock(_FillValue=None)
+        cf_data = self.mocker.Mock()
         cf_data.chunking = self.mocker.MagicMock(return_value=shape)
         cf_var = self.mocker.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
@@ -61,6 +61,7 @@ class TestCoordAttributes(MockerMixin):
             cf_group=coords,
             shape=shape,
             size=np.prod(shape),
+            attributes={},
         )
         return cf, cf_var
 
@@ -141,7 +142,7 @@ class TestCubeAttributes(MockerMixin):
     def _make(self, attrs):
         shape = (1,)
         cf_attrs_unused = self.mocker.Mock(return_value=attrs)
-        cf_data = self.mocker.Mock(_FillValue=None)
+        cf_data = self.mocker.Mock()
         cf_data.chunking = self.mocker.MagicMock(return_value=shape)
         cf_var = self.mocker.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
@@ -153,6 +154,7 @@ class TestCubeAttributes(MockerMixin):
             cf_attrs_unused=cf_attrs_unused,
             shape=shape,
             size=np.prod(shape),
+            attributes={},
         )
         return cf_var
 

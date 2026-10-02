@@ -176,7 +176,7 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
-    grid_mapping_type = getattr(cf_var, hh.CF_ATTR_GRID_MAPPING_NAME, None)
+    grid_mapping_type = cf_var.attributes.get(hh.CF_ATTR_GRID_MAPPING_NAME)
 
     succeed = True
     if grid_mapping_type is None:
@@ -557,7 +557,7 @@ def action_all_managed_attributes(engine):
         iris_name = handler.iris_name
         matches = []
         for match_name in handler.netcdf_names:
-            match_value = getattr(var, match_name, None)
+            match_value = var.attributes.get(match_name)
             if match_value is not None:
                 matches.append((match_name, match_value))
 
@@ -623,7 +623,7 @@ def action_formula_type(engine, formula_root_fact):
     (var_name,) = formula_root_fact
     cf_var = engine.cf_var.cf_group[var_name]
     # cf_var.standard_name is a formula type (or we should never get here).
-    formula_type = getattr(cf_var, "standard_name", None)
+    formula_type = cf_var.attributes.get("standard_name")
     succeed = True
     if formula_type not in iris.fileformats.cf.reference_terms:
         succeed = False

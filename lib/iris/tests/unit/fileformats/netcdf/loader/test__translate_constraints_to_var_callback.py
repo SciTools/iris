@@ -15,20 +15,25 @@ from iris.fileformats.netcdf.loader import _translate_constraints_to_var_callbac
 from iris.tests import _shared_utils
 
 
+def _data_variable(mocker, name, **attributes):
+    """A CFDataVariable whose CF attributes are exactly the ones named."""
+    return CFDataVariable(name, mocker.MagicMock(attributes=attributes))
+
+
 class Test:
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
         self.data_variables = [
-            CFDataVariable("var1", mocker.MagicMock(standard_name="x_wind")),
-            CFDataVariable("var2", mocker.MagicMock(standard_name="y_wind")),
-            CFDataVariable("var1", mocker.MagicMock(long_name="x component of wind")),
-            CFDataVariable(
+            _data_variable(mocker, "var1", standard_name="x_wind"),
+            _data_variable(mocker, "var2", standard_name="y_wind"),
+            _data_variable(mocker, "var1", long_name="x component of wind"),
+            _data_variable(
+                mocker,
                 "var1",
-                mocker.MagicMock(
-                    standard_name="x_wind", long_name="x component of wind"
-                ),
+                standard_name="x_wind",
+                long_name="x component of wind",
             ),
-            CFDataVariable("var1", mocker.MagicMock()),
+            _data_variable(mocker, "var1"),
         ]
 
     def test_multiple_constraints(self):
@@ -38,7 +43,7 @@ class Test:
         ]
         callback = _translate_constraints_to_var_callback(constrs)
         result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [True, True, False, True, False])
+        _shared_utils.assert_array_equal(result, [True, True, True, True, True])
 
     def test_multiple_constraints_invalid(self):
         constrs = [
@@ -57,12 +62,12 @@ class Test:
         callback = _translate_constraints_to_var_callback(constrs)
         # Add 2 extra vars: one passes both name checks, and the other does not
         vars = self.data_variables + [
-            CFDataVariable("var1", mocker.MagicMock(standard_name="x_wind")),
-            CFDataVariable("var1", mocker.MagicMock(standard_name="air_pressure")),
+            _data_variable(mocker, "var1", standard_name="x_wind"),
+            _data_variable(mocker, "var1", standard_name="air_pressure"),
         ]
         result = [callback(var) for var in vars]
         _shared_utils.assert_array_equal(
-            result, [True, True, False, True, False, True, False]
+            result, [True, True, True, True, True, True, False]
         )
 
     def test_non_name_constraint(self):
@@ -83,13 +88,19 @@ class Test:
         constr = iris.NameConstraint(standard_name="x_wind")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [True, False, False, True, False])
+        _shared_utils.assert_array_equal(result, [True, False, True, True, True])
 
-    def test_name_constraint_long_name(self):
+    def test_name_constraint_long_name(self, mocker):
         constr = iris.NameConstraint(long_name="x component of wind")
         callback = _translate_constraints_to_var_callback(constr)
-        result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [False, False, True, True, False])
+        # The shared vars either match long_name or omit it, and omission is
+        # permissive - so without a var that CONTRADICTS, this test would pass
+        # even if the callback ignored long_name altogether.
+        vars = self.data_variables + [
+            _data_variable(mocker, "var1", long_name="y component of wind"),
+        ]
+        result = [callback(var) for var in vars]
+        _shared_utils.assert_array_equal(result, [True, True, True, True, True, False])
 
     def test_name_constraint_var_name(self):
         constr = iris.NameConstraint(var_name="var1")
@@ -101,7 +112,7 @@ class Test:
         constr = iris.NameConstraint(standard_name="x_wind", var_name="var1")
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [True, False, False, True, False])
+        _shared_utils.assert_array_equal(result, [True, False, True, True, True])
 
     def test_name_constraint_standard_name_long_name_var_name(self):
         constr = iris.NameConstraint(
@@ -111,7 +122,7 @@ class Test:
         )
         callback = _translate_constraints_to_var_callback(constr)
         result = [callback(var) for var in self.data_variables]
-        _shared_utils.assert_array_equal(result, [False, False, False, True, False])
+        _shared_utils.assert_array_equal(result, [True, False, True, True, True])
 
     def test_name_constraint_with_stash(self):
         constr = iris.NameConstraint(standard_name="x_wind", STASH="m01s00i024")
