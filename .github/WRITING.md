@@ -17,10 +17,11 @@ in a hurry would take away.
 Trust comes from being checkable, not from sounding careful. Say what you ran.
 Say what you did not. Neither needs more than a sentence.
 
-**Scope.** The sentence rules govern every piece of prose you write:
-docstrings, comments, commit messages, pull request bodies, issues, review
-comments, specifications and plans. The GitHub rules govern only what is
-posted to GitHub.
+**Scope.** The sentence rules govern every piece of prose you write for a
+person to read: chat replies to the person you are working with, docstrings,
+comments, commit messages, pull request bodies, issues, review comments,
+specifications and plans. The GitHub rules govern only what is posted to
+GitHub.
 
 For **where** prose belongs in library code — comment, docstring, test or
 module docstring — see [`lib/iris/AGENTS.md`](../lib/iris/AGENTS.md). This
