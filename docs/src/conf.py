@@ -154,8 +154,8 @@ rst_epilog = f"""
 extensions = [
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "page_metadata_validator",
     "readingtime",
-    "readingtime_validator",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",

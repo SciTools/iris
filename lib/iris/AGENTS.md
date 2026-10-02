@@ -1,0 +1,296 @@
+# AGENTS.md
+
+Agent instructions for `lib/iris/` — the Iris library source.
+
+These rules govern **how code is written** under this tree. Tests have their
+own rules in [`tests/AGENTS.md`](tests/AGENTS.md).
+
+For **where code lives and how data flows**, read
+[`ARCHITECTURE.md`](ARCHITECTURE.md) before exploring unfamiliar subsystems.
+It is an orientation map only; algorithm detail belongs in module docstrings.
+
+For **how to build the prose itself** — every comment, docstring and commit
+message here, as well as anything posted to GitHub — read
+[`WRITING.md`](../../.github/WRITING.md).
+
+
+## Why This File Exists
+
+Iris is maintained by humans and agents together. Agents read through a
+narrow context window using text search and cannot run the code; humans read
+with intuition but limited patience. Both want explicit names, local
+reasoning and small units. This file records that shared style, plus the few
+places the two diverge and which way to resolve them. Models are trained to
+please diff reviewers rather than to produce code that is cheap to navigate
+later, and drift towards long functions, redundant comments and defensive
+wrapping; correct for that deliberately.
+
+
+## Fast Rules
+
+1. Write code that can be understood from the file in front of you.
+2. Name things so they can be found by exact text search.
+3. Prefer explicit and slightly verbose over implicit and clever. This
+   governs code, never prose: comments and docstrings are terse.
+4. Prefer duplication over an abstraction you are not confident in.
+5. Match surrounding Iris idioms even where you would choose differently.
+6. Every comment and docstring must still be true after your edit.
+7. Explain subsystems in module docstrings, not inline or in side files.
+
+
+## Locality — Readable In One Place
+
+- Keep behaviour derivable from the function's own body, signature, type
+  hints and docstring. Avoid designs that require opening three other files.
+- Prefer composition and explicit delegation over deep inheritance and mixin
+  stacks. Resolving an MRO across modules costs an agent many tool calls and
+  is opaque to a newcomer. Where Iris already uses mixins (e.g.
+  `iris.common.mixin`, metadata managers), follow the existing pattern rather
+  than inventing a parallel one.
+- Do not add indirection (registry, dispatch dict, plugin hook, base class)
+  for a single caller. This governs implementation layers, not API surface;
+  a package `__init__.py` that re-exports is not indirection, see below.
+- Pass dependencies in as arguments rather than reaching for module-level
+  mutable state.
+
+
+## Greppability
+
+Exact text search is the primary retrieval tool. Code that cannot be found
+does not exist.
+
+- Never construct identifiers at runtime: no `setattr(obj, f"{name}_bounds",
+  ...)`, no `getattr(module, method_name)` dispatch where a dict or `if/elif`
+  would do. A constructed name is unfindable for every reader. This bans
+  *computed* names only — `getattr(var, "cf_role", "")` is a safe lookup with
+  a greppable literal and is the preferred idiom for optional CF attributes.
+- Give public names enough distinctiveness to search for. Local `data`,
+  `cube`, `result` are fine; a public helper called `_process` is not.
+- Declare `__all__` in modules with a public surface. No `import *`.
+- **Re-export freely from a package `__init__.py`.** Surfacing objects at
+  the level users import from is a real convenience, and it keeps the file
+  layout free to change later. `iris.mesh` is the model: explicit
+  `from .components import MeshXY`, gathered into `__all__`. Re-export
+  verbatim — never rename on the way out, never wrap in `try`/conditional
+  imports, never put logic in `__init__.py`. Each object stays defined in
+  one module, so `class MeshXY` still finds it in a single grep.
+  (`iris.common` uses `import *`; that is legacy, not a pattern to copy.)
+- Make error and warning messages distinctive and mostly static, so a
+  traceback maps to exactly one line. Put interpolated values at the end:
+  `f"Cannot collapse a coordinate with bounds: {coord.name()}"`.
+- Do not reuse one helper name across modules for differing behaviour.
+
+
+## Explicitness
+
+- Add type hints to new or modified public functions. Agents cannot execute
+  code to discover types, so hints are the cheapest reliable signal. Do not
+  retrofit hints to code you are not otherwise changing.
+- Avoid `**kwargs` passthrough on public API — spell out the parameters. If
+  passthrough is unavoidable, document the accepted keys.
+- Use keyword arguments at call sites for anything not obviously positional.
+  Booleans are always keyword.
+- Replace repeated magic strings with module-level constants.
+- Return one documented type. Do not write functions whose return type
+  depends on an argument's value. Iris has some legacy examples; add no more.
+
+
+## Laziness
+
+Realising data is the caller's decision, never a library function's.
+
+- Use the `core_*` accessors when you do not care which you have:
+  `core_data()` on a cube, `core_points()` / `core_bounds()` on a coord. They
+  return real or lazy without realising either. Reach for `.data` only to
+  return a result the caller asked to realise.
+- A lazy input gives a lazy output. State in the docstring whether the result
+  is lazy and whether the call realises data.
+- Never realise to inspect: `shape`, `dtype` and `ndim` are on the lazy array,
+  and `has_lazy_data()` / `has_lazy_points()` answer which you have.
+- Build graphs whole-array with `iris._lazy_data` — `map_complete_blocks`,
+  `lazy_elementwise`, `as_lazy_data`. Per-slice graph building is expensive.
+
+
+## Conform to the Specification, Not to the Sample File
+
+Iris implements published conventions — CF, UGRID, Zarr, netCDF. Sample files
+are evidence that a code path gets exercised, not authority for what it does.
+
+- Derive behaviour from the convention's text and cite the section. Before
+  claiming a file taught you something general, check the convention first.
+- When a real file disagrees with the convention, the file is wrong: warn
+  (`iris.warnings`) naming the variable and the offending value, and carry on.
+- Do not reshape the reader around one publisher's output. Raise only where
+  the data cannot be interpreted at all.
+
+
+## Comments and Docstrings
+
+A stale comment is worse than no comment — an agent treats it as evidence and
+a human treats it as documentation.
+
+- Comments explain **why**: the CF rule, the constraint, the bug worked
+  around. Never restate what the code plainly does.
+- Fix or delete any comment your change invalidates, even if you did not
+  write it.
+- A comment claiming a branch is unreachable is a testable claim. Pin it
+  with a test or an `assert`, or restructure so it is true by construction.
+  Left as prose it goes stale unnoticed.
+- Do not add docstrings or comments to code you did not otherwise change —
+  but see the module docstring exemption below.
+- NumPy-style docstrings are mandatory and validated. State the contract:
+  units, shapes, laziness, mutation, exceptions raised.
+- Link non-obvious workarounds to their source:
+  `# See https://github.com/SciTools/iris/issues/1234`.
+- Cite only what a later reader can still resolve: an issue, a pull request,
+  a design document, a section of the convention. Everything else decays
+  unchecked. [`WRITING.md`](../../.github/WRITING.md) lists what decays and
+  what to write instead.
+
+
+### Brevity
+
+- Minimise every section of every docstring, by subtraction. Sentence by
+  sentence, ask what breaks if it is gone; most rationale survives its own
+  deletion. Then ask who each surviving sentence is for — a **user** calling
+  the thing, a **maintainer** not breaking it, or a **reviewer** you are
+  answering. Only the first belongs here; the second goes to the module
+  docstring or a test, the third to the pull request.
+- Write notes, not an essay. Fragments are correct, articles are optional,
+  shorthand is welcome. Say what holds; do not restate the signature, defend
+  the design against an alternative nobody proposed, or narrate how you found
+  out. Contract first, caveat second, rationale last, so that anything
+  overlong is at least skippable.
+- A comment runs one to three lines. A fourth is the alarm bell: the fact has
+  outgrown the site and wants a better home.
+- One fact, one place — for prose. A comment you would paste at a second site
+  belongs in the class or module docstring instead; pasted at a third it is
+  certainly misplaced. Labels are the exception: a short fixed marker that
+  indexes rather than explains (`# netCDF-only members below.`) is meant to
+  repeat, and should read identically at every site. A repeated sentence of
+  reasoning is not a label.
+- Docstring a dunder only when it says something the signature does not.
+  `D105` is permanently ignored and numpydoc excludes `__repr__`, `__eq__`
+  and `__ne__` — "Return a string representation." is noise nothing asked for.
+
+
+## Facts Learned by Debugging
+
+Most over-long comments in Iris were written after the code already worked. A
+test failed, you investigated, you found something surprising and true, and
+you wrote it down at the line that taught you it. The fact is worth keeping.
+That line is the worst place to keep it, and you are, just then, the reader
+least able to judge how much of it belongs in the file. Assume too much.
+
+- A surprise a test can pin becomes **the test** — named for the trap, detail
+  in its docstring, the source keeping one line that names it. This is the
+  only home that fails loudly when it stops being true.
+- A surprise no test can pin — a library quirk, an invariant, a coupling —
+  goes in the module docstring's traps.
+- A surprise caused by an external bug keeps the URL, not a retelling.
+- Write the fact, not your side of the argument about it. The tells that you
+  have written a reply are in [`WRITING.md`](../../.github/WRITING.md).
+
+
+## Module Docstrings Carry the Explanation
+
+Prose explaining a subsystem belongs in the module docstring. Inline comments
+scatter one argument across dozens of sites; a companion Markdown file is
+validated by nothing and rots unseen. Only the docstring is read on every
+visit, published by Sphinx, checked by numpydoc, and reviewed in the diff.
+
+Be generous here, and only here: sixty lines of orientation above a
+two-thousand-line module is cheap, read once per visit rather than once per
+call site. Not a tutorial.
+
+Cover whichever apply:
+
+- what the module is for, and what it deliberately does not do;
+- the vocabulary — name the concepts the code assumes you already know;
+- invariants the code depends on but cannot assert;
+- why the design is as it is, including approaches tried and rejected;
+- known traps, and the modules this one is coupled to.
+
+Leave out anything a reader or Sphinx can already derive: API listings,
+signatures, call sequences, per-release history. Explanation scoped to a
+single class belongs in that class's docstring instead.
+
+A public module's docstring is also published as an API page, so it must open
+with a `z_reference` item — a title, `:tags:` carrying at least one `topic_*`,
+and a one-line summary — within its first 25 lines. Copy the form from a
+neighbouring module; `pre-commit run check-docs-page-metadata` checks it.
+
+**Exemption to "do not document code you did not change":** if you had to work
+out how a subsystem behaves in order to edit it, write that understanding into
+the module docstring — the comprehension is otherwise discarded when your
+context ends. `_concatenate.py`, `_merge.py` and `common/resolve.py` are the
+most commonly misread modules and carry barely a line each.
+
+
+## Size and Shape
+
+Agents pay for every line they read; humans lose the thread. Existing giants
+such as `cube.py` (~5600 lines) are legacy: do not grow them without cause,
+but do not opportunistically split them either — put genuinely separable new
+code in a private sibling module instead.
+
+- New modules: aim under ~1000 lines, one coherent concept each.
+- Functions: aim to fit one screen (~50 lines).
+- Use guard clauses and early returns instead of nested conditionals.
+- Nesting beyond three levels is a signal to extract a named helper.
+
+
+## Where Human and Agent Preferences Diverge
+
+| Tension | Resolution |
+|---|---|
+| Abstraction vs duplication | Duplicate up to ~3 occurrences; abstract only once the shape is proven. |
+| Clever idiom vs plain code | Plain. No nested comprehensions beyond two levels, no walrus inside complex expressions, no metaclass tricks. |
+| Small files vs cohesion | Cohesion wins. Do not fragment into micro-modules purely to shrink files. |
+| Type hints vs noise | Hint new and changed public code only. |
+| Consistency vs local improvement | Consistency wins. A uniform mediocre idiom beats a mix of good ones. |
+
+
+## Anti-Patterns — Do Not Introduce
+
+- Dynamically generated attributes, methods or module members.
+- `eval`, `exec`, or `getattr` string dispatch in library code.
+- Metaclasses, or `__getattr__` used to invent behaviour. Its one legitimate
+  use is presenting an open-ended set of *data* keys read from a file as
+  attributes (`CFVariable` over CF-netCDF attributes): it must forward to a
+  declared `Mapping` that library code also uses directly, and say so in the
+  docstring. `__getattr__` stops mypy checking *every* attribute on the class
+  and its subclasses, so confining it keeps the rest of the class typed.
+- Silent `except Exception: pass`.
+- Boolean flags that switch a function between two unrelated behaviours —
+  write two functions.
+- In-place mutation of input cubes or coordinates; return new objects.
+- Refactors, renames or "improvements" outside the scope of the change.
+
+
+## Pre-Finish Checklist
+
+- `pre-commit run --files <changed paths>` passes, with any auto-fixes
+  re-staged and the run repeated until clean.
+- New and changed public functions have type hints and NumPy docstrings.
+- No comment or docstring was left stale by the change.
+- If you debugged during this change, re-read the diff as someone who was not
+  there. Comments added after the first working version are where verbosity
+  collects — and where a comment turns into a reply to a conversation the
+  reader never had.
+- Laziness behaviour is preserved and documented.
+- Tests updated per [`tests/AGENTS.md`](tests/AGENTS.md); changelog fragment
+  added per [`../../changelog/AGENTS.md`](../../changelog/AGENTS.md).
+
+
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
+  component-specific fixes.

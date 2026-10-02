@@ -15,8 +15,11 @@ of much value.
 import dask
 import dask.config
 import distributed
+import numpy as np
 import pytest
 
+import iris
+from iris.cube import Cube
 from iris.fileformats.netcdf._dask_locks import (
     DaskSchedulerTypeError,
     dask_scheduler_is_distributed,
@@ -109,3 +112,31 @@ def test_get_worker_lock(dask_scheduler):
         else:
             # low-level object doesn't have a readily available class for isinstance
             assert all(hasattr(result, att) for att in ("acquire", "release", "locked"))
+
+
+def test_load_does_not_need_a_worker_lock(tmp_path):
+    """A load must not demand a lock only the saver needs.
+
+    ``get_worker_lock`` refuses the process scheduler, because the *saver*
+    cannot use it - see this module's own ``test_get_worker_lock``. Loading
+    has no such limitation, so no read path may ask for the lock: doing so
+    made ``iris.load`` fail under ``scheduler="processes"``, reporting that
+    the scheduler "is not supported by the Iris netcdf saver" during a load.
+
+    The process scheduler is really configured rather than simulated, because
+    that is the configuration a user hits - and configuring it is the whole
+    trigger: the failure was at lock construction during the load, before any
+    compute. No worker process is in fact spawned, because this file is below
+    ``loader._LAZYVAR_MIN_BYTES`` and so loads eagerly, which is what keeps
+    the test quick and deterministic under pytest.
+    """
+    path = tmp_path / "process_scheduler.nc"
+    with iris.FUTURE.context(save_split_attrs=True):
+        iris.save(Cube(np.arange(6.0).reshape(2, 3), long_name="x"), path)
+
+    with dask.config.set(scheduler="processes"):
+        loaded = iris.load(path)
+        data = loaded[0].data
+
+    assert len(loaded) == 1
+    np.testing.assert_array_equal(data, np.arange(6.0).reshape(2, 3))

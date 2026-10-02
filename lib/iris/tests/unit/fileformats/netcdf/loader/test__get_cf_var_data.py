@@ -11,7 +11,7 @@ import pytest
 
 from iris._lazy_data import _optimum_chunksize
 import iris.fileformats.cf
-from iris.fileformats.netcdf._thread_safe_nc import VLType
+import iris.fileformats.netcdf._dataset
 from iris.fileformats.netcdf.loader import CHUNK_CONTROL, _get_cf_var_data
 from iris.tests import _shared_utils
 from iris.tests.unit.fileformats import MockerMixin
@@ -27,24 +27,18 @@ class Test__get_cf_var_data(MockerMixin):
     def _make(self, chunksizes=None, shape=None, dtype="i4", **extra_properties):
         if shape is None:
             shape = self.shape
-        dimensions_dict = {
-            "dim_" + str(x): self.mocker.Mock(size=x) for x in range(len(shape))
-        }
-        dimension_names = list(dimensions_dict.keys())
         cf_data = self.mocker.MagicMock(
-            _FillValue=None,
-            _Encoding="",
-            __getitem__="<real-data>",
-            dimensions=dimension_names,
-            # A parent .group() with dimensions is needed to validate the var dims
-            group=self.mocker.Mock(
-                return_value=self.mocker.Mock(dimensions=dimensions_dict)
-            ),
-            dtype=dtype,
+            spec=iris.fileformats.netcdf._dataset.NetCDFDatasetVariable,
+            fill_value=None,
+            dimensions=tuple("dim_" + str(x) for x in range(len(shape))),
             shape=shape,
-            **extra_properties,
+            chunking=chunksizes,
+            is_variable_length=False,
+            is_emulated=False,
+            # NetCDFDataProxy reads .shape straight off this: the one
+            # deliberate escape hatch, and the one place a real shape matters.
+            variable=self.mocker.MagicMock(shape=shape),
         )
-        cf_data.chunking = self.mocker.MagicMock(return_value=chunksizes)
         if dtype is not str:  # for testing VLen str arrays (dtype=`class <str>`)
             dtype = np.dtype(dtype)
         cf_var = self.mocker.MagicMock(
@@ -55,6 +49,8 @@ class Test__get_cf_var_data(MockerMixin):
             cf_name="DUMMY_VAR",
             shape=shape,
             size=np.prod(shape),
+            attributes={},
+            dimensions=cf_data.dimensions,
             **extra_properties,
         )
         cf_var.__getitem__.return_value = self.mocker.sentinel.real_data_accessed
@@ -87,16 +83,10 @@ class Test__get_cf_var_data(MockerMixin):
 
     def test_cf_data_no_chunks(self):
         # No chunks means chunks are calculated from the array's shape by
-        # `iris._lazy_data._optimum_chunksize()`.
+        # `iris._lazy_data._optimum_chunksize()`. This also covers what used
+        # to be the separate "contiguous" case: NetCDFDatasetVariable.chunking
+        # already collapses that netCDF spelling of "unchunked" to None.
         chunks = None
-        cf_var = self._make(chunks)
-        lazy_data = _get_cf_var_data(cf_var)
-        lazy_data_chunks = [c[0] for c in lazy_data.chunks]
-        _shared_utils.assert_array_equal(lazy_data_chunks, self.expected_chunks)
-
-    def test_cf_data_contiguous(self):
-        # Chunks 'contiguous' is equivalent to no chunks.
-        chunks = "contiguous"
         cf_var = self._make(chunks)
         lazy_data = _get_cf_var_data(cf_var)
         lazy_data_chunks = [c[0] for c in lazy_data.chunks]
@@ -117,47 +107,41 @@ class Test__get_cf_var_data(MockerMixin):
         var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
-    def test_vltype__1000str_is_lazy(self, mocker):
-        # Variable length string type
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(1000,), dtype=str, datatype=mock_vltype)
+    def test_vltype__1000str_is_lazy(self):
+        cf_var = self._make(shape=(1000,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
     def test_vltype__1000str_is_real_with_hint(self, mocker):
-        # Variable length string type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=1):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
     def test_vltype__100str_is_real(self, mocker):
-        # Variable length string type
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
 
-    def test_vltype__100str_is_lazy_with_hint(self, mocker):
-        # Variable length string type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype=str, name="varlen string type")
-        cf_var = self._make(shape=(100,), dtype=str, datatype=mock_vltype)
+    def test_vltype__100str_is_lazy_with_hint(self):
+        cf_var = self._make(shape=(100,), dtype=str)
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=50):
             var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
-    def test_vltype__100f8_is_lazy(self, mocker):
-        # Variable length float64 type
-        mock_vltype = mocker.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
-        cf_var = self._make(shape=(1000,), dtype="f8", datatype=mock_vltype)
+    def test_vltype__100f8_is_lazy(self):
+        cf_var = self._make(shape=(1000,), dtype="f8")
+        cf_var.cf_data.is_variable_length = True
         var_data = _get_cf_var_data(cf_var)
         assert isinstance(var_data, da.Array)
 
     def test_vltype__100f8_is_real_with_hint(self, mocker):
-        # Variable length float64 type with a hint on the array variable length size
-        mock_vltype = mocker.Mock(spec=VLType, dtype="f8", name="varlen float64 type")
-        cf_var = self._make(shape=(100,), dtype="f8", datatype=mock_vltype)
+        cf_var = self._make(shape=(100,), dtype="f8")
+        cf_var.cf_data.is_variable_length = True
         with CHUNK_CONTROL.set("DUMMY_VAR", _vl_hint=2):
             var_data = _get_cf_var_data(cf_var)
         assert var_data is mocker.sentinel.real_data_accessed
@@ -168,17 +152,30 @@ class Test__get_cf_var_data(MockerMixin):
         # Check that a variable emulation object passes its real data directly.
         # ... or for string data, that it converts it, either lazy or real.
         shape = (20, 30, 30)
-        spec = np.ndarray if is_realdata else da.Array
+        array_spec = np.ndarray if is_realdata else da.Array
         dtype = np.dtype("S1") if is_string else np.dtype("f4")
-        emulated_data = mocker.MagicMock(spec=spec, dtype=dtype, shape=shape)
-        # Make a cf_var with a special extra '_data_array' property.
-        cf_var = self._make(
-            chunksizes=None,
-            dtype=dtype,
-            _data_array=emulated_data,
-            shape=shape,
-        )
+        emulated_data = mocker.MagicMock(spec=array_spec, dtype=dtype, shape=shape)
+        cf_var = self._make(chunksizes=None, dtype=dtype, shape=shape)
+        cf_var.cf_data.is_emulated = True
+        cf_var.cf_data.emulated_data_array = emulated_data
+
         if is_string:
+            # The encoding is described by the file variable beneath the
+            #  emulation, which is 'char' where the data read out is strings.
+            unencoded = mocker.Mock(
+                dtype=np.dtype("S1"),
+                dimensions=("dim_0", "dim_1", "string5"),
+                # None is what an absent _Encoding attribute yields: the
+                #  default encoding, and no "unsupported encoding" warning.
+                _Encoding=None,
+            )
+            # .name is a Mock constructor keyword, so it has to be set after.
+            unencoded.name = "DUMMY_VAR"
+            unencoded.group.return_value = mocker.Mock(
+                dimensions={"string5": mocker.Mock(size=5)}
+            )
+            cf_var.cf_data.unencoded_variable = unencoded
+
             # detect that we added a translation to the data
             ifnbd = "iris.fileformats.netcdf._bytecoding_datasets."
             mock_decode = mocker.patch(ifnbd + "decode_bytesarray_to_stringarray")

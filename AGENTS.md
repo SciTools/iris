@@ -9,7 +9,15 @@ built around CF-compliant multi-dimensional arrays ("Cubes").
 Subdirectory AGENTS.md files take precedence for their subtrees:
 - [`changelog/AGENTS.md`](changelog/AGENTS.md) — documentation on changelog
 - [`docs/AGENTS.md`](docs/AGENTS.md) — documentation-specific rules
+- [`lib/iris/AGENTS.md`](lib/iris/AGENTS.md) — how to write library source code
 - [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific rules
+
+For a map of where code lives and how data flows, see
+[`lib/iris/ARCHITECTURE.md`](lib/iris/ARCHITECTURE.md).
+
+Everything you write for a person to read — chat replies, commit messages,
+pull request bodies, issues, specs, plans, docstrings and comments — follows
+[`.github/WRITING.md`](.github/WRITING.md). Read it before writing prose.
 
 
 ## Project Overview
@@ -21,7 +29,7 @@ Subdirectory AGENTS.md files take precedence for their subtrees:
 | **Distribution** | conda-forge (`iris`), PyPI (`scitools-iris`) |
 | **Key dependencies** | NumPy, Dask, SciPy, Cartopy, CF-Python, NetCDF4 |
 | **Linter / formatter** | Ruff (88-char line length) |
-| **Test runner** | pytest + pytest-xdist (`-n auto`) |
+| **Test runner** | pytest; pytest-xdist is installed but **not** in `addopts` — pass `-n auto` yourself |
 | **Env management** | nox + conda |
 
 
@@ -88,24 +96,30 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 ## Testing
 
-- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific 
+- [`lib/iris/tests/AGENTS.md`](lib/iris/tests/AGENTS.md) — test-specific rules.
 
+- Before finishing a change, run the repository's pre-commit hooks and fix any reported issues. (This is expected to encode a growing number of preferred coding practices, to enable productive collaboration with non-deterministic LLM agents).
 
 ## Code Style
 
+Linting and formatting are driven by pre-commit, not by invoking tools
+directly.
+
 ```bash
-# Lint
-ruff check lib/iris
+# Check and auto-fix the files you changed (preferred while iterating)
+pre-commit run --files <paths>
 
-# Auto-fix safe lint issues
-ruff check --fix lib/iris
+# Check and auto-fix everything
+pre-commit run --all-files
 
-# Format
-ruff format lib/iris
-
-# Check formatting without writing
-ruff format --check lib/iris
+# Run a single hook, e.g. after a formatting-only change
+pre-commit run ruff-format --all-files
 ```
+
+Pre-commit hooks rewrite files in place, so re-stage and re-run until it
+passes cleanly. Only fall back to `ruff check` / `ruff format` directly when
+pre-commit is unavailable — the hook config is the source of truth for
+versions and arguments.
 
 - **Line length**: 88 characters (Ruff default).
 - **Docstrings**: NumPy style; strictly validated.
@@ -118,8 +132,12 @@ ruff format --check lib/iris
   # See LICENSE in the root of the repository for full licensing details.
   ```
 
-- **Imports**: Ruff-managed ordering. No direct `import netCDF4` — always use
-  `iris.fileformats.netcdf._thread_safe_nc` for thread safety.
+- **Imports**: Ruff-managed ordering, applied by pre-commit. No direct
+  `import netCDF4` — always use `iris.fileformats.netcdf._thread_safe_nc` for
+  thread safety.
+- **Readability for humans and agents**: see
+  [`lib/iris/AGENTS.md`](lib/iris/AGENTS.md) for the house style on locality,
+  greppability, explicitness and comment hygiene.
 
 
 ## Development Conventions
@@ -159,8 +177,8 @@ strings.
 
 ## Changelog
 
-Changelog fragments lives under `chngelog/` and is built with towncrier via
-sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
+Changelog fragments live under `changelog/` and are built with towncrier
+via sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
 
 
 ## Documentation
@@ -179,16 +197,51 @@ make lockfiles
 ```
 
 
+## Posting to GitHub
+
+Open every text you post to GitHub with your model in parentheses, before
+anything else — pull request descriptions, issues, comments, replies and
+inline review comments alike:
+
+```
+(posted by Claude Opus)
+```
+
+Name the model, not its version. This **replaces** any trailing attribution
+your harness tells you to add: Iris has many authors using many models, and
+one short uniform marker beats a different footer for each.
+
+Git commit messages are out of scope. They are not posts, and they keep their
+own conventions — `Co-Authored-By:` trailers and the like — which this rule
+neither overrides nor requires.
+
+**Never hard-wrap a GitHub post.** One paragraph is one line; GitHub wraps to
+the reader's window.
+
+Collapsed sections, alerts, permalinks and the shape of a pull request body
+are in [`.github/WRITING.md`](.github/WRITING.md).
+
+
 ## Pull Request Guidelines
 
 - When creating a pull request a template is provided to ensure all checks are
   considered.
-- This project is configured to use pre-commit tht will ensure some checks are
-  performed automatically.
+- This project is configured to use pre-commit, which will ensure some checks
+  are performed automatically.
 - Keep changes focused; avoid unrelated refactors in the same PR.
 - Add or update tests for every change to production code.
 - Ensure a whatsnew fragment is added, see
 [`changelog/AGENTS.md`](changelog/AGENTS.md)
+
+
+## Responding to Review
+
+A reviewer has not read every `AGENTS.md`; you have. Before actioning a
+comment, check whether the thing objected to is something these files
+explicitly sanction. If it is, reply with the rule and the file it lives in,
+and let a human settle it — complying silently turns one reviewer's
+preference into a change against a written convention, and nothing catches it
+afterwards.
 
 
 ## Critical Development Gotchas
@@ -233,13 +286,14 @@ make lockfiles
 - **Code of Conduct**: [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 
-## ⚠️ Meta-Instruction: Auto-Update Rule
-- **Trigger**: You MUST automatically update this `AGENTS.md` file if a new
-  structural pattern, critical bug fix, or persistent repository rule is
-  established during this session.
-- **Constraint 1**: Keep the file under 200 lines. Delete obsolete rules to
-  make room for new ones.
-- **Constraint 2**: Do not ask for user permission before updating. Perform the
-  edit silently as your final step.
-- **Constraint 3**: Only log global, reusable lessons. Do not log temporary or
+## ⚠️ Meta-Instruction: Changing This File
+- **Trigger**: If your work establishes a durable, reusable rule, you MUST
+  propose it before your session ends.
+- **Constraint 1**: Propose, never self-apply. Say it in your closing message,
+  or raise it as its own pull request. NEVER edit an `AGENTS.md` silently, or
+  as a side effect of unrelated work.
+- **Constraint 2**: Keep this file under 300 lines — every agent loads it in
+  full. If an addition would break that, tighten your wording; do NOT delete
+  existing guidance to make room. Removing a rule is its own proposal.
+- **Constraint 3**: Only global, reusable lessons. Do not propose temporary or
   component-specific fixes.
