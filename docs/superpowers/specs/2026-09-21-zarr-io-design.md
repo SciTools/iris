@@ -7,7 +7,7 @@
 | | |
 |---|---|
 | **Phase** | Design, awaiting approval |
-| **Progress** | 3 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) merged; [#7303](https://github.com/SciTools/iris/pull/7303) and [#7316](https://github.com/SciTools/iris/pull/7316) in review); merge-back not started — see §12.1 |
+| **Progress** | 3 of 7 pull requests raised ([#7298](https://github.com/SciTools/iris/pull/7298) and [#7303](https://github.com/SciTools/iris/pull/7303) merged; [#7316](https://github.com/SciTools/iris/pull/7316) in review); merge-back not started — see §12.1 |
 | **Next action** | Spec approval, then the implementation plan |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
@@ -1575,7 +1575,7 @@ on the relocation before them, and PR 7 depends on everything.
 | # | Title | State | Link |
 |---|---|---|---|
 | 1 | `iris.fileformats.cf` becomes a package, with tests first | Merged | [#7298](https://github.com/SciTools/iris/pull/7298) |
-| 2 | `CFDataset`, and the CF variable classes rewritten against it | In review | [#7303](https://github.com/SciTools/iris/pull/7303) |
+| 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
 | 3 | Relocate the CF loader | In review | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
@@ -1967,3 +1967,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed`, `__enter__` and `__exit__` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |
 | 2026-10-01 | PR 3 built. The CF loader relocated to `iris.fileformats.cf.loader`; `load_cubes`, `NetCDFDataProxy` and `DEBUG` stayed. `CFDatasetVariable.read_data` added as the storage seam; `as_lazy_data` gained `cache_key=`. Five decisions logged. |
 | 2026-10-02 | PR 3 raised as #7316. §12.1 records it, and #7298 corrected to Merged. |
+| 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |
