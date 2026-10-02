@@ -88,11 +88,6 @@ class TestContents:
         assert air.write_handle().lock is reader.write_lock
 
     def test_materialising_variables_makes_no_write_lock(self, reader):
-        # Making a lock is a write-path act: for an unsupported scheduler
-        # _dask_locks.get_worker_lock() raises DaskSchedulerTypeError saying
-        # "not supported by the Iris netcdf saver". Raising the error is
-        # pointless and unhelpful if only loading, so in this scenario the
-        # reader must avoid creating a write lock at all. See NetCDFDataset.write_lock.
         assert sorted(reader.variables) == ["air_temperature", "height", "label"]
         assert dict(reader.attributes) == SAMPLE_GLOBALS
         assert reader.variables["air_temperature"].attributes is not None
