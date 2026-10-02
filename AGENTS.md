@@ -211,6 +211,15 @@ Git commit messages are out of scope. They are not posts, and they keep their
 own conventions — `Co-Authored-By:` trailers and the like — which this rule
 neither overrides nor requires.
 
+**Never hard-wrap a GitHub post.** One paragraph is one line. GitHub wraps to
+the reader's window, so breaks at 80 columns produce a ragged column that
+looks twice as long as it is.
+
+How to write the post itself — sentence construction, collapsed sections,
+alerts, permalinks, what a pull request body is for — is in
+[`.github/WRITING.md`](.github/WRITING.md). Read it before writing a pull
+request body, an issue, or a commit message longer than one line.
+
 
 ## Pull Request Guidelines
 
