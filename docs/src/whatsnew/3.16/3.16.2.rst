@@ -10,6 +10,6 @@ v3.16.2 (06 Oct 2026)
    This patch release of Iris includes:
 
    * :fa:`code-pull-request` :pull:`7320`: :user:`trexfeathers` and
-   :user:`mo-garethsjones` fixed Iris' new character data handling to
-   successfully read ``char`` NetCDF variables that include a custom
-   ``_ChunkSizes`` attribute.
+      :user:`mo-garethsjones` fixed Iris' new character data handling to
+      successfully read ``char`` NetCDF variables that include a custom
+      ``_ChunkSizes`` attribute.
