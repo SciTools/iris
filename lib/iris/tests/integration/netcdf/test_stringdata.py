@@ -12,7 +12,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
 
-import netCDF4 as nc
 import numpy as np
 from numpy.typing import ArrayLike
 import pytest
@@ -736,7 +735,7 @@ class TestChunkedCharData:
 
     def test_load(self):
         # Here is how the char variable is defined raw in the file:
-        ds = nc.Dataset(self.file_path)
+        ds = _thread_safe_nc.DatasetWrapper(self.file_path)
         var = ds.variables["field_status"]
         assert var.shape == (10, 1)
         assert var.chunking() == [1, 1]
