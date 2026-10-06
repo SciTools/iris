@@ -5,6 +5,7 @@ v3.16.1 (24 Sep 2026)
    :color: primary
    :icon: alert
    :animate: fade-in
+   :open:
 
    This patch release of Iris includes:
 
