@@ -25,6 +25,7 @@ from iris.fileformats.netcdf import (
     SUPPORTED_ENCODINGS,
     _thread_safe_nc,
 )
+from iris.tests import _shared_utils
 
 
 @pytest.fixture(scope="module")
@@ -716,3 +717,37 @@ class TestSaveloadBadUnicodeAsBytes:
             readback_cube = iris.load_cube(filepath)
         assert readback_cube.dtype == "S1"
         assert np.all(readback_cube.data == s1_array_bad_utf8)
+
+
+class TestChunkedCharData:
+    """Check that chunked character data is handled correctly.
+
+    Problem reported by a user, including a real world file, so have captured
+    this for holistic integration testing.
+    """
+
+    @pytest.fixture(autouse=True)
+    # all_lazy_auxcoords works for small Cubes, too.
+    def _setup(self, all_lazy_auxcoords):
+        self.file_path = _shared_utils.get_data_path(
+            ["NetCDF", "testing", "chunked_char_data.nc"]
+        )
+
+    def test_load(self):
+        # Here is how the char variable is defined raw in the file:
+        ds = _thread_safe_nc.DatasetWrapper(self.file_path)
+        var = ds.variables["field_status"]
+        assert var.shape == (10, 1)
+        assert var.chunking() == [1, 1]
+
+        # Integration test; first test that whole file loads OK.
+        cube_list = iris.load(self.file_path)
+
+        cube = cube_list.extract_cube("field_status")
+        # The string length dimension has been removed during decoding.
+        assert cube.shape == (10,)
+        # Chunking has been inflated to make better use of memory, and the
+        #  string length dimension has been removed during decoding.
+        assert cube.core_data().chunksize == (10,)
+        # The data type for character data.
+        assert cube.dtype == "<U1"
