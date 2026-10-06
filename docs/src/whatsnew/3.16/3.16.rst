@@ -106,6 +106,10 @@ v3.16 (13 Aug 2026)
   always write ``lbft`` in hours in the no-bounds forecast period case, including when 
   ``forecast_period`` uses non-hour units such as seconds.
 
+- :fa:`code-pull-request` :pull:`7293` :user:`pp-mo` fixed the chardata support to allow correct operation with ncdata 'shortcut' data transfers. (:far:`circle-dot` :issue:`7283`).
+
+- :fa:`code-pull-request` :pull:`7253` :user:`stephenworsley` fixed a bug which caused indexing to fail when ``start_index`` was 1. (:far:`circle-dot` :issue:`7246`).
+
 - :fa:`code-pull-request` :pull:`7320`: :user:`trexfeathers` and
   :user:`mo-garethsjones` fixed Iris' new character data handling to
   successfully read ``char`` NetCDF variables that include a custom
@@ -172,6 +176,8 @@ v3.16 (13 Aug 2026)
   that LLMs can understand, ``llms.txt`` and ``llms-full.txt``.
 
 - :fa:`code-pull-request` :pull:`7223`: :user:`trexfeathers` updated Iris to be compatible with Matplotlib version 3.11.
+
+- :fa:`code-pull-request` :pull:`7262` :user:`trexfeathers` updated Iris' metadata handling to be compatible with python-xxhash version 4.0 (:far:`circle-dot` :issue:`7251`).
 
 
 
