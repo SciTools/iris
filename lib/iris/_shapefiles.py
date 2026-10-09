@@ -166,15 +166,20 @@ def create_shape_mask(
     # Get cube coordinates
     axes: tuple[Axis, Axis] = ("X", "Y")
     x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in axes]
+    x_roll = 0
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
     if x_coord.units.origin == "radians":
         x_coord.convert_units("degrees")
         y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
+        original_x_points = x_coord.points[0]
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
         # Get revised x coordinate
         x_coord = cube.coord(axis="X", dim_coords=True)
+        # Record the offset so we can roll back later
+        x_offsets = (x_coord.points - original_x_points) % x_coord.units.modulus
+        x_roll = -int(np.flatnonzero(x_offsets == 0)[0])
 
     assert isinstance(x_coord, DimCoord)
     assert isinstance(y_coord, DimCoord)
@@ -221,10 +226,9 @@ def create_shape_mask(
             all_touched=all_touched,
         )
 
-    # If cube was on circular domain, then the transformed
-    # mask template needs shifting to match the cube domain
-    if x_coord.circular:  # type: ignore[union-attr]
-        mask_template = np.roll(mask_template, w // 2, axis=1)
+    if x_roll:
+        # Roll the mask to align with the original x-coordinate points
+        mask_template = np.roll(mask_template, x_roll, axis=1)
 
     if invert:
         # Invert the mask
