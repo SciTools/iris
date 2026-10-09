@@ -76,9 +76,13 @@ def test_basic_create_shape_mask(square_polygon, wgs84_crs, mock_cube):
 
 @pytest.mark.parametrize(
     ("longitudes", "expected_index"),
-    [(np.arange(0, 360, 40), 6), (np.arange(-160, 200, 40), 1)],
+    [
+        (np.arange(0, 360, 40), 6),
+        (np.arange(-160, 200, 40), 1),
+        (np.arange(200, 560, 40), 1),
+    ],
 )
-def test_mask_longitudes_after_intersection(longitudes, expected_index):
+def test_create_mask_wrapped_longitudes(longitudes, expected_index):
     x_coord = DimCoord(
         longitudes,
         standard_name="longitude",

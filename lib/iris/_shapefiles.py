@@ -178,7 +178,7 @@ def create_shape_mask(
         # Get revised x coordinate
         x_coord = cube.coord(axis="X", dim_coords=True)
         # Record the offset so we can roll back later
-        x_offsets = (x_coord.points - original_x_points) / x_coord.units.modulus
+        x_offsets = (x_coord.points - original_x_points) % x_coord.units.modulus
         x_roll = -int(np.flatnonzero(x_offsets == 0)[0])
 
     assert isinstance(x_coord, DimCoord)
