@@ -7,7 +7,7 @@
 import numpy as np
 from pyproj import CRS
 import pytest
-from shapely.geometry import Point, Polygon
+from shapely.geometry import Point, Polygon, box
 
 from iris._shapefiles import create_shape_mask
 from iris.coord_systems import GeogCS
@@ -72,6 +72,39 @@ def test_basic_create_shape_mask(square_polygon, wgs84_crs, mock_cube):
     expected_mask = np.ones_like(mock_cube.data, dtype=bool)
     expected_mask[3:6, 3:6] = False  # The square polygon covers this area
     assert np.array_equal(mask, expected_mask)
+
+
+@pytest.mark.parametrize(
+    ("longitudes", "expected_index"),
+    [(np.arange(0, 360, 40), 6), (np.arange(-160, 200, 40), 1)],
+)
+def test_mask_longitudes_after_intersection(longitudes, expected_index):
+    x_coord = DimCoord(
+        longitudes,
+        standard_name="longitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+        circular=True,
+    )
+    y_coord = DimCoord(
+        [0.5, 1.5],
+        standard_name="latitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+    )
+    cube = Cube(
+        np.ones((2, len(x_coord.points))),
+        dim_coords_and_dims=[(y_coord, 0), (x_coord, 1)],
+    )
+
+    mask = create_shape_mask(
+        geometry=box(-140, 0, -100, 1),
+        cube=cube,
+    )
+
+    expected = np.ones(cube.shape, dtype=bool)
+    expected[0, expected_index] = False
+    np.testing.assert_array_equal(mask, expected)
 
 
 def test_basic_create_shape_mask_with_None_crs(square_polygon, mock_cube):
