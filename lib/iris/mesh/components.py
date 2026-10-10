@@ -2235,6 +2235,8 @@ class _MeshCoordinateManagerBase(ABC):
             # Create ".timestamp" if missing, as the "._members" setter requires one.
             # Needing during unpickling, where __setstate__ replaces object __init__.
             self.timestamp = _Timestamp()
+        # Restore ".ALL", which is normally set by __init__.
+        self.ALL = self.REQUIRED + self.OPTIONAL
         members, view_message = state
         self._members = _ManagerMembers(members)
         self._view_message = view_message
@@ -2873,6 +2875,8 @@ class _MeshConnectivityManagerBase(ABC):
             # Create ".timestamp" if missing, as the "._members" setter requires one.
             # Needing during unpickling, where __setstate__ replaces object __init__.
             self.timestamp = _Timestamp()
+        # Restore ".ALL", which is normally set by __init__.
+        self.ALL = self.REQUIRED + self.OPTIONAL
         self._members = _ManagerMembers(state)
 
     def __str__(self):
