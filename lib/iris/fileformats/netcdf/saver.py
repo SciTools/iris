@@ -2159,7 +2159,7 @@ class Saver:
             cf_var_grid.false_northing = cs.false_northing
             # Only one of these should be set
             if cs.true_scale_lat is not None:
-                cf_var_grid.true_scale_lat = cs.true_scale_lat
+                cf_var_grid.standard_parallel = cs.true_scale_lat
             elif cs.scale_factor_at_projection_origin is not None:
                 cf_var_grid.scale_factor_at_projection_origin = (
                     cs.scale_factor_at_projection_origin
