@@ -5,14 +5,20 @@
 """Integration tests for :mod:`iris.fileformats.cf`."""
 
 from typing import Iterable
+import warnings
 
 import pytest
 
 import iris
+from iris._deprecation import IrisDeprecation
 import iris.fileformats.cf as cf
-from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ
+from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ, _thread_safe_nc
 from iris.fileformats.netcdf.loader import _get_cf_var_data
+from iris.loading import LOAD_PROBLEMS
 from iris.tests import _shared_utils
+import iris.tests.stock as stock
+from iris.tests.stock.mesh import sample_mesh_cube
+from iris.warnings import IrisLoadWarning
 
 
 def fetch_cfvar_data(var, indices=()):
@@ -371,3 +377,115 @@ class TestLabels:
         expect = "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES"
         expect = expect.ljust(len(str(content)))  # expand to full string width
         assert content == expect
+
+
+class TestLoadingIsSilent:
+    """A normal load must not reach CFVariable.__getattr__.
+
+    Every CF attribute read inside Iris goes through CFVariable.attributes,
+    so the deprecation on __getattr__ fires only for code outside Iris.
+    Spec section 4.3.
+
+    The three cubes between them cover the four attributes that reached
+    __getattr__ when the deprecation was added: "bounds" and "climatology"
+    from the loading rules, "cf_role" and "start_index" from the UGRID
+    loader.
+    """
+
+    CUBES = {
+        "bounded": lambda: stock.simple_2d(with_bounds=True),
+        "mesh": sample_mesh_cube,
+        "climatology": lambda: stock.climatology_3d(),
+    }
+
+    @pytest.fixture(params=sorted(CUBES))
+    def saved_file(self, request, tmp_path):
+        path = tmp_path / f"{request.param}.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(self.CUBES[request.param](), path)
+        return path
+
+    def test_load_emits_no_deprecation(self, saved_file):
+        # Recorded rather than promoted to an error. iris.load captures an
+        # exception raised while building a cube into
+        # iris.loading.LOAD_PROBLEMS, so a filter of "error" drops the
+        # offending coordinate and lets the test pass while the warning is
+        # still being issued. The LOAD_PROBLEMS assertion below is what keeps
+        # a silent load from being a degraded one.
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            cubes = iris.load(saved_file)
+
+        deprecations = [
+            str(warning.message)
+            for warning in record
+            if issubclass(warning.category, IrisDeprecation)
+        ]
+        assert deprecations == []
+        assert LOAD_PROBLEMS.problems_by_file.get(str(saved_file), []) == []
+        assert len(cubes) == 1
+
+    def test_a_cf_attribute_read_from_outside_iris_still_warns(self, saved_file):
+        # The other half of the deprecation: silence on a load must not mean
+        # the accessor has stopped working. All three cubes carry a long_name,
+        # and CFVariable declares no property of that name.
+        with cf.CFReader(str(saved_file)) as reader:
+            (data_var,) = reader.cf_group.data_variables.values()
+            expected = data_var.attributes.untracked["long_name"]
+            with pytest.warns(IrisDeprecation):
+                assert data_var.long_name == expected
+
+    @pytest.mark.parametrize(
+        ("cube_name", "coord_name"),
+        [("bounded", "foo"), ("climatology", "time")],
+    )
+    def test_a_cf_reserved_attribute_does_not_reach_the_coord(
+        self, tmp_path, cube_name, coord_name
+    ):
+        # "bounds" and "climatology" are consumed by the loading rules.
+        # Attribute tracking is what keeps them off the coordinate, and this
+        # pins that reading them through the mapping records them as the
+        # attribute spelling did.
+        path = tmp_path / f"{cube_name}.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(self.CUBES[cube_name](), path)
+
+        cube = iris.load_cube(path)
+
+        assert cube.coord(coord_name).attributes == {}
+
+    def test_a_cf_reserved_attribute_does_not_reach_the_connectivity(self, tmp_path):
+        # "cf_role" and "start_index" are consumed by the UGRID loader.
+        path = tmp_path / "mesh.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(sample_mesh_cube(), path)
+
+        cube = iris.load_cube(path)
+
+        assert cube.mesh.face_node_connectivity.attributes == {}
+
+    def test_a_connectivity_without_start_index_loses_its_mesh(self, tmp_path):
+        """A UGRID file omitting the optional "start_index" loads without a mesh.
+
+        CF-UGRID makes start_index optional with a default of 0, and
+        iris.mesh.Connectivity defaults it to 0, but the loader requires it.
+        The mesh build fails and is recorded in iris.loading.LOAD_PROBLEMS.
+        Pinned because the loader reads start_index through the attribute
+        mapping - see the issue linked from this test's pull request.
+        """
+        path = tmp_path / "mesh.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(sample_mesh_cube(), path)
+
+        dataset = _thread_safe_nc.DatasetWrapper(str(path), "a")
+        try:
+            for variable in dataset.variables.values():
+                if "start_index" in variable.ncattrs():
+                    variable.delncattr("start_index")
+        finally:
+            dataset.close()
+
+        with pytest.warns(IrisLoadWarning):
+            cube = iris.load_cube(path)
+
+        assert cube.mesh is None

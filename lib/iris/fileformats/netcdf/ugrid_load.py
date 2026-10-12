@@ -274,8 +274,11 @@ def _build_connectivity(connectivity_var, element_dims):
     attr_units = get_attr_units(connectivity_var, attributes)
     indices_data = nc_loader._get_cf_var_data(connectivity_var)
 
-    cf_role = connectivity_var.cf_role
-    start_index = connectivity_var.start_index
+    # "cf_role" is how a connectivity variable is identified in the first
+    # place, so it is always present. "start_index" is optional in CF and the
+    # loader has always required it.
+    cf_role = connectivity_var.attributes["cf_role"]
+    start_index = connectivity_var.attributes["start_index"]
 
     dim_names = connectivity_var.dimensions
     # Connectivity arrays must have two dimensions.
