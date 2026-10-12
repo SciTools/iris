@@ -4,9 +4,13 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.cf.CFVariable`."""
 
+import copy
+import warnings
+
 import numpy as np
 import pytest
 
+from iris._deprecation import IrisDeprecation
 from iris.fileformats import cf as cf
 from iris.fileformats.cf import _variables
 from iris.fileformats.cf.dataset import TrackedAttributes
@@ -474,6 +478,119 @@ class TestGetattrAndHasattr:
         cf_var = CFVariableSub.__new__(CFVariableSub)
         with pytest.raises(AttributeError, match=name):
             getattr(cf_var, name)
+
+
+class TestDeprecatedAttributeAccess:
+    """Reading a CF attribute as an attribute warns; everything else is silent.
+
+    cf_var.units and cf_var.attributes["units"] are the same read. Only the
+    spelling that cannot be type-checked is deprecated. Spec section 4.3.
+    """
+
+    def test_reading_a_cf_attribute_warns(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.warns(IrisDeprecation) as record:
+            assert cf_var.coordinates == "x y"
+
+        assert len(record) == 1
+
+    def test_the_warning_names_the_mapping_and_the_key(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.warns(
+            IrisDeprecation, match=r"cf_var\.attributes\['coordinates'\]"
+        ):
+            _ = cf_var.coordinates
+
+    def test_the_warning_points_at_the_caller(self, nc_var):
+        # stacklevel: a warning reported against _variables.py tells the
+        # reader nothing about which of their lines to change.
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.warns(IrisDeprecation) as record:
+            _ = cf_var.coordinates
+
+        assert record[0].filename == __file__
+
+    def test_a_warned_read_is_still_recorded(self, nc_var):
+        # The warning is additional to the read, not instead of it. What was
+        # read decides what reaches the cube.
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.warns(IrisDeprecation):
+            _ = cf_var.coordinates
+
+        assert "coordinates" in dict(cf_var.cf_attrs_used())
+        assert "coordinates" not in dict(cf_var.cf_attrs_unused())
+
+    def test_every_read_warns(self, nc_var):
+        # There is no instance cache to suppress the second one, and a test
+        # expecting one warning would pass only through __warningregistry__.
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always", IrisDeprecation)
+            _ = cf_var.coordinates
+            _ = cf_var.coordinates
+
+        deprecations = [w for w in record if issubclass(w.category, IrisDeprecation)]
+        assert len(deprecations) == 2
+
+    def test_the_mapping_does_not_warn(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", IrisDeprecation)
+            assert cf_var.attributes["coordinates"] == "x y"
+
+    def test_a_declared_property_does_not_warn(self, nc_var):
+        # A declared property short-circuits __getattr__ entirely.
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", IrisDeprecation)
+            assert cf_var.dimensions == ("time", "lat")
+            assert cf_var.cf_name == "foo"
+
+    def test_a_missing_attribute_does_not_warn(self, nc_var):
+        # getattr(cf_var, "bounds", None) is a deliberate idiom throughout the
+        # loading rules. A miss must stay silent and keep its default.
+        cf_var = CFVariableSub("foo", nc_var)
+        cf_var.cf_data = object()
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", IrisDeprecation)
+            assert getattr(cf_var, "nonesuch", None) is None
+            assert not hasattr(cf_var, "nonesuch")
+
+    def test_hasattr_warns_on_a_hit(self, nc_var):
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.warns(IrisDeprecation):
+            assert hasattr(cf_var, "coordinates")
+
+    def test_dunder_probes_do_not_warn(self, nc_var):
+        # copy, pickle and numpy all probe for dunders, and the file here
+        # really does carry one.
+        nc_var.attributes = {"__array__": "nonsense"}
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", IrisDeprecation)
+            assert not hasattr(cf_var, "__array_interface__")
+            assert not hasattr(cf_var, "__array__")
+            _ = copy.copy(cf_var)
+
+    def test_the_netcdf_fallback_keeps_its_own_message(self, nc_var):
+        # Reaching a netCDF4 member is a different deprecation, worded for a
+        # different fix, and issued by the storage object.
+        nc_var.deprecated_netcdf_member.return_value = 42
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", IrisDeprecation)
+            assert cf_var.not_an_ncattr == 42
 
 
 class TestReadAfterReset:
