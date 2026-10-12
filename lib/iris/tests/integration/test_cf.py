@@ -442,10 +442,12 @@ class TestLoadingIsSilent:
     def test_a_cf_reserved_attribute_does_not_reach_the_coord(
         self, tmp_path, cube_name, coord_name
     ):
-        # "bounds" and "climatology" are consumed by the loading rules.
-        # Attribute tracking is what keeps them off the coordinate, and this
-        # pins that reading them through the mapping records them as the
-        # attribute spelling did.
+        # Belt and braces, not a test of attribute tracking. "bounds" and
+        # "climatology" are both in iris.fileformats.netcdf.saver._CF_ATTRS,
+        # which _add_unused_attributes filters on whatever tracking recorded,
+        # so they stay off the coordinate either way. The connectivity test
+        # below is the one that pins tracking: "cf_role" and "start_index" are
+        # not in that list.
         path = tmp_path / f"{cube_name}.nc"
         with iris.FUTURE.context(save_split_attrs=True):
             iris.save(self.CUBES[cube_name](), path)
@@ -455,7 +457,10 @@ class TestLoadingIsSilent:
         assert cube.coord(coord_name).attributes == {}
 
     def test_a_cf_reserved_attribute_does_not_reach_the_connectivity(self, tmp_path):
-        # "cf_role" and "start_index" are consumed by the UGRID loader.
+        # "cf_role" and "start_index" are consumed by the UGRID loader and are
+        # not in netcdf.saver._CF_ATTRS, so attribute tracking is the only
+        # thing keeping them off the connectivity. Reading them through the
+        # mapping has to record them exactly as reading them as attributes did.
         path = tmp_path / "mesh.nc"
         with iris.FUTURE.context(save_split_attrs=True):
             iris.save(sample_mesh_cube(), path)
