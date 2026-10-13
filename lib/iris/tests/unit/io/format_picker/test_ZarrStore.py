@@ -8,6 +8,7 @@ import pytest
 
 from iris.fileformats import _is_zarr_store
 from iris.io.format_picker import ZarrStore
+from iris.tests import _shared_utils
 
 
 def test_the_element_carries_the_whole_target():
@@ -85,16 +86,16 @@ def test_a_non_string_target_is_not_a_store():
     assert _is_zarr_store(object()) is False
 
 
-def test_the_agent_still_picks_netcdf_for_a_netcdf_file(tmp_path):
+@_shared_utils.skip_data
+def test_the_agent_still_picks_netcdf_for_a_netcdf_file():
     """A `requires_fh=False` spec is consulted for every target with no buffer.
 
     Adding one risks claiming a target another format already handles, and
     the format agent returns the first match rather than the best.
     """
     from iris.fileformats import FORMAT_AGENT
-    import iris.tests as tests
 
-    path = tests.get_data_path(
+    path = _shared_utils.get_data_path(
         ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
     )
     with open(path, "rb") as handle:
