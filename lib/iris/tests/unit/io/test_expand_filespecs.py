@@ -105,3 +105,14 @@ class TestExpandFilespecs:
             assert item_out == item_in
         finally:
             os.chdir(cwd)
+
+    def test_remote_store_uri_is_passed_through_unresolved(self):
+        # `.absolute()` would otherwise turn this into
+        # "/<cwd>/s3:/bucket/data.zarr", which zarr-python cannot open.
+        uri = "s3://bucket/data.zarr"
+        assert iio.expand_filespecs([uri]) == [uri]
+
+    def test_remote_store_uri_is_not_globbed(self):
+        # A remote URI stands for itself: Iris does not list its neighbours.
+        uri = "s3://bucket/data.zarr"
+        assert iio.expand_filespecs([uri], False) == [uri]

@@ -13,6 +13,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 import itertools
+from pathlib import Path
 import threading
 from traceback import TracebackException
 from typing import Any, Iterable, Type
@@ -97,11 +98,25 @@ def _generate_cubes(uris, callback, constraints):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
             part_names = [part for _cat, _scheme, part in groups]
-            for cube in iris.io.load_files(part_names, callback, constraints):
-                yield cube
+            # The file-or-store decision has to happen after glob expansion
+            # and before format dispatch, because a glob may match both.
+            # Neither routine below learns about the other's kind of target.
+            expanded = iris.io.expand_filespecs(part_names)
+            files = [name for name in expanded if not Path(name).is_dir()]
+            stores = [name for name in expanded if Path(name).is_dir()]
+            if files:
+                for cube in iris.io.load_files(files, callback, constraints):
+                    yield cube
+            if stores:
+                for cube in iris.io.load_stores(stores, callback, constraints):
+                    yield cube
         elif category in ["http", "https", "nczarr"]:
             urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_http(urls, callback):
+                yield cube
+        elif category in iris.io.REMOTE_STORE_SCHEMES:
+            urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
+            for cube in iris.io.load_stores(urls, callback, constraints):
                 yield cube
         elif category == "data":
             data_objects = [part for _cat, _scheme, part in groups]

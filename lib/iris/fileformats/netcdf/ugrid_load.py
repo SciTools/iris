@@ -29,7 +29,12 @@ import warnings
 from iris.common.mixin import CFVariableMixin
 from iris.config import get_logger
 from iris.coords import AuxCoord
-from iris.io import _is_nczarr_fragment, decode_uri, expand_filespecs
+from iris.io import (
+    REMOTE_STORE_SCHEMES,
+    _is_nczarr_fragment,
+    decode_uri,
+    expand_filespecs,
+)
 from iris.loading import LoadProblems
 from iris.mesh.components import Connectivity, MeshXY
 from iris.util import guess_coord_axis
@@ -169,12 +174,14 @@ def load_meshes(uris, var_name=None):
             sources = expand_filespecs(filenames)
         elif category in ["http", "https", "nczarr"]:
             sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
+        elif category in REMOTE_STORE_SCHEMES:
+            sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
         else:
             message = f"Iris cannot handle the URI scheme: {category}"
             raise ValueError(message)
 
         for source in sources:
-            if category == "file":
+            if category == "file" and not Path(source).is_dir():
                 with open(source, "rb") as fh:
                     handling_format_spec = FORMAT_AGENT.get_spec(Path(source).name, fh)
             else:
