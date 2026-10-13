@@ -68,6 +68,25 @@ def test_a_base64_string_on_an_integer_variable_warns():
     assert result is None
 
 
+def test_an_out_of_range_integer_warns_and_is_ignored():
+    # 70000 does not fit an int16, however a producer came to write it.
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = _decode.decode_fill_value(70000, np.dtype("i2"), "v")
+    assert result is None
+
+
+def test_a_negative_out_of_range_integer_warns_and_is_ignored():
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = _decode.decode_fill_value(-70000, np.dtype("i2"), "v")
+    assert result is None
+
+
+def test_an_out_of_range_unsigned_integer_warns_and_is_ignored():
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = _decode.decode_fill_value(300, np.dtype("u1"), "v")
+    assert result is None
+
+
 def parameters(attributes, *, dtype="i2", storage_fill_value=0, zarr_format=3):
     return _decode.decode_parameters(
         attributes,
@@ -85,6 +104,20 @@ def test_version_3_ignores_the_storage_fill_value():
     masks valid data in the ordinary case, not the exotic one.
     """
     assert parameters({}, storage_fill_value=0)["sentinels"] == ()
+
+
+def test_version_3_zeros_survive_masking_and_scaling_unchanged():
+    """The property the rule above exists for, demonstrated end to end.
+
+    An int16 array of zeros, no CF attributes, storage fill value zero:
+    pushed through the actual masking function with the actual parameters
+    `decode_parameters` produces, not hand-written keyword arguments.
+    """
+    params = parameters({}, storage_fill_value=0, zarr_format=3)
+    block = np.array([0, 0, 1], dtype="i2")
+    result = _decode.mask_and_scale(block, **params)
+    assert not result.mask.any()
+    assert result.tolist() == [0, 0, 1]
 
 
 def test_version_2_uses_the_storage_fill_value_when_there_is_no_attribute():

@@ -75,7 +75,8 @@ def decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
     Returns
     -------
     numpy.generic or None
-        ``None`` when `value` is neither form, which is a producer error.
+        ``None`` when `value` is neither form, or does not fit `dtype` -
+        both are producer errors.
 
     Warns
     -----
@@ -101,7 +102,19 @@ def decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
         warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
         return None
 
-    return dtype.type(decoded)
+    try:
+        return dtype.type(decoded)
+    except (OverflowError, ValueError):
+        # Out of range for dtype: a producer error, not a reason to fail
+        # the whole load. A float dtype never raises here - an overflowing
+        # float narrows to +/-inf instead, which is ordinary numpy
+        # behaviour and not something to guard against.
+        message = (
+            f"Ignoring a missing-value attribute that does not fit {dtype}, "
+            f"on variable {variable_name}: {value!r}"
+        )
+        warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
+        return None
 
 
 def _decode_packed_double(value: str) -> float | None:
