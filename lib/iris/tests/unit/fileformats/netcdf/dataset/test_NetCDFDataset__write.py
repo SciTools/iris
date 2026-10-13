@@ -145,7 +145,10 @@ class TestWritingData:
             raw.createDimension("x", 2)
             raw.createVariable("air", "f4", ("x",))
             variable = _dataset.NetCDFDatasetVariable(
-                raw.variables["air"], str(path), write_lock_factory=None
+                raw.variables["air"],
+                str(path),
+                raw.file_format,
+                write_lock_factory=None,
             )
             assert not isinstance(
                 variable.variable, _bytecoding_datasets.EncodedVariable
