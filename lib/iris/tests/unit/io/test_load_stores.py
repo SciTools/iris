@@ -65,20 +65,17 @@ def test_iris_load_accepts_a_local_store(tmp_path):
     np.testing.assert_array_equal(cubes[0].data, stores.DATA)
 
 
-def test_iris_load_accepts_a_remote_url_and_does_not_absolutise_it():
-    """A remote URL must reach zarr-python intact.
+def test_iris_load_accepts_a_remote_url_and_does_not_absolutise_it(mocker):
+    """A remote URL must reach `load_stores` unmangled, not resolved as a local path.
 
     `expand_filespecs` would otherwise turn `s3://bucket/data.zarr` into
-    `/<cwd>/s3:/bucket/data.zarr`. No network is touched: opening the store
-    fails, and what matters is that the message still names the URL.
+    `/<cwd>/s3:/bucket/data.zarr`. The dispatch is what is under test, so
+    `load_stores` itself is mocked out: no store library is invoked, and no
+    network is touched, whatever is installed alongside zarr-python.
     """
-    # The failure mode depends on what is installed to talk to S3, so no
-    # single exception type or message is guaranteed - checked below instead.
-    with pytest.raises(Exception) as caught:  # noqa: PT011
-        iris.load("s3://bucket/data.zarr")
-    assert "s3://bucket/data.zarr" in str(caught.value) or isinstance(
-        caught.value, ImportError
-    )
+    mock_load_stores = mocker.patch("iris.io.load_stores", return_value=iter(()))
+    iris.load("s3://bucket/data.zarr")
+    mock_load_stores.assert_called_once_with(["s3://bucket/data.zarr"], None, None)
 
 
 @_shared_utils.skip_data
@@ -102,6 +99,27 @@ def test_a_glob_matching_both_files_and_stores(tmp_path):
     names = sorted(cube.var_name or cube.name() for cube in cubes)
     assert "air_temperature" in names
     assert len(cubes) == 2
+
+
+def test_load_files_still_expands_a_glob(tmp_path, mocker):
+    """Public `load_files` keeps its documented promise: filenames may be globs.
+
+    The duplicate-collapsing bug fixed alongside `load_stores` lives in
+    calling `expand_filespecs` twice, once in a caller and again inside
+    `load_files` - not in `load_files` expanding at all. Pinning this
+    guards against quietly narrowing the public contract while fixing that.
+    """
+    from iris.io import load_files
+
+    (tmp_path / "a.nc").write_bytes(b"")
+    (tmp_path / "b.nc").write_bytes(b"")
+    mock_load = mocker.patch("iris.io._load_files", return_value=iter(()))
+
+    list(load_files([str(tmp_path / "*.nc")], None))
+
+    mock_load.assert_called_once_with(
+        [str(tmp_path / "a.nc"), str(tmp_path / "b.nc")], None, None
+    )
 
 
 def test_find_saver_tolerates_a_trailing_separator():

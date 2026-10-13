@@ -252,8 +252,8 @@ def expand_filespecs(file_specs, files_expected=True):
 def load_files(filenames, callback, constraints=None):
     """Create a generator of Cubes from given files.
 
-    Take a list of filenames, already expanded by :func:`expand_filespecs`,
-    and optionally a constraint set and a callback function, and returns a
+    Take a list of filenames which may also be globs, and optionally a
+    constraint set and a callback function, and returns a
     generator of Cubes from the given files.
 
     Notes
@@ -261,11 +261,21 @@ def load_files(filenames, callback, constraints=None):
     Typically, this function should not be called directly; instead, the
     intended interface for loading is :func:`iris.load`.
 
-    `filenames` is not re-expanded here: a glob matching the same file twice,
-    by two different patterns, must reach the format handler as two entries,
-    and :func:`expand_filespecs` keys its own glob cache by the spec string,
-    so expanding an already-expanded list collapses two identical paths into
-    one.
+    """
+    yield from _load_files(expand_filespecs(filenames), callback, constraints)
+
+
+def _load_files(filenames, callback, constraints=None):
+    """Create a generator of Cubes from files already expanded by `expand_filespecs`.
+
+    `filenames` is not expanded here: a glob matching the same file twice, by
+    two different patterns, must reach the format handler as two entries, and
+    :func:`expand_filespecs` keys its own glob cache by the spec string, so
+    expanding an already-expanded list collapses two identical paths into
+    one. :func:`load_files` is the public entry point that expands once and
+    delegates here; :func:`iris.loading._generate_cubes` is the other caller,
+    expanding once for itself so it can partition files from stores before
+    either sees the list.
 
     """
     from iris.fileformats import FORMAT_AGENT

@@ -181,6 +181,9 @@ def load_meshes(uris, var_name=None):
             raise ValueError(message)
 
         for source in sources:
+            # iris.loading._generate_cubes makes this same file-or-store
+            # distinction independently, for general cube loading - keep
+            # both in step.
             if category == "file" and not Path(source).is_dir():
                 with open(source, "rb") as fh:
                     handling_format_spec = FORMAT_AGENT.get_spec(Path(source).name, fh)

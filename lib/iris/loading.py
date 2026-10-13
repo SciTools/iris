@@ -101,11 +101,16 @@ def _generate_cubes(uris, callback, constraints):
             # The file-or-store decision has to happen after glob expansion
             # and before format dispatch, because a glob may match both.
             # Neither routine below learns about the other's kind of target.
+            # iris.fileformats.netcdf.ugrid_load.load_meshes makes this same
+            # distinction independently, for mesh loading - keep both in step.
             expanded = iris.io.expand_filespecs(part_names)
             files = [name for name in expanded if not Path(name).is_dir()]
             stores = [name for name in expanded if Path(name).is_dir()]
             if files:
-                for cube in iris.io.load_files(files, callback, constraints):
+                # `expanded` is already the result of `expand_filespecs`, so
+                # the private, non-expanding `_load_files` is used here - see
+                # its docstring for why expanding twice would be wrong.
+                for cube in iris.io._load_files(files, callback, constraints):
                     yield cube
             if stores:
                 for cube in iris.io.load_stores(stores, callback, constraints):
