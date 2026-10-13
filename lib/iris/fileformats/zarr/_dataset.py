@@ -63,6 +63,15 @@ _FORMAT_BY_ZARR_VERSION = {2: "ZARR_V2", 3: "ZARR_V3"}
 #: write it. Storage, not a CF attribute, so it is withheld from `attributes`.
 _ARRAY_DIMENSIONS = "_ARRAY_DIMENSIONS"
 
+#: netCDF-c's own bookkeeping attribute, stamped onto the root group of every
+#: store it writes (confirmed on NCZarr output in both its `nczarr` and
+#: `xarray` URL modes, and never on a subgroup or an array). netCDF4-python
+#: hides it from `Dataset.ncattrs()` by convention, so it has never reached a
+#: cube loaded through netCDF; Zarr has no equivalent convention, so it must
+#: be withheld here for the same reason as `_ARRAY_DIMENSIONS` above -
+#: provenance the writer left behind, not CF metadata the user wrote.
+_NC_PROPERTIES = "_NCProperties"
+
 
 def _dimension_names(array) -> tuple:
     """Return one name or None per dimension of `array`.
@@ -265,6 +274,11 @@ class _ZarrAttributes(MutableMapping):
     withheld here. Leaving it in would put it on every cube loaded from a
     version 2 store, since every attribute the loading rules do not consume
     reaches ``cube.attributes``.
+
+    ``_NCProperties`` is netCDF-c's own bookkeeping stamp on the root group of
+    every store it writes, withheld from :attr:`ZarrDataset.attributes` for
+    the same reason: left in, it would turn up as a `cube.attributes` entry on
+    every cube loaded from an NCZarr-written store, and nothing else wrote it.
     """
 
     def __init__(self, node, *, withhold: frozenset = frozenset()):
@@ -663,9 +677,11 @@ class ZarrDataset(CFDataset):
 
     @property
     def attributes(self) -> MutableMapping:
-        """The group's attributes."""
+        """The group's attributes, less netCDF-c's own bookkeeping stamp."""
         if self._attributes is None:
-            self._attributes = _ZarrAttributes(self._group)
+            self._attributes = _ZarrAttributes(
+                self._group, withhold=frozenset({_NC_PROPERTIES})
+            )
         return self._attributes
 
     def create_dimension(self, name: str, size: int | None) -> None:

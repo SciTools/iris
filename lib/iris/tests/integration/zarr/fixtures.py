@@ -9,6 +9,11 @@ I/O design names as the ones worth exercising: version 3 `dimension_names`, a
 sharded codec, a scalar grid-mapping variable, a two-dimensional auxiliary
 coordinate, and the base64 `_FillValue` that released xarray writes for every
 floating dtype. A cut-down copy of the real store replaces this.
+
+Bounds on `latitude` are not part of that real store, but earn their place
+anyway: `CFBoundaryVariable.spans` is one of the overrides this pull request
+rewrote against the dimension contract, so a bounded coordinate exercises
+code this branch actually changed.
 """
 
 import base64
@@ -19,6 +24,12 @@ import zarr
 
 SHAPE = (2, 4, 6, 5)
 DIMENSIONS = ("time", "level", "latitude", "longitude")
+
+#: Contiguous bounds for `latitude`, half a cell either side of each centre.
+LATITUDE_BOUNDS = np.stack(
+    [np.arange(SHAPE[2], dtype="f8") - 0.5, np.arange(SHAPE[2], dtype="f8") + 0.5],
+    axis=1,
+)
 
 
 def float_fill_value(value):
@@ -43,8 +54,21 @@ def make_gfs_like_store(path):
         {"units": "hours since 2000-01-01 00:00:00", "calendar": "standard"}
     )
     root["level"].attrs.update({"units": "hPa", "positive": "down"})
-    root["latitude"].attrs.update({"units": "degrees_north", "axis": "Y"})
+    root["latitude"].attrs.update(
+        {"units": "degrees_north", "axis": "Y", "bounds": "latitude_bnds"}
+    )
     root["longitude"].attrs.update({"units": "degrees_east", "axis": "X"})
+
+    # Bounds on a dimension coordinate, exercising `CFBoundaryVariable.spans`:
+    # one more dimension than `latitude`, named for a dimension `latitude`
+    # does not have, at the size CF bounds always are.
+    bounds = root.create_array(
+        "latitude_bnds",
+        shape=(SHAPE[2], 2),
+        dtype="f8",
+        dimension_names=("latitude", "bnds"),
+    )
+    bounds[:] = LATITUDE_BOUNDS
 
     # A scalar grid mapping, as the GFS store's `spatial_ref` is.
     grid = root.create_array("spatial_ref", shape=(), dtype="i4")

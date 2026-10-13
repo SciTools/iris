@@ -59,6 +59,13 @@ def test_dimension_coordinates_attach(gfs_like):
     assert cube.shape == fixtures.SHAPE
 
 
+def test_bounds_attach_to_their_coordinate(gfs_like):
+    cube = iris.load_cube(gfs_like, "air_temperature")
+    latitude = cube.coord("latitude")
+    assert latitude.has_bounds()
+    np.testing.assert_array_equal(latitude.bounds, fixtures.LATITUDE_BOUNDS)
+
+
 def test_the_auxiliary_coordinate_attaches_to_its_own_dimensions(gfs_like):
     cube = iris.load_cube(gfs_like, "air_temperature")
     # `valid_time` carries `standard_name: "time"`, as the real GFS store's
@@ -150,14 +157,11 @@ def test_the_native_reader_agrees_with_the_nczarr_writer(
 
     assert (path / ".zgroup").is_file()
     loaded = iris.load_cube(str(path), realistic_4d_w_everything.name())
-    # netCDF-c stamps every store it writes with its own `_NCProperties`
-    # bookkeeping attribute (confirmed present in `.zattrs`, and confirmed
-    # hidden from `netCDF4.Dataset.ncattrs()` by the C library itself,
-    # independently of Iris). Zarr has no equivalent convention, so the
-    # native reader sees it as a plain attribute. That is an artefact of the
-    # NCZarr writer standing in for a real one, not of the reader under
-    # test - the same category as the ellipsoid precision loss above.
-    del loaded.attributes["_NCProperties"]
+    # `_NCProperties`, netCDF-c's own bookkeeping stamp on the root group of
+    # every store it writes, is withheld by the reader rather than compared
+    # away here - the same storage-not-CF treatment as `_ARRAY_DIMENSIONS`
+    # below, and covered by its own unit test in
+    # `lib/iris/tests/unit/fileformats/zarr/dataset/test_ZarrDataset.py`.
     assert loaded == realistic_4d_w_everything
 
 

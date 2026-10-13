@@ -32,6 +32,27 @@ def test_opens_and_reports_itself(tmp_path, zarr_format):
     assert dataset.encoding["zarr_format"] == zarr_format
 
 
+def test_nc_properties_is_not_a_cf_attribute(tmp_path):
+    """`_NCProperties` is netCDF-c's own bookkeeping, not CF metadata.
+
+    It is the stamp netCDF-c writes onto the root group of every store it
+    creates (confirmed on NCZarr output), reading `version=...,netcdf=...`.
+    netCDF4-python hides it from `Dataset.ncattrs()` by convention, so no
+    cube loaded through netCDF has ever carried it; a cube loaded from the
+    same store through the native Zarr reader must not gain it either, or
+    the two would stop comparing equal over nothing more than provenance.
+    """
+    group = zarr.open_group(store=tmp_path / "nc.zarr", mode="w", zarr_format=3)
+    group.attrs["Conventions"] = "CF-1.7"
+    group.attrs["_NCProperties"] = "version=2,netcdf=4.10.1,nczarr=2.0.0"
+    stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))
+
+    dataset = ZarrDataset(str(tmp_path / "nc.zarr"))
+    assert "_NCProperties" in group.attrs
+    assert "_NCProperties" not in dataset.attributes
+    assert dict(dataset.attributes) == {"Conventions": "CF-1.7"}
+
+
 def test_dimensions_are_assembled_from_the_arrays(tmp_path, zarr_format):
     location = stores.make_store(tmp_path / "s.zarr", zarr_format=zarr_format)
     assert dict(ZarrDataset(location).dimensions) == stores.DIMENSIONS
