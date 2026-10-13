@@ -18,12 +18,13 @@ chunks under a prefix, rather than as one file. Iris reads Zarr version 2 and
 version 3 stores natively, through
 `zarr-python <https://zarr.readthedocs.io/>`_.
 
-``zarr`` is an **optional dependency**. Install it to load Zarr stores::
+``zarr`` is an **optional dependency**, and Iris requires at least version
+3.0.8. Install it to load Zarr stores::
 
-    conda install -c conda-forge zarr
+    conda install -c conda-forge "zarr>=3.0.8"
 
-Iris without it behaves exactly as before, and raises an ``ImportError``
-naming the package if you ask it to load a store.
+Iris without it installs and runs normally, raising an ``ImportError`` that
+names the package and the version floor if you ask it to load a store.
 
 Loading
 -------
@@ -167,12 +168,11 @@ onto JSON.
 NCZarr
 ------
 
-Iris has long been able to read and write Zarr through netCDF-c's NCZarr
-driver, by way of a URL fragment::
+Iris also reads and writes Zarr through netCDF-c's NCZarr driver, reached by
+way of a URL fragment::
 
     iris.load("file:///data/forecast.zarr#mode=nczarr,file")
 
-That is unchanged, and is still how you reach NCZarr. NCZarr implements Zarr
-version 2 and writes scalar variables as length-one arrays; the native
-reader described above handles both versions and is what a plain path or URL
-now uses.
+NCZarr implements Zarr version 2, and writes scalar variables as length-one
+arrays. The native reader described above handles both versions, and is
+what a plain path or URL -- one with no ``#mode=`` fragment -- reaches.
