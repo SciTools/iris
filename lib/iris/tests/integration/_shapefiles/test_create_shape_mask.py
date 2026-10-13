@@ -111,9 +111,16 @@ def test_create_mask_wrapped_longitudes(longitudes, expected_index):
     np.testing.assert_array_equal(mask, expected)
 
 
-def test_create_mask_non_circular():
+@pytest.mark.parametrize(
+    ("longitudes", "expected_index"),
+    [
+        (np.arange(40, 360, 40), 5),  # Spans dateline
+        (np.arange(200, 360, 40), 1),  # Does not span dateline
+    ],
+)
+def test_create_mask_non_circular(longitudes, expected_index):
     x_coord = DimCoord(
-        np.arange(40, 360, 40),
+        longitudes,
         standard_name="longitude",
         units="degrees",
         coord_system=GeogCS(6371229),
@@ -136,7 +143,7 @@ def test_create_mask_non_circular():
     )
 
     expected = np.ones(cube.shape, dtype=bool)
-    expected[0, 5] = False
+    expected[0, expected_index] = False
     np.testing.assert_array_equal(mask, expected)
 
 

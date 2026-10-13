@@ -194,10 +194,10 @@ def _create_shape_mask_no_checks(
         y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         original_x_point = x_coord.points[0]
-        if not x_coord.circular:  # type: ignore[union-attr]
+        if not x_coord.circular and original_x_point < 180:  # type: ignore[union-attr]
             # Masking only works when the coordinates are regular.  This will not be the
-            # case if we map a non-circular coordinate to the [-180, 180] domain.
-            # Instead, split the cube into two and mask each part.
+            # case if we map a non-circular coordinate that spans the dateline to the
+            # [-180, 180] domain. Instead, split the cube into two and mask each part.
             extent1 = iris.coords.CoordExtent(x_coord.name(), original_x_point, 180)
             extent2 = iris.coords.CoordExtent(
                 x_coord.name(), -180, original_x_point, max_inclusive=False
