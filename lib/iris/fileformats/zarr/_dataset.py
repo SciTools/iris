@@ -51,6 +51,7 @@ import numpy as np
 import zarr
 
 from iris._lazy_data import _optimum_chunksize, as_lazy_data
+from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
@@ -447,12 +448,6 @@ class ZarrDatasetVariable(CFDatasetVariable):
         graph and testable without a store.
 
         """
-        # Deferred, and the module rather than its members: the CF package
-        # reaches this one through iris.fileformats.zarr.loader, so a
-        # module-level import would be a cycle; and the tests patch
-        # _LAZYVAR_MIN_BYTES on the module object.
-        from iris.fileformats.cf import loader
-
         parameters = _decode.decode_parameters(
             self._attributes,
             dtype=self.dtype,
@@ -462,7 +457,7 @@ class ZarrDatasetVariable(CFDatasetVariable):
         )
         decoding = _decode.decoding_required(parameters)
 
-        if self.size * self.dtype.itemsize < loader._LAZYVAR_MIN_BYTES:
+        if self.size * self.dtype.itemsize < cf_loader._LAZYVAR_MIN_BYTES:
             # A lazy array would cost more memory AND more time to access.
             block = np.asanyarray(self._array[...])
             if decoding:

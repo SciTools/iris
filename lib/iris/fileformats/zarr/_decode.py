@@ -33,7 +33,10 @@ version 3 it is never a mask source: an ``int16`` array of ``[0, 1, 2]`` with
 no CF attributes would otherwise load with its valid zero masked. On version 2
 it is one, but only when no CF attribute is present, because version 2 stores
 predate the convention - which is what released xarray's
-``use_zarr_fill_value_as_mask`` does.
+``use_zarr_fill_value_as_mask`` does. zarr-python 3 defaults the field to zero
+for a version 2 store too, so a store written today can lose a genuine zero
+this way; :func:`decode_parameters` warns when the rule is about to apply, for
+exactly that reason.
 
 See section 4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
@@ -159,6 +162,16 @@ def decode_parameters(
         The keyword arguments :func:`mask_and_scale` takes, always with the
         same keys. :func:`decoding_required` says whether they do anything.
 
+    Warns
+    -----
+    IrisCfLoadWarning
+        When a version 2 variable declares no CF missing-value attribute, so
+        its storage fill value is about to be used as a sentinel. zarr-python
+        3 defaults that field to zero for every new array, so a store written
+        today can lose genuine zeros this way - the rule predates the
+        writers that do this, and is kept for stores old enough that it is
+        what the writer meant.
+
     """
     sentinels = []
     for name in ("_FillValue", "missing_value"):
@@ -172,6 +185,14 @@ def decode_parameters(
         and zarr_format < _FILL_VALUE_IS_A_MASK_BEFORE
         and storage_fill_value is not None
     ):
+        message = (
+            f"Variable {variable_name} declares no `_FillValue` or "
+            f"`missing_value` on a version 2 store, so its storage fill "
+            f"value {storage_fill_value!r} will be read as missing: values "
+            "equal to it are masked. Set a `_FillValue` attribute to "
+            "control this."
+        )
+        warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
         sentinels.append(storage_fill_value)
 
     valid_min = attributes.get("valid_min")

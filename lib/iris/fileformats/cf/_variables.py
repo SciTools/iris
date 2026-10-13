@@ -239,6 +239,11 @@ class CFVariable(metaclass=ABCMeta):
         Determine whether the dimensionality of this variable
         is a subset of the specified target variable.
 
+        A dimension matches on the pair *(name, size)*, not on the bare
+        name: see :meth:`_dimension_identities`. A name that is the same in
+        both variables but a different size links nothing, and a Zarr
+        store's anonymous dimensions never match anything, even each other.
+
         Note that, by default scalar variables always span the
         dimensionality of the target variable.
 

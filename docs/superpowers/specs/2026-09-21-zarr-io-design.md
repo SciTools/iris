@@ -589,9 +589,12 @@ netCDF4-python already hides it from `Dataset.ncattrs()`, so it has never
 reached a cube loaded through netCDF, and Zarr has no equivalent convention
 to hide it by. Left in, it would surface only on cubes loaded from an
 NCZarr-written store, so the same data would produce cubes that differ by a
-provenance string depending on which writer made the store. Both are
-withheld from the dataset's own attributes only; neither appears on an array
-or a subgroup.
+provenance string depending on which writer made the store. `_ARRAY_DIMENSIONS`
+is withheld from an array's own `attributes`, where it lives; `_NCProperties`
+is withheld from the dataset's, where it lives. Neither is withheld from the
+other kind of node, because neither ever appears there: `_ARRAY_DIMENSIONS` is
+not a group attribute and `_NCProperties` is not an array or subgroup
+attribute.
 
 **The identity that links two variables is the pair `(name, size)`, and an
 anonymous dimension has no identity.** One rule covers every case above:

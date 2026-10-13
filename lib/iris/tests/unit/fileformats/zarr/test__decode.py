@@ -121,7 +121,8 @@ def test_version_3_zeros_survive_masking_and_scaling_unchanged():
 
 
 def test_version_2_uses_the_storage_fill_value_when_there_is_no_attribute():
-    result = parameters({}, storage_fill_value=0, zarr_format=2)
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = parameters({}, storage_fill_value=0, zarr_format=2)
     assert result["sentinels"] == (0,)
 
 

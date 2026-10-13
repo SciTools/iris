@@ -11,8 +11,26 @@ import zarr
 from iris.cube import Cube
 from iris.exceptions import TranslationError
 from iris.fileformats.zarr import load_cubes
+from iris.loading import LOAD_PROBLEMS
+from iris.warnings import IrisCfLoadWarning
 
 from .. import stores
+
+
+@pytest.fixture(autouse=True)
+def _assert_clean_load():
+    """Every load in this file must leave `LOAD_PROBLEMS` empty.
+
+    A malformed grid mapping on the shared `stores.make_store` fixture once
+    made every test that loaded through it record a load problem and raise
+    the standing `IrisLoadWarning` that announces one - silently covering the
+    one signal that would reveal a genuine Zarr load problem. This guards
+    against that recurring, for every test in this file, not only the ones
+    that use the canonical fixture.
+    """
+    LOAD_PROBLEMS.reset()
+    yield
+    assert LOAD_PROBLEMS.problems == []
 
 
 def test_one_cube_per_data_variable(tmp_path):
@@ -27,8 +45,15 @@ def test_one_cube_per_data_variable(tmp_path):
 
 
 def test_a_version_2_store_loads_the_same_cube(tmp_path):
+    """`air_temperature` declares no `_FillValue`, so the version 2 load warns.
+
+    Its explicit storage `fill_value` is `-1.0`, which matches nothing in
+    `stores.DATA`, so the warning changes nothing about the data read - see
+    `test_version_2_zeros_are_masked` for the rule this is a side effect of.
+    """
     v3 = list(load_cubes(stores.make_store(tmp_path / "v3.zarr")))[0]
-    v2 = list(load_cubes(stores.make_store(tmp_path / "v2.zarr", zarr_format=2)))[0]
+    with pytest.warns(IrisCfLoadWarning, match="air_temperature"):
+        v2 = list(load_cubes(stores.make_store(tmp_path / "v2.zarr", zarr_format=2)))[0]
     assert v2 == v3
 
 
@@ -208,7 +233,9 @@ def test_version_2_zeros_are_masked(tmp_path):
 
     Version 2 stores predate the CF `_FillValue` convention, and this is what
     their writers meant - which is what released xarray's
-    `use_zarr_fill_value_as_mask` does.
+    `use_zarr_fill_value_as_mask` does. Iris warns about exactly this, since
+    zarr-python 3 defaults a version 2 store's `fill_value` to zero too, and a
+    store written today can lose a genuine zero this way.
     """
     group = zarr.open_group(store=tmp_path / "z2.zarr", mode="w", zarr_format=2)
     array = stores.make_array(
@@ -216,7 +243,8 @@ def test_version_2_zeros_are_masked(tmp_path):
     )
     array[:] = [0, 1, 2]
 
-    cube = list(load_cubes(str(tmp_path / "z2.zarr")))[0]
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        cube = list(load_cubes(str(tmp_path / "z2.zarr")))[0]
     assert cube.data.mask.tolist() == [True, False, False]
 
 

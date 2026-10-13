@@ -37,6 +37,14 @@ Iris recognises a local store by the metadata file at its root -- ``zarr.json``
 for version 3, ``.zgroup`` for version 2 -- not by the ``.zarr`` suffix, so a
 directory that merely has the suffix is not mistaken for one.
 
+Saving
+------
+
+Iris does not save to a native Zarr store. ``iris.save(cube, "out.zarr")``
+raises ``ValueError: Cannot save; no saver``, naming neither Zarr nor an
+alternative. Save to netCDF instead, or write Zarr through netCDF-c's NCZarr
+driver, covered below in :ref:`zarr_io_nczarr`.
+
 Remote stores
 -------------
 
@@ -118,6 +126,13 @@ mask source on version 3, where it is a required field, and uses it on
 version 2 only when the array declares no CF attribute -- which is what
 version 2 writers meant by it, and what xarray does.
 
+A version 2 store that declares neither ``_FillValue`` nor ``missing_value``
+therefore has its storage ``fill_value`` treated as missing data, so a value
+equal to it is masked -- including a genuine zero, since zarr-python defaults
+``fill_value`` to zero on every array it creates, version 2 included. Iris
+warns when this happens, naming the variable and the value. Setting a
+``_FillValue`` attribute on the array prevents it.
+
 Chunking
 --------
 
@@ -164,6 +179,8 @@ onto JSON.
     before saving::
 
         del cube.attributes["stac_discovery"]
+
+.. _zarr_io_nczarr:
 
 NCZarr
 ------

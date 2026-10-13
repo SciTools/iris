@@ -103,7 +103,10 @@ def make_store(path, *, zarr_format=3, chunks="auto", shards=None):
         "i4",
         zarr_format,
         dimensions=(),
-        attributes={"grid_mapping_name": "latitude_longitude"},
+        attributes={
+            "grid_mapping_name": "latitude_longitude",
+            "earth_radius": 6371229.0,
+        },
     )
     scalar[()] = 0
 
