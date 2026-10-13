@@ -11,6 +11,8 @@ from iris.fileformats import cf as cf
 from iris.fileformats.cf import _variables
 from iris.fileformats.cf.dataset import TrackedAttributes
 
+from .identify_mixins import _NetCDFVarWithDimensions
+
 
 class CFVariableSub(cf.CFVariable):
     """A subclass of CFVariable for testing purposes."""
@@ -102,28 +104,32 @@ class TestSpans:
 
         assert cf_var.spans(other)
 
-    def test_is_subset_check(self, mocker, nc_vars):
-        lhs_nc_var, other_nc_var, _ = nc_vars
-        lhs_nc_var.dimensions = ("time",)
-        lhs = CFVariableSub("lhs", lhs_nc_var)
-
-        rhs = mocker.MagicMock()
-        rhs.dimensions = ("time", "lat")
-
+    def test_is_subset_check(self):
+        # `spans()` now reads `shape` as well as `dimensions` on both sides of
+        # the comparison, so a bare `mocker.MagicMock()` collaborator will not
+        # do here: an unconfigured mock auto-answers `_dimension_identities()`
+        # with something that iterates as empty, which would make `spans()`
+        # trivially "true" instead of exercising the real comparison - see
+        # the Zarr I/O design doc, section 4.4, and this task's own history.
+        lhs = CFVariableSub("lhs", _NetCDFVarWithDimensions("lhs_var", ("time",)))
+        rhs = CFVariableSub("rhs", _NetCDFVarWithDimensions("rhs_var", ("time", "lat")))
         assert lhs.spans(rhs)
 
-        other_nc_var.dimensions = ("height",)
-        other = CFVariableSub("other", other_nc_var)
+        other = CFVariableSub(
+            "other", _NetCDFVarWithDimensions("other_var", ("height",))
+        )
         assert not other.spans(rhs)
 
-    def test_scalar_dimension_with_others_is_not_scalar(self, mocker, nc_var):
+    def test_scalar_dimension_with_others_is_not_scalar(self):
         # _scalar_ means "this variable is scalar", which a variable with a
         # second dimension is not. It is not a wildcard.
-        nc_var.dimensions = (_variables._NCZARR_SCALAR_DIMENSION, "bnds")
-        cf_var = CFVariableSub("not_scalar", nc_var)
-
-        other = mocker.MagicMock()
-        other.dimensions = ("time",)
+        cf_var = CFVariableSub(
+            "not_scalar",
+            _NetCDFVarWithDimensions(
+                "not_scalar_var", (_variables._NCZARR_SCALAR_DIMENSION, "bnds")
+            ),
+        )
+        other = CFVariableSub("other", _NetCDFVarWithDimensions("other_var", ("time",)))
 
         assert not cf_var.spans(other)
 

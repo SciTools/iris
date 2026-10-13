@@ -41,6 +41,25 @@ class _NetCDFVar:
         return {name: getattr(self, name) for name in self.ncattrs()}
 
 
+#: The size each dimension name has stood for, the first time a stub used it.
+#: `spans()` now checks `(name, size)` pairs, so two stubs that name a
+#: dimension identically must also agree on its length, or a test exercising
+#: that agreement would be testing nothing. Keyed by name and never cleared,
+#: so the same name means the same size for every stub built in the process -
+#: regardless of which test runs first. Pinned for
+#: ``_NCZARR_SCALAR_DIMENSION``, matching the size NCZarr itself gives it;
+#: every other name claims the next unused integer, once, the first time
+#: :func:`_stub_dimension_size` is asked for it.
+_STUB_DIMENSION_SIZES: dict[str, int] = {_NCZARR_SCALAR_DIMENSION: 1}
+
+
+def _stub_dimension_size(name: str) -> int:
+    """Return `name`'s fixed size, claiming the next unused one if new."""
+    if name not in _STUB_DIMENSION_SIZES:
+        _STUB_DIMENSION_SIZES[name] = len(_STUB_DIMENSION_SIZES) + 1
+    return _STUB_DIMENSION_SIZES[name]
+
+
 class _NetCDFVarWithDimensions(_NetCDFVar):
     """Stub NetCDF variable with dimensions for spans() tests."""
 
@@ -49,6 +68,17 @@ class _NetCDFVarWithDimensions(_NetCDFVar):
     def __init__(self, name, dimensions, dtype=int):
         super().__init__(name, dtype=dtype)
         self.dimensions = dimensions
+
+    @property
+    def shape(self) -> tuple:
+        """One size per dimension, agreeing with every other stub naming it.
+
+        A property, not an instance attribute set in ``__init__``: `ncattrs`
+        reads `self.__dict__`, so a stored value would leak onto
+        `attributes` exactly as an unguarded `dimensions` would - a property
+        is never in `self.__dict__` and cannot leak that way.
+        """
+        return tuple(_stub_dimension_size(name) for name in self.dimensions)
 
 
 def assert_warning_gated(operation, warning_category, warning_regex):
