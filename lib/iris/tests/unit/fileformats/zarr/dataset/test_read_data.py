@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 import zarr
 
+from iris import _lazy_data
 from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.zarr._dataset import ZarrDataset
 from iris.warnings import IrisLoadWarning
@@ -177,11 +178,28 @@ def test_the_key_is_sensitive_to_attributes(tmp_path):
 
 
 def test_two_cubes_sharing_an_array_share_one_dask_array(tmp_path, monkeypatch):
-    # What the cache is for: many cubes in one store sharing a coordinate.
+    """What the cache is for: many cubes in one store sharing a coordinate.
+
+    Comparing the two Dask names proves nothing on its own: Dask tokenises a
+    zarr.Array deterministically, so two independently opened arrays get the
+    same name whether or not `read_data` passes a cache key at all. What has
+    to be shown is that the first read puts an entry in the process-wide
+    cache and the second read comes back out of it.
+
+    The cache is replaced for the test rather than measured in place, because
+    it is process-wide and holds only its last hundred entries - a test that
+    counted the real one would depend on what ran before it.
+    """
     monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    cache = _lazy_data.LRUCache(100)
+    monkeypatch.setattr(_lazy_data, "CACHE", cache)
     location = stores.make_store(tmp_path / "s.zarr")
+
     first = variable(location).read_data(policy)
+    assert len(cache._cache) == 1, "the first read did not populate the cache"
+
     second = variable(location).read_data(policy)
+    assert len(cache._cache) == 1, "the second read built a second array"
     assert first.name == second.name
 
 

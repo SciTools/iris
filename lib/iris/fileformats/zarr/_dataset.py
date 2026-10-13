@@ -231,9 +231,10 @@ def _align_chunks(
             aligned.append(size)
             subdivided |= size < store_size
             continue
-        whole = -(-size // store_size) * store_size
-        aligned.append(min(whole, extent))
-        subdivided |= whole > extent and extent % store_size != 0
+        # Rounding up never subdivides, and capping at the extent leaves one
+        # block spanning the dimension, which cannot subdivide either - so a
+        # free dimension has nothing to report.
+        aligned.append(min(-(-size // store_size) * store_size, extent))
 
     if _store_chunk_exceeds_dask_target(store_chunks, dtype):
         subdivided = True

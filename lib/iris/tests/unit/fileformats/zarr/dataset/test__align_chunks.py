@@ -41,10 +41,13 @@ def test_a_sub_multiple_is_rounded_up():
 
 
 def test_rounding_up_is_capped_at_the_shape():
-    assert _align_chunks((2000, 6000), (6000, 6000), (6000, 6000), F8, None, "v") == (
-        6000,
-        6000,
-    )
+    # Store chunks small enough to stay under Dask's target, so that this
+    # case tests only the capping it is named for. Rounding 2000 up to a
+    # multiple of 3000 overshoots the 2500 extent, so the result is 2500.
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = _align_chunks((2000, 2500), (3000, 2500), (2500, 2500), F8, None, "v")
+    assert result == (2500, 2500)
 
 
 def test_an_unchunked_store_is_left_alone():
@@ -62,6 +65,33 @@ def test_an_explicit_chunk_control_setting_wins_but_warns():
             (100, 8000), (8000, 8000), (16000, 16000), F8, (True, False), "v"
         )
     assert result[0] == 100
+
+
+def test_an_oversize_store_chunk_warns():
+    """One of the two things worth telling the user about.
+
+    A store chunk larger than Dask's target makes the store's layout the
+    binding constraint on memory per task, whatever chunking is asked for.
+    """
+    with pytest.warns(IrisLoadWarning, match="v"):
+        _align_chunks((8000, 8000), (8000, 8000), (16000, 16000), F8, None, "v")
+
+
+def test_an_ordinary_layout_does_not_warn():
+    """And rounding up on its own is not worth telling the user about.
+
+    A year of daily (500, 1000) fields chunked (1, 300, 1000) is an ordinary
+    store. Its middle dimension rounds 500 up to 600 and is capped back to
+    500, which leaves one block spanning the dimension - a block that reads
+    each store chunk exactly once and so subdivides nothing. Warning here
+    would warn on every load of a store with nothing wrong with it.
+    """
+    with warnings.catch_warnings():
+        warnings.simplefilter("error")
+        result = _align_chunks(
+            (31, 500, 1000), (1, 300, 1000), (365, 500, 1000), F8, None, "v"
+        )
+    assert result == (31, 500, 1000)
 
 
 def test_a_small_store_chunk_does_not_warn():
