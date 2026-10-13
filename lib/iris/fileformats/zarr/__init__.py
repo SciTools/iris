@@ -27,3 +27,40 @@ See sections 4.1 and 4.4 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
+
+__all__ = ["load_cubes"]
+
+
+def __getattr__(name):
+    """Forward ``load_cubes`` to :mod:`iris.fileformats.zarr.loader`.
+
+    PEP 562, not a plain ``from .loader import load_cubes``: ``loader``
+    imports ``._dataset``, which imports ``zarr`` at module level, so an
+    eager import here would make the dependency load with the package rather
+    than with a Zarr load - breaking the promise this module's own docstring
+    makes, that nothing imports ``zarr`` until a Zarr target is actually
+    loaded. Resist "simplifying" this back to a plain import.
+
+    Parameters
+    ----------
+    name : str
+        The attribute being looked up. Python calls this only for names that
+        are not already module attributes.
+
+    Returns
+    -------
+    Any
+        ``load_cubes``, the only name this forwards.
+
+    Raises
+    ------
+    AttributeError
+        For any other name.
+
+    """
+    if name != "load_cubes":
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from .loader import load_cubes
+
+    return load_cubes
