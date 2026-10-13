@@ -83,16 +83,13 @@ def _is_zarr_store(target):
 
 
 def _load_zarr(*args, **kwargs):
-    """Load from Zarr stores, reporting clearly when zarr-python is absent."""
-    try:
-        from iris.fileformats.zarr import load_cubes
-    except ImportError as exception:
-        message = (
-            "Unable to load a Zarr store - the 'zarr' package is not "
-            "installed. Install zarr >=3.0.8, for example with "
-            "'conda install -c conda-forge zarr'."
-        )
-        raise ImportError(message) from exception
+    """Load from Zarr stores.
+
+    ``iris.fileformats.zarr``'s own ``__getattr__`` raises a clear
+    ``ImportError`` - naming the package and the version floor - if ``zarr``
+    is absent or too old; nothing here needs to repeat that.
+    """
+    from iris.fileformats.zarr import load_cubes
 
     return load_cubes(*args, **kwargs)
 
