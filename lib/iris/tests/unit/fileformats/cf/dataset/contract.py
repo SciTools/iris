@@ -62,6 +62,20 @@ class CFDatasetReadContract:
     def test_starts_open(self, readable):
         assert readable.closed is False
 
+    def test_close_then_closed(self, readable):
+        readable.close()
+        assert readable.closed is True
+
+    def test_close_is_idempotent(self, readable):
+        readable.close()
+        readable.close()
+        assert readable.closed is True
+
+    def test_context_manager_returns_self_and_closes(self, readable):
+        with readable as entered:
+            assert entered is readable
+        assert readable.closed is True
+
     def test_dimensions(self, readable):
         assert dict(readable.dimensions) == CONTRACT_DIMENSIONS
 
@@ -225,20 +239,6 @@ class CFDatasetWriteContract:
         scalar.attributes["grid_mapping_name"] = "latitude_longitude"
         scalar[()] = 0
         return dataset
-
-    def test_close_then_closed(self, writable):
-        writable.close()
-        assert writable.closed is True
-
-    def test_close_is_idempotent(self, writable):
-        writable.close()
-        writable.close()
-        assert writable.closed is True
-
-    def test_context_manager_returns_self_and_closes(self, writable):
-        with writable as entered:
-            assert entered is writable
-        assert writable.closed is True
 
     def test_populate_then_read_back(self, writable, reopen):
         self.populate(writable)
