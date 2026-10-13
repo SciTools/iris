@@ -179,8 +179,9 @@ def _create_shape_mask_no_checks(
 ) -> np.array:
     """Make a mask for a cube from a shape geometry.
 
-    See create_shape_mask docstring for details.  For efficiency, this helper functions
-    assumes parameter checks have already been completed.
+    See create_shape_mask docstring for details.  This helper function performs the mask
+    calculation but, for efficiency, assumes parameter checks have already been
+    completed.
 
     """
     # Get cube coordinates
