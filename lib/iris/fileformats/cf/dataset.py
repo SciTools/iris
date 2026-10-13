@@ -289,7 +289,9 @@ class CFDataset(ABC):
     @property
     @abstractmethod
     def format(self) -> str:
-        """The concrete format: ``NETCDF4``, ``NETCDF3_CLASSIC``, ``ZARR_V2``, ``ZARR_V3``.
+        """The concrete format of this dataset.
+
+        One of ``NETCDF4``, ``NETCDF3_CLASSIC``, ``ZARR_V2`` or ``ZARR_V3``.
 
         What the loader, the saver and ``LOAD_PROBLEMS`` *say* when they have
         to name the format. Reconstructing it from the implementation class
