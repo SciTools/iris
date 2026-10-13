@@ -35,8 +35,9 @@ it is one, but only when no CF attribute is present, because version 2 stores
 predate the convention - which is what released xarray's
 ``use_zarr_fill_value_as_mask`` does. zarr-python 3 defaults the field to zero
 for a version 2 store too, so a store written today can lose a genuine zero
-this way; :func:`decode_parameters` warns when the rule is about to apply, for
-exactly that reason.
+this way; :func:`decode_parameters` warns for exactly that case - the storage
+fill value is zero - and not for a non-zero one, which is the writer's own
+deliberate, pre-convention sentinel and not something to warn about.
 
 See section 4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
@@ -165,12 +166,16 @@ def decode_parameters(
     Warns
     -----
     IrisCfLoadWarning
-        When a version 2 variable declares no CF missing-value attribute, so
-        its storage fill value is about to be used as a sentinel. zarr-python
-        3 defaults that field to zero for every new array, so a store written
-        today can lose genuine zeros this way - the rule predates the
-        writers that do this, and is kept for stores old enough that it is
-        what the writer meant.
+        When a version 2 variable declares no CF missing-value attribute, and
+        the storage fill value about to be used as a sentinel is zero. Zero
+        is zarr-python's own default for a storage fill value a writer never
+        set, so it is the case design document section 4.4 calls "the
+        ordinary case, not the exotic one" when it rules the field out as a
+        mask source on version 3 - a plausible real value, not a sentinel a
+        writer chose. A non-zero storage fill value - the classic netCDF
+        sentinel ``9.96921e+36``, say - is the case section 4.4 keeps this
+        rule for, and does not warn: a writer old enough to predate the CF
+        convention chose it on purpose, which is the rule's own premise.
 
     """
     sentinels = []
@@ -185,14 +190,22 @@ def decode_parameters(
         and zarr_format < _FILL_VALUE_IS_A_MASK_BEFORE
         and storage_fill_value is not None
     ):
-        message = (
-            f"Variable {variable_name} declares no `_FillValue` or "
-            f"`missing_value` on a version 2 store, so its storage fill "
-            f"value {storage_fill_value!r} will be read as missing: values "
-            "equal to it are masked. Set a `_FillValue` attribute to "
-            "control this."
-        )
-        warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
+        # Warn only when the sentinel about to be adopted is zero - the
+        # value this field defaults to when a writer never set it (design
+        # document section 4.4). A non-zero storage fill value is a writer's
+        # deliberate choice, old enough to predate `_FillValue`, which is
+        # exactly the case this rule exists for; masking on it is
+        # unremarkable and does not warn. Masking itself is unchanged either
+        # way - only whether this warns.
+        if storage_fill_value == 0:
+            message = (
+                f"Variable {variable_name} declares no `_FillValue` or "
+                f"`missing_value` on a version 2 store, so its storage fill "
+                f"value {storage_fill_value!r} will be read as missing: values "
+                "equal to it are masked. Set a `_FillValue` attribute to "
+                "control this."
+            )
+            warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
         sentinels.append(storage_fill_value)
 
     valid_min = attributes.get("valid_min")

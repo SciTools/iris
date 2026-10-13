@@ -45,15 +45,8 @@ def test_one_cube_per_data_variable(tmp_path):
 
 
 def test_a_version_2_store_loads_the_same_cube(tmp_path):
-    """`air_temperature` declares no `_FillValue`, so the version 2 load warns.
-
-    Its explicit storage `fill_value` is `-1.0`, which matches nothing in
-    `stores.DATA`, so the warning changes nothing about the data read - see
-    `test_version_2_zeros_are_masked` for the rule this is a side effect of.
-    """
     v3 = list(load_cubes(stores.make_store(tmp_path / "v3.zarr")))[0]
-    with pytest.warns(IrisCfLoadWarning, match="air_temperature"):
-        v2 = list(load_cubes(stores.make_store(tmp_path / "v2.zarr", zarr_format=2)))[0]
+    v2 = list(load_cubes(stores.make_store(tmp_path / "v2.zarr", zarr_format=2)))[0]
     assert v2 == v3
 
 

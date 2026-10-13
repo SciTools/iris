@@ -14,7 +14,7 @@ from iris.coord_systems import GeogCS
 from iris.fileformats.cf import loader as cf_loader
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import stock
-from iris.warnings import IrisCfLoadWarning, IrisLoadWarning
+from iris.warnings import IrisLoadWarning
 
 from . import fixtures
 
@@ -150,11 +150,12 @@ def test_the_native_reader_agrees_with_the_nczarr_writer(
     round trip of this fixture as well, so a name constraint selects the
     main cube deliberately rather than papering over a Zarr-specific gap.
 
-    None of this fixture's variables declare a CF `_FillValue`, and
-    netCDF-c's NCZarr writer gives every one its own default storage fill
-    value regardless - so every one of them warns on the way back in; see
-    `lib/iris/fileformats/zarr/_decode.py` for the rule this is a side
-    effect of.
+    None of this fixture's variables declare a CF `_FillValue`, but netCDF-c's
+    NCZarr writer still gives every one its own default storage fill value -
+    the classic netCDF sentinel `9.96921e+36`, not zero, so this does not
+    warn: see `lib/iris/fileformats/zarr/_decode.py` for why zero is what
+    distinguishes a writer's deliberate pre-convention sentinel from
+    zarr-python's own default.
     """
     path = tmp_path / "nczarr.zarr"
     uri = path.as_uri() + "#mode=xarray,file"
@@ -162,8 +163,7 @@ def test_the_native_reader_agrees_with_the_nczarr_writer(
         iris.save(realistic_4d_w_everything, uri)
 
     assert (path / ".zgroup").is_file()
-    with pytest.warns(IrisCfLoadWarning, match="declares no"):
-        loaded = iris.load_cube(str(path), realistic_4d_w_everything.name())
+    loaded = iris.load_cube(str(path), realistic_4d_w_everything.name())
     # `_NCProperties`, netCDF-c's own bookkeeping stamp on the root group of
     # every store it writes, is withheld by the reader rather than compared
     # away here - the same storage-not-CF treatment as `_ARRAY_DIMENSIONS`
@@ -179,18 +179,12 @@ def test_array_dimensions_does_not_reach_the_cube(tmp_path, realistic_4d_w_every
     version 2 store, and make it unequal to the same data in version 3.
     Checked across every cube the store yields, including the orography
     cube the hybrid height factory depends on, not only the main one.
-
-    Also warns for the same reason as
-    `test_the_native_reader_agrees_with_the_nczarr_writer`: nothing here
-    declares a CF `_FillValue`, so every variable's own storage default is
-    read as a missing-value sentinel.
     """
     path = tmp_path / "nczarr.zarr"
     with iris.FUTURE.context(save_split_attrs=True):
         iris.save(realistic_4d_w_everything, path.as_uri() + "#mode=xarray,file")
 
-    with pytest.warns(IrisCfLoadWarning, match="declares no"):
-        cubes = iris.load(str(path))
+    cubes = iris.load(str(path))
     assert len(cubes) == 2
     for cube in cubes:
         assert "_ARRAY_DIMENSIONS" not in cube.attributes

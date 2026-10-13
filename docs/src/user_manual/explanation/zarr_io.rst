@@ -130,8 +130,12 @@ A version 2 store that declares neither ``_FillValue`` nor ``missing_value``
 therefore has its storage ``fill_value`` treated as missing data, so a value
 equal to it is masked -- including a genuine zero, since zarr-python defaults
 ``fill_value`` to zero on every array it creates, version 2 included. Iris
-warns when this happens, naming the variable and the value. Setting a
-``_FillValue`` attribute on the array prevents it.
+warns about this specific case -- the adopted sentinel is zero -- naming the
+variable and the value, because zero is the one value plausible as real data
+rather than a sentinel a writer chose on purpose; a non-zero storage fill
+value, such as the classic netCDF sentinel ``9.96921e+36`` written by an
+older tool, is not warned about. Setting a ``_FillValue`` attribute on the
+array prevents the masking and, where it would have fired, the warning.
 
 Chunking
 --------
