@@ -48,10 +48,15 @@ def test_a_name_used_at_two_sizes_is_omitted_and_warns(tmp_path):
     stores.make_array(group, "short", (2,), "f8", 3, dimensions=("t",))
     stores.make_array(group, "long", (5,), "f8", 3, dimensions=("t",))
 
+    dataset = ZarrDataset(str(tmp_path / "c.zarr"))
     with pytest.warns(IrisCfLoadWarning, match="t"):
-        dimensions = dict(ZarrDataset(str(tmp_path / "c.zarr")).dimensions)
+        dimensions = dict(dataset.dimensions)
 
     assert "t" not in dimensions
+    # The arrays keep the name in their own dimensions: nothing is renamed or
+    # dropped, only the dataset-wide mapping declines to link them.
+    assert dataset.variables["short"].dimensions == ("t",)
+    assert dataset.variables["long"].dimensions == ("t",)
 
 
 def test_anonymous_dimensions_are_not_in_the_mapping(tmp_path):
