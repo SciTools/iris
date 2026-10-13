@@ -172,13 +172,13 @@ def create_shape_mask(
         x_coord.convert_units("degrees")
         y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
-        original_x_points = x_coord.points[0]
+        original_x_point = x_coord.points[0]
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
         # Get revised x coordinate
         x_coord = cube.coord(axis="X", dim_coords=True)
         # Record the offset so we can roll back later
-        x_offsets = (x_coord.points - original_x_points) % x_coord.units.modulus
+        x_offsets = (x_coord.points - original_x_point) % x_coord.units.modulus
         x_roll = -int(np.flatnonzero(x_offsets == 0)[0])
 
     assert isinstance(x_coord, DimCoord)
