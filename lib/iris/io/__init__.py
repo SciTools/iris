@@ -38,6 +38,12 @@ def _is_nczarr_fragment(fragment):
     return False
 
 
+#: URI schemes Iris hands to a store library rather than resolving as a local
+#: path. Iris depends on none of them: zarr-python raises its own ImportError
+#: naming what to install.
+REMOTE_STORE_SCHEMES = frozenset({"s3", "gs", "az", "abfs"})
+
+
 # Saving routines, indexed by file extension.
 class _SaversDict(dict):
     """A dictionary that can only have string keys with no overlap."""
