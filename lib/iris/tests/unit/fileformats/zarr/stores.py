@@ -21,6 +21,15 @@ GLOBALS = {"Conventions": "CF-1.7", "title": "contract"}
 #: The version 2 attribute carrying dimension names.
 ARRAY_DIMENSIONS = "_ARRAY_DIMENSIONS"
 
+#: `make_array`'s own default for `fill_value`, distinct from `None`.
+#:
+#: `Group.create_array` treats an explicit `fill_value=None` as "this array
+#: has no fill value" on a version 2 store, which is not the same thing as
+#: "the caller did not ask for one". Passing this sentinel through instead
+#: means `make_array`'s own default lets zarr-python choose its own default
+#: fill value, on both versions, the way omitting the argument would.
+_DEFAULT_FILL_VALUE = object()
+
 
 def make_array(
     group,
@@ -32,7 +41,7 @@ def make_array(
     dimensions=None,
     chunks="auto",
     shards=None,
-    fill_value=None,
+    fill_value=_DEFAULT_FILL_VALUE,
     attributes=None,
 ):
     """Create one array, recording dimension names the way its version does.
@@ -44,13 +53,14 @@ def make_array(
     extra = {}
     if zarr_format == 3 and dimensions is not None:
         extra["dimension_names"] = dimensions
+    if fill_value is not _DEFAULT_FILL_VALUE:
+        extra["fill_value"] = fill_value
     array = group.create_array(
         name,
         shape=shape,
         dtype=dtype,
         chunks=chunks,
         shards=shards,
-        fill_value=fill_value,
         **extra,
     )
     if zarr_format == 2 and dimensions is not None:
