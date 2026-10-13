@@ -168,7 +168,7 @@ _RESOURCE_SECTION = "Resources"
 TEST_DATA_DIR = get_dir_option(
     _RESOURCE_SECTION,
     "test_data_dir",
-    default=str(Path(__file__) / "test_data"),
+    default=str(Path(__file__).parent / "test_data"),
 )
 
 # Override the data repository if the appropriate environment variable

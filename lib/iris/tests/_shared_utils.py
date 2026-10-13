@@ -21,7 +21,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
-from typing import Optional
+from typing import Callable, Optional
 import warnings
 import xml.dom.minidom
 import zlib
@@ -1022,6 +1022,44 @@ def env_bin_path(exe_name: Optional[str] = None):
     if exe_name is not None:
         exe_path = exe_path / exe_name
     return exe_path
+
+
+# TODO: Remove this convenience once problematic versions have been phased out
+def proj_9_8_incompatible_message() -> str:
+    """Return a message if Cartopy is <0.26 and PROJ is >=9.8, otherwise return an empty string.
+
+    Cartopy v0.26 addresses a known incompatibility with PROJ v9.8:
+    https://github.com/SciTools/cartopy/pull/2653
+    """
+    import cartopy
+    from packaging.version import Version
+    import pyproj
+
+    cartopy_version = Version(cartopy.__version__)
+    proj_version = Version(pyproj.__proj_version__)
+
+    incompatible = proj_version >= Version("9.8") and cartopy_version < Version("0.26")
+    if incompatible:
+        result = "Cartopy<0.26 is incompatible with PROJ>=9.8. SciTools/cartopy#2653"
+    else:
+        result = ""
+    return result
+
+
+# TODO: Remove this decorator once problematic versions have been phased out
+def skip_proj_9_8_incompatible(func: Callable):
+    """A decorator that skips decorated tests when PROJ is >=9.8 and Cartopy is <0.26.
+
+    Implemented as a callable to avoid wasteful top-level import of these
+    packages - _shared_utils is imported by every test module.
+    """
+    message = proj_9_8_incompatible_message()
+    incompatible = message != ""
+    skip = pytest.mark.skipif(
+        incompatible,
+        reason=message,
+    )
+    return skip(func)
 
 
 class GraphicsTest:

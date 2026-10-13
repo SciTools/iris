@@ -3,12 +3,13 @@
 What's New in Iris
 ------------------
 
-.. include:: 3.16/3.16.rst
+.. include:: latest.rst
 
 .. toctree::
    :maxdepth: 1
    :hidden:
 
+   latest.rst
    3.16/3.16.rst
    3.15.rst
    3.14.rst

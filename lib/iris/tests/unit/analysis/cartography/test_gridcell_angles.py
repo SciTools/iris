@@ -221,12 +221,14 @@ class TestGridcellAngles:
         # NOTE: although this looks just as bad as 'test_points_array_args',
         # maximum errors there in the end columns are actually > 100 degrees !
 
+    @_shared_utils.skip_proj_9_8_incompatible
     def test_nonlatlon_coord_system(self):
         # Check with points specified in an unexpected coord system.
         cube = sample_2d_latlons(regional=True, rotated=True)
         result = gridcell_angles(cube)
         _shared_utils.assert_array_all_close(
-            result.data, self.standard_small_cube_results
+            result.data,
+            self.standard_small_cube_results,
         )
         # Check that the result has transformed (true-latlon) coordinates.
         assert len(result.coords()) == 2
