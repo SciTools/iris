@@ -476,7 +476,7 @@ class TestLoadingIsSilent:
         iris.mesh.Connectivity defaults it to 0, but the loader requires it.
         The mesh build fails and is recorded in iris.loading.LOAD_PROBLEMS.
         Pinned because the loader reads start_index through the attribute
-        mapping - see the issue linked from this test's pull request.
+        mapping. Invert this when SciTools/iris#7332 is fixed.
         """
         path = tmp_path / "mesh.nc"
         with iris.FUTURE.context(save_split_attrs=True):

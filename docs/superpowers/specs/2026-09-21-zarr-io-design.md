@@ -2026,7 +2026,7 @@ else, and can land beside any of the others.
 |---|---|---|---|
 | 1 | `iris.fileformats.cf` becomes a package, with tests first | Merged | [#7298](https://github.com/SciTools/iris/pull/7298) |
 | 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
-| 2.5 | Deprecate `CFVariable.__getattr__` | Drafted | — |
+| 2.5 | Deprecate `CFVariable.__getattr__` | In review | [#7333](https://github.com/SciTools/iris/pull/7333) |
 | 3 | Relocate the CF loader | In review | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
@@ -2065,6 +2065,7 @@ closing keywords live (§5).
 | [#7291](https://github.com/SciTools/iris/issues/7291) | The deferred-save return type this design turned up (§4.5, Q5). Not fixed by this programme |
 | [#7328](https://github.com/SciTools/iris/issues/7328) | The netCDF `createVariable` keyword API (§12.4). Out of scope (§9); the Zarr saver avoids the pattern rather than inheriting it (§4.5) |
 | [#7329](https://github.com/SciTools/iris/issues/7329) | Checking attribute content against netCDF's constraints before saving (§12.4). Out of scope (§9); the Zarr write path already has the policy (§4.5) |
+| [#7332](https://github.com/SciTools/iris/issues/7332) | The UGRID loader's unguarded `cf_role` and `start_index` reads, turned up by PR 2.5 (§5). Not fixed by this programme |
 | [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
 ### 12.3 Open questions

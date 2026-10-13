@@ -279,7 +279,7 @@ def _build_connectivity(connectivity_var, element_dims):
     # variable through the mesh variable's role attribute, never through
     # anything on the variable itself, so neither name is guaranteed to be
     # here. A file omitting either raises, and the mesh build is captured into
-    # LOAD_PROBLEMS - the cube then loads without a mesh.
+    # LOAD_PROBLEMS - the cube then loads without a mesh. SciTools/iris#7332.
     cf_role = connectivity_var.attributes["cf_role"]
     start_index = connectivity_var.attributes["start_index"]
 
