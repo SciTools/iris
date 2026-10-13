@@ -181,3 +181,23 @@ def test_a_partly_named_variable_matches_on_the_named_part(tmp_path):
     data = CFDataVariable("data", dataset.variables["data"])
     aux = CFDataVariable("aux", dataset.variables["aux"])
     assert aux.spans(data) is False
+
+
+def test_a_non_spanning_variable_is_dropped_and_promoted(tmp_path):
+    """An anonymous-dimension variable becomes a cube of its own.
+
+    This is what keeps `None` out of `iris.fileformats._nc_load_rules.helpers`,
+    which matches dimensions by name and would read `None in (None, "x")` as a
+    match. `CFReader._build_cf_groups` drops any variable whose `spans` is
+    False from the referrer's group and promotes it.
+    """
+    from iris.fileformats.cf import CFReader
+
+    group = zarr.open_group(store=tmp_path / "s.zarr", mode="w", zarr_format=3)
+    data = group.create_array("data", shape=(3,), dtype="f4", dimension_names=("t",))
+    data.attrs["coordinates"] = "aux"
+    group.create_array("aux", shape=(3,), dtype="f4")
+
+    with CFReader(ZarrDataset(str(tmp_path / "s.zarr"))) as reader:
+        assert "aux" not in reader.cf_group["data"].cf_group
+        assert "aux" in reader.cf_group.promoted

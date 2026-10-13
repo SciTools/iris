@@ -15,7 +15,11 @@ import zarr
 #: The canonical store's dimensions, in order.
 DIMENSIONS = {"y": 3, "x": 2}
 DATA = np.arange(6, dtype="f8").reshape(3, 2)
-VARIABLE_ATTRS = {"units": "K", "long_name": "surface temperature"}
+VARIABLE_ATTRS = {
+    "units": "K",
+    "long_name": "surface temperature",
+    "grid_mapping": "grid",
+}
 GLOBALS = {"Conventions": "CF-1.7", "title": "contract"}
 
 #: The version 2 attribute carrying dimension names.
