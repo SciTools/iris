@@ -458,18 +458,20 @@ object. Everything in the "proxy" rows is exactly what `CFDatasetVariable`
 
 **The surviving job is legitimate but is not kept.** CF attributes are an
 open-ended set of data keys read from a file; there is no schema to enumerate,
-so this qualifies as the narrow exception `lib/iris/AGENTS.md` carves out, on
-the condition that `.attributes` is the path library code takes and
-`__getattr__` is only a convenience skin over it. The skin goes anyway
+so this meets the narrow exception stated in `lib/iris/AGENTS.md`, on the
+condition that `.attributes` is the path library code takes and `__getattr__`
+is only a convenience accessor over it. The accessor is removed anyway
 (§12.4).
 
-It goes because it buys nothing, not because the exception was unearned.
-`cf_var.units` and `cf_var.attributes["units"]` are the *same* read with the
-*same* side effect: both record the attribute as used, and that record is what
-decides which attributes survive onto the loaded cube. So this is not a
-convenience layer over a plain getter. It is a second spelling of one
-operation — the spelling that cannot be type-checked, and that silently loses
-to any class member of the same name (see the known limitation below).
+The exception is correctly argued and removing `__getattr__` is not a
+judgement on it. The accessor is removed because `.attributes` already does
+the whole job. `cf_var.units` and `cf_var.attributes["units"]` perform the
+*same* read with the *same* side effect: both record the attribute as used,
+and that record is what decides which attributes survive onto the loaded cube.
+So this is not a convenience layer over a plain getter. It is a second way of
+spelling one operation — the spelling that cannot be type-checked, and that
+silently loses to any class member of the same name (see the known limitation
+below).
 
 **It is deprecated, not deleted.** `.attributes` does not exist on released
 Iris, so until the merge-back ships there is no spelling a user can move to.
@@ -488,10 +490,10 @@ for. So:
   only by going to `iris.fileformats.cf` deliberately. Nothing a user does
   through `iris.load` can hold one. That is what makes the eventual removal
   proportionate; it is not a reason to skip the cycle.
-- `lib/iris/AGENTS.md`'s carve-out describes the only remaining instance of
+- The `lib/iris/AGENTS.md` exception describes the only remaining instance of
   the pattern, which is now scheduled for removal. It should be revisited when
-  the removal lands, not before — deleting it now would leave shipped code
-  that the rules forbid.
+  the removal lands, not before. Deleting it now would leave shipped code that
+  the rules forbid.
 
 This is delivered by **PR 2.5** (§5), a small behaviour-only pull request,
 because PR 2 has already merged and the programme's rule is that no pull
@@ -2371,15 +2373,15 @@ that a store detected by suffix must be local.
   `chunksizes` — is readable rather than write-only, instead of a format-aware
   caller having to reach through to the `zarr.Array`. §4.2.
 - **`CFVariable.__getattr__` is deprecated, for removal one cycle later.**
-  @pp-mo argued for dropping it outright; @trexfeathers chose a cycle. The
-  argument that settled *whether* is that it buys nothing — `cf_var.units` and
-  `cf_var.attributes["units"]` are the same read with the same side effect, so
-  one is a shadowed alias for the other, and the alias is the one that loses
-  silently to a class member of the same name. The argument that settled *how*
+  @pp-mo argued for dropping it outright; @trexfeathers chose a cycle. What
+  settled *whether* is that `.attributes` already does the whole job.
+  `cf_var.units` and `cf_var.attributes["units"]` perform the same read with
+  the same side effect, so one is an alias for the other, and it is the alias
+  that loses silently to a class member of the same name. What settled *how*
   is that `.attributes` does not exist on released Iris, so removing
   `__getattr__` in the same release as its replacement leaves no version where
   both work. Reverses the 2026-09-22 entry above, which kept it and narrowed
-  `lib/iris/AGENTS.md` to carve out an exception for it; that carve-out now
+  `lib/iris/AGENTS.md` to state an exception for it. That exception now
   describes code scheduled for removal and should be revisited when the
   removal lands. New PR 2.5. §4.3.
 - **A Zarr store with no dimension names loads, with anonymous dimensions.**
