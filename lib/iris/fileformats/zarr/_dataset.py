@@ -37,15 +37,24 @@ See sections 4.2, 4.4 and 4.6 of
 """
 
 from collections.abc import Callable, Iterator, Mapping, MutableMapping
+from functools import partial
+import json
 from types import MappingProxyType
 from typing import Any
 import warnings
 
+import dask
+import dask.array as da
+import dask.config
+import dask.utils
 import numpy as np
 import zarr
 
+from iris._lazy_data import _optimum_chunksize, as_lazy_data
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
+
+from . import _decode
 
 #: What :attr:`CFDataset.format` answers, by the store's Zarr version.
 _FORMAT_BY_ZARR_VERSION = {2: "ZARR_V2", 3: "ZARR_V3"}
@@ -147,6 +156,103 @@ def _assemble_dimensions(variables) -> dict:
         del sizes[name]
 
     return sizes
+
+
+def _fixed_flags(dims_fixed, ndim: int) -> tuple:
+    """Return one "do not change this" flag per dimension.
+
+    `iris.fileformats.cf.loader._chunks_from_chunk_control` answers ``(None,)``
+    when nothing is fixed, whatever the rank, so a length that does not match
+    means nothing is fixed.
+    """
+    if dims_fixed is None or len(dims_fixed) != ndim:
+        return (False,) * ndim
+    return tuple(bool(flag) for flag in dims_fixed)
+
+
+def _align_chunks(
+    chunks: tuple,
+    store_chunks: tuple | None,
+    shape: tuple,
+    dtype: np.dtype,
+    dims_fixed,
+    name: str,
+) -> tuple:
+    """Round `chunks` up to whole multiples of the store's own chunk shape.
+
+    A Zarr chunk is the atomic unit of storage: reading any part of one
+    fetches and decompresses the whole object. So a Dask chunking that
+    subdivides the store's costs a re-read per subdivision - and over a remote
+    store, one HTTP GET per subdivision for the same object. Aggregating
+    upward costs nothing, because peak memory per task is a whole decompressed
+    store chunk either way.
+
+    Parameters
+    ----------
+    chunks : tuple of int
+        The chunking computed for this variable, already through
+        :func:`iris._lazy_data._optimum_chunksize`.
+    store_chunks : tuple of int, optional
+        The store's own chunk shape. ``None`` for an unchunked store, which
+        constrains nothing.
+    shape : tuple of int
+        The variable's full shape. A result is never larger than this.
+    dtype : numpy.dtype
+        The stored dtype, for deciding whether one store chunk already exceeds
+        Dask's target chunk size.
+    dims_fixed : sequence of bool, optional
+        Dimensions an explicit ``CHUNK_CONTROL`` setting pinned. These are
+        left exactly as given: the keyword is an instruction, not a
+        suggestion.
+    name : str
+        The variable's name, for the warning.
+
+    Returns
+    -------
+    tuple of int
+
+    Warns
+    -----
+    IrisLoadWarning
+        When the result cannot tile the store grid without subdividing it -
+        either because one store chunk already exceeds Dask's target size, so
+        the store's layout is the binding constraint, or because an explicit
+        setting subdivides it.
+
+    """
+    if store_chunks is None:
+        return tuple(chunks)
+
+    fixed = _fixed_flags(dims_fixed, len(shape))
+    aligned = []
+    subdivided = False
+    for size, store_size, extent, is_fixed in zip(chunks, store_chunks, shape, fixed):
+        if is_fixed:
+            aligned.append(size)
+            subdivided |= size < store_size
+            continue
+        whole = -(-size // store_size) * store_size
+        aligned.append(min(whole, extent))
+        subdivided |= whole > extent and extent % store_size != 0
+
+    if _store_chunk_exceeds_dask_target(store_chunks, dtype):
+        subdivided = True
+
+    if subdivided:
+        message = (
+            "A Zarr chunk is read whole, so this store's chunking is the "
+            "binding constraint on memory per task rather than Dask's target "
+            f"chunk size: {name}"
+        )
+        warnings.warn(message, category=iris.warnings.IrisLoadWarning)
+
+    return tuple(aligned)
+
+
+def _store_chunk_exceeds_dask_target(store_chunks: tuple, dtype: np.dtype) -> bool:
+    """Whether one whole store chunk is larger than Dask's target chunk size."""
+    target = dask.utils.parse_bytes(dask.config.get("array.chunk-size"))
+    return int(np.prod(store_chunks)) * dtype.itemsize > target
 
 
 class _ZarrAttributes(MutableMapping):
@@ -301,13 +407,99 @@ class ZarrDatasetVariable(CFDatasetVariable):
         self._array[keys] = values
 
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
-        """Not yet implemented.
+        """Return this array's data, lazily where a lazy array is worth it.
 
-        A later change adds this, following §4.4 of
-        ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+        Parameters
+        ----------
+        chunking_policy : callable
+            Called with no arguments, returning the ``(chunks, dims_fixed)``
+            pair to build a lazy array with. Called only once the result is
+            known to be lazy.
+
+        Returns
+        -------
+        numpy.ndarray, numpy.ma.MaskedArray or dask.array.Array
+            Real data for a small array, lazy data otherwise. Masked whenever
+            the variable declares anything to decode.
+
+        Notes
+        -----
+        There is no data proxy. ``zarr.Array`` is picklable, a chunk is an
+        independent object in a key-value store so concurrent reads need no
+        lock, and a store is a namespace rather than an open file handle. CF
+        decoding is a ``map_blocks`` layer over the raw array rather than
+        something hidden inside ``__getitem__``, so it is visible in the
+        graph and testable without a store.
 
         """
-        raise NotImplementedError
+        # Deferred, and the module rather than its members: the CF package
+        # reaches this one through iris.fileformats.zarr.loader, so a
+        # module-level import would be a cycle; and the tests patch
+        # _LAZYVAR_MIN_BYTES on the module object.
+        from iris.fileformats.cf import loader
+
+        parameters = _decode.decode_parameters(
+            self._attributes,
+            dtype=self.dtype,
+            storage_fill_value=self.fill_value,
+            zarr_format=self.zarr_format,
+            variable_name=self.name,
+        )
+        decoding = _decode.decoding_required(parameters)
+
+        if self.size * self.dtype.itemsize < loader._LAZYVAR_MIN_BYTES:
+            # A lazy array would cost more memory AND more time to access.
+            block = np.asanyarray(self._array[...])
+            if decoding:
+                return _decode.mask_and_scale(block, **parameters)
+            return block
+
+        chunks, dims_fixed = chunking_policy()
+        raw_meta = np.empty((0,) * self.ndim, dtype=self.dtype)
+
+        if chunks == "auto":
+            # CHUNK_CONTROL.as_dask(): the user asked for Dask's own policy,
+            # so the store's layout is deliberately not consulted.
+            lazy = as_lazy_data(
+                self._array, chunks="auto", meta=raw_meta, cache_key=self.cache_key
+            )
+        else:
+            if chunks is None:
+                # What `as_lazy_data` makes of None, done here because this
+                # path reaches `_optimum_chunksize` first and that does not
+                # accept it: one chunk spanning the array, divided down below.
+                chunks = self.shape
+            chunks = _optimum_chunksize(
+                chunks, shape=self.shape, dtype=self.dtype, dims_fixed=dims_fixed
+            )
+            chunks = _align_chunks(
+                chunks, self.chunking, self.shape, self.dtype, dims_fixed, self.name
+            )
+            # Fixed in every dimension, because the alignment above is the
+            # final word: as_lazy_data would otherwise re-run the
+            # optimisation and undo it.
+            lazy = as_lazy_data(
+                self._array,
+                chunks=chunks,
+                meta=raw_meta,
+                dims_fixed=(True,) * self.ndim,
+                cache_key=self.cache_key,
+            )
+
+        if not decoding:
+            return lazy
+
+        # `partial` rather than `**parameters` on the `map_blocks` call:
+        # `dtype` is a keyword `map_blocks` consumes for itself rather than
+        # forwarding, and `mask_and_scale` needs it too. Binding it once here
+        # also makes the dtype Dask declares and the dtype the layer produces
+        # one value rather than two statements that could disagree.
+        return da.map_blocks(
+            partial(_decode.mask_and_scale, **parameters),
+            lazy,
+            dtype=parameters["dtype"],
+            meta=np.ma.masked_array(np.empty((0,) * self.ndim, parameters["dtype"])),
+        )
 
     def write_handle(self) -> "ZarrDatasetVariable":
         """Return self: a Zarr write target needs no proxy.
@@ -329,6 +521,28 @@ class ZarrDatasetVariable(CFDatasetVariable):
     def array(self):
         """The backing :class:`zarr.Array`. Nothing generic may read this."""
         return self._array
+
+    @property
+    def zarr_format(self) -> int:
+        """2 or 3. The one Zarr fact that changes how a value is read."""
+        return self._array.metadata.zarr_format
+
+    @property
+    def cache_key(self) -> str:
+        """An identity for this array that goes stale when the array does.
+
+        `iris._lazy_data.CACHE` is process-wide, so an address alone is not
+        enough: a store rewritten in place keeps its address and changes its
+        contents. The metadata document covers shape, chunks, shards, dtype,
+        fill value, codecs, dimension names and attributes in one value, and
+        is treated as opaque - listing the parts Iris cares about would go
+        stale, silently, the first time zarr-python added a field that
+        mattered.
+        """
+        return json.dumps(
+            [self._location, self._array.path, self._array.metadata.to_dict()],
+            sort_keys=True,
+        )
 
 
 #: What `mode` a dataset may be opened in. Writing is not implemented.
@@ -382,7 +596,6 @@ class ZarrDataset(CFDataset):
             raise NotImplementedError(f"{_NO_SAVING} Cannot open with mode={mode!r}.")
 
         self._mode = mode
-        self._group_path = group
         target = str(location)
         self._location = target if group is None else f"{target.rstrip('/')}/{group}"
 
