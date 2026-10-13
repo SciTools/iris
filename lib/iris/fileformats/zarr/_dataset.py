@@ -103,6 +103,52 @@ def _dimension_names(array) -> tuple:
     return tuple(names)
 
 
+def _assemble_dimensions(variables) -> dict:
+    """Return the dimension sizes the store's arrays agree on.
+
+    Parameters
+    ----------
+    variables : mapping of str to :class:`ZarrDatasetVariable`
+        Every array in one group.
+
+    Returns
+    -------
+    dict
+        Name to size, for every name used at exactly one size. Anonymous
+        dimensions have no name and so are absent.
+
+    Warns
+    -----
+    IrisCfLoadWarning
+        For each name used at more than one size. Zarr places no restriction
+        on reusing a name across arrays, so this is conforming and must not
+        raise; merging the two would produce a wrong cube, so the name is
+        omitted instead and the arrays that use it keep it in their own
+        `dimensions`.
+
+    """
+    sizes: dict[str, int] = {}
+    conflicts: dict[str, set[int]] = {}
+    for variable in variables.values():
+        for name, size in zip(variable.dimensions, variable.shape):
+            if name is None:
+                continue
+            if name not in sizes:
+                sizes[name] = size
+            elif sizes[name] != size:
+                conflicts.setdefault(name, {sizes[name]}).add(size)
+
+    for name, found in conflicts.items():
+        message = (
+            "Ignoring a dimension name used at more than one size, "
+            f"{sorted(found)}: {name}"
+        )
+        warnings.warn(message, category=iris.warnings.IrisCfLoadWarning)
+        del sizes[name]
+
+    return sizes
+
+
 class _ZarrAttributes(MutableMapping):
     """A Zarr node's attributes as a mapping, less the ones that are storage.
 
@@ -283,3 +329,176 @@ class ZarrDatasetVariable(CFDatasetVariable):
     def array(self):
         """The backing :class:`zarr.Array`. Nothing generic may read this."""
         return self._array
+
+
+#: What `mode` a dataset may be opened in. Writing is not implemented.
+_READ_MODES = ("r",)
+
+#: The one message every unimplemented write member raises.
+_NO_SAVING = "Saving to Zarr is not supported."
+
+
+class ZarrDataset(CFDataset):
+    """A Zarr store, or one group of one, presented through the CF interface."""
+
+    def __init__(self, location, mode: str = "r", *, group: str | None = None):
+        """Open a Zarr store.
+
+        Parameters
+        ----------
+        location : str or :class:`pathlib.Path`
+            The store's path or URL. A URL is handed to zarr-python
+            unaltered; Iris adds no store library and handles no credentials,
+            so an unreachable scheme fails with zarr-python's own message. A
+            store object - such as a :class:`zarr.storage.MemoryStore`, which
+            has no path - is also accepted and handed through unaltered;
+            `location` then becomes zarr-python's own rendering of it, the
+            best name available for a store with no address.
+        mode : str, default="r"
+            Only ``"r"`` is supported.
+        group : str, optional
+            A ``/``-separated path to a group within the store. The root group
+            by default. Iris reads one group per call and does not walk
+            nested groups.
+
+        Raises
+        ------
+        NotImplementedError
+            For any `mode` other than ``"r"``.
+        FileNotFoundError
+            If `location` does not exist.
+        zarr.errors.GroupNotFoundError
+            If `location` is not a Zarr store, or holds no such `group`.
+
+        """
+        # Set first, so that close() is safe if opening fails.
+        self._group: zarr.Group | None = None
+        self._closed = False
+        self._variables: dict[str, ZarrDatasetVariable] | None = None
+        self._attributes: _ZarrAttributes | None = None
+        self._dimensions: dict[str, int] | None = None
+
+        if mode not in _READ_MODES:
+            raise NotImplementedError(f"{_NO_SAVING} Cannot open with mode={mode!r}.")
+
+        self._mode = mode
+        self._group_path = group
+        target = str(location)
+        self._location = target if group is None else f"{target.rstrip('/')}/{group}"
+
+        # `location` itself, not its stringified `target`, is handed to
+        # zarr-python: stringifying a store object such as a `MemoryStore`
+        # loses the store, leaving only a name zarr-python cannot reopen.
+        self._group = zarr.open_group(store=location, mode=mode, path=group)
+        self._format = _FORMAT_BY_ZARR_VERSION[self._group.metadata.zarr_format]
+
+    @property
+    def location(self) -> str:
+        """The store's path or URL, with the group path when there is one."""
+        return self._location
+
+    @property
+    def format(self) -> str:
+        """``ZARR_V2`` or ``ZARR_V3``."""
+        return self._format
+
+    @property
+    def mode(self) -> str:
+        """The mode the store was opened in."""
+        return self._mode
+
+    @property
+    def closed(self) -> bool:
+        """Whether :meth:`close` has been called.
+
+        A Zarr store is a namespace rather than an open file handle, so there
+        is nothing to release and nothing else to ask.
+
+        """
+        return self._closed
+
+    @property
+    def variables(self) -> Mapping:
+        """The group's arrays, by name. Arrays in subgroups are not included."""
+        if self._variables is None:
+            assert self._group is not None
+            self._variables = {
+                name: ZarrDatasetVariable(array, self._location, self._format)
+                for name, array in self._group.arrays()
+            }
+        return self._variables
+
+    @property
+    def dimensions(self) -> Mapping:
+        """The dimension sizes this group's arrays agree on."""
+        if self._dimensions is None:
+            self._dimensions = _assemble_dimensions(self.variables)
+        return self._dimensions
+
+    @property
+    def encoding(self) -> Mapping:
+        """The store-wide Zarr settings."""
+        assert self._group is not None
+        consolidated = self._group.metadata.consolidated_metadata
+        return MappingProxyType(
+            {
+                "zarr_format": self._group.metadata.zarr_format,
+                "consolidated": consolidated is not None,
+            }
+        )
+
+    @property
+    def attributes(self) -> MutableMapping:
+        """The group's attributes."""
+        if self._attributes is None:
+            self._attributes = _ZarrAttributes(self._group)
+        return self._attributes
+
+    def create_dimension(self, name: str, size: int | None) -> None:
+        """Raise: saving to Zarr is not supported."""
+        raise NotImplementedError(_NO_SAVING)
+
+    def create_variable(
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+    ):
+        """Raise: saving to Zarr is not supported."""
+        raise NotImplementedError(_NO_SAVING)
+
+    def sync(self) -> None:
+        """Do nothing: a Zarr write is not buffered."""
+
+    def finalise(self) -> None:
+        """Raise: saving to Zarr is not supported.
+
+        A Zarr store's completion step is consolidating its metadata, which
+        only a writer performs.
+
+        """
+        raise NotImplementedError(_NO_SAVING)
+
+    def close(self) -> None:
+        """Record that this dataset is finished with.
+
+        A store is a namespace, not an open handle, so nothing is released.
+        The flag exists because callers - :class:`iris.fileformats.cf.CFReader`
+        among them - must be able to ask.
+
+        """
+        self._closed = True
+
+    def __repr__(self) -> str:
+        """Return a string representation."""
+        return f"{self.__class__.__name__}({self.location!r}, mode={self.mode!r})"
+
+    # Zarr-only members below.
+
+    @property
+    def subgroup_names(self) -> tuple:
+        """The names of this group's subgroups.
+
+        What the loader names when a group holds no data variables but the
+        store plainly holds data elsewhere.
+
+        """
+        assert self._group is not None
+        return tuple(self._group.group_keys())
