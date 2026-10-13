@@ -111,6 +111,35 @@ def test_create_mask_wrapped_longitudes(longitudes, expected_index):
     np.testing.assert_array_equal(mask, expected)
 
 
+def test_create_mask_non_circular():
+    x_coord = DimCoord(
+        np.arange(40, 360, 40),
+        standard_name="longitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+        circular=False,
+    )
+    y_coord = DimCoord(
+        [0.5, 1.5],
+        standard_name="latitude",
+        units="degrees",
+        coord_system=GeogCS(6371229),
+    )
+    cube = Cube(
+        np.ones((2, len(x_coord.points))),
+        dim_coords_and_dims=[(y_coord, 0), (x_coord, 1)],
+    )
+
+    mask = create_shape_mask(
+        geometry=box(-140, 0, -100, 1),
+        cube=cube,
+    )
+
+    expected = np.ones(cube.shape, dtype=bool)
+    expected[0, 5] = False
+    np.testing.assert_array_equal(mask, expected)
+
+
 def test_basic_create_shape_mask_with_None_crs(square_polygon, mock_cube):
     """Test the create_shape_mask function."""
     # Create a mask using the square polygon

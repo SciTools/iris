@@ -163,6 +163,26 @@ def create_shape_mask(
         err_msg = "Minimum weight must be between 0.0 and 1.0"
         raise ValueError(err_msg)
 
+    return _create_shape_mask_no_checks(
+        geometry, cube, geometry_crs, cube_crs, minimum_weight, all_touched, invert
+    )
+
+
+def _create_shape_mask_no_checks(
+    geometry: shapely.Geometry,
+    cube: iris.cube.Cube,
+    geometry_crs: ccrs.CRS | CRS,
+    cube_crs: iris.coord_systems.CoordSystem,
+    minimum_weight: float,
+    all_touched: bool | None,
+    invert: bool | None,
+) -> np.array:
+    """Make a mask for a cube from a shape geometry.
+
+    See create_shape_mask docstring for details.  For efficiency, this helper functions
+    assumes parameter checks have already been completed.
+
+    """
     # Get cube coordinates
     axes: tuple[Axis, Axis] = ("X", "Y")
     x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in axes]
@@ -173,6 +193,30 @@ def create_shape_mask(
         y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
         original_x_point = x_coord.points[0]
+        if not x_coord.circular:  # type: ignore[union-attr]
+            # Masking only works when the coordinates are regular.  This will not be the
+            # case if we map a non-circular coordinate to the [-180, 180] domain.
+            # Instead, split the cube into two and mask each part.
+            extent1 = iris.coords.CoordExtent(x_coord.name(), original_x_point, 180)
+            extent2 = iris.coords.CoordExtent(
+                x_coord.name(), -180, original_x_point, max_inclusive=False
+            )
+
+            masks = [
+                _create_shape_mask_no_checks(
+                    geometry,
+                    cube.intersection(extent),
+                    geometry_crs,
+                    cube_crs,
+                    minimum_weight,
+                    all_touched,
+                    invert,
+                )
+                for extent in [extent1, extent2]
+            ]
+
+            return np.concatenate(masks, axis=1)
+
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
         # Get revised x coordinate
