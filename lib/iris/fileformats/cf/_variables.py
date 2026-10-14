@@ -52,6 +52,7 @@ import warnings
 import numpy as np
 import numpy.ma as ma
 
+from iris._deprecation import warn_deprecated
 from iris.fileformats.cf.dataset import TrackedAttributes
 from iris.mesh.components import Connectivity
 import iris.util
@@ -261,6 +262,13 @@ class CFVariable(metaclass=ABCMeta):
     def __getattr__(self, name):
         """Return the named CF attribute, as read from the file.
 
+        .. deprecated:: 3.17
+            Read CF attributes from :attr:`attributes` instead. Every CF
+            attribute resolved through this method warns, and the method is
+            removed one release cycle later under NEP 29. :attr:`attributes`
+            is also unambiguous: a file carrying an attribute named after a
+            class member cannot reach it through this method at all.
+
         CF attribute names are data read from a file, not API, so they cannot
         be declared as properties. This method resolves only against
         :attr:`attributes`; everything structural is a declared property
@@ -274,11 +282,22 @@ class CFVariable(metaclass=ABCMeta):
             # must not be resolved by this method.
             raise AttributeError(name)
 
-        try:
-            return self.attributes[name]
-        except KeyError:
-            pass
-        return self._deprecated_netcdf_member(name)
+        if name in self.attributes:
+            # Read before warning, as _deprecated_netcdf_member does.
+            value = self.attributes[name]
+            # stacklevel=3 reports the caller's own "cf_var.units" line:
+            # warn_deprecated's frame is 1 and this method's is 2.
+            warn_deprecated(
+                f"Reading the CF attribute {name!r} as an attribute of a "
+                "CFVariable is deprecated and will be removed in a future "
+                f"release. Use cf_var.attributes[{name!r}] instead.",
+                stacklevel=3,
+            )
+        else:
+            # Not in an except block: an AttributeError raised from here must
+            # not arrive chained to a KeyError the caller never caused.
+            value = self._deprecated_netcdf_member(name)
+        return value
 
     def _deprecated_netcdf_member(self, name):
         """Return a netCDF4 member of the backing variable, as this class used to.

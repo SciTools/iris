@@ -1548,10 +1548,25 @@ has merged and because the programme's rule is that no pull request both moves
 code and changes behaviour — folding it into PR 3, a 1000-line relocation,
 would bury the one line a reviewer needs to look at.
 
-Every read inside Iris already goes through `.attributes` after PR 2, so a
-normal load must stay silent. The test that matters asserts exactly that: load
-a file end to end under `-W error::iris.exceptions.IrisDeprecation` and get no
-warning, alongside one that reaches `cf_var.units` directly and does.
+A normal load must stay silent, and four reads inside Iris stood in the way:
+`bounds` and `climatology` in `_nc_load_rules/helpers.py`, `cf_role` and
+`start_index` in `netcdf/ugrid_load.py`. The pull request moves them to
+`.attributes` before it can claim silence. Finding them took instrumenting
+`__getattr__` to log its caller and running the whole suite; grep found two of
+the four.
+
+The test that matters loads a file end to end, records the warnings, and
+asserts no `IrisDeprecation` among them. It must not promote the warning to an
+error instead. `iris.load` captures an exception raised while building a cube
+into `iris.loading.LOAD_PROBLEMS`, so a filter of `error` drops the offending
+coordinate and the load returns silent and degraded — a test written that way
+passes against an implementation that still warns. The test therefore also
+asserts the file contributed no `LOAD_PROBLEMS` entry. A second test reaches
+`cf_var.units` directly and does warn.
+
+`IrisDeprecation` lives in `iris._deprecation`, and is re-exported from
+neither `iris.exceptions` nor `iris.warnings`. A `-W` filter naming either of
+those matches nothing and fails open.
 
 ### PR 3 — Relocate the CF loader
 
@@ -2006,7 +2021,7 @@ else, and can land beside any of the others.
 |---|---|---|---|
 | 1 | `iris.fileformats.cf` becomes a package, with tests first | Merged | [#7298](https://github.com/SciTools/iris/pull/7298) |
 | 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
-| 2.5 | Deprecate `CFVariable.__getattr__` | Not started | — |
+| 2.5 | Deprecate `CFVariable.__getattr__` | In review | [#7333](https://github.com/SciTools/iris/pull/7333) |
 | 3 | Relocate the CF loader | In review | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Not started | — |
 | 5 | Relocate the CF saver | Not started | — |
@@ -2045,6 +2060,7 @@ closing keywords live (§5).
 | [#7291](https://github.com/SciTools/iris/issues/7291) | The deferred-save return type this design turned up (§4.5, Q5). Not fixed by this programme |
 | [#7328](https://github.com/SciTools/iris/issues/7328) | The netCDF `createVariable` keyword API (§12.4). Out of scope (§9); the Zarr saver avoids the pattern rather than inheriting it (§4.5) |
 | [#7329](https://github.com/SciTools/iris/issues/7329) | Checking attribute content against netCDF's constraints before saving (§12.4). Out of scope (§9); the Zarr write path already has the policy (§4.5) |
+| [#7332](https://github.com/SciTools/iris/issues/7332) | The UGRID loader's unguarded `cf_role` and `start_index` reads, turned up by PR 2.5 (§5). Not fixed by this programme |
 | [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
 ### 12.3 Open questions
@@ -2564,4 +2580,5 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-02 | PR 3 raised as #7316. §12.1 records it, and #7298 corrected to Merged. |
 | 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
+| 2026-10-12 | PR 2.5 built, correcting §5's account of it. Four reads inside Iris still reached `__getattr__` after PR 2, not none; they are named, and so is the measurement that found them. The silent-load test records warnings rather than promoting them to errors, because `iris.load` captures a build exception into `LOAD_PROBLEMS` and an `error` filter degrades the load instead of failing the test. `IrisDeprecation`'s module corrected to `iris._deprecation`. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
