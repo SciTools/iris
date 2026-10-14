@@ -253,14 +253,6 @@ code in a private sibling module instead.
 
 ## Anti-Patterns — Do Not Introduce
 
-- Dynamically generated attributes, methods or module members.
-- `eval`, `exec`, or `getattr` string dispatch in library code.
-- Metaclasses, or `__getattr__` used to invent behaviour. Its one legitimate
-  use is presenting an open-ended set of *data* keys read from a file as
-  attributes (`CFVariable` over CF-netCDF attributes): it must forward to a
-  declared `Mapping` that library code also uses directly, and say so in the
-  docstring. `__getattr__` stops mypy checking *every* attribute on the class
-  and its subclasses, so confining it keeps the rest of the class typed.
 - Silent `except Exception: pass`.
 - Boolean flags that switch a function between two unrelated behaviours —
   write two functions.
