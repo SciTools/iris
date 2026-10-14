@@ -318,8 +318,8 @@ def _get_cf_var_data(cf_var):
 
     """
     # We defer the calling of _chunks_from_chunk_control since there are cases
-    # where this raises an error. Such cases are skipped within the logic of
-    # read_data.
+    # where this would unnecessarily raise an error. Such cases are skipped
+    # within the logic of read_data.
     chunking_policy = partial(_chunks_from_chunk_control, cf_var)
     return cf_var.cf_data.read_data(chunking_policy)
 
