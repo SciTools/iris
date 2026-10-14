@@ -19,6 +19,52 @@ def test_the_element_carries_the_whole_target():
     assert element.get_element("/data/store.zarr", None) == "/data/store.zarr"
 
 
+def test_a_file_handle_rules_the_element_out(tmp_path):
+    """No store is a single seekable file, so a handle settles the question.
+
+    It also says the caller is `iris.io._load_files`, which passes a basename
+    rather than a path - and a basename resolves against the working
+    directory, which is not where the file came from.
+    """
+    path = tmp_path / "data.nc"
+    path.write_bytes(b"CDF\x01")
+    element = ZarrStore()
+    with open(path, "rb") as handle:
+        assert element.get_element(path.name, handle) is None
+
+
+def test_the_agent_ignores_a_store_sharing_a_files_name(tmp_path, monkeypatch):
+    """A regression test for the working directory deciding a file's format.
+
+    Given a directory named `weather` in the working directory that happens
+    to be a Zarr store, a real NIMROD file called `weather` somewhere else was
+    classified as Zarr, because file dispatch supplies only the basename.
+
+    NIMROD rather than netCDF because the Zarr specification has to be
+    consulted for the bug to bite: specifications are tried by descending
+    priority and then by name, so priority 5 "NetCDF" is answered before
+    priority 5 "Zarr" either way, while priority 3 "NIMROD" is not.
+    """
+    import struct
+
+    from iris.fileformats import FORMAT_AGENT
+
+    working = tmp_path / "working"
+    decoy = working / "weather"
+    decoy.mkdir(parents=True)
+    (decoy / "zarr.json").write_text('{"zarr_format": 3, "node_type": "group"}')
+    monkeypatch.chdir(working)
+
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    path = elsewhere / "weather"
+    path.write_bytes(struct.pack(">l", 512) + b"\x00" * 600)
+
+    with open(path, "rb") as handle:
+        spec = FORMAT_AGENT.get_spec(path.name, handle)
+    assert spec.name == "NIMROD"
+
+
 def test_a_version_3_store_is_recognised(tmp_path):
     store = tmp_path / "v3.zarr"
     store.mkdir()

@@ -390,7 +390,17 @@ class ZarrStore(FileElement):
         FileElement.__init__(self, requires_fh=False)
 
     def get_element(self, basename, file_handle):
-        """Return `basename`, which here is the whole path or URL."""
+        """Return the target, which here is the whole path or URL.
+
+        ``None`` when a file handle is supplied, which no store ever has: a
+        store is a directory or a URL, so the caller that opened a single
+        seekable file has already settled the question. That caller also
+        passes a basename rather than a path, which resolved against the
+        working directory could name an unrelated store that happens to share
+        the file's name.
+        """
+        if file_handle is not None:
+            return None
         return basename
 
 
