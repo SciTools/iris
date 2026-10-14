@@ -279,17 +279,17 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         )
 
     def read_data(self, chunking_policy):
-        """Return this variable's data, lazily where a lazy array is worth it.
+        """Return this variable's data, lazily where appropriate.
 
         Parameters
         ----------
         chunking_policy : callable
             Called with no arguments, returning the ``(chunks, dims_fixed)``
-            pair to build a lazy array with. It is called only once this method
-            has decided the result will be lazy: under
-            :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` the
-            policy raises for a variable the store has not chunked, and a
-            variable small enough to read whole must not raise.
+            pair to build a lazy array with. Call it only once the result is
+            known to be lazy, otherwise it may raise. Under
+            :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` it raises
+            for a variable the store has not chunked, and we want to avoid this
+            when a variable is small enough to read whole.
 
         Returns
         -------
@@ -313,15 +313,14 @@ class NetCDFDatasetVariable(CFDatasetVariable):
             result = self.emulated_data_array
             if result.dtype.kind == "S":
                 # We must also perform any byte-to-string decoding since, in
-                #  ncdata, the emulating objects don't do this, and also don't
-                #  support a 'set_auto_chartostring(True)'.
-                #  Therefore, do here what an EncodedVariable.__getitem__ would
-                #  do : ..
-                # .. get details based on the file (type 'char') variable  ..
+                # ncdata, the emulating objects don't do this, and also don't
+                # support a 'set_auto_chartostring(True)'. Therefore, do here
+                # what an EncodedVariable.__getitem__ would do: take the
+                # encoding details from the file (type 'char') variable, then
+                # use them to convert the byte array to strings.
                 encoder = _bytecoding_datasets.VariableEncoder.from_var(
                     self.unencoded_variable
                 )
-                # .. convert byte array to strings.
                 result = encoder.decode_bytes_to_stringarray(result)
             return result
 
@@ -366,7 +365,7 @@ class NetCDFDatasetVariable(CFDatasetVariable):
 
             # Special handling of masked scalar value; this will be returned as
             # an `np.ma.masked` instance which will lose the original dtype.
-            # Workaround for this it return a 1-element masked array of the
+            # Workaround for this: return a 1-element masked array of the
             # correct dtype. Note: this is not an issue for masked arrays,
             # only masked scalar values.
             if result is np.ma.masked:
@@ -391,9 +390,6 @@ class NetCDFDatasetVariable(CFDatasetVariable):
             )
 
         # Switch type of proxy, based on type of variable.
-        # It is done this way, instead of using an instance variable, because the
-        #  limited nature of the wrappers makes a stateful choice awkward,
-        #  e.g. especially, "variable.group()" is *not* the parent DatasetWrapper.
         if isinstance(self.variable, _bytecoding_datasets.EncodedVariable):
             proxy_class = _bytecoding_datasets.EncodedNetCDFDataProxy
         else:

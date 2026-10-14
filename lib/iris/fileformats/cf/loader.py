@@ -231,7 +231,7 @@ _LAZYVAR_MIN_BYTES = 5000
 def _chunks_from_chunk_control(cf_var):
     """Return the ``(chunks, dims_fixed)`` pair for a lazy array of this variable.
 
-    This is the one piece of a lazy array that is CF's business rather than the
+    This is the one aspect of a lazy array that is CF's business rather than the
     storage's: how big the dask chunks should be, given the store's own chunking
     and whatever :data:`CHUNK_CONTROL` context is active.
 
@@ -317,7 +317,11 @@ def _get_cf_var_data(cf_var):
     4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
     """
-    return cf_var.cf_data.read_data(partial(_chunks_from_chunk_control, cf_var))
+    # We defer the calling of _chunks_from_chunk_control since there are cases
+    # where this raises an error. Such cases are skipped within the logic of
+    # read_data.
+    chunking_policy = partial(_chunks_from_chunk_control, cf_var)
+    return cf_var.cf_data.read_data(chunking_policy)
 
 
 class _OrderedAddableList(list):

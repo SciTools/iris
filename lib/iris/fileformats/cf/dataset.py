@@ -193,7 +193,7 @@ class CFDatasetVariable(ABC):
 
     @abstractmethod
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
-        """Return this variable's data, lazily where a lazy array is worth it.
+        """Return this variable's data, lazily where appropriate.
 
         The one route by which the CF loader obtains arrays, so a new storage
         format mainly needs a new implementation of this method. An
@@ -208,10 +208,10 @@ class CFDatasetVariable(ABC):
 
         ``chunking_policy`` is called with no arguments and returns the
         ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once
-        the result is known to be lazy: under
+        the result is known to be lazy, otherwise it may raise. Under
         :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` it raises for
-        a variable the store has not chunked, and a variable small enough to
-        read whole must reach its data without raising.
+        a variable the store has not chunked, and we want to avoid this when a
+        variable is small enough to read whole.
 
         """
 
