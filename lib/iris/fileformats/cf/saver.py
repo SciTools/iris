@@ -11,13 +11,32 @@
 
 Everything about writing a cube that does not depend on what it is written
 into. The CF data model is here - dimension naming, coordinate and bounds
-variables, cell methods, grid mappings, meshes, attribute compliance - and the
-storage calls all go through :class:`~iris.fileformats.cf.dataset.CFDataset`.
+variables, cell methods, grid mappings, meshes, attribute compliance. Every
+storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`, with
+one exception: ``_add_grid_mapping_to_dataset``.
 
 A format supplies a subclass of :class:`CFSaver` holding its own vocabulary of
 storage keywords, and whatever of the four hooks it needs:
 ``_create_string_variable``, ``_backend_write``, ``_flush_before_close`` and
 ``_patch_dataset``. :mod:`iris.fileformats.netcdf.saver` is one such subclass.
+
+Two things here are still netCDF-specific.
+
+``_add_grid_mapping_to_dataset`` writes the CF grid-mapping parameters onto a
+netCDF4 variable, not through the ``attributes`` mapping. A subclass backed by
+any other store fails there, for every cube that has a coordinate system.
+Making those writes store-agnostic is its own piece of work -- see Q8 in §12.3
+of the native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
+``ATTRIBUTE_HANDLERS`` is imported from the netCDF package, which imports this
+module back. The two-way import survives because ``_attribute_handlers``
+imports nothing from :mod:`iris.fileformats.cf`. This module's body runs while
+the netCDF package is itself part-way through importing, so a netCDF submodule
+that reached back here would find this module half-built. The handlers
+serialise the Iris-only attribute types that every CF store needs - STASH,
+GRIB_PARAM, ukmo__process_flags - so they want relocating here. The load rules
+read them too, which makes that a move of its own.
 
 See : `CF Conventions <https://cfconventions.org/>`_.
 
@@ -59,11 +78,8 @@ from iris.coords import (
 import iris.exceptions
 from iris.fileformats.cf.dataset import CFDatasetVariable
 
-# The one place the generic saver still reaches into the netCDF package.
-# ATTRIBUTE_HANDLERS serialises the Iris-only attribute types - STASH,
-# GRIB_PARAM, ukmo__process_flags - which every CF store needs, so the module
-# wants relocating here. That is a move of its own, affecting the load rules
-# too, and not this pull request's.
+# The one place the generic saver still reaches into the netCDF package. The
+# module docstring has the import cycle this closes, and why it is still here.
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 import iris.util
 import iris.warnings
@@ -1861,7 +1877,9 @@ class CFSaver:
 
         # Assignments to properties of ``grid_variable`` bypass the ASCII-to-bytes
         # coercion that .attributes applies, so moving them there would change
-        # the file. They need the netCDF4 variable itself.
+        # the file. They need the netCDF4 variable itself. Not
+        # deprecated_netcdf_member(), so a store with no netCDF4 object behind it
+        # raises a bare AttributeError here.
         grid_variable = cf_var_grid.variable
 
         def add_ellipsoid(ellipsoid):

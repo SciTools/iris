@@ -39,10 +39,9 @@ survives garbage collection of the reader. ``_own_file`` is set ``False``
 before anything that can raise, so the destructor is safe even if
 ``__init__`` fails part way.
 
-This is the one module in :mod:`iris.fileformats.cf` still coupled to
-:mod:`iris.fileformats.netcdf`: opening a file means building a
-:class:`~iris.fileformats.netcdf._dataset.NetCDFDataset`. Everything else in
-the package works against the format-agnostic
+This module is coupled to :mod:`iris.fileformats.netcdf`: opening a file means
+building a :class:`~iris.fileformats.netcdf._dataset.NetCDFDataset`. The rest
+of the load path works against the format-agnostic
 :class:`~iris.fileformats.cf.dataset.CFDataset` /
 :class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
 store can be read by the same machinery once a

@@ -2590,9 +2590,15 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
   `ATTRIBUTE_HANDLERS`, which `_create_cf_data_variable` uses. It is the
   module's only runtime reach into `iris.fileformats.netcdf`, and it closes a
   two-way import cycle, because `netcdf/saver.py` imports `cf.saver` and
-  `cf.saver` imports back. The cycle resolves only because
-  `lib/iris/fileformats/__init__.py` imports the netCDF package eagerly, so that
-  package is always fully loaded before any `cf.saver` body runs. Relocating
+  `cf.saver` imports back. The cycle survives because `_attribute_handlers`
+  imports nothing from `iris.fileformats.cf`. Traced from five entry points,
+  `cf.saver`'s body runs while the netCDF package is itself part-way through
+  importing, so a netCDF submodule that reached back into `cf.saver` would find
+  it half-built. The eager `from . import name, netcdf, nimrod, pp, um` in
+  `lib/iris/fileformats/__init__.py` fixes which order that happens in, and is
+  not what makes it work: patched out in memory, with the module-level
+  `netcdf.load_cubes` references made lazy, all nine modules still import first
+  cleanly. Relocating
   `_attribute_handlers` is PR 6's, to keep this relocation's overlap with the
   parallel Zarr loading work small.
 - `cf/saver.py` ships at the size it already was, about 2500 lines against the

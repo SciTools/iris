@@ -5,10 +5,14 @@
 """Every module in the CF and netCDF packages can be imported first.
 
 The two packages import each other: the CF reader builds a netCDF dataset, and
-the netCDF saver builds on the CF saver. Python resolves that as long as no
-module needs a name from a module that is still part-way through its own
-imports - which depends on where the interpreter starts. A test suite only
-ever starts in one place, so each case gets a subprocess of its own.
+the netCDF saver builds on the CF saver. Nothing in the source states the order
+the module bodies must run in, so these cases pin that every module survives
+being the one a process asks for first. Each runs in a subprocess for that
+reason.
+
+They exercise one order, not nine. Importing anything under
+``iris.fileformats`` runs that package's ``__init__`` first, and that imports
+the netCDF package, so every case here takes the same path.
 """
 
 import subprocess

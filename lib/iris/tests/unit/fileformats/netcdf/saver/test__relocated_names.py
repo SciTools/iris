@@ -32,9 +32,10 @@ RELOCATED = [
     "SPATIO_TEMPORAL_AXES",
 ]
 
-#: Every method the netCDF Saver answered to before the generic half of it
-#: became CFSaver. A name missing from the class is an override, somewhere
-#: outside Iris, that has silently stopped overriding anything.
+#: Method names the netCDF Saver must answer to: those it carried before the
+#: generic half of it became CFSaver, plus the hooks CFSaver calls on a
+#: subclass. A name missing from the class is an override, somewhere outside
+#: Iris, that has silently stopped overriding anything.
 SAVER_METHODS = [
     "_add_ancillary_variables",
     "_add_aux_coords",
@@ -147,10 +148,8 @@ class TestNothingInsideIrisUsesTheOldNames:
     """Cover the save and load paths, which is less than the name claims.
 
     A reader of a relocated name that neither a save nor a load reaches goes
-    unnoticed here. Iris has two of those today - this package's own
-    ``test_save`` and ``integration.netcdf.test_attributes``, both importing
-    ``CF_CONVENTIONS_VERSION`` from :mod:`iris.fileformats.netcdf` - so take a
-    pass as saying the two paths are clean, not the repository.
+    unnoticed here. Take a pass as saying those two paths are clean, not the
+    repository.
     """
 
     def test_a_save_emits_no_deprecation(self, tmp_path):
