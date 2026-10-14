@@ -23,11 +23,11 @@ typed member.
 
 The property ``attributes`` holds an open-ended set of data keys read from a
 file, with no schema to enumerate, which is why :class:`TrackedAttributes`
-exists and why :class:`~iris.fileformats.cf.CFVariable`
-:meth:`~iris.fileformats.cf.CFVariable.__getattr__` is allowed to forward to it.
-Tracking is the load-bearing part: Iris decides which file attributes survive
-onto a loaded cube by asking which ones the loading rules did *not* read, so a
-read that goes unrecorded silently leaks a CF-reserved attribute onto the cube.
+exists and why :meth:`~iris.fileformats.cf.CFVariable.__getattr__` forwards to
+it. Tracking is the load-bearing part: Iris decides which file attributes
+survive onto a loaded cube by asking which ones the loading rules did *not*
+read, so a read that goes unrecorded silently leaks a CF-reserved attribute
+onto the cube.
 
 See sections 4.2, 4.3 and 4.5 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
@@ -36,6 +36,7 @@ See sections 4.2, 4.3 and 4.5 of
 
 from abc import ABC, abstractmethod
 from collections.abc import (
+    Callable,
     ItemsView,
     Iterable,
     Iterator,
@@ -189,6 +190,30 @@ class CFDatasetVariable(ABC):
     @abstractmethod
     def __setitem__(self, keys, values) -> None:
         """Write ``values`` into the indexed portion of the variable."""
+
+    @abstractmethod
+    def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
+        """Return this variable's data, lazily where appropriate.
+
+        The one route by which the CF loader obtains arrays, so a new storage
+        format mainly needs a new implementation of this method. An
+        implementation is expected to share the CF-layer chunking helpers in
+        :mod:`iris.fileformats.cf.loader` - ``_get_actual_dtype`` for a lazy
+        result's dtype and ``_LAZYVAR_MIN_BYTES`` for the small-array cutoff -
+        as :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+        does, rather than reinventing them. Read ``_LAZYVAR_MIN_BYTES`` through
+        the module object (``loader._LAZYVAR_MIN_BYTES``), not by
+        ``from ... import _LAZYVAR_MIN_BYTES``, so that tests can patch the
+        cutoff.
+
+        ``chunking_policy`` is called with no arguments and returns the
+        ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once
+        the result is known to be lazy, otherwise it may raise. Under
+        :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` it raises for
+        a variable the store has not chunked, and we want to avoid this when a
+        variable is small enough to read whole.
+
+        """
 
     @abstractmethod
     def write_handle(self) -> Any:

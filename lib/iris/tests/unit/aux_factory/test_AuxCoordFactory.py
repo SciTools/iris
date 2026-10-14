@@ -144,7 +144,7 @@ class Test_lazy_aux_coords:
     def sample_cube(self, mocker):
         path = get_data_path(["NetCDF", "testing", "small_theta_colpex.nc"])
         # While loading, "turn off" loading small variables as real data.
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         cube = iris.load_cube(path, "air_potential_temperature")
         return cube
 

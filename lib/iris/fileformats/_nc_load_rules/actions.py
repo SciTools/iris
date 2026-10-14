@@ -652,7 +652,7 @@ def action_formula_type(engine, formula_root_fact):
                 category=_WarnComboLoadIgnoring,
             )
         rule_name += f"_{formula_type}"
-        # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
+        # Set 'requires' info for iris.fileformats.cf.loader._load_aux_factory.
         engine.requires["formula_type"] = formula_type
 
     return rule_name

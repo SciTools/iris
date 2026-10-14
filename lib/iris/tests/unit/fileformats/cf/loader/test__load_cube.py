@@ -2,14 +2,14 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.fileformats.netcdf._load_cube` function."""
+"""Unit tests for :func:`iris.fileformats.cf.loader._load_cube`."""
 
 import numpy as np
 import pytest
 
 from iris.coords import DimCoord
 import iris.fileformats.cf
-from iris.fileformats.netcdf.loader import _load_cube
+from iris.fileformats.cf.loader import _load_cube
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats import MockerMixin
 
@@ -30,7 +30,7 @@ class TestCoordAttributes(MockerMixin):
 
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
+        this = "iris.fileformats.cf.loader._assert_case_specific_facts"
         _ = mocker.patch(this, side_effect=self._patcher)
         self.engine = mocker.Mock()
         self.filename = "DUMMY"
@@ -127,7 +127,7 @@ class TestCoordAttributes(MockerMixin):
 class TestCubeAttributes(MockerMixin):
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
+        this = "iris.fileformats.cf.loader._assert_case_specific_facts"
         _ = mocker.patch(this)
         self.engine = mocker.Mock()
         self.cf = None

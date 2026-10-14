@@ -194,10 +194,10 @@ These were agreed before design and are not revisited here.
 | Groups | Root group by default; a `group=` keyword selects another, on both load and save. |
 | Real-world data | NOAA GFS from dynamical.org, and ESA EOPF Sentinel Zarr samples. |
 
-Two further constraints come from the repository's own agent rules
-(`lib/iris/AGENTS.md`): no dynamically generated attributes, no `getattr`
-string dispatch, and `__getattr__` only in existing deprecation shims. The
-design honours these; where it cannot, it says so.
+One further constraint comes from the repository's own agent rules
+(`lib/iris/AGENTS.md`): identifiers are never constructed at runtime, because
+exact text search is how both agents and newcomers find code. The design
+honours this; where it cannot, it says so.
 
 ---
 
@@ -458,16 +458,15 @@ object. Everything in the "proxy" rows is exactly what `CFDatasetVariable`
 
 **The surviving job is legitimate but is not kept.** CF attributes are an
 open-ended set of data keys read from a file; there is no schema to enumerate,
-so this meets the narrow exception stated in `lib/iris/AGENTS.md`, on the
-condition that `.attributes` is the path library code takes and `__getattr__`
-is only a convenience accessor over it. The accessor is removed anyway
-(§12.4).
+so forwarding them through `__getattr__` is defensible, on the condition that
+`.attributes` is the path library code takes and `__getattr__` is only a
+convenience accessor over it. The accessor is removed anyway (§12.4).
 
-The exception is correctly argued and removing `__getattr__` is not a
-judgement on it. The accessor is removed because `.attributes` already does
-the whole job. `cf_var.units` and `cf_var.attributes["units"]` perform the
-*same* read with the *same* side effect: both record the attribute as used,
-and that record is what decides which attributes survive onto the loaded cube.
+That case is correctly argued and removing `__getattr__` is not a judgement on
+it. The accessor is removed because `.attributes` already does the whole job.
+`cf_var.units` and `cf_var.attributes["units"]` perform the *same* read with
+the *same* side effect: both record the attribute as used, and that record is
+what decides which attributes survive onto the loaded cube.
 So this is not a convenience layer over a plain getter. It is a second way of
 spelling one operation — the spelling that cannot be type-checked, and that
 silently loses to any class member of the same name (see the known limitation
@@ -490,10 +489,6 @@ for. So:
   only by going to `iris.fileformats.cf` deliberately. Nothing a user does
   through `iris.load` can hold one. That is what makes the eventual removal
   proportionate; it is not a reason to skip the cycle.
-- The `lib/iris/AGENTS.md` exception describes the only remaining instance of
-  the pattern, which is now scheduled for removal. It should be revisited when
-  the removal lands, not before. Deleting it now would leave shipped code that
-  the rules forbid.
 
 This is delivered by **PR 2.5** (§5), a small behaviour-only pull request,
 because PR 2 has already merged and the programme's rule is that no pull
@@ -2360,6 +2355,33 @@ not been written yet.
   `test_CFReader__dataset.py`. Both need a genuinely bare, unwrapped
   `netCDF4.Dataset`, which is precisely the input whose handling changed.
 
+**2026-10-01 — during PR 3**
+
+- `load_cubes` stays in `iris.fileformats.netcdf.loader`. Opening a list of
+  file sources is the format's own business, and §4.8 lists
+  `netcdf.load_cubes` among the names that do not move. It imports the four
+  CF-layer functions it drives.
+- `DEBUG` stays too, and the moved `_load_cube_inner` reaches back for it
+  through the module. §4.8 lists it as a name that does not move, and it is a
+  flag users set by assignment: a module `__getattr__` can forward a read but
+  cannot intercept a write (PEP 562 defines no `__setattr__` hook), so
+  forwarding it would have made `netcdf.loader.DEBUG = True` silently stop
+  working. Only `CHUNK_CONTROL` and `ChunkControl` are forwarded.
+- The storage seam is one method, `CFDatasetVariable.read_data(chunking_policy)`,
+  taking a zero-argument callable that the implementation invokes only once
+  the result is known to be lazy. The alternative — hoisting the
+  `CHUNK_CONTROL.from_file()` check into the CF layer, which is where the
+  "is this the cube's data variable" fact lives — would have made small
+  unchunked cubes raise `KeyError` where they load today, because that check
+  sits behind the "small enough to read whole" shortcut.
+- `as_lazy_data` takes its cache key from the caller rather than testing
+  `isinstance(data, NetCDFDataProxy)`. This is the `cache_key=` change §4.4
+  called for, landed here because the CF loader cannot import a netCDF proxy
+  class.
+- `_LAZYVAR_MIN_BYTES` moves with the loader and is repointed at all eight of
+  its call sites rather than aliased. It is private, so no deprecation is
+  owed — and several of those sites *assign* to it, which an alias could not
+  have supported.
 **2026-10-12 — review of #7292 by @pp-mo, decisions with @trexfeathers**
 
 Eighteen comments from several days' reading by a netCDF and Iris-I/O
@@ -2499,6 +2521,30 @@ owed a `bugfix` fragment for the `_NCZARR_SCALAR_DIMENSION` `spans` gap, which
 the 2026-09-24 entry above records as unreachable and characterised rather than
 fixed. The fragment is now the attribute-name collision that PR 2 did change.
 
+**2026-10-14 — review of #7316 by @stephenworsley, decision by @trexfeathers**
+
+- **The `getattr` anti-patterns leave `lib/iris/AGENTS.md`.** The rule never
+  caught anything. Twice it has been argued against and twice the code was
+  kept: `CFVariable.__getattr__` on 2026-09-22, which ended in the rule being
+  narrowed to admit it, and the PR 3 deprecation shim here, a module-level
+  `__getattr__` of the kind PEP 562 added for exactly that job, which opened
+  the pull request on a request for a ruling. Neither occasion changed a line
+  of code. @stephenworsley found the rule ambiguous on its own terms;
+  @trexfeathers judged that a rule whose whole effect is to ask for the
+  argument costs more than it earns, and removed all three bullets —
+  dynamically generated members, `eval`/`exec`/`getattr` string dispatch, and
+  the `__getattr__`/metaclass ban with its narrow exception. `eval` and `exec`
+  came straight back as their own bullet: they shared a sentence with `getattr`
+  dispatch but none of its ambiguity, and nothing in the programme has ever
+  had to argue about them. The greppability rule against constructing
+  identifiers at runtime is untouched and still carries the reasoning the
+  anti-patterns were standing in for. This reverses
+  the narrowing recorded on 2026-09-22 and the "revisit when the removal
+  lands" note of 2026-10-12; §3 and §4.3 no longer cite an exception that
+  exists. The design is unchanged: §4.3 removes `__getattr__` because
+  `.attributes` already does the whole job, which was never an argument from
+  the rule.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -2530,5 +2576,9 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-09-23 | Accepted all five findings of the #7292 review, all reproduced. Write alignment restated over shards; fill-value masking made version-aware and taken off the storage field; the base64 `_FillValue` corrected from "malformation" to xarray's convention, and now written as well as read; the read unit separated from the write unit; the Zarr cache keyed on `Array.metadata`. Tests named in §6; Q6 and Q7 opened. |
 | 2026-09-23 | Structural pass for readability. §4.4 and §4.5 given `####` subheadings throughout — they were 617 lines navigated only by run-in bold lead-ins, and `Encoding` had been nested under multi-process writes by accident. Design history recast from "an earlier draft said X" into the rule it implies ("do not do X, because Y"): same guidance against re-deriving the rejected answer, without depending on knowledge of a draft the reader never saw. No normative content changed. |
 | 2026-09-24 | PR 2 built. §4.2 reconciled with the implemented interface: `location`, `__len__` and `ndim` on the variable, `closed`, `__enter__` and `__exit__` on the dataset, `attributes` no longer tracking, `create_dimension(size=None)` and `create_variable(dimensions=())`. §4.3 says what `CFVariable.attributes` is. Q8 opened on the grid-mapping assignments; thirteen decisions logged. |
+| 2026-10-01 | PR 3 built. The CF loader relocated to `iris.fileformats.cf.loader`; `load_cubes`, `NetCDFDataProxy` and `DEBUG` stayed. `CFDatasetVariable.read_data` added as the storage seam; `as_lazy_data` gained `cache_key=`. Five decisions logged. |
+| 2026-10-02 | PR 3 raised as #7316. §12.1 records it, and #7298 corrected to Merged. |
+| 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
 | 2026-10-12 | PR 2.5 built, correcting §5's account of it. Four reads inside Iris still reached `__getattr__` after PR 2, not none; they are named, and so is the measurement that found them. The silent-load test records warnings rather than promoting them to errors, because `iris.load` captures a build exception into `LOAD_PROBLEMS` and an `error` filter degrades the load instead of failing the test. `IrisDeprecation`'s module corrected to `iris._deprecation`. |
+| 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
