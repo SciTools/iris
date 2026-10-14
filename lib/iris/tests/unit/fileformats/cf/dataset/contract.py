@@ -178,7 +178,11 @@ class CFDatasetContract:
             and all(isinstance(size, int | np.integer) for size in chunking)
         )
 
-    def test_read_data_returns_the_data(self, variable):
+    def test_read_data_returns_the_data_for_a_small_variable(self, variable):
+        # CONTRACT_DATA is small, so this exercises the read-whole path only,
+        # and the policy below is never consulted. Reading a variable large
+        # enough to come back lazy is a per-format test, not a contract one:
+        # see test_NetCDFDatasetVariable.py.
         result = variable.read_data(lambda: (None, None))
         np.testing.assert_array_equal(np.asarray(result), CONTRACT_DATA)
 

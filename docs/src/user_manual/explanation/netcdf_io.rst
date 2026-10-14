@@ -72,7 +72,8 @@ creation of the :data:`iris.fileformats.cf.loader.CHUNK_CONTROL` class.
 
 Chunking policy is not specific to NetCDF, so from Iris 3.17 it lives in
 :mod:`iris.fileformats.cf.loader`. The old name,
-``iris.fileformats.netcdf.loader.CHUNK_CONTROL``, still works and warns.
+``iris.fileformats.netcdf.loader.CHUNK_CONTROL``, still works but raises
+a deprecation warning.
 
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^

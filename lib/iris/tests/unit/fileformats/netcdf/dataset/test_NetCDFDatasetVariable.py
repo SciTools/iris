@@ -240,9 +240,12 @@ class TestReadData:
         (proxy,) = as_lazy_data.call_args.args
         assert as_lazy_data.call_args.kwargs["cache_key"] == repr(proxy)
 
-    def test_emulated_array_is_returned_as_it_stands(self, sample_location):
+    def test_emulated_array_is_returned_as_it_stands(self, sample_location, mocker):
         # The ncdata emulation hook, issue #4994: the emulating object's own
         # array is the answer, with no reading and no proxy.
+        # The cutoff goes to zero so that the policy's unreachability is the
+        # emulation branch's doing, not the array merely being small.
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         variable = _EmulatedVariable()
         variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
         wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
@@ -250,6 +253,9 @@ class TestReadData:
         assert result is variable._data_array
 
     def test_emulated_array_builds_no_proxy(self, sample_location, mocker):
+        # As above, the cutoff goes to zero so that reaching no proxy is the
+        # emulation branch's doing, not the array merely being small.
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         proxy_class = mocker.patch.object(_thread_safe_nc, "NetCDFDataProxy")
         variable = _EmulatedVariable()
         variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
