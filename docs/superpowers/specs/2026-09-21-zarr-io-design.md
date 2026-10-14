@@ -941,6 +941,18 @@ data proxy declares the decoded dtype, and `as_lazy_data` sizes on the array
 it is given. Both `_optimum_chunksize` and the alignment above therefore take
 the decoded dtype, which for an unpacked variable is the stored one.
 
+`CHUNK_CONTROL.as_dask()` is not exempt. That setting hands sizing to Dask,
+and `da.from_array` sizes on the array it is given — which is the stored one,
+so the same multiplier survives there. The Zarr path therefore calls
+`dask.array.core.normalize_chunks("auto", shape, dtype=decoded_dtype)`
+itself and passes the result on with every dimension fixed. The algorithm and
+the configured target are still Dask's; only the dtype it budgets against is
+supplied rather than inferred. Fixing the dimensions is what stops
+`as_lazy_data` re-sizing the result on the stored dtype and undoing it — and
+is the thing to watch in that branch, since Iris's own sizing or the store
+alignment creeping back in on top would make `as_dask()` mean something other
+than what it says.
+
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
 `cf/loader.py` uses exactly as it uses `chunking()` today.
 
@@ -2651,7 +2663,8 @@ All four findings reproduced and fixed; none disputed.
   both. §4.4.
 - `missing_value` may be a vector, per CF section 2.5.1; `_FillValue` may
   not. §4.4.
-- Chunks are sized on the decoded dtype, which is what a task holds. §4.4.
+- Chunks are sized on the decoded dtype, which is what a task holds, on
+  the `CHUNK_CONTROL.as_dask()` path as well as the default one. §4.4.
 - The `ZarrStore` file element answers `None` when a file handle is supplied,
   so a file's basename is never resolved against the working directory. §4.7.
 
@@ -2692,4 +2705,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
 | 2026-10-13 | PR 4 built, on a branch based on PR 3. `format` moved to PR 4 (§5); the shared `CFDataset` contract split into read and write halves, so PR 4 runs only the read half; `load_files` split into a public glob-expanding wrapper over a private `_load_files` (§4.7); `_NCProperties` withheld from `ZarrDataset.attributes` alongside `_ARRAY_DIMENSIONS` (§4.4). Q2 closed. Four decisions logged. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
-| 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |
+| 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype, including under `CHUNK_CONTROL.as_dask()` (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |

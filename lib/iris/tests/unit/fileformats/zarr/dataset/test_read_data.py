@@ -6,6 +6,7 @@
 
 import dask
 import dask.array as da
+from dask.array.core import normalize_chunks
 import dask.config
 import numpy as np
 import pytest
@@ -26,6 +27,11 @@ def variable(location, name="air_temperature"):
 def policy():
     """The chunking policy a loader outside any CHUNK_CONTROL supplies."""
     return None, None
+
+
+def dask_policy():
+    """The chunking policy CHUNK_CONTROL.as_dask() supplies."""
+    return "auto", None
 
 
 def test_a_small_variable_is_read_whole(tmp_path):
@@ -335,37 +341,68 @@ def test_the_declared_dtype_matches_the_cf_loader_calculation(
     assert parameters["dtype"] == np.dtype(expected)
 
 
-def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch):
+def packed_store(tmp_path, shape, chunks):
+    """Write an int8 array that unpacks to float64, and return its location."""
+    location = str(tmp_path / "p.zarr")
+    group = zarr.open_group(store=location, mode="w", zarr_format=3)
+    array = stores.make_array(
+        group,
+        "v",
+        shape,
+        "i1",
+        3,
+        dimensions=tuple("yx"[: len(shape)]),
+        chunks=chunks,
+        attributes={"scale_factor": 0.5},
+    )
+    array[:] = 1
+    return location
+
+
+@pytest.mark.parametrize("chunking", ["default", "as_dask"])
+def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch, chunking):
     """What a task holds is the unpacked block, not the stored one.
 
     An int8 variable unpacking to float64 is eight times its stored size the
     moment the decode layer runs, so chunks sized on the stored dtype hand a
     task eight times the memory Dask was asked to target. The netCDF path
     sizes on the decoded dtype, its data proxy declaring it, and this one has
-    to agree.
+    to agree - under `CHUNK_CONTROL.as_dask()` as well as by default, since
+    `da.from_array` would otherwise size on the array it is given, which is
+    the stored one.
     """
     monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
-    location = str(tmp_path / "p.zarr")
-    group = zarr.open_group(store=location, mode="w", zarr_format=3)
-    array = stores.make_array(
-        group,
-        "v",
-        (64, 64),
-        "i1",
-        3,
-        dimensions=("y", "x"),
-        chunks=(4, 64),
-        attributes={"scale_factor": 0.5},
-    )
-    array[:] = 1
+    location = packed_store(tmp_path, (64, 64), (4, 64))
+    chunking_policy = {"default": policy, "as_dask": dask_policy}[chunking]
 
     target = 2048
     with dask.config.set({"array.chunk-size": f"{target}B"}):
-        lazy = ZarrDataset(location).variables["v"].read_data(policy)
+        lazy = ZarrDataset(location).variables["v"].read_data(chunking_policy)
 
     assert lazy.dtype == np.dtype("f8")
     block_bytes = int(np.prod(lazy.chunksize)) * lazy.dtype.itemsize
     assert block_bytes <= target
+
+
+def test_as_dask_is_still_dasks_own_answer(tmp_path, monkeypatch):
+    """Calling Dask's policy by hand must not turn into replacing it.
+
+    Sizing on the decoded dtype means calling `normalize_chunks` here rather
+    than leaving it to `from_array`, and the risk in doing that is Iris's own
+    sizing or store alignment creeping back in on top. So: the result is what
+    Dask's policy gives for the decoded dtype, and the store's chunking of 7
+    leaves no mark on it.
+    """
+    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    location = packed_store(tmp_path, (64, 64), (7, 64))
+
+    with dask.config.set({"array.chunk-size": "2048B"}):
+        lazy = ZarrDataset(location).variables["v"].read_data(dask_policy)
+        # Inside the context: Dask's policy reads the configured target.
+        expected = normalize_chunks("auto", shape=(64, 64), dtype=np.dtype("f8"))
+
+    assert lazy.chunksize == tuple(sizes[0] for sizes in expected)
+    assert lazy.chunksize[0] % 7 != 0
 
 
 def test_a_lazy_read_aligns_to_the_store_chunks(tmp_path, monkeypatch):

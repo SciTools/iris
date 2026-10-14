@@ -45,6 +45,7 @@ import warnings
 
 import dask
 import dask.array as da
+from dask.array.core import normalize_chunks
 import dask.config
 import dask.utils
 import numpy as np
@@ -481,9 +482,27 @@ class ZarrDatasetVariable(CFDatasetVariable):
 
         if chunks == "auto":
             # CHUNK_CONTROL.as_dask(): the user asked for Dask's own policy,
-            # so the store's layout is deliberately not consulted.
+            # so the store's layout is deliberately not consulted. The policy
+            # is still Dask's - its algorithm, its configured target - but it
+            # is called here rather than left to `from_array`, which is the
+            # only way to hand it the decoded dtype. `from_array` would size
+            # on the array it is given, and the array it is given is the
+            # stored one.
+            chunks = tuple(
+                sizes[0]
+                for sizes in normalize_chunks(
+                    "auto", shape=self.shape, dtype=decoded_dtype
+                )
+            )
+            # Fixed in every dimension: Dask has sized these, and
+            # `as_lazy_data` would otherwise re-size them on the stored dtype
+            # and undo it.
             lazy = as_lazy_data(
-                self._array, chunks="auto", meta=raw_meta, cache_key=self.cache_key
+                self._array,
+                chunks=chunks,
+                meta=raw_meta,
+                dims_fixed=(True,) * self.ndim,
+                cache_key=self.cache_key,
             )
         else:
             if chunks is None:
