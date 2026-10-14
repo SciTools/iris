@@ -335,6 +335,39 @@ def test_the_declared_dtype_matches_the_cf_loader_calculation(
     assert parameters["dtype"] == np.dtype(expected)
 
 
+def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch):
+    """What a task holds is the unpacked block, not the stored one.
+
+    An int8 variable unpacking to float64 is eight times its stored size the
+    moment the decode layer runs, so chunks sized on the stored dtype hand a
+    task eight times the memory Dask was asked to target. The netCDF path
+    sizes on the decoded dtype, its data proxy declaring it, and this one has
+    to agree.
+    """
+    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    location = str(tmp_path / "p.zarr")
+    group = zarr.open_group(store=location, mode="w", zarr_format=3)
+    array = stores.make_array(
+        group,
+        "v",
+        (64, 64),
+        "i1",
+        3,
+        dimensions=("y", "x"),
+        chunks=(4, 64),
+        attributes={"scale_factor": 0.5},
+    )
+    array[:] = 1
+
+    target = 2048
+    with dask.config.set({"array.chunk-size": f"{target}B"}):
+        lazy = ZarrDataset(location).variables["v"].read_data(policy)
+
+    assert lazy.dtype == np.dtype("f8")
+    block_bytes = int(np.prod(lazy.chunksize)) * lazy.dtype.itemsize
+    assert block_bytes <= target
+
+
 def test_a_lazy_read_aligns_to_the_store_chunks(tmp_path, monkeypatch):
     """The alignment reaches the array, not just the function that computes it.
 

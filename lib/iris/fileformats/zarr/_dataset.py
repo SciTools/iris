@@ -208,8 +208,11 @@ def _align_chunks(
     shape : tuple of int
         The variable's full shape. A result is never larger than this.
     dtype : numpy.dtype
-        The stored dtype, for deciding whether one store chunk already exceeds
-        Dask's target chunk size.
+        The dtype the values will have once decoded, for deciding whether one
+        store chunk already exceeds Dask's target chunk size. Decoded rather
+        than stored, because a task holds a whole store chunk's worth of
+        decoded values - unpacking a packed variable happens block by block,
+        on the way out.
     dims_fixed : sequence of bool, optional
         Dimensions an explicit ``CHUNK_CONTROL`` setting pinned. These are
         left exactly as given: the keyword is an instruction, not a
@@ -466,6 +469,15 @@ class ZarrDatasetVariable(CFDatasetVariable):
 
         chunks, dims_fixed = chunking_policy()
         raw_meta = np.empty((0,) * self.ndim, dtype=self.dtype)
+        # Chunks are sized on the dtype the values will have once decoded, not
+        # on the one the store holds: a packed int8 that unpacks to float64
+        # costs eight times its stored size the moment the decode layer runs,
+        # and Dask's target chunk size is a target for what one task holds.
+        # The netCDF path arrives at the same place from the other end - its
+        # data proxy declares the decoded dtype, and `as_lazy_data` sizes on
+        # the array it is given. `_unpacked_dtype` returns the stored dtype
+        # for a variable with no packing, so nothing moves in the usual case.
+        decoded_dtype = parameters["dtype"]
 
         if chunks == "auto":
             # CHUNK_CONTROL.as_dask(): the user asked for Dask's own policy,
@@ -480,10 +492,10 @@ class ZarrDatasetVariable(CFDatasetVariable):
                 # accept it: one chunk spanning the array, divided down below.
                 chunks = self.shape
             chunks = _optimum_chunksize(
-                chunks, shape=self.shape, dtype=self.dtype, dims_fixed=dims_fixed
+                chunks, shape=self.shape, dtype=decoded_dtype, dims_fixed=dims_fixed
             )
             chunks = _align_chunks(
-                chunks, self.chunking, self.shape, self.dtype, dims_fixed, self.name
+                chunks, self.chunking, self.shape, decoded_dtype, dims_fixed, self.name
             )
             # Fixed in every dimension, because the alignment above is the
             # final word: as_lazy_data would otherwise re-run the
