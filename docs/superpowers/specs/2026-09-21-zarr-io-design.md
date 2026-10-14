@@ -2480,11 +2480,15 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
 
 **2026-10-14 — review of #7316 by @stephenworsley, decision by @trexfeathers**
 
-- **The `getattr` anti-patterns leave `lib/iris/AGENTS.md`.** The PR 3
-  deprecation shim is a module-level `__getattr__`, which PEP 562 added for
-  exactly that job, and the rule read as banning it. @stephenworsley found the
-  rule ambiguous; @trexfeathers judged that, having now caused confusion
-  twice, it costs more than it earns, and removed all three bullets —
+- **The `getattr` anti-patterns leave `lib/iris/AGENTS.md`.** The rule never
+  caught anything. Twice it has been argued against and twice the code was
+  kept: `CFVariable.__getattr__` on 2026-09-22, which ended in the rule being
+  narrowed to admit it, and the PR 3 deprecation shim here, a module-level
+  `__getattr__` of the kind PEP 562 added for exactly that job, which opened
+  the pull request on a request for a ruling. Neither occasion changed a line
+  of code. @stephenworsley found the rule ambiguous on its own terms;
+  @trexfeathers judged that a rule whose whole effect is to ask for the
+  argument costs more than it earns, and removed all three bullets —
   dynamically generated members, `eval`/`exec`/`getattr` string dispatch, and
   the `__getattr__`/metaclass ban with its narrow exception. The greppability
   rule against constructing identifiers at runtime is untouched and still
