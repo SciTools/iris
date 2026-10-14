@@ -10,8 +10,8 @@ import pytest
 
 import iris
 import iris.fileformats.cf as cf
+from iris.fileformats.cf.loader import _get_cf_var_data
 from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ
-from iris.fileformats.netcdf.loader import _get_cf_var_data
 from iris.tests import _shared_utils
 
 

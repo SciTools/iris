@@ -210,12 +210,12 @@ def _build_aux_coord(coord_var):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridAuxiliaryCoordinateVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
-    points_data = nc_loader._get_cf_var_data(coord_var)
+    points_data = cf_loader._get_cf_var_data(coord_var)
 
     # Bounds will not be loaded:
     # Bounds may be present, but the UGRID conventions state this would
@@ -267,12 +267,12 @@ def _build_connectivity(connectivity_var, element_dims):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridConnectivityVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
-    indices_data = nc_loader._get_cf_var_data(connectivity_var)
+    indices_data = cf_loader._get_cf_var_data(connectivity_var)
 
     cf_role = connectivity_var.cf_role
     start_index = connectivity_var.start_index
@@ -312,7 +312,7 @@ def _build_mesh(cf, mesh_var):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridMeshVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
@@ -434,7 +434,7 @@ def _build_mesh(cf, mesh_var):
     mesh_elements = list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
     mesh_elements = filter(None, mesh_elements)
     for iris_object in mesh_elements:
-        nc_loader._add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
+        cf_loader._add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
 
     return mesh
 

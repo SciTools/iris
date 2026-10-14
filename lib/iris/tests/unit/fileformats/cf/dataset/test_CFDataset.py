@@ -29,6 +29,9 @@ class MinimalVariable(CFDatasetVariable):
     def __setitem__(self, keys, values):
         raise NotImplementedError
 
+    def read_data(self, chunking_policy):
+        return self[:]
+
     def write_handle(self):
         return self
 
@@ -86,6 +89,7 @@ class TestAbstractness:
             "ndim",
             "__getitem__",
             "__setitem__",
+            "read_data",
             "write_handle",
         ],
     )

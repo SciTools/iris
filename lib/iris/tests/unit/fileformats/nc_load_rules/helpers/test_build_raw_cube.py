@@ -15,15 +15,17 @@ from iris.fileformats.cf import CFVariable
 
 def _make_array_and_cf_data(mocker, dim_lens: dict[str, int]):
     shape = list(dim_lens.values())
-    # This data is small enough that _get_cf_var_data never reaches
-    # .chunking or .variable - only the two gates it always checks first.
+    data = np.arange(np.prod(shape), dtype=float)
+    data = data.reshape(shape)
+    # This data is small enough that read_data never reaches .chunking or
+    # .variable - it simply returns the real array, as it would for any
+    # small variable.
     cf_data = mocker.MagicMock(
-        spec=["is_emulated", "is_variable_length"],
+        spec=["is_emulated", "is_variable_length", "read_data"],
         is_emulated=False,
         is_variable_length=False,
     )
-    data = np.arange(np.prod(shape), dtype=float)
-    data = data.reshape(shape)
+    cf_data.read_data.return_value = data
     return data, cf_data
 
 

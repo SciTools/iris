@@ -121,7 +121,7 @@ class CFVariable(metaclass=ABCMeta):
         The only place CF attributes live. ``__getattr__`` forwards here, so
         ``cf_var.units`` and ``cf_var.attributes["units"]`` perform the same
         read and are recorded once. What was read decides what survives onto the
-        cube - see :func:`iris.fileformats.netcdf.loader._add_unused_attributes`.
+        cube - see :func:`iris.fileformats.cf.loader._add_unused_attributes`.
 
         Copied from ``data.attributes``, not a view onto it:
         :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`'s

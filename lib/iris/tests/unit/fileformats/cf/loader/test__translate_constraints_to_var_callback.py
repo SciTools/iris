@@ -3,7 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for
-:func:`iris.fileformats.netcdf._translate_constraints_to_var_callback`.
+:func:`iris.fileformats.cf.loader._translate_constraints_to_var_callback`.
 
 """
 
@@ -11,7 +11,7 @@ import pytest
 
 import iris
 from iris.fileformats.cf import CFDataVariable
-from iris.fileformats.netcdf.loader import _translate_constraints_to_var_callback
+from iris.fileformats.cf.loader import _translate_constraints_to_var_callback
 from iris.tests import _shared_utils
 
 
