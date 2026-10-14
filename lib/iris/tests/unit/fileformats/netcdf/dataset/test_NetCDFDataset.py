@@ -78,7 +78,7 @@ class TestContents:
         )
 
     def test_variables_share_one_write_lock(self, reader):
-        # _dask_locks.get_worker_lock() returns a FRESH threading.Lock under
+        # cf._dask_locks.get_worker_lock() returns a FRESH threading.Lock under
         # the threaded scheduler, so a per-variable call would hand out locks
         # that exclude nothing. Observed through the write handles, because
         # the lock is only made when one is asked for - see

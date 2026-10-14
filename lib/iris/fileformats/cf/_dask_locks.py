@@ -2,51 +2,38 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Module containing code to create locks enabling dask workers to co-operate.
+"""Locks that let dask workers co-operate when writing to one target.
 
-This matter is complicated by needing different solutions for different dask
-scheduler types, i.e. local 'threads' scheduler, local 'processes' or
-distributed.
+A saver writing lazy data hands each chunk to a dask worker, and the workers
+must not write over each other. What that takes depends on the dask scheduler,
+so this module works out which scheduler is in play and returns a lock to
+match. The scheduler must therefore be configured before a lock is asked for.
 
-In any case, an "iris.fileformats.netcdf.saver.Saver" object contains a
-netCDF4.Dataset targeting an output file, and creates a Saver.file_write_lock
-object to serialise write-accesses to the file from dask tasks :  All dask-task
-file writes go via a "iris.fileformats.netcdf.saver.NetCDFWriteProxy" object,
-which also contains a link to the Saver.file_write_lock, and uses it to prevent
-workers from fouling each other.
+A dataset implementation asks for one lock per target, identified by its path
+or URL, and gives it to every write handle it builds. The netCDF write handle
+reopens the file, acquires the lock, writes its chunk, closes the file and
+releases the lock, which is the mirror image of what the read path does for a
+lazy chunk. A store whose chunks are separate objects needs no such
+coordination, and asks for no lock.
 
-For each chunk written, the NetCDFWriteProxy acquires the common per-file lock;
-opens a Dataset on the file; performs a write to the relevant variable; closes
-the Dataset and then releases the lock.  This process is obviously very similar
-to what the NetCDFDataProxy does for reading lazy chunks.
+For a threaded scheduler the lock is a plain :class:`threading.Lock`. The
+workers are threads sharing one address space, so they all hold the same
+object, and the identity string is never used.
 
-For a threaded scheduler, the Saver.lock is a simple threading.Lock().  The
-workers (threads) execute tasks which contain a NetCDFWriteProxy, as above.
-All of those contain the common lock, and this is simply **the same object**
-for all workers, since they share an address space.
+For a distributed scheduler the lock is a ``distributed.Lock`` named for the
+target. It reaches the workers by being serialised along with the task, and
+every copy carries the same name, so the scheduler can make them exclude one
+another. A worker behaves like a process, and may run on another machine.
 
-For a distributed scheduler, the Saver.lock is a `distributed.Lock()` which is
-identified with the output filepath.  This is distributed to the workers by
-serialising the task function arguments, which will include the
-NetCDFWriteProxy.  A worker behaves like a process, though it may execute on a
-remote machine.  When a distributed.Lock is deserialised to reconstruct the
-worker task, this creates an object that communicates with the scheduler.
-These objects behave as a single common lock, as they all have the same string
-'identity', so the scheduler implements inter-process communication so that
-they can mutually exclude each other.
+The "processes" scheduler is refused by :func:`get_worker_lock`. Supporting it
+would need a serialisable shared lock that does not require a distributed
+scheduler to function.
 
-It is also *conceivable* that multiple processes could write to the same file in
-parallel, if the operating system supports it.  However, this also requires
-that the libnetcdf C library is built with parallel access option, which is
-not common.  With the "ordinary" libnetcdf build, a process which attempts to
-open for writing a file which is _already_ open for writing simply raises an
-access error.  In any case, Iris netcdf saver will not support this mode of
-operation, at present.
-
-We don't currently support a local "processes" type scheduler.  If we did, the
-behaviour should be very similar to a distributed scheduler.  It would need to
-use some other serialisable shared-lock solution in place of
-'distributed.Lock', which requires a distributed scheduler to function.
+Writing to one target from genuinely separate processes is a further step
+again. For netCDF it needs libnetcdf built with the parallel access option,
+which is uncommon: with an ordinary build, opening a file for writing that is
+already open for writing simply raises an access error. Iris does not support
+that mode at present.
 
 """
 

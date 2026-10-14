@@ -30,10 +30,11 @@ import numpy as np
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_lazy_data
+from iris.fileformats.cf import _dask_locks
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
-from . import _bytecoding_datasets, _dask_locks, _thread_safe_nc
+from . import _bytecoding_datasets, _thread_safe_nc
 
 #: What ``netCDF4.Variable.chunking()`` answers for an unchunked variable.
 #: ``None`` means the same thing, and arrives from non-version-4 files.
