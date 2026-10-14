@@ -1471,16 +1471,14 @@ class Saver:
         return units
 
     def _ensure_valid_dtype(self, values, src_name, src_object):
-        # NetCDF3 and NetCDF4 classic do not support int64 or unsigned ints,
-        # so we check if we can store them as int32 instead.
-        if (
-            np.issubdtype(values.dtype, np.int64)
-            or np.issubdtype(values.dtype, np.unsignedinteger)
-        ) and self._dataset.dataset.file_format in (
-            "NETCDF3_CLASSIC",
-            "NETCDF3_64BIT",
-            "NETCDF4_CLASSIC",
-        ):
+        # Some formats have no 64-bit or unsigned integer types, so we check
+        # whether we can store them as int32 instead. Which dtypes are worth
+        # narrowing is the saver's question; whether this store holds them is
+        # the store's.
+        is_narrowable_integer = np.issubdtype(values.dtype, np.int64) or np.issubdtype(
+            values.dtype, np.unsignedinteger
+        )
+        if is_narrowable_integer and not self._dataset.supports_dtype(values.dtype):
             val_min, val_max = (values.min(), values.max())
             if is_lazy_data(values):
                 val_min, val_max = _co_realise_lazy_arrays([val_min, val_max])
@@ -1489,16 +1487,14 @@ class Saver:
             min_dtype = np.promote_types(
                 *[np.min_scalar_type(m) for m in (val_min, val_max)]
             )
-            # Cast to an integer type supported by netCDF3.
+            # Cast to an integer type the format supports.
             if not np.can_cast(min_dtype, np.int32):
                 msg = (
                     "The data type of {} {!r} is not supported by {} and"
                     " its values cannot be safely cast to a supported"
                     " integer type."
                 )
-                msg = msg.format(
-                    src_name, src_object, self._dataset.dataset.file_format
-                )
+                msg = msg.format(src_name, src_object, self._dataset.format)
                 raise ValueError(msg)
             values = values.astype(np.int32)
         return values
