@@ -62,6 +62,7 @@ from iris.coords import (
 )
 import iris.exceptions
 import iris.fileformats.cf
+from iris.fileformats.cf.dataset import CFDatasetVariable
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
 from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
@@ -438,11 +439,7 @@ class Saver:
 
     def __exit__(self, type, value, traceback):
         """Flush any buffered data to the CF-NetCDF/NcZarr file before closing."""
-        if self._nczarr_writes:
-            # NCZarr lazy writes must be computed while the file is still open;
-            # the deferred reopen-write pattern used for netCDF is not supported.
-            sources, targets = zip(*self._nczarr_writes)
-            da.store(list(sources), list(targets))
+        self._flush_before_close()
         self._dataset.sync()
         if not self._to_open_dataset:
             # Only close if the Saver created it.
@@ -450,6 +447,14 @@ class Saver:
             # Complete after closing, if required
             if self.compute:
                 self.complete()
+
+    def _flush_before_close(self) -> None:
+        """Write anything that cannot be written after the dataset closes."""
+        if self._nczarr_writes:
+            # NCZarr lazy writes must be computed while the file is still open;
+            # the deferred reopen-write pattern used for netCDF is not supported.
+            sources, targets = zip(*self._nczarr_writes)
+            da.store(list(sources), list(targets))
 
     def write(
         self,
@@ -683,16 +688,19 @@ class Saver:
         if cf_profile_available:
             cf_patch = iris.site_configuration.get("cf_patch")
             if cf_patch is not None:
-                # Perform a CF patch of the dataset.
-                # A reserved iris.site_configuration hook, documented since
-                # Iris 1.3 as receiving netCDF4 objects - so both arguments
-                # are unwrapped, not just the dataset. A CFVariable would
-                # raise on setncattr() and, worse, silently swallow
-                # 'variable.name = value': it defines no __setattr__.
-                cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
+                self._patch_dataset(cf_patch, profile, cf_var_cube)
             else:
                 msg = "cf_profile is available but no {} defined.".format("cf_patch")
                 warnings.warn(msg, category=iris.warnings.IrisCfSaveWarning)
+
+    def _patch_dataset(self, cf_patch, profile, cf_var_cube) -> None:
+        """Hand the site-configured patch hook the objects it expects."""
+        # A reserved iris.site_configuration hook, documented since
+        # Iris 1.3 as receiving netCDF4 objects - so both arguments
+        # are unwrapped, not just the dataset. A CFVariable would
+        # raise on setncattr() and, worse, silently swallow
+        # 'variable.name = value': it defines no __setattr__.
+        cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
 
     def check_attribute_compliance(self, container, data_dtype):
         """Check attributte complliance."""
@@ -1558,6 +1566,78 @@ class Saver:
             )
             self._lazy_stream_data(data=bounds, cf_var=cf_var_bounds)
 
+    def _create_string_variable(
+        self, cube_or_mesh, cf_name, element, element_dims, data
+    ):
+        """Create the char variable that will hold this unicode string data.
+
+        netCDF has no unicode type, so string data is stored as bytes over an
+        extra trailing dimension whose length is the width of the widest
+        value. The name of that dimension is appended to ``element_dims``.
+
+        Parameters
+        ----------
+        cube_or_mesh : :class:`iris.cube.Cube` or :class:`iris.mesh.MeshXY`
+            The Cube or Mesh being saved. Named in the error message.
+        cf_name : str
+            The name the variable is created with.
+        element : :class:`iris.coords._DimensionalMetadata`
+            The element being saved. Supplies the ``_Encoding`` attribute.
+        element_dims : list of str
+            The variable's dimension names, appended to in place.
+        data : :class:`numpy.ndarray`
+            The string values, used for their dtype.
+
+        Returns
+        -------
+        :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`
+
+        """
+        # NOTE: all we are doing here is to calculate the byte dimension length,
+        # based on the dtype and any encoding attribute.
+        # The actual char --> byte data *translation* is done by the variable,
+        # being a _bytecoding_datasets.EncodedVariable.
+        string_dimension_depth = data.dtype.itemsize
+
+        # String content (U) instead of bytes (S).
+        # For numpy strings, itemsize is **always** a multiple of 4
+        if string_dimension_depth % 4 != 0:
+            msg = (
+                "Unexpected numpy string 'dtype.itemsize' for element "
+                f"{cube_or_mesh.name()!r}: "
+                f"'dtype.itemsize = {string_dimension_depth}, expected "
+                "a multiple of four (always)."
+            )
+            raise ValueError(msg)
+        nchars = string_dimension_depth // 4
+
+        encoding_attr = element.attributes.get("_Encoding", "ascii")
+        # Look this up + return a supported encoding name
+        # NB implements defaults and raises a warning if given not recognised.
+        encoding = bytecoding_datasets._identify_encoding(
+            encoding=encoding_attr, var_name=cf_name, writing=True
+        )
+        width_fns = bytecoding_datasets._ENCODING_WIDTH_TRANSLATIONS[encoding]
+        string_dimension_depth = width_fns.nchars_2_nbytes(nchars)
+
+        string_dimension_name = "string%d" % string_dimension_depth
+
+        # Determine whether to create the string length dimension.
+        if string_dimension_name not in self._dataset.dimensions:
+            while string_dimension_name in self._dataset.variables:
+                # Also avoid collision with variable names.
+                # See '_get_dim_names' for reason.
+                string_dimension_name = self._increment_name(string_dimension_name)
+            self._dataset.create_dimension(
+                string_dimension_name, string_dimension_depth
+            )
+
+        # Add the string length dimension to the variable dimensions.
+        element_dims.append(string_dimension_name)
+
+        # Create the label coordinate variable.
+        return self._dataset.create_variable(cf_name, "|S1", element_dims)
+
     def _get_element_variable_name(
         self, cube_or_mesh: "Cube|MeshXY", element: "_DimensionalMetadata|Cube"
     ) -> str:
@@ -1845,53 +1925,12 @@ class Saver:
             compression_kwargs = {}
 
         if not is_dataless and data.dtype.kind == "U":
-            # Deal with unicode-string-type variables.
-            # Typically CF label variables, but also possibly ancil-vars ?
-
-            # NOTE: all we are doing here is to calculate the byte dimension length,
-            # based on the dtype and any encoding attribute.
-            # The actual char --> byte data *translation* is done by the variable,
-            # being a _bytecoding_datasets.EncodedVariable.
-            string_dimension_depth = data.dtype.itemsize
-
-            # String content (U) instead of bytes (S).
-            # For numpy strings, itemsize is **always** a multiple of 4
-            if string_dimension_depth % 4 != 0:
-                msg = (
-                    "Unexpected numpy string 'dtype.itemsize' for element "
-                    f"{cube_or_mesh.name()!r}: "
-                    f"'dtype.itemsize = {string_dimension_depth}, expected "
-                    "a multiple of four (always)."
-                )
-                raise ValueError(msg)
-            nchars = string_dimension_depth // 4
-
-            encoding_attr = element.attributes.get("_Encoding", "ascii")
-            # Look this up + return a supported encoding name
-            # NB implements defaults and raises a warning if given not recognised.
-            encoding = bytecoding_datasets._identify_encoding(
-                encoding=encoding_attr, var_name=cf_name, writing=True
+            # Unicode string data: typically a CF label variable, sometimes an
+            # ancillary variable. How a store holds strings is the store's own
+            # business, so the backend creates the variable.
+            cf_var = self._create_string_variable(
+                cube_or_mesh, cf_name, element, element_dims, data
             )
-            width_fns = bytecoding_datasets._ENCODING_WIDTH_TRANSLATIONS[encoding]
-            string_dimension_depth = width_fns.nchars_2_nbytes(nchars)
-
-            string_dimension_name = "string%d" % string_dimension_depth
-
-            # Determine whether to create the string length dimension.
-            if string_dimension_name not in self._dataset.dimensions:
-                while string_dimension_name in self._dataset.variables:
-                    # Also avoid collision with variable names.
-                    # See '_get_dim_names' for reason.
-                    string_dimension_name = self._increment_name(string_dimension_name)
-                self._dataset.create_dimension(
-                    string_dimension_name, string_dimension_depth
-                )
-
-            # Add the string length dimension to the variable dimensions.
-            element_dims.append(string_dimension_name)
-
-            # Create the label coordinate variable.
-            cf_var = self._dataset.create_variable(cf_name, "|S1", element_dims)
         else:
             # A non-string variable.
             # ensure a valid datatype for the file format.
@@ -2573,19 +2612,20 @@ class Saver:
 
         return "{}_{}".format(varname, num)
 
-    def _lazy_stream_data(
+    def _backend_write(
         self,
         data: np.typing.ArrayLike,
         cf_var: NetCDFDatasetVariable,
-    ) -> None:
-        if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
-            # (Don't do this check for string data).
-            # Reduce dimensionality where the data array has an extra dimension
-            #  versus the cf_var - to avoid a broadcasting ambiguity.
-            # Happens when bounds data is for a scalar point - array is 2D but
-            #  contains just 1 row, so the cf_var is 1D.
-            data = data.squeeze(axis=0)
+    ) -> bool:
+        """Write the data here and now, if this backend handles it itself.
 
+        Returns
+        -------
+        bool
+            Whether the data was written. False leaves the caller to write it
+            the ordinary way, directly or by a delayed store.
+
+        """
         if cf_var.is_emulated:
             # The variable is not an actual file variable, but an emulating
             # object with an attached data array (either numpy or dask), which should
@@ -2604,40 +2644,60 @@ class Saver:
                 data = encoder.encode_strings_as_bytearray(data)
 
             cf_var.emulated_data_array = data
+            return True
+
+        if is_lazy_data(data) and self._is_nczarr:
+            # NCZarr cannot be reopened for deferred writes.
+            # Collect here; da.store() will be called in __exit__.
+            self._nczarr_writes.append((data, cf_var))
+            return True
+
+        return False
+
+    def _lazy_stream_data(
+        self,
+        data: np.typing.ArrayLike,
+        cf_var: CFDatasetVariable,
+    ) -> None:
+        if hasattr(data, "shape") and data.shape == (1,) + cf_var.shape:
+            # (Don't do this check for string data).
+            # Reduce dimensionality where the data array has an extra dimension
+            #  versus the cf_var - to avoid a broadcasting ambiguity.
+            # Happens when bounds data is for a scalar point - array is 2D but
+            #  contains just 1 row, so the cf_var is 1D.
+            data = data.squeeze(axis=0)
+
+        # The hook below is narrower than this method about the backend it
+        # expects: in this module, the only backend there is, is netCDF's.
+        if self._backend_write(data, cf_var):  # type: ignore[arg-type]
+            return
+
+        doing_delayed_save = is_lazy_data(data)
+        if doing_delayed_save:
+            # save lazy data with a delayed operation.  For now, we just record the
+            # necessary information -- a single, complete delayed action is
+            # constructed later by a call to delayed_completion().
+            def store(
+                data: np.typing.ArrayLike,
+                cf_var: CFDatasetVariable,
+            ) -> None:
+                # TODO: recheck once Zarr behaviour is settled.
+                # Ask the variable for something a worker can stream into
+                # after this file is closed.  What that is is the backend's
+                # business: netCDF reopens the file, Zarr will hand back the
+                # array itself.
+                self._delayed_writes.append((data, cf_var.write_handle()))
 
         else:
-            doing_delayed_save = is_lazy_data(data)
-            if doing_delayed_save:
-                if self._is_nczarr:
-                    # NCZarr cannot be reopened for deferred writes.
-                    # Collect here; da.store() will be called in __exit__.
-                    self._nczarr_writes.append((data, cf_var))
-                    return
+            # Real data is always written directly, i.e. not via lazy save.
+            def store(
+                data: np.typing.ArrayLike,
+                cf_var: CFDatasetVariable,
+            ) -> None:
+                cf_var[:] = data  # type: ignore[index]
 
-                # save lazy data with a delayed operation.  For now, we just record the
-                # necessary information -- a single, complete delayed action is
-                # constructed later by a call to delayed_completion().
-                def store(
-                    data: np.typing.ArrayLike,
-                    cf_var: NetCDFDatasetVariable,
-                ) -> None:
-                    # TODO: recheck once Zarr behaviour is settled.
-                    # Ask the variable for something a worker can stream into
-                    # after this file is closed.  What that is is the backend's
-                    # business: netCDF reopens the file, Zarr will hand back the
-                    # array itself.
-                    self._delayed_writes.append((data, cf_var.write_handle()))
-
-            else:
-                # Real data is always written directly, i.e. not via lazy save.
-                def store(
-                    data: np.typing.ArrayLike,
-                    cf_var: NetCDFDatasetVariable,
-                ) -> None:
-                    cf_var[:] = data  # type: ignore[index]
-
-            # Store the data.
-            store(data, cf_var)
+        # Store the data.
+        store(data, cf_var)
 
     def delayed_completion(self) -> Delayed:
         """Perform file completion for delayed saves.
