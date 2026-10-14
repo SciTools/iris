@@ -2490,9 +2490,12 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
   @trexfeathers judged that a rule whose whole effect is to ask for the
   argument costs more than it earns, and removed all three bullets —
   dynamically generated members, `eval`/`exec`/`getattr` string dispatch, and
-  the `__getattr__`/metaclass ban with its narrow exception. The greppability
-  rule against constructing identifiers at runtime is untouched and still
-  carries the reasoning the anti-patterns were standing in for. This reverses
+  the `__getattr__`/metaclass ban with its narrow exception. `eval` and `exec`
+  came straight back as their own bullet: they shared a sentence with `getattr`
+  dispatch but none of its ambiguity, and nothing in the programme has ever
+  had to argue about them. The greppability rule against constructing
+  identifiers at runtime is untouched and still carries the reasoning the
+  anti-patterns were standing in for. This reverses
   the narrowing recorded on 2026-09-22 and the "revisit when the removal
   lands" note of 2026-10-12; §3 and §4.3 no longer cite an exception that
   exists. The design is unchanged: §4.3 removes `__getattr__` because

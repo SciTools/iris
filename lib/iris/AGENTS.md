@@ -253,6 +253,7 @@ code in a private sibling module instead.
 
 ## Anti-Patterns — Do Not Introduce
 
+- `eval` or `exec` in library code.
 - Silent `except Exception: pass`.
 - Boolean flags that switch a function between two unrelated behaviours —
   write two functions.
