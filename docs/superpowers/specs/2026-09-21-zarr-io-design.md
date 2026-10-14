@@ -618,6 +618,21 @@ pairs, and must treat `None` as unmatchable. PR 4 makes that change and tests
 it on both backends, since it is reachable only from Zarr but must not disturb
 netCDF.
 
+**The same rule decides which cube dimensions a coordinate is attached to.**
+`spans` is only the first half of the question. Once a coordinate is found to
+span the data variable, the loading rules have to say *which* of the data
+variable's dimensions it covers, and they did that by name alone —
+`cf_var.dimensions.index(name)`, in `_add_dimension_coordinate`,
+`_add_auxiliary_coordinate`, `_add_cell_measure` and `_add_ancil_var`. Given a
+data variable whose dimensions are `('d', 'd')` at sizes `(2, 3)` and a
+three-point coordinate on `d`, `spans` says yes and `.index('d')` answers 0,
+so the coordinate is rejected as the wrong length and lands in
+`LOAD_PROBLEMS` — with the axis it belongs on uniquely identifiable. The
+identity rule is therefore a function, `_dimension_identities(cf_variable)` in
+`cf/_variables.py`, used by `spans` and by one shared
+`helpers._common_data_dims`: one rule, not two that can drift. netCDF cannot
+observe the difference, its dimension names being unique within a group.
+
 **`CFDataset.dimensions` is the names that are used consistently.** It maps
 name to size, as it does for netCDF, and on Zarr it is assembled from the
 arrays. A name that appears at two different sizes is not an error and is not
@@ -745,6 +760,16 @@ netCDF4 applies `_FillValue`/`missing_value` masking,
 `zarr/_decode.py` implements the same CF rules. It is Zarr-side rather than
 shared because the netCDF path gets the behaviour from the C library and has
 nothing to reuse.
+
+`missing_value` may be a **vector**. CF section 2.5.1 makes it "a scalar or
+vector containing values indicating missing data", and netCDF4 masks on every
+element of one, so a store and a file carrying the same attribute have to mask
+the same values. `_FillValue` is not read that way: the same section makes it
+a scalar, and a vector there warns and is ignored. Read as a scalar, a vector
+`missing_value` fails twice over — the declared sentinels do not mask, and on
+version 2 the variable then looks as though it declared no CF attribute at
+all, so the storage fill value becomes the sentinel and every valid zero is
+masked.
 
 Decoding is applied as **explicit dask graph layers** over the raw array —
 `da.map_blocks(_mask_and_scale, raw, ...)` — not hidden inside an opaque
@@ -904,6 +929,17 @@ tasks and the netCDF path re-reads sub-chunks too. It simply costs far more
 over a network than over a page cache. Changing the netCDF path is out of scope
 here — the relocation PRs must not alter behaviour — but it is recorded as an
 open question in §12.3.
+
+**Chunks are sized on the decoded dtype, not the stored one.** A packed
+variable's values are unpacked block by block, on the way out of the graph, so
+what a task holds is the decoded block: an `int8` array with a `scale_factor`
+that unpacks to `float64` is eight times its stored size the moment the decode
+layer runs. Sized on the stored dtype, a `(512, 512, 512)` `int8` array gets
+one chunk spanning the array — 128 MiB stored, 1 GiB decoded, against a 128
+MiB target. The netCDF path reaches the same answer from the other end: its
+data proxy declares the decoded dtype, and `as_lazy_data` sizes on the array
+it is given. Both `_optimum_chunksize` and the alignment above therefore take
+the decoded dtype, which for an unpacked variable is the stored one.
 
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
 `cf/loader.py` uses exactly as it uses `chunking()` today.
@@ -1413,6 +1449,17 @@ so it is consulted when no file handle is available. It matches when:
 
 The split is local-versus-remote, and the two tests are not alternatives for
 the same target.
+
+**The element answers `None` when a file handle is supplied**, so the
+specification cannot match a target that opened as a file. `requires_fh =
+False` means "consult me without a handle", not "consult me with one". Two
+things go wrong otherwise. A store is a directory or a URL, so a target with a
+handle is settled already. And the caller that opened the file —
+`iris.io._load_files` — passes `pathlib.Path(fn).name`, a basename rather than
+a path, which resolves against the working directory: a NIMROD file named
+`weather` was classified as Zarr whenever the working directory happened to
+contain a `weather/zarr.json`, the priority-5 Zarr specification being
+consulted before priority-3 NIMROD.
 
 **Do not add a third rule matching any path that ends in `.zarr`.** Joined by
 "or" it swallows the remote rule whole, leaving the scheme test unreachable,
@@ -2595,6 +2642,19 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
   `.attributes` already does the whole job, which was never an argument from
   the rule.
 
+**2026-10-14 — actioning the Codex review of PR 4**
+
+All four findings reproduced and fixed; none disputed.
+
+- The `(name, size)` identity rule carries through to coordinate attachment,
+  not only to `spans`. It becomes a function rather than a method, used by
+  both. §4.4.
+- `missing_value` may be a vector, per CF section 2.5.1; `_FillValue` may
+  not. §4.4.
+- Chunks are sized on the decoded dtype, which is what a task holds. §4.4.
+- The `ZarrStore` file element answers `None` when a file handle is supplied,
+  so a file's basename is never resolved against the working directory. §4.7.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -2632,3 +2692,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
 | 2026-10-13 | PR 4 built, on a branch based on PR 3. `format` moved to PR 4 (§5); the shared `CFDataset` contract split into read and write halves, so PR 4 runs only the read half; `load_files` split into a public glob-expanding wrapper over a private `_load_files` (§4.7); `_NCProperties` withheld from `ZarrDataset.attributes` alongside `_ARRAY_DIMENSIONS` (§4.4). Q2 closed. Four decisions logged. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
+| 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |
