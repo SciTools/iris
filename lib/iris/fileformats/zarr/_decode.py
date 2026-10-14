@@ -121,6 +121,43 @@ def decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
         return None
 
 
+def decode_missing_values(value: Any, dtype: np.dtype, variable_name: str) -> list:
+    """Return every sentinel a ``missing_value`` attribute declares.
+
+    CF section 2.5.1 makes ``missing_value`` "a scalar or vector containing
+    values indicating missing data", so a JSON array there is as valid as a
+    number and every element of it masks - which is what netCDF4 does with a
+    vector ``missing_value``, and what Iris has always done through it.
+    ``_FillValue`` is not read this way: section 2.5.1 makes that one a
+    scalar.
+
+    Parameters
+    ----------
+    value : Any
+        The attribute's value: one sentinel, or a sequence of them.
+    dtype : numpy.dtype
+        The variable's own dtype, which every sentinel is narrowed to.
+    variable_name : str
+        Named in any warning.
+
+    Returns
+    -------
+    list
+        One entry per element :func:`decode_fill_value` could read. An
+        element it could not is warned about and dropped, leaving the rest:
+        one bad sentinel in a vector is no reason to ignore the good ones.
+
+    """
+    if isinstance(value, (list, tuple)) or (
+        isinstance(value, np.ndarray) and value.ndim > 0
+    ):
+        elements = list(value)
+    else:
+        elements = [value]
+    decoded = (decode_fill_value(element, dtype, variable_name) for element in elements)
+    return [sentinel for sentinel in decoded if sentinel is not None]
+
+
 def _decode_packed_double(value: str) -> float | None:
     """Return the float in a base64 little-endian float64, or None."""
     try:
@@ -178,12 +215,18 @@ def decode_parameters(
         convention chose it on purpose, which is the rule's own premise.
 
     """
+    # The two attributes are read differently because CF section 2.5.1
+    # defines them differently: `_FillValue` is a scalar, `missing_value` is
+    # "a scalar or vector".
     sentinels = []
-    for name in ("_FillValue", "missing_value"):
-        if name in attributes:
-            decoded = decode_fill_value(attributes[name], dtype, variable_name)
-            if decoded is not None:
-                sentinels.append(decoded)
+    if "_FillValue" in attributes:
+        decoded = decode_fill_value(attributes["_FillValue"], dtype, variable_name)
+        if decoded is not None:
+            sentinels.append(decoded)
+    if "missing_value" in attributes:
+        sentinels.extend(
+            decode_missing_values(attributes["missing_value"], dtype, variable_name)
+        )
 
     if (
         not sentinels

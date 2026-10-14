@@ -136,6 +136,54 @@ def test_both_cf_missing_value_attributes_are_sentinels():
     assert set(result["sentinels"]) == {np.int16(-999), np.int16(-888)}
 
 
+def test_a_vector_missing_value_declares_every_sentinel():
+    """CF section 2.5.1: "a scalar or vector containing values".
+
+    netCDF4 masks on every element of a vector `missing_value`, so a store
+    and a file carrying the same attribute have to mask the same values.
+    """
+    result = parameters({"missing_value": [-999, -888]})
+    assert set(result["sentinels"]) == {np.int16(-999), np.int16(-888)}
+
+
+def test_a_vector_missing_value_masks_every_sentinel():
+    params = parameters({"missing_value": [-999, -888]})
+    block = np.array([-999, 1, -888, 2], dtype="i2")
+    result = _decode.mask_and_scale(block, **params)
+    assert result.mask.tolist() == [True, False, True, False]
+
+
+def test_a_vector_missing_value_keeps_the_version_2_fill_value_out():
+    """The second failure the scalar-only reading caused, and the worse one.
+
+    A rejected `missing_value` left a version 2 variable looking as though it
+    declared no CF attribute at all, so the storage fill value became the
+    sentinel instead - masking every valid zero in the array.
+    """
+    result = parameters(
+        {"missing_value": [-999, -888]}, storage_fill_value=0, zarr_format=2
+    )
+    assert 0 not in result["sentinels"]
+
+
+def test_one_unreadable_element_does_not_discard_the_others():
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = parameters({"missing_value": [-999, "nonsense"]})
+    assert result["sentinels"] == (np.int16(-999),)
+
+
+def test_a_vector_fill_value_is_not_read_as_sentinels():
+    """CF section 2.5.1 makes `_FillValue` a scalar, unlike `missing_value`.
+
+    A producer writing a vector there has written something the convention
+    does not define, and a warning naming the variable is more use than a
+    guess at what was meant.
+    """
+    with pytest.warns(IrisCfLoadWarning, match="v"):
+        result = parameters({"_FillValue": [-999, -888]})
+    assert result["sentinels"] == ()
+
+
 def test_valid_range_sets_both_bounds():
     result = parameters({"valid_range": [0, 10]})
     assert result["valid_min"] == 0
