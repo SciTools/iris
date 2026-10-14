@@ -1,0 +1,183 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDataset`."""
+
+import numpy as np
+import pytest
+import zarr
+
+from iris.fileformats.zarr._dataset import ZarrDataset
+from iris.warnings import IrisCfLoadWarning
+
+from .. import stores
+
+
+@pytest.fixture(params=[2, 3], ids=["v2", "v3"])
+def zarr_format(request):
+    return request.param
+
+
+def test_opens_and_reports_itself(tmp_path, zarr_format):
+    location = stores.make_store(tmp_path / "s.zarr", zarr_format=zarr_format)
+    dataset = ZarrDataset(location)
+
+    assert dataset.location == location
+    assert dataset.format == f"ZARR_V{zarr_format}"
+    assert dataset.mode == "r"
+    assert dataset.closed is False
+    assert sorted(dataset.variables) == ["air_temperature", "grid"]
+    assert dict(dataset.attributes) == stores.GLOBALS
+    assert dataset.encoding["zarr_format"] == zarr_format
+
+
+def test_nc_properties_is_not_a_cf_attribute(tmp_path):
+    """`_NCProperties` is netCDF-c's own bookkeeping, not CF metadata.
+
+    It is the stamp netCDF-c writes onto the root group of every store it
+    creates (confirmed on NCZarr output), reading `version=...,netcdf=...`.
+    netCDF4-python hides it from `Dataset.ncattrs()` by convention, so no
+    cube loaded through netCDF has ever carried it; a cube loaded from the
+    same store through the native Zarr reader must not gain it either, or
+    the two would stop comparing equal over nothing more than provenance.
+    """
+    group = zarr.open_group(store=tmp_path / "nc.zarr", mode="w", zarr_format=3)
+    group.attrs["Conventions"] = "CF-1.7"
+    group.attrs["_NCProperties"] = "version=2,netcdf=4.10.1,nczarr=2.0.0"
+    stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))
+
+    dataset = ZarrDataset(str(tmp_path / "nc.zarr"))
+    assert "_NCProperties" in group.attrs
+    assert "_NCProperties" not in dataset.attributes
+    assert dict(dataset.attributes) == {"Conventions": "CF-1.7"}
+
+
+def test_dimensions_are_assembled_from_the_arrays(tmp_path, zarr_format):
+    location = stores.make_store(tmp_path / "s.zarr", zarr_format=zarr_format)
+    assert dict(ZarrDataset(location).dimensions) == stores.DIMENSIONS
+
+
+def test_a_name_used_at_two_sizes_is_omitted_and_warns(tmp_path):
+    """Two arrays may share a dimension name at different lengths.
+
+    The version 3 specification "does not place any restrictions on the use of
+    the same dimension name across multiple arrays", so this is conforming
+    Zarr and must not raise. Merging the two would produce a wrong cube.
+    """
+    group = zarr.open_group(store=tmp_path / "c.zarr", mode="w", zarr_format=3)
+    stores.make_array(group, "short", (2,), "f8", 3, dimensions=("t",))
+    stores.make_array(group, "long", (5,), "f8", 3, dimensions=("t",))
+
+    dataset = ZarrDataset(str(tmp_path / "c.zarr"))
+    with pytest.warns(IrisCfLoadWarning, match="t"):
+        dimensions = dict(dataset.dimensions)
+
+    assert "t" not in dimensions
+    # The arrays keep the name in their own dimensions: nothing is renamed or
+    # dropped, only the dataset-wide mapping declines to link them.
+    assert dataset.variables["short"].dimensions == ("t",)
+    assert dataset.variables["long"].dimensions == ("t",)
+
+
+def test_anonymous_dimensions_are_not_in_the_mapping(tmp_path):
+    group = zarr.open_group(store=tmp_path / "a.zarr", mode="w", zarr_format=3)
+    stores.make_array(group, "named", (2,), "f8", 3, dimensions=("t",))
+    stores.make_array(group, "unnamed", (4,), "f8", 3)
+
+    dataset = ZarrDataset(str(tmp_path / "a.zarr"))
+    assert dict(dataset.dimensions) == {"t": 2}
+
+
+def test_close_is_idempotent(tmp_path):
+    location = stores.make_store(tmp_path / "s.zarr")
+    dataset = ZarrDataset(location)
+    dataset.close()
+    dataset.close()
+    assert dataset.closed is True
+
+
+def test_context_manager_closes(tmp_path):
+    location = stores.make_store(tmp_path / "s.zarr")
+    dataset = ZarrDataset(location)
+    with dataset as entered:
+        assert entered is dataset
+    assert dataset.closed is True
+
+
+def test_group_keyword_selects_a_subgroup(tmp_path):
+    root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+    sub = root.create_group("measurements/r10m")
+    stores.make_array(sub, "b02", (2,), "u2", 3, dimensions=("p",))
+
+    dataset = ZarrDataset(str(tmp_path / "n.zarr"), group="measurements/r10m")
+    assert list(dataset.variables) == ["b02"]
+    assert dataset.location.endswith("measurements/r10m")
+
+
+def test_subgroup_names_lists_only_the_groups(tmp_path):
+    root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+    root.create_group("conditions")
+    root.create_group("measurements")
+    stores.make_array(root, "v", (2,), "f8", 3)
+
+    dataset = ZarrDataset(str(tmp_path / "n.zarr"))
+    assert sorted(dataset.subgroup_names) == ["conditions", "measurements"]
+
+
+def test_nested_groups_are_not_walked(tmp_path):
+    """Iris loads one group per call, like xarray.
+
+    A Zarr store can legitimately hold unrelated datasets, and merging them
+    into one CubeList would be wrong.
+    """
+    root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+    stores.make_array(root, "top", (2,), "f8", 3)
+    stores.make_array(root.create_group("sub"), "inner", (2,), "f8", 3)
+
+    assert list(ZarrDataset(str(tmp_path / "n.zarr")).variables) == ["top"]
+
+
+def test_the_write_surface_refuses(tmp_path):
+    # Saving to Zarr is not implemented. The members exist because the
+    # interface declares them; refusing is the honest answer.
+    dataset = ZarrDataset(stores.make_store(tmp_path / "s.zarr"))
+    with pytest.raises(NotImplementedError, match="Saving"):
+        dataset.create_dimension("t", 3)
+    with pytest.raises(NotImplementedError, match="Saving"):
+        dataset.create_variable("v", np.dtype("f4"), ("t",))
+    with pytest.raises(NotImplementedError, match="Saving"):
+        dataset.finalise()
+
+
+def test_a_write_mode_refuses(tmp_path):
+    stores.make_store(tmp_path / "s.zarr")
+    with pytest.raises(NotImplementedError, match="Saving"):
+        ZarrDataset(str(tmp_path / "s.zarr"), mode="w")
+
+
+def test_an_in_memory_store_is_just_another_location(tmp_path):
+    """A store need not be a directory. zarr-python decides what it is."""
+    memory = zarr.storage.MemoryStore()
+    group = zarr.open_group(store=memory, mode="w", zarr_format=3)
+    stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))
+
+    dataset = ZarrDataset(memory)
+    assert list(dataset.variables) == ["v"]
+
+
+def test_a_missing_store_raises_zarrs_own_error(tmp_path):
+    with pytest.raises(FileNotFoundError):
+        ZarrDataset(str(tmp_path / "nothing.zarr"))
+
+
+def test_a_directory_that_is_not_a_store_raises(tmp_path):
+    (tmp_path / "plain").mkdir()
+    with pytest.raises(zarr.errors.GroupNotFoundError):
+        ZarrDataset(str(tmp_path / "plain"))
+
+
+def test_a_missing_group_raises(tmp_path):
+    location = stores.make_store(tmp_path / "s.zarr")
+    with pytest.raises(zarr.errors.GroupNotFoundError):
+        ZarrDataset(location, group="nope")

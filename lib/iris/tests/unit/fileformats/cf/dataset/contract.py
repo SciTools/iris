@@ -4,20 +4,28 @@
 # See LICENSE in the root of the repository for full licensing details.
 """One test body, run against every :class:`CFDataset` implementation.
 
-Subclass :class:`CFDatasetContract` in a module named for the implementation,
-supply the three fixtures it declares, and every test here runs against it.
-The class deliberately has no ``Test`` prefix, so pytest does not collect it
-where it is written, only where it is subclassed.
+Subclass :class:`CFDatasetReadContract` in a module named for the
+implementation, supply the fixtures it declares, and every test here runs
+against it. Both classes deliberately lack a ``Test`` prefix, so pytest does
+not collect them where they are written, only where they are subclassed.
 
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md`` section 6: the interface
-is only worth having if both sides of it agree,
-and agreement is cheapest to check by asking the same questions twice.
+The split is read from write because an implementation may arrive in two
+pieces: the Zarr loader can answer every question in the read half before a
+Zarr saver exists. Skipping half of one class instead would hide an
+incomplete implementation behind a skip, and the point of a shared body is
+that divergence fails loudly.
+
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md`` section 6: the
+interface is only worth having if both sides of it agree, and agreement is
+cheapest to check by asking the same questions twice.
 
 Deliberately not exercised here: :meth:`CFDatasetVariable.deprecated_netcdf_member`.
 It is an explicitly netCDF4-specific compatibility escape hatch, so asserting
 either its presence or its absence in a shared body would itself be
 backend-specific - the omission is intentional, not a gap.
 """
+
+from collections.abc import Mapping
 
 import numpy as np
 import pytest
@@ -31,49 +39,13 @@ CONTRACT_VARIABLE_ATTRS = {"units": "K", "long_name": "surface temperature"}
 CONTRACT_GLOBALS = {"Conventions": "CF-1.7", "title": "contract"}
 
 
-def populate(dataset):
-    """Fill an empty writable dataset with the canonical contents.
-
-    Uses only the CFDataset API, so this doubles as the write half of the
-    contract: an implementation that cannot build this cannot be used to save.
-    """
-    for name, size in CONTRACT_DIMENSIONS.items():
-        dataset.create_dimension(name, size)
-    for name, value in CONTRACT_GLOBALS.items():
-        dataset.attributes[name] = value
-
-    variable = dataset.create_variable(
-        "air_temperature", np.dtype("f8"), tuple(CONTRACT_DIMENSIONS), fill_value=-1.0
-    )
-    for name, value in CONTRACT_VARIABLE_ATTRS.items():
-        variable.attributes[name] = value
-    variable[:] = CONTRACT_DATA
-
-    # A dimensionless variable: what a grid mapping is, and the one shape a
-    # CFDatasetVariable must handle without a leading dimension.
-    scalar = dataset.create_variable("grid", np.dtype("i4"))
-    scalar.attributes["grid_mapping_name"] = "latitude_longitude"
-    scalar[()] = 0
-    return dataset
-
-
-class CFDatasetContract:
-    """What every CFDataset implementation must do, whatever it stores into."""
+class CFDatasetReadContract:
+    """What every CFDataset implementation must answer, whatever it reads from."""
 
     @pytest.fixture
     def readable(self):
         """Return an open read-mode dataset holding what populate() writes."""
         raise NotImplementedError("supply a 'readable' fixture")
-
-    @pytest.fixture
-    def writable(self):
-        """Return an open, empty, write-mode dataset."""
-        raise NotImplementedError("supply a 'writable' fixture")
-
-    @pytest.fixture
-    def reopen(self):
-        """Return a callable giving a fresh read-mode dataset over 'writable'."""
-        raise NotImplementedError("supply a 'reopen' fixture")
 
     # -- The dataset itself ------------------------------------------------
 
@@ -90,19 +62,19 @@ class CFDatasetContract:
     def test_starts_open(self, readable):
         assert readable.closed is False
 
-    def test_close_then_closed(self, writable):
-        writable.close()
-        assert writable.closed is True
+    def test_close_then_closed(self, readable):
+        readable.close()
+        assert readable.closed is True
 
-    def test_close_is_idempotent(self, writable):
-        writable.close()
-        writable.close()
-        assert writable.closed is True
+    def test_close_is_idempotent(self, readable):
+        readable.close()
+        readable.close()
+        assert readable.closed is True
 
-    def test_context_manager_returns_self_and_closes(self, writable):
-        with writable as entered:
-            assert entered is writable
-        assert writable.closed is True
+    def test_context_manager_returns_self_and_closes(self, readable):
+        with readable as entered:
+            assert entered is readable
+        assert readable.closed is True
 
     def test_dimensions(self, readable):
         assert dict(readable.dimensions) == CONTRACT_DIMENSIONS
@@ -112,6 +84,19 @@ class CFDatasetContract:
 
     def test_variable_names(self, readable):
         assert sorted(readable.variables) == ["air_temperature", "grid"]
+
+    def test_format_is_a_non_empty_string(self, readable):
+        assert isinstance(readable.format, str)
+        assert readable.format
+
+    def test_encoding_is_a_readable_mapping(self, readable):
+        # Its keys are the backend's own spelling and generic code must never
+        # branch on one, but it must be possible to read them: otherwise a
+        # caller that wants to know how a store is laid out has to reach
+        # through to the netCDF4 or zarr object, which is the abstraction
+        # leaking at the point it exists to hold.
+        assert isinstance(readable.encoding, Mapping)
+        dict(readable.encoding)
 
     # -- A variable --------------------------------------------------------
 
@@ -131,6 +116,17 @@ class CFDatasetContract:
 
     def test_variable_location_matches_its_dataset(self, variable, readable):
         assert variable.location == readable.location
+
+    def test_variable_format_matches_its_dataset(self, variable, readable):
+        assert variable.format == readable.format
+
+    def test_variable_encoding_reports_the_chunking(self, variable):
+        encoding = variable.encoding
+        assert isinstance(encoding, Mapping)
+        # Whatever a backend spells it, the chunk shape it reports through
+        # `chunking` has to be somewhere in `encoding` too, or `encoding` is
+        # not reporting what the store holds.
+        assert variable.chunking in (None, *encoding.values())
 
     def test_variable_dimensions(self, variable):
         assert variable.dimensions == tuple(CONTRACT_DIMENSIONS)
@@ -202,10 +198,50 @@ class CFDatasetContract:
         with pytest.raises(TypeError, match="unsized"):
             len(scalar)
 
-    # -- Writing -----------------------------------------------------------
+
+class CFDatasetWriteContract:
+    """What every CFDataset implementation must do, whatever it stores into."""
+
+    @pytest.fixture
+    def writable(self):
+        """Return an open, empty, write-mode dataset."""
+        raise NotImplementedError("supply a 'writable' fixture")
+
+    @pytest.fixture
+    def reopen(self):
+        """Return a callable giving a fresh read-mode dataset over 'writable'."""
+        raise NotImplementedError("supply a 'reopen' fixture")
+
+    def populate(self, dataset):
+        """Fill an empty writable dataset with the canonical contents.
+
+        Uses only the CFDataset API, so this doubles as the write half of the
+        contract: an implementation that cannot build this cannot be used to save.
+        """
+        for name, size in CONTRACT_DIMENSIONS.items():
+            dataset.create_dimension(name, size)
+        for name, value in CONTRACT_GLOBALS.items():
+            dataset.attributes[name] = value
+
+        variable = dataset.create_variable(
+            "air_temperature",
+            np.dtype("f8"),
+            tuple(CONTRACT_DIMENSIONS),
+            fill_value=-1.0,
+        )
+        for name, value in CONTRACT_VARIABLE_ATTRS.items():
+            variable.attributes[name] = value
+        variable[:] = CONTRACT_DATA
+
+        # A dimensionless variable: what a grid mapping is, and the one shape a
+        # CFDatasetVariable must handle without a leading dimension.
+        scalar = dataset.create_variable("grid", np.dtype("i4"))
+        scalar.attributes["grid_mapping_name"] = "latitude_longitude"
+        scalar[()] = 0
+        return dataset
 
     def test_populate_then_read_back(self, writable, reopen):
-        populate(writable)
+        self.populate(writable)
         writable.close()
         with reopen() as reader:
             np.testing.assert_array_equal(
@@ -242,7 +278,7 @@ class CFDatasetContract:
         np.testing.assert_array_equal(variable[:], [1.0, 2.0, 3.0])
 
     def test_attribute_write_through(self, writable, reopen):
-        populate(writable)
+        self.populate(writable)
         writable.variables["air_temperature"].attributes["comment"] = "added"
         writable.close()
         with reopen() as reader:
@@ -254,7 +290,7 @@ class CFDatasetContract:
         # threading.Lock, and only the distributed scheduler - which supplies
         # a picklable one - ever ships a handle to another process. Using the
         # handle after close is the portable approximation.
-        populate(writable)
+        self.populate(writable)
         handle = writable.variables["air_temperature"].write_handle()
         writable.close()
 
@@ -266,7 +302,7 @@ class CFDatasetContract:
             )
 
     def test_sync_and_finalise_are_callable(self, writable):
-        populate(writable)
+        self.populate(writable)
         assert writable.sync() is None
         assert writable.finalise() is None
         assert writable.closed is False

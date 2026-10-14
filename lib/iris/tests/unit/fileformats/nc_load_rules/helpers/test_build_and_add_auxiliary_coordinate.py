@@ -46,8 +46,14 @@ class TestBoundsVertexDim(MockerMixin):
 
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
+            # A data variable has a shape as well as dimension names, because
+            #  a coordinate is attached to the dimensions it matches on
+            #  `(name, size)` - see `helpers._common_data_dims`.
             cf_var=mocker.Mock(
-                dimensions=("foo", "bar"), cf_data=cf_data, dtype=np.int32
+                dimensions=("foo", "bar"),
+                shape=(self.dim_names_lens["foo"], self.dim_names_lens["bar"]),
+                cf_data=cf_data,
+                dtype=np.int32,
             ),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
@@ -185,7 +191,9 @@ class TestDtype(MockerMixin):
 
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.int32),
+            cf_var=mocker.Mock(
+                dimensions=("foo", "bar"), shape=points.shape, dtype=np.int32
+            ),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -260,7 +268,9 @@ class TestCoordConstruction:
         # Create dummy pyke engine.
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.float32),
+            cf_var=mocker.Mock(
+                dimensions=("foo", "bar"), shape=(6, 2), dtype=np.float32
+            ),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )

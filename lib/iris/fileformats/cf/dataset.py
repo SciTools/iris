@@ -150,6 +150,17 @@ class CFDatasetVariable(ABC):
 
     @property
     @abstractmethod
+    def format(self) -> str:
+        """The concrete format of the dataset holding this variable.
+
+        Repeated here from the dataset so that a variable can answer for
+        itself, as :attr:`location` is. For messages and diagnostics only:
+        generic code asks for a capability, never for a format.
+
+        """
+
+    @property
+    @abstractmethod
     def dimensions(self) -> tuple:
         """The names of the dimensions this variable spans, in order."""
 
@@ -177,6 +188,18 @@ class CFDatasetVariable(ABC):
     @abstractmethod
     def chunking(self) -> tuple | None:
         """The variable's storage chunk shape, or ``None`` when unchunked."""
+
+    @property
+    @abstractmethod
+    def encoding(self) -> Mapping:
+        """The storage settings this variable holds, in the backend's spelling.
+
+        ``zlib``, ``complevel``, ``chunksizes`` for netCDF; ``chunks``,
+        ``shards``, ``codecs``, ``zarr_format`` for Zarr. Readable, never
+        interpreted: no generic code may branch on a key. The typed,
+        guaranteed-present member is :attr:`chunking`.
+
+        """
 
     @property
     @abstractmethod
@@ -262,6 +285,24 @@ class CFDataset(ABC):
     @abstractmethod
     def mode(self) -> str:
         """The mode the store was opened in: ``r``, ``r+``, ``a``, ``w`` or ``w-``."""
+
+    @property
+    @abstractmethod
+    def format(self) -> str:
+        """The concrete format of this dataset.
+
+        One of ``NETCDF4``, ``NETCDF3_CLASSIC``, ``ZARR_V2`` or ``ZARR_V3``.
+
+        What the loader, the saver and ``LOAD_PROBLEMS`` *say* when they have
+        to name the format. Reconstructing it from the implementation class
+        would be the type test this interface exists to forbid.
+
+        """
+
+    @property
+    @abstractmethod
+    def encoding(self) -> Mapping:
+        """The store-wide settings this store holds, in the backend's spelling."""
 
     @property
     @abstractmethod
