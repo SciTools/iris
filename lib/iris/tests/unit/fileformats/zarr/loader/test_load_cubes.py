@@ -204,6 +204,40 @@ def test_a_structured_attribute_cannot_then_be_saved_to_netcdf(tmp_path):
     iris.save(cube, str(tmp_path / "out.nc"))
 
 
+def test_a_dimension_name_reused_at_two_lengths_still_places_a_coordinate(tmp_path):
+    """Zarr dimension names carry none of netCDF's uniqueness guarantee.
+
+    A data variable may name both of its dimensions `d` at two lengths, which
+    makes the name alone useless for choosing an axis. `(name, size)` names
+    one axis here, and the coordinate belongs on it; matching on the bare name
+    picks the first `d` and the coordinate is dropped as the wrong length.
+    """
+    group = zarr.open_group(store=tmp_path / "r.zarr", mode="w", zarr_format=3)
+    data = stores.make_array(
+        group,
+        "v",
+        (2, 3),
+        "f8",
+        3,
+        dimensions=("d", "d"),
+        attributes={"units": "1", "coordinates": "lat"},
+    )
+    data[:] = np.zeros((2, 3))
+    lat = stores.make_array(
+        group,
+        "lat",
+        (3,),
+        "f8",
+        3,
+        dimensions=("d",),
+        attributes={"units": "degrees_north", "standard_name": "latitude"},
+    )
+    lat[:] = [10.0, 20.0, 30.0]
+
+    cube = list(load_cubes(str(tmp_path / "r.zarr")))[0]
+    assert cube.coord_dims("latitude") == (1,)
+
+
 def test_version_3_zeros_are_not_masked(tmp_path):
     """An int16 [0, 1, 2] with no CF attributes loads with nothing masked.
 

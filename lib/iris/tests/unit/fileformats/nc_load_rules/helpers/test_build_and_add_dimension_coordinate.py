@@ -28,7 +28,7 @@ class RulesTestMixin(MockerMixin):
         # Create dummy pyke engine.
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.int32),
+            cf_var=mocker.Mock(dimensions=("foo", "bar"), shape=(6, 2), dtype=np.int32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -58,6 +58,16 @@ class RulesTestMixin(MockerMixin):
             "iris.fileformats._nc_load_rules.helpers.get_cf_bounds_var",
             new=get_cf_bounds_var,
         )
+
+    def _set_data_var_length(self, length):
+        """Keep the mock data variable's "foo" dimension the coordinate's length.
+
+        A coordinate is attached to the dimensions it matches on
+        `(name, size)` - see `helpers._common_data_dims` - so a data variable
+        naming "foo" at some other length shares nothing with the coordinate
+        and the coordinate reaches the cube with no dimensions at all.
+        """
+        self.engine.cf_var.shape = (length, 2)
 
     def _make_bounds_var(self, bounds, dimensions, units):
         bounds = np.array(bounds)
@@ -103,6 +113,7 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         self.cf_coord_var.size = np.prod(points.shape)
         self.cf_coord_var.dtype = points.dtype
         self.cf_coord_var.filename = "DUMMY"
+        self._set_data_var_length(points.shape[0])
 
     def check_case_dim_coord_construction(self, climatology=False):
         # Test a generic dimension coordinate, with or without
@@ -348,6 +359,7 @@ class TestBoundsVertexDim(RulesTestMixin):
         self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.dtype = points.dtype
+        self._set_data_var_length(points.shape[0])
 
     def test_slowest_varying_vertex_dim__normalise_bounds(self):
         # Create the bounds cf variable.
@@ -441,6 +453,7 @@ class TestCircular(RulesTestMixin):
         self.cf_coord_var.cf_data = RealArrayCfData(points)
         self.cf_coord_var.shape = points.shape
         self.cf_coord_var.dtype = points.dtype
+        self._set_data_var_length(points.shape[0])
         if bounds:
             bounds = np.array(bounds).reshape(self.cf_coord_var.shape + (2,))
             dimensions = ("x", "nv")

@@ -94,6 +94,32 @@ class _AnonymousDimension:
         return "<anonymous dimension>"
 
 
+def _dimension_identities(cf_variable) -> tuple:
+    """Return one hashable identity per dimension `cf_variable` spans.
+
+    A named dimension's identity is the pair ``(name, size)``: two variables
+    share a dimension when they name it identically *and* it is the same
+    length in both. A name reused at two lengths links nothing, which is the
+    only reading that cannot produce a wrong cube.
+
+    An unnamed dimension gets a fresh :class:`_AnonymousDimension`, which
+    equals nothing but itself.
+
+    A function rather than a method, because the netCDF loading rules decide
+    which cube dimensions to attach a coordinate to, and have to decide it by
+    the rule that let the coordinate through :meth:`CFVariable.spans` in the
+    first place - see
+    :func:`iris.fileformats._nc_load_rules.helpers._common_data_dims`.
+
+    Relies on the :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`
+    invariant that ``dimensions`` and ``shape`` have the same length.
+    """
+    return tuple(
+        (name, size) if name is not None else _AnonymousDimension()
+        for name, size in zip(cf_variable.dimensions, cf_variable.shape)
+    )
+
+
 # NetCDF variable attributes handled by the netCDF4 module and
 # therefore automatically classed as "used" attributes.
 _CF_ATTRS_IGNORE = set(["_FillValue", "add_offset", "missing_value", "scale_factor"])
@@ -214,25 +240,6 @@ class CFVariable(metaclass=ABCMeta):
         """
         return not self.dimensions or self.dimensions == (_NCZARR_SCALAR_DIMENSION,)
 
-    def _dimension_identities(self) -> tuple:
-        """Return one hashable identity per dimension this variable spans.
-
-        A named dimension's identity is the pair ``(name, size)``: two
-        variables share a dimension when they name it identically *and* it is
-        the same length in both. A name reused at two lengths links nothing,
-        which is the only reading that cannot produce a wrong cube.
-
-        An unnamed dimension gets a fresh :class:`_AnonymousDimension`, which
-        equals nothing but itself.
-
-        Relies on the :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`
-        invariant that ``dimensions`` and ``shape`` have the same length.
-        """
-        return tuple(
-            (name, size) if name is not None else _AnonymousDimension()
-            for name, size in zip(self.dimensions, self.shape)
-        )
-
     def spans(self, cf_variable):
         """Determine dimensionality coverage.
 
@@ -240,7 +247,7 @@ class CFVariable(metaclass=ABCMeta):
         is a subset of the specified target variable.
 
         A dimension matches on the pair *(name, size)*, not on the bare
-        name: see :meth:`_dimension_identities`. A name that is the same in
+        name: see :func:`_dimension_identities`. A name that is the same in
         both variables but a different size links nothing, and a Zarr
         store's anonymous dimensions never match anything, even each other.
 
@@ -261,8 +268,8 @@ class CFVariable(metaclass=ABCMeta):
         if self._is_scalar():
             return True
 
-        source = self._dimension_identities()
-        target = cf_variable._dimension_identities()
+        source = _dimension_identities(self)
+        target = _dimension_identities(cf_variable)
         return set(source).issubset(target)
 
     def __eq__(self, other):
@@ -575,8 +582,8 @@ class CFBoundaryVariable(CFVariable):
         # Scalar variables always span the target variable.
         result = True
         if not self._is_scalar():
-            source = self._dimension_identities()
-            target = cf_variable._dimension_identities()
+            source = _dimension_identities(self)
+            target = _dimension_identities(cf_variable)
             # Ignore the bounds extent dimension.
             result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
                 target
@@ -651,8 +658,8 @@ class CFClimatologyVariable(CFVariable):
         # Scalar variables always span the target variable.
         result = True
         if not self._is_scalar():
-            source = self._dimension_identities()
-            target = cf_variable._dimension_identities()
+            source = _dimension_identities(self)
+            target = _dimension_identities(cf_variable)
             # Ignore the climatology extent dimension.
             result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
                 target
@@ -974,8 +981,8 @@ class CFLabelVariable(CFVariable):
         # Scalar variables always span the target variable.
         result = True
         if not self._is_scalar():
-            source = self._dimension_identities()
-            target = cf_variable._dimension_identities()
+            source = _dimension_identities(self)
+            target = _dimension_identities(cf_variable)
             # Ignore label string length dimension.
             result = set(source[:-1]).issubset(target) or set(source[1:]).issubset(
                 target

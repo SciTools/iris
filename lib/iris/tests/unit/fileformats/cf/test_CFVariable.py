@@ -107,8 +107,8 @@ class TestSpans:
     def test_is_subset_check(self):
         # `spans()` now reads `shape` as well as `dimensions` on both sides of
         # the comparison, so a bare `mocker.MagicMock()` collaborator will not
-        # do here: an unconfigured mock auto-answers `_dimension_identities()`
-        # with something that iterates as empty, which would make `spans()`
+        # do here: `_dimension_identities()` reads both off an unconfigured
+        # mock and gets something that iterates as empty, making `spans()`
         # trivially "true" instead of exercising the real comparison - see
         # the Zarr I/O design doc, section 4.4, and this task's own history.
         lhs = CFVariableSub("lhs", _NetCDFVarWithDimensions("lhs_var", ("time",)))
