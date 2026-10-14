@@ -237,6 +237,8 @@ code in a private sibling module instead.
 - New modules: aim under ~1000 lines, one coherent concept each.
 - Functions: aim to fit one screen (~50 lines).
 - Use guard clauses and early returns instead of nested conditionals.
+- Give a function one exit where it must still warn, record or close something
+  on the way out. A second exit added later silently skips that work.
 - Nesting beyond three levels is a signal to extract a named helper.
 
 

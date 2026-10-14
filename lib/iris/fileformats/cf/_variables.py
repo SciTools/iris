@@ -282,11 +282,9 @@ class CFVariable(metaclass=ABCMeta):
             # must not be resolved by this method.
             raise AttributeError(name)
 
-        try:
+        if name in self.attributes:
+            # Read before warning, as _deprecated_netcdf_member does.
             value = self.attributes[name]
-        except KeyError:
-            pass
-        else:
             # stacklevel=3 reports the caller's own "cf_var.units" line:
             # warn_deprecated's frame is 1 and this method's is 2.
             warn_deprecated(
@@ -295,8 +293,11 @@ class CFVariable(metaclass=ABCMeta):
                 f"release. Use cf_var.attributes[{name!r}] instead.",
                 stacklevel=3,
             )
-            return value
-        return self._deprecated_netcdf_member(name)
+        else:
+            # Not in an except block: an AttributeError raised from here must
+            # not arrive chained to a KeyError the caller never caused.
+            value = self._deprecated_netcdf_member(name)
+        return value
 
     def _deprecated_netcdf_member(self, name):
         """Return a netCDF4 member of the backing variable, as this class used to.

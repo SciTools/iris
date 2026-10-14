@@ -237,6 +237,21 @@ class TestAttributeAccess:
         with pytest.raises(AttributeError, match="nonesuch"):
             cf_var.nonesuch
 
+    def test_getattr_of_nothing_at_all_raises_unchained(self, nc_var):
+        """A missed attribute lookup leaves no KeyError on the traceback.
+
+        Resolving the fallback inside `except KeyError` would prefix every
+        mistyped attribute with "During handling of the above exception".
+        """
+        nc_var.deprecated_netcdf_member.side_effect = AttributeError("nonesuch")
+        cf_var = CFVariableSub("foo", nc_var)
+
+        with pytest.raises(AttributeError) as excinfo:
+            cf_var.nonesuch
+
+        assert excinfo.value.__cause__ is None
+        assert excinfo.value.__context__ is None
+
     def test_getitem_and_len_delegate_to_underlying_variable(self, nc_var):
         cf_var = CFVariableSub("foo", nc_var)
 
