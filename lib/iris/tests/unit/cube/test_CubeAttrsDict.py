@@ -11,7 +11,7 @@ import pytest
 
 from iris.common.mixin import LimitedAttributeDict
 from iris.cube import CubeAttrsDict
-from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
+from iris.fileformats.cf.saver import _CF_GLOBAL_ATTRS
 
 
 @pytest.fixture

@@ -14,7 +14,7 @@ import iris
 import iris.coord_systems
 from iris.coords import DimCoord
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION
+from iris.fileformats.cf.saver import CF_CONVENTIONS_VERSION
 from iris.fileformats.netcdf import _thread_safe_nc as threadsafe_nc
 from iris.fileformats.netcdf._dataset import NetCDFDatasetVariable
 from iris.tests import _shared_utils

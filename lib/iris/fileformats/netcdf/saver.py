@@ -37,22 +37,11 @@ import iris.fileformats.cf
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.dataset import CFDatasetVariable
 
-# Beside CFSaver, these names moved to iris.fileformats.cf.saver too, and are
-# imported back rather than forwarded, so that reading them here stays silent.
-# SaverFillValueWarning because it is public and spec section 4.8 does not
-# relocate it. The constants because they are private - not API, so owed no
-# deprecation cycle - and because code elsewhere in Iris still reads them from
-# here, on the load path, where a warning per cube would be intolerable. The
-# next pull request repoints those readers and this import goes with them.
-from iris.fileformats.cf.saver import (
-    _CF_ATTRS,
-    _CF_DATA_ATTRS,
-    _CF_GLOBAL_ATTRS,
-    _FACTORY_DEFNS,
-    _UKMO_DATA_ATTRS,
-    CFSaver,
-    SaverFillValueWarning,
-)
+# Beside CFSaver, SaverFillValueWarning also moved to iris.fileformats.cf.saver,
+# and is imported back rather than forwarded, so that reading it here stays
+# silent. It is public, and spec section 4.8 does not relocate it, so
+# iris.fileformats.netcdf.saver.SaverFillValueWarning must keep resolving.
+from iris.fileformats.cf.saver import CFSaver, SaverFillValueWarning
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
 from iris.fileformats.netcdf._dataset import NetCDFDataset, NetCDFDatasetVariable
@@ -66,11 +55,6 @@ from . import logger
 # We could use an __all__, but we don't want to maintain one here
 logger
 SaverFillValueWarning
-_CF_ATTRS
-_CF_DATA_ATTRS
-_CF_GLOBAL_ATTRS
-_FACTORY_DEFNS
-_UKMO_DATA_ATTRS
 
 #: Names that moved to iris.fileformats.cf.saver, and are still reachable
 #: here. Spec section 4.8.
