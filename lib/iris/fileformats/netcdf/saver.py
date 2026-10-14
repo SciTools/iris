@@ -272,8 +272,8 @@ class Saver(CFSaver):
         self.filepath = filepath
 
         # One lock for the whole file, shared with every variable of it.
-        #: A per-file write lock to prevent dask attempting overlapping writes.
         # N.B. the file-write-lock *type* actually depends on the dask scheduler type.
+        #: A per-file write lock to prevent dask attempting overlapping writes.
         self.file_write_lock = dataset.write_lock
 
     def _flush_before_close(self) -> None:

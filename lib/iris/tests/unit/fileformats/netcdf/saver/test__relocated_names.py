@@ -144,6 +144,15 @@ class TestSaverMethods:
 
 
 class TestNothingInsideIrisUsesTheOldNames:
+    """Cover the save and load paths, which is less than the name claims.
+
+    A reader of a relocated name that neither a save nor a load reaches goes
+    unnoticed here. Iris has two of those today - this package's own
+    ``test_save`` and ``integration.netcdf.test_attributes``, both importing
+    ``CF_CONVENTIONS_VERSION`` from :mod:`iris.fileformats.netcdf` - so take a
+    pass as saying the two paths are clean, not the repository.
+    """
+
     def test_a_save_emits_no_deprecation(self, tmp_path):
         # The aliases are for code outside Iris. A save that trips one means a
         # reader inside Iris was left pointing at the old home. Promoting to an
