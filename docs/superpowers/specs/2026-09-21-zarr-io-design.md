@@ -2035,7 +2035,7 @@ else, and can land beside any of the others.
 | 2.5 | Deprecate `CFVariable.__getattr__` | Merged | [#7333](https://github.com/SciTools/iris/pull/7333) |
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Not started | — |
-| 5 | Relocate the CF saver | In review | — |
+| 5 | Relocate the CF saver | In review | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | Not started | — |
 | 7 | Real-world test data and benchmarks | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
