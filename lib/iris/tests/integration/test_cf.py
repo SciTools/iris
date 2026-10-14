@@ -12,8 +12,8 @@ import pytest
 import iris
 from iris._deprecation import IrisDeprecation
 import iris.fileformats.cf as cf
+from iris.fileformats.cf.loader import _get_cf_var_data
 from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ, _thread_safe_nc
-from iris.fileformats.netcdf.loader import _get_cf_var_data
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import _shared_utils
 import iris.tests.stock as stock
