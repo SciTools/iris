@@ -23,11 +23,11 @@ typed member.
 
 The property ``attributes`` holds an open-ended set of data keys read from a
 file, with no schema to enumerate, which is why :class:`TrackedAttributes`
-exists and why :class:`~iris.fileformats.cf.CFVariable`
-:meth:`~iris.fileformats.cf.CFVariable.__getattr__` is allowed to forward to it.
-Tracking is the load-bearing part: Iris decides which file attributes survive
-onto a loaded cube by asking which ones the loading rules did *not* read, so a
-read that goes unrecorded silently leaks a CF-reserved attribute onto the cube.
+exists and why :meth:`~iris.fileformats.cf.CFVariable.__getattr__` forwards to
+it. Tracking is the load-bearing part: Iris decides which file attributes
+survive onto a loaded cube by asking which ones the loading rules did *not*
+read, so a read that goes unrecorded silently leaks a CF-reserved attribute
+onto the cube.
 
 See sections 4.2, 4.3 and 4.5 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
