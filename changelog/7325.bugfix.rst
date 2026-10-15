@@ -1,0 +1,3 @@
+:user:`rcomer` fixed the longitude alignment of the masked data created by
+:func:`~iris.util.mask_cube_from_shape` when the cube's longitude points extend
+above 180 degrees. (:issue:`7324`)
