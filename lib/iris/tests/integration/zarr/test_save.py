@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for saving cubes to a Zarr store."""
 
+import warnings
+
 import numpy as np
 import pytest
 
@@ -103,14 +105,20 @@ class TestRoundTrip:
     def test_a_group_round_trips(self, tmp_path, cube):
         path = tmp_path / "out.zarr"
         iris.save(cube, path)
-        iris.save(cube, path, group="again")
+        # A different name in the group than at the root: reading the
+        # group and finding this name only works if `group=` was honoured,
+        # where reading the root (which does not have this name) would not.
+        renamed = cube.copy()
+        renamed.rename("a_renamed_cube")
+        renamed.var_name = "a_renamed_cube"
+        iris.save(renamed, path, group="again")
         # `iris.load`/`iris.load_cube` read the root group only - see
         # "Groups" in `docs/src/user_manual/explanation/zarr_io.rst` - so a
         # named group is read through the Zarr loader directly.
         loaded = CubeList(
             iris.fileformats.zarr.load_cubes(path, group="again")
-        ).extract_cube(cube.name())
-        assert loaded.shape == cube.shape
+        ).extract_cube(renamed.name())
+        assert loaded.shape == renamed.shape
 
 
 class TestWhatTheFormatDoesNotPromise:
@@ -124,9 +132,20 @@ class TestWhatTheFormatDoesNotPromise:
         chunks = sorted((path / cube.var_name / "c").rglob("*"))
         removed = [p for p in chunks if p.is_file()][0]
         removed.unlink()
-        # Opens cleanly, and under-reports data, with no warning of any kind.
-        reloaded = iris.load_cube(path, cube.name())
-        assert reloaded.data.shape == cube.shape
+        original_masked = np.ma.count_masked(cube.data)
+        # Opens cleanly, and under-reports data, with no warning of any kind:
+        # both halves of that are asserted below, not only the shape, which
+        # is unchanged whether the gap is filled in silence or not.
+        with warnings.catch_warnings(record=True) as caught:
+            warnings.simplefilter("always")
+            reloaded = iris.load_cube(path, cube.name())
+            data = reloaded.data
+        assert caught == []
+        assert data.shape == cube.shape
+        # The deleted chunk reads back as the array's own fill, which this
+        # masked cube's decode then masks - strictly more points than the
+        # cube ever declared missing, and nothing said so.
+        assert np.ma.count_masked(data) > original_masked
 
     def test_consolidated_metadata_goes_stale(self, tmp_path, cube):
         path = tmp_path / "out.zarr"
@@ -215,8 +234,15 @@ class TestInputsTheDesignImplies:
         stored = zarr.open_group(store=path, mode="r")[cube.var_name]
         assert stored.dtype == np.dtype("i2")
         assert "scale_factor" in dict(stored.attrs)
+        assert "add_offset" in dict(stored.attrs)
         loaded = iris.load_cube(path, cube.name())
-        np.testing.assert_allclose(loaded.data, cube.data, rtol=1e-3)
+        # A tolerance of one stored count: loose enough for the quantisation
+        # error correct packing is allowed to introduce (up to half a count),
+        # tight enough that a systematic one-count bias - truncation instead
+        # of rounding, say - would fail it, where the original `rtol=1e-3`
+        # would not have.
+        scale_factor = stored.attrs["scale_factor"]
+        np.testing.assert_allclose(loaded.data, cube.data, atol=scale_factor, rtol=0)
 
     def test_int64_data_survives(self, tmp_path, cube):
         # The one dtype the saver has narrowing logic for. A Zarr store holds
