@@ -531,7 +531,7 @@ def find_saver(filespec):
 def save(source, target, saver=None, **kwargs):
     """Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports four file formats for saving. Three are
+    Iris currently supports five file formats for saving. Four are
     recognised by filename extension:
 
     * **netCDF** - the Unidata network Common Data Format,
@@ -540,8 +540,11 @@ def save(source, target, saver=None, **kwargs):
       see :func:`iris_grib.save_grib2`.
     * **PP** - the Met Office UM Post Processing Format,
       see :func:`iris.fileformats.pp.save`
+    * **Zarr** - a native Zarr version 3 store, written through zarr-python,
+      see :func:`iris.fileformats.zarr.saver.save`. See
+      :doc:`/user_manual/explanation/zarr_io` for more.
 
-    The fourth format is recognised differently:
+    The fifth format is recognised differently:
 
     * **Zarr (via NcZarr)** - "The open foundation for chunked, compressed,
       N-dimensional
