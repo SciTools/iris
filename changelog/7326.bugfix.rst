@@ -1,0 +1,3 @@
+:user:`raashish1601` fixed :meth:`~iris.mesh.MeshXY.connectivities` and other
+connectivity methods failing with an ``AttributeError`` on a mesh that had been
+pickled and unpickled. (:issue:`7028`)
