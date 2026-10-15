@@ -62,7 +62,7 @@ from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
-from . import _decode
+from . import _decode, _encode
 
 #: What :attr:`CFDataset.format` answers, by the store's Zarr version.
 _FORMAT_BY_ZARR_VERSION = {2: "ZARR_V2", 3: "ZARR_V3"}
@@ -510,6 +510,62 @@ _MODES = _READ_MODES + _WRITE_MODES
 #: writing means the three version-specific points of §4.5 and deleting this.
 _WRITABLE_ZARR_FORMAT = 3
 
+#: The storage keywords `create_variable` passes to zarr-python, which are
+#: zarr-python's own. Iris does not invent names for them and does not
+#: translate netCDF's: see `_NETCDF_KEYWORDS` below, and §4.5 of the design.
+_ZARR_ENCODING_KEYWORDS = frozenset(
+    {"chunks", "shards", "compressors", "filters", "serializer", "order"}
+)
+
+#: What to say about a netCDF storage keyword someone tried here. The Zarr
+#: name where there is one, and a plain "no equivalent" where there is not -
+#: a compression model that differs is worth saying out loud, and silently
+#: mapping `zlib=True` onto a Blosc codec would be a false equivalence.
+_NETCDF_KEYWORDS = {
+    "zlib": "compressors, e.g. compressors=[zarr.codecs.GzipCodec()]",
+    "complevel": "compressors, which carry their own level",
+    "shuffle": "compressors, e.g. the shuffle option of BloscCodec",
+    "fletcher32": "no equivalent; Zarr checksums with a Crc32c codec",
+    "contiguous": "no equivalent; a Zarr array is always chunked",
+    "chunksizes": "chunks",
+    "endian": "no equivalent; a Zarr codec decides byte order",
+    "least_significant_digit": "no equivalent",
+    "unlimited_dimensions": "no equivalent; a Zarr array has a fixed shape",
+}
+
+
+def check_encoding_keywords(encoding) -> None:
+    """Raise for any storage keyword a Zarr store does not have.
+
+    Parameters
+    ----------
+    encoding : dict
+        The storage keywords a caller passed.
+
+    Raises
+    ------
+    TypeError
+        Naming each unknown keyword, and the Zarr replacement where there
+        is one.
+
+    """
+    unknown = set(encoding) - _ZARR_ENCODING_KEYWORDS
+    if not unknown:
+        return
+    lines = []
+    for keyword in sorted(unknown):
+        replacement = _NETCDF_KEYWORDS.get(keyword)
+        if replacement is None:
+            lines.append(f"  {keyword}: not a Zarr storage keyword")
+        else:
+            lines.append(f"  {keyword}: use {replacement}")
+    message = (
+        "Unknown Zarr storage keyword(s). A Zarr store takes zarr-python's "
+        "own keywords, which Iris does not translate netCDF's onto:\n"
+        + "\n".join(lines)
+    )
+    raise TypeError(message)
+
 
 class ZarrDataset(CFDataset):
     """A Zarr store, or one group of one, presented through the CF interface."""
@@ -654,11 +710,19 @@ class ZarrDataset(CFDataset):
 
     @property
     def dimensions(self) -> Mapping:
-        """The dimension sizes this group's arrays agree on.
+        """The dimension sizes this group's arrays agree on, and any declared.
 
-        Assembled when the store is opened, not on first access here.
+        Assembled when the store is opened, and again after a write has
+        changed what the answer would be. A dimension declared by
+        :meth:`create_dimension` appears here before any array carries it,
+        because that is what a caller choosing a new name needs to see.
+
         """
-        assert self._dimensions is not None
+        if self._dimensions is None:
+            self._dimensions = {
+                **_assemble_dimensions(self.variables),
+                **self._declared_dimensions,
+            }
         return self._dimensions
 
     @property
@@ -684,14 +748,148 @@ class ZarrDataset(CFDataset):
         return self._attributes
 
     def create_dimension(self, name: str, size: int | None) -> None:
-        """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError("Saving to Zarr is not supported.")
+        """Declare a dimension of the given length.
+
+        Zarr has no dimension object: a dimension is a name an array carries
+        in its own metadata. So this records the name and size, and
+        :meth:`create_variable` writes the names onto each array. The record
+        is what lets a size conflict be caught here rather than becoming two
+        arrays that disagree.
+
+        Parameters
+        ----------
+        name : str
+            The dimension's name.
+        size : int or None
+            Its length. ``None`` requests an unlimited dimension, which Zarr
+            has no form for.
+
+        Raises
+        ------
+        NotImplementedError
+            For ``size=None``.
+        ValueError
+            If `name` is already declared at a different size, or if this
+            dataset was opened read-only.
+
+        """
+        self._check_writable("create_dimension")
+        if size is None:
+            message = (
+                f"Cannot create the unlimited dimension {name!r}: a Zarr array "
+                "has a fixed shape, so there is no unlimited dimension to "
+                "create."
+            )
+            raise NotImplementedError(message)
+
+        declared = self._declared_dimensions.get(name)
+        if declared is not None and declared != size:
+            message = (
+                f"Cannot declare dimension {name!r} with size {size}: it is "
+                f"already declared with size {declared}."
+            )
+            raise ValueError(message)
+        self._declared_dimensions[name] = size
+        self._dimensions = None
+
+    def _check_writable(self, action: str) -> None:
+        """Raise unless this dataset was opened in a mode that writes."""
+        if self._mode not in _WRITE_MODES:
+            message = (
+                f"Cannot {action} on a Zarr store opened with mode={self._mode!r}. "
+                f"Open it with one of {_WRITE_MODES} to write."
+            )
+            raise ValueError(message)
 
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
-    ):
-        """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError("Saving to Zarr is not supported.")
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+    ) -> "ZarrDatasetVariable":
+        """Create and return a new array.
+
+        Parameters
+        ----------
+        name : str
+            The array's name within this group.
+        dtype : numpy.dtype or str or type
+            The array's dtype. ``str`` itself asks for a variable-length
+            string array, which is how this store holds text.
+        dimensions : iterable of str, optional
+            The names of its dimensions, each already declared by
+            :meth:`create_dimension`. Empty for a scalar.
+        fill_value : optional
+            The CF missing-value sentinel. When given it is written as a
+            ``_FillValue`` attribute as well as the array's own fill, because
+            on version 3 the attribute is the masking declaration and the
+            storage fill is not. When not given, the array takes the netCDF
+            default fill for its dtype, and declares nothing: the saver
+            declares one if it finds the data is masked.
+        **encoding
+            Zarr's own storage keywords: ``chunks``, ``shards``,
+            ``compressors``, ``filters``, ``serializer``, ``order``.
+
+        Returns
+        -------
+        :class:`ZarrDatasetVariable`
+
+        Raises
+        ------
+        ValueError
+            If the dataset is read-only, a dimension is undeclared, or `name`
+            already exists in this group.
+        TypeError
+            For a storage keyword this store does not have.
+
+        """
+        self._check_writable("create_variable")
+        check_encoding_keywords(encoding)
+        assert self._group is not None
+
+        dtype = dtype if dtype is str else np.dtype(dtype)
+        dimensions = tuple(dimensions)
+        shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
+
+        if name in self._group:
+            message = (
+                f"Cannot create {name!r} in the Zarr group {self._location!r}: "
+                "it already holds something of that name, and Iris neither "
+                "overwrites nor merges into one."
+            )
+            raise ValueError(message)
+
+        if fill_value is None:
+            stored_fill = _encode.default_fill_value(np.dtype(dtype))
+        else:
+            stored_fill = np.dtype(dtype).type(fill_value)
+
+        array = self._group.create_array(
+            name,
+            shape=shape,
+            dtype=dtype,
+            fill_value=stored_fill,
+            dimension_names=dimensions or None,
+            **encoding,
+        )
+        variable = ZarrDatasetVariable(array, self._location, self._format)
+        if fill_value is not None:
+            variable.attributes["_FillValue"] = _encode.encode_fill_value(
+                fill_value, np.dtype(dtype)
+            )
+
+        # Both caches describe a group that has just changed.
+        self._variables = None
+        self._dimensions = None
+        return variable
+
+    def _dimension_size(self, name: str) -> int:
+        """Return a declared dimension's size, or raise naming it."""
+        size = self.dimensions.get(name)
+        if size is None:
+            message = (
+                f"Cannot create an array over dimension {name!r}: no dimension "
+                "of that name has been declared in this group."
+            )
+            raise ValueError(message)
+        return size
 
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.

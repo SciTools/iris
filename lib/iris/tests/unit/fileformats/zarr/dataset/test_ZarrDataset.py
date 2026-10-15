@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDataset`."""
 
-import numpy as np
 import pytest
 import zarr
 
@@ -148,14 +147,13 @@ class Test_groups:
 
 
 class Test_the_write_surface:
-    def test_the_write_surface_refuses(self, tmp_path):
-        # Saving to Zarr is not implemented. The members exist because the
-        # interface declares them; refusing is the honest answer.
+    def test_finalise_refuses(self, tmp_path):
+        # Consolidating a store's metadata is not implemented yet. finalise
+        # exists because the interface declares it; refusing is the honest
+        # answer until it is. create_dimension and create_variable now work on
+        # a writable dataset; their own refusal on a read-only one, as here, is
+        # covered in test_ZarrDataset__write.py.
         dataset = ZarrDataset(stores.make_store(tmp_path / "s.zarr"))
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.create_dimension("t", 3)
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.create_variable("v", np.dtype("f4"), ("t",))
         with pytest.raises(NotImplementedError, match="Saving"):
             dataset.finalise()
 
