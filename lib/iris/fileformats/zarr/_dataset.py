@@ -523,6 +523,20 @@ class ZarrDatasetVariable(CFDatasetVariable):
         return self._array.metadata.zarr_format
 
     @property
+    def write_grid(self) -> tuple:
+        """The unit a concurrent writer must own whole cells of.
+
+        The shards when the array is sharded, the chunks when it is not. A
+        shard is one stored object holding many inner chunks, so two tasks
+        writing different chunks of one shard read-modify-write the same
+        object and one update is lost. Stating the invariant over the chunk
+        grid alone is what xarray's ``safe_chunks`` had to be corrected to;
+        see pydata/xarray#10831.
+
+        """
+        return tuple(self._array.shards or self._array.chunks)
+
+    @property
     def cache_key(self) -> str:
         """An identity for this array that goes stale when the array does.
 

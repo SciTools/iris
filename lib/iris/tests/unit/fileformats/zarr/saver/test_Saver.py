@@ -123,3 +123,95 @@ class TestGridMappings:
         grid = group["latitude_longitude"]
         assert grid.attrs["grid_mapping_name"] == "latitude_longitude"
         assert grid.attrs["earth_radius"] == pytest.approx(6371229.0)
+
+
+class TestDeferredSaving:
+    @pytest.fixture
+    def lazy_cube(self, cube):
+        import dask.array as da
+
+        lazy = cube.copy(da.from_array(cube.data, chunks=(1, 3)))
+        return lazy
+
+    def test_compute_false_returns_a_real_delayed(self, tmp_path, lazy_cube):
+        # Q5 and SciTools/iris#7291: the netCDF path returns a tuple here, and
+        # the documented `result.compute()` raises AttributeError on it.
+        from dask.delayed import Delayed
+
+        from iris.fileformats.zarr.saver import save
+
+        result = save(lazy_cube, tmp_path / "out.zarr", compute=False)
+        assert isinstance(result, Delayed)
+
+    def test_the_data_lands_when_it_is_computed(self, tmp_path, lazy_cube):
+        from iris.fileformats.zarr.saver import save
+
+        result = save(lazy_cube, tmp_path / "out.zarr", compute=False)
+        result.compute()
+        written = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        np.testing.assert_array_equal(written["air_temperature"][:], lazy_cube.data)
+
+    def test_consolidation_follows_the_last_chunk(self, tmp_path, lazy_cube):
+        # Spec §4.5: under compute=False the Delayed owns finalise(), so a
+        # store that is never completed never claims to be.
+        from iris.fileformats.zarr.saver import save
+
+        result = save(lazy_cube, tmp_path / "out.zarr", compute=False)
+        before = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert before.metadata.consolidated_metadata is None
+        result.compute()
+        after = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert after.metadata.consolidated_metadata is not None
+
+    def test_the_whole_graph_survives_a_pickle(self, tmp_path, lazy_cube):
+        # F7: `write_handle()` returns the ZarrDatasetVariable, not the
+        # zarr.Array the spec checked. A distributed scheduler pickles the
+        # graph, so the substitution has to be re-checked.
+        import pickle
+
+        from iris.fileformats.zarr.saver import save
+
+        result = save(lazy_cube, tmp_path / "out.zarr", compute=False)
+        revived = pickle.loads(pickle.dumps(result))
+        revived.compute()
+        written = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        np.testing.assert_array_equal(written["air_temperature"][:], lazy_cube.data)
+
+
+class TestMaskedSaving:
+    def test_a_masked_cube_declares_a_fill_value(self, tmp_path, cube):
+        # Spec §4.5: without the attribute, every masked point reads back
+        # unmasked - a round trip that silently loses the mask.
+        masked = cube.copy(np.ma.masked_greater(cube.data, 3.0))
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(masked)
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert "_FillValue" in dict(array.attrs)
+
+    def test_a_lazy_masked_cube_declares_one_too(self, tmp_path, cube):
+        import dask.array as da
+
+        masked = cube.copy(da.ma.masked_greater(da.from_array(cube.data), 3.0))
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(masked)
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert "_FillValue" in dict(array.attrs)
+
+    def test_the_mask_round_trips(self, tmp_path, cube):
+        masked = cube.copy(np.ma.masked_greater(cube.data, 3.0))
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(masked)
+        loaded = iris.load_cube(tmp_path / "out.zarr")
+        np.testing.assert_array_equal(loaded.data.mask, masked.data.mask)
+
+    def test_an_unmasked_cube_declares_nothing(self, tmp_path, cube):
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(cube)
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert "_FillValue" not in dict(array.attrs)

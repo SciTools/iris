@@ -32,8 +32,10 @@ from pathlib import Path
 
 import dask
 from dask.delayed import Delayed
+import numpy as np
 
 import iris
+from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris.cube import CubeList
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.saver import CFSaver
@@ -41,6 +43,78 @@ from iris.fileformats.cf.saver import CFSaver
 from ._dataset import ZarrDataset, check_encoding_keywords, existing_name_message
 
 __all__ = ["Saver", "save"]
+
+
+def _tiles_the_grid(chunks, grid) -> bool:
+    """Whether every chunk boundary falls on a write-grid boundary.
+
+    Parameters
+    ----------
+    chunks : tuple of tuple of int
+        A dask array's ``chunks``: the lengths along each dimension.
+    grid : tuple of int
+        The write-grid cell shape.
+
+    Returns
+    -------
+    bool
+        True when no grid cell is touched by two chunks. A truncated final
+        cell is permitted, so the last boundary is not checked.
+
+    """
+    for lengths, cell in zip(chunks, grid):
+        offset = 0
+        for length in lengths[:-1]:
+            offset += length
+            if offset % cell:
+                return False
+    return True
+
+
+def _align_to_write_grid(data, cf_var):
+    """Return `data` chunked so that concurrent writes cannot collide.
+
+    Parameters
+    ----------
+    data : dask.array.Array
+        The lazy source about to be stored.
+    cf_var : :class:`~iris.fileformats.zarr._dataset.ZarrDatasetVariable`
+        The array it is going into.
+
+    Returns
+    -------
+    dask.array.Array
+        `data` itself when it already tiles the write grid - a needless
+        rechunk is a needless graph layer - and a rechunked view otherwise.
+
+    """
+    grid = cf_var.write_grid
+    if not grid or _tiles_the_grid(data.chunks, grid):
+        return data
+    return data.rechunk(grid)
+
+
+def _complete(_written, dataset, consolidating) -> None:
+    """Consolidate `dataset`'s metadata, once its delayed writes have run.
+
+    A module-level function, rather than a closure, so that the
+    :class:`~dask.delayed.Delayed` built from it survives a plain
+    ``pickle.dumps``/``pickle.loads`` round trip and not only a cloudpickle
+    one - what a :mod:`distributed` scheduler would use regardless.
+
+    Parameters
+    ----------
+    _written : Any
+        The result of the delayed writes this is chained after. Unused,
+        beyond making this task depend on them.
+    dataset : :class:`~iris.fileformats.zarr._dataset.ZarrDataset`
+        The store to consolidate.
+    consolidating : bool
+        Whether to consolidate at all.
+
+    """
+    if consolidating:
+        dataset.finalise()
 
 
 class Saver(CFSaver):
@@ -161,6 +235,42 @@ class Saver(CFSaver):
         """
         return self._dataset.create_variable(cf_name, str, element_dims)
 
+    def _backend_write(self, data, cf_var) -> bool:
+        """Declare a mask, align a lazy source, and collect it.
+
+        Parameters
+        ----------
+        data : array-like
+            The values to write.
+        cf_var : :class:`~iris.fileformats.zarr._dataset.ZarrDatasetVariable`
+            The variable to write them into.
+
+        Returns
+        -------
+        bool
+            True when the write was collected here, which it is for lazy
+            data. Real data is left to the base class, which writes it
+            straight in.
+
+        """
+        if (
+            is_lazy_masked_data(data) or np.ma.isMaskedArray(data)
+        ) and "_FillValue" not in cf_var.attributes:
+            # On version 3 the attribute is the masking declaration and the
+            # storage fill is not, so a store written with the fill alone
+            # reads back with every masked point unmasked. Declared here
+            # rather than when the data is written, because under
+            # compute=False that is after the metadata is consolidated.
+            cf_var.attributes["_FillValue"] = cf_var.fill_value
+
+        if not is_lazy_data(data):
+            return False
+
+        self._delayed_writes.append(
+            (_align_to_write_grid(data, cf_var), cf_var.write_handle())
+        )
+        return True
+
     def delayed_completion(self) -> Delayed:
         """Return a :class:`~dask.delayed.Delayed` that completes the store.
 
@@ -180,20 +290,17 @@ class Saver(CFSaver):
             the netCDF path
             (`SciTools/iris#7291 <https://github.com/SciTools/iris/issues/7291>`_).
             Wrapping it here is what keeps the promise this saver's docstring
-            makes.
+            makes. Plain ``pickle`` survives the round trip too, not only
+            cloudpickle: the completion is :func:`_complete`, a module-level
+            function with the dataset and the consolidation flag bound as
+            plain values, never reached through ``self`` - the saver holds
+            cubes, which must not be dragged into the graph.
 
         """
-        # Bound locally, not through `self`: this closure is serialised to
-        # every worker of a distributed scheduler, and the saver holds cubes.
-        dataset = self._dataset
-        consolidating = self.consolidate_metadata
-
-        @dask.delayed
-        def complete(_written):
-            if consolidating:
-                dataset.finalise()
-
-        return complete(super().delayed_completion())
+        complete = dask.delayed(_complete)
+        return complete(
+            super().delayed_completion(), self._dataset, self.consolidate_metadata
+        )
 
 
 def _per_cube(value, count, name):
