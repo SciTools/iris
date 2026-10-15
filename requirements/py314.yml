@@ -51,6 +51,7 @@ dependencies:
   - pytest-mock
   - pytest-xdist
   - requests
+  - xarray
 
 # Documentation dependencies.
   - sphinx <8.2
