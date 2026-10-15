@@ -233,9 +233,19 @@ def pack(data, scale_factor, add_offset, dtype: np.dtype):
     """Return `data` packed by CF's scale and offset, as `dtype`.
 
     The inverse of :func:`iris.fileformats.zarr._decode.unpack`:
-    ``packed = round((unpacked - add_offset) / scale_factor)``. CF packing is
-    round-to-nearest, not truncation - ``int()`` would truncate toward zero
-    and bias every negative value by up to one count.
+    ``packed = round((unpacked - add_offset) / scale_factor)``. Rounding
+    applies only when `dtype` is an integer type - exactly netCDF4-python's
+    own transform, not a rounding version of it applied regardless of target -
+    so a non-integer `dtype` is merely narrowed, the same as :func:`unpack`
+    narrows an already-unpacked value. CF packing is round-to-nearest, not
+    truncation - ``int()`` would truncate toward zero and bias every negative
+    value by up to one count.
+
+    The arithmetic runs in float64 regardless of `dtype`: `scale_factor` and
+    `add_offset` reach here as plain Python floats, decoded from JSON, which
+    has no float32. A result can therefore differ from netCDF4's float32
+    computation of the same packing by one count - the float64 answer is the
+    more accurate one, but it is not byte-identical to netCDF4's.
 
     Parameters
     ----------
@@ -255,7 +265,17 @@ def pack(data, scale_factor, add_offset, dtype: np.dtype):
         variable with no packing attributes keeps its own dtype untouched,
         rather than being rounded and recast to a dtype it already has.
 
+    Raises
+    ------
+    ValueError
+        If `scale_factor` is zero, naming it: every value would divide by
+        zero, silently becoming infinite or NaN rather than raising on its
+        own.
+
     """
+    if scale_factor == 0:
+        message = "Cannot pack with scale_factor=0: every value would divide by zero."
+        raise ValueError(message)
     if scale_factor is None and add_offset is None:
         return data
     result = data
@@ -263,4 +283,25 @@ def pack(data, scale_factor, add_offset, dtype: np.dtype):
         result = result - add_offset
     if scale_factor is not None:
         result = result / scale_factor
-    return np.round(result).astype(dtype, copy=False)
+
+    def _round_and_narrow(block):
+        """Round (if `dtype` is an integer type) and cast one block."""
+        if dtype.kind in "iu":
+            block = np.round(block)
+        if np.ma.isMaskedArray(block):
+            # Not `block.astype(dtype)`: a masked array carries its own
+            # `fill_value`, inherited from `block`'s own (floating) dtype -
+            # typically a value like ``1e+20`` - and `MaskedArray.astype`
+            # casts that too, into a dtype it was never meant to fit.  numpy
+            # warns "invalid value encountered in cast" for that, about a
+            # value this function never writes anywhere; reconstructing from
+            # the underlying data and mask lets the new dtype's own default
+            # apply instead, and casts only the real values.
+            return np.ma.masked_array(
+                block.data.astype(dtype, copy=False), mask=block.mask
+            )
+        return block.astype(dtype, copy=False)
+
+    if is_lazy_data(result):
+        return result.map_blocks(_round_and_narrow, dtype=dtype)
+    return _round_and_narrow(result)

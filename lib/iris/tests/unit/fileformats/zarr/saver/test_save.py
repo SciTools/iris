@@ -115,6 +115,18 @@ class TestSaveRefusals:
         with pytest.raises(TypeError, match="fixed shape"):
             save(cubes[0], tmp_path / "out.zarr", unlimited_dimensions=["latitude"])
 
+    def test_a_non_integer_packing_dtype_is_refused(self, tmp_path, cubes):
+        # CF packing's arithmetic only means what it says for an integer
+        # target; the netCDF saver refuses the same input with the same
+        # message.
+        with pytest.raises(ValueError, match="integer"):
+            save(cubes[0], tmp_path / "out.zarr", packing="f4")
+        assert not (tmp_path / "out.zarr").exists()
+
+    def test_an_incomplete_packing_dict_names_the_missing_key(self, tmp_path, cubes):
+        with pytest.raises(ValueError, match="dtype"):
+            save(cubes[0], tmp_path / "out.zarr", packing={"scale_factor": 0.1})
+
 
 class TestSaveIntoAGroup:
     def test_a_group_is_created_and_the_root_is_kept(self, tmp_path, cubes):

@@ -18,6 +18,7 @@ from iris.fileformats.zarr._encode import (
     encode_missing_values,
     filled,
     json_native,
+    pack,
 )
 
 
@@ -179,3 +180,30 @@ class TestFilled:
     def test_a_fully_masked_array_is_all_fill(self):
         data = np.ma.masked_all(3, dtype="f4")
         np.testing.assert_array_equal(filled(data, -99.0), [-99.0] * 3)
+
+
+class TestPack:
+    # `ZarrDatasetVariable.__setitem__` - tested through
+    # `lib/iris/tests/unit/fileformats/zarr/dataset/test_ZarrDataset__write.py`'s
+    # `TestPacking` - covers the ordinary packing contract: both attributes,
+    # one alone, neither, a mask, a lazy source. These two tests are the
+    # pure-function level for the two guards specific to `pack` itself.
+    def test_a_non_integer_target_is_narrowed_not_rounded(self):
+        # Exactly netCDF4-python's own transform: rounding applies only when
+        # writing into an integer variable. A float target with no rounding
+        # is unpacked faithfully; a rounding version of this function would
+        # mangle it - see the next test for the same input packed to `i2`.
+        data = np.array([1.25, 2.75, 3.3], dtype="f4")
+        result = pack(data, scale_factor=0.5, add_offset=1.0, dtype=np.dtype("f4"))
+        np.testing.assert_allclose(result, [0.5, 3.5, 4.6], rtol=1e-5)
+        assert result.dtype == np.dtype("f4")
+
+    def test_an_integer_target_still_rounds(self):
+        data = np.array([1.25, 2.75, 3.3], dtype="f4")
+        result = pack(data, scale_factor=0.5, add_offset=1.0, dtype=np.dtype("i2"))
+        np.testing.assert_array_equal(result, [0, 4, 5])
+
+    def test_scale_factor_zero_raises_naming_it(self):
+        data = np.array([1.0, 2.0], dtype="f4")
+        with pytest.raises(ValueError, match="scale_factor"):
+            pack(data, scale_factor=0.0, add_offset=None, dtype=np.dtype("i2"))

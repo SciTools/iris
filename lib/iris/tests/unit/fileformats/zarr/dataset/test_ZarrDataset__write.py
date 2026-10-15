@@ -410,6 +410,24 @@ class TestPacking:
         variable[:] = da.from_array(np.array([10.0, 10.5, 11.0], dtype="f4"), chunks=2)
         np.testing.assert_array_equal(variable[:], [0, 1, 2])
 
+    def test_lazy_masked_packed_values_round_trip(self, writable):
+        # A real cube's lazy data is a dask array over masked-array blocks -
+        # the one combination neither of the two tests above covers alone.
+        import dask.array as da
+
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 0.5
+        variable.attributes["add_offset"] = 10.0
+        masked = np.ma.masked_array(
+            [10.0, 10.5, 11.0], mask=[False, True, False], dtype="f4"
+        )
+        variable[:] = da.from_array(masked, chunks=2)
+        result = variable[:]
+        assert result[0] == 0
+        assert result[1] == -32767
+        assert result[2] == 2
+
 
 class TestFinalise:
     def test_it_consolidates(self, writable):

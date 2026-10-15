@@ -324,6 +324,41 @@ def _per_cube(value, count, name):
     return [value] * count
 
 
+def _check_packing(packspecs) -> None:
+    """Raise for any packspec whose dtype is not a numpy integer type.
+
+    The same rule :meth:`iris.fileformats.netcdf.saver.Saver.write` enforces,
+    and the same message: CF packing's arithmetic, ``round((value -
+    add_offset) / scale_factor)``, only means what it says for an integer
+    target, so a non-integer dtype is refused before the store is created,
+    rather than accepted and silently rounded.
+
+    Parameters
+    ----------
+    packspecs : iterable
+        One packing specification per cube, as :func:`_per_cube` expands
+        them: each is ``None``, a dtype (a :class:`numpy.dtype`, a type, or a
+        string), or a dict with a ``"dtype"`` key.
+
+    Raises
+    ------
+    ValueError
+
+    """
+    for packspec in packspecs:
+        if packspec is None:
+            continue
+        dtype = packspec
+        if isinstance(packspec, dict):
+            if "dtype" not in packspec:
+                message = "The argument to packing must contain the key 'dtype'."
+                raise ValueError(message)
+            dtype = packspec["dtype"]
+        if np.dtype(dtype).kind not in "iu":
+            message = "The packing datatype must be a numpy integer type."
+            raise ValueError(message)
+
+
 def save(
     cube,
     filename,
@@ -390,6 +425,7 @@ def save(
     cubes = CubeList([cube]) if isinstance(cube, iris.cube.Cube) else CubeList(cube)
     fill_values = _per_cube(fill_value, len(cubes), "fill_value")
     packspecs = _per_cube(packing, len(cubes), "packing")
+    _check_packing(packspecs)
 
     with Saver(
         filename,
