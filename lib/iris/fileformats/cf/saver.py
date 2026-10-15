@@ -65,6 +65,7 @@ from dask.delayed import Delayed
 import numpy as np
 
 from iris import FUTURE
+from iris._deprecation import warn_deprecated
 from iris._lazy_data import _co_realise_lazy_arrays, is_lazy_data
 from iris.aux_factory import (
     AtmosphereSigmaFactory,
@@ -295,6 +296,173 @@ class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
 
     # TODO: remove at the next major release.
     pass
+
+
+def marshal_attributes(cubes, local_keys, format_name):
+    """Decide which cube attributes a store holds globally, and which locally.
+
+    A store holds one value of a global attribute, and a list of cubes may
+    carry several. Settling that is cube logic, not storage logic, so every
+    :class:`CFSaver` subclass's own ``save`` function calls this and nothing
+    does it twice.
+
+    Which half of this does the work depends on
+    :attr:`iris.FUTURE.save_split_attrs`.
+
+    * **Enabled.** :meth:`CFSaver.write` writes no global attributes at all,
+      and the caller writes the returned `global_attributes` once, after the
+      last cube. An attribute the cubes disagree about cannot be global, so
+      it is demoted to a local attribute on each cube - on a *copy* of each
+      cube, so that the caller's own cubes are untouched.
+    * **Legacy.** :meth:`CFSaver.write` writes each cube's global attributes
+      as it goes, so the returned `global_attributes` is empty and the work
+      is to extend `local_keys` with every attribute the cubes do not all
+      agree on. Without that, one store-wide value would silently become
+      whichever cube was written last.
+
+    Parameters
+    ----------
+    cubes : :class:`iris.cube.CubeList`
+        The cubes about to be saved.
+    local_keys : iterable of str or None
+        Attribute names the caller asked to be local to a data variable.
+        Ignored when split-attribute saving is enabled, which is what makes
+        the keyword deprecated.
+    format_name : str
+        How to name the target format in the legacy mode's deprecation
+        warning, e.g. ``"netcdf"``.
+
+    Returns
+    -------
+    cubes : :class:`iris.cube.CubeList`
+        The cubes to save, which are the ones passed in unless an attribute
+        had to be demoted.
+    local_keys : set of str
+        To pass to each :meth:`CFSaver.write` call.
+    global_attributes : dict
+        To write once, after the last cube. Empty in the legacy mode.
+
+    Warns
+    -----
+    IrisSaveWarning
+        Naming the global attributes demoted to local ones, and any that a
+        local attribute of the same name blocked entirely.
+    IrisDeprecation
+        In the legacy mode, which is deprecated since Iris 3.8.
+
+    """
+    # TODO: when iris.FUTURE.save_split_attrs is removed, the whole legacy
+    #  half of this function goes with it, along with `local_keys` and
+    #  `format_name`.
+    global_attributes: dict = {}
+
+    if FUTURE.save_split_attrs:
+        # 'local_keys' is not used in this case.
+        local_keys = set()
+
+        # Find any collisions in the cube global attributes and "demote" all those
+        # to local attributes (where possible, else warn they are lost).
+        # N.B. "collision" includes when not all cubes *have* that attribute.
+        global_names = set()
+        for cube in cubes:
+            global_names |= set(cube.attributes.globals.keys())
+
+        # Find any global attributes which are not the same on *all* cubes.
+        def attr_values_equal(val1, val2):
+            # An equality test which also works when some values are numpy arrays (!)
+            return iris.util._attribute_equal(val1, val2)
+
+        cube0 = cubes[0]
+        invalid_globals = set(
+            [
+                attrname
+                for attrname in global_names
+                if not all(
+                    attr_values_equal(
+                        cube.attributes.globals.get(attrname),
+                        cube0.attributes.globals.get(attrname),
+                    )
+                    for cube in cubes[1:]
+                )
+            ]
+        )
+
+        # Establish all the global attributes which we will write to the file (at end).
+        global_attributes = {
+            attr: cube0.attributes.globals.get(attr)
+            for attr in global_names - invalid_globals
+        }
+        if invalid_globals:
+            # Some cubes have different global attributes: modify cubes as required.
+            warnings.warn(
+                f"Saving the cube global attributes {sorted(invalid_globals)} as local "
+                "(i.e. data-variable) attributes, where possible, since they are not "
+                "the same on all input cubes.",
+                category=iris.warnings.IrisSaveWarning,
+            )
+            cubes = cubes.copy()  # avoiding modifying the actual input arg.
+            for i_cube in range(len(cubes)):
+                # We iterate over cube *index*, so we can replace the list entries with
+                # with cube *copies* -- just to avoid changing our call args.
+                cube = cubes[i_cube]
+                demote_attrs = set(cube.attributes.globals) & invalid_globals
+                if any(demote_attrs):
+                    # Catch any demoted attrs where there is already a local version
+                    blocked_attrs = demote_attrs & set(cube.attributes.locals)
+                    if blocked_attrs:
+                        warnings.warn(
+                            f"Global cube attributes {sorted(blocked_attrs)} "
+                            f'of cube "{cube.name()}" were not saved, overlaid '
+                            "by existing local attributes with the same names.",
+                            category=iris.warnings.IrisSaveWarning,
+                        )
+                    demote_attrs -= blocked_attrs
+                    if demote_attrs:
+                        # This cube contains some 'demoted' global attributes.
+                        # Replace input cube with a copy, so we can modify attributes.
+                        cube = cube.copy()
+                        cubes[i_cube] = cube
+                        for attr in demote_attrs:
+                            # move global to local
+                            value = cube.attributes.globals.pop(attr)
+                            cube.attributes.locals[attr] = value
+
+    else:
+        # Legacy mode: calculate "local_keys" to control which attributes are local
+        # and which global.
+        message = (
+            f"Saving to {format_name} with legacy-style attribute handling for "
+            "backwards compatibility.\n"
+            "This mode is deprecated since Iris 3.8, and will eventually be removed.\n"
+            "Please consider enabling the new split-attributes handling mode, by "
+            "setting 'iris.FUTURE.save_split_attrs = True'."
+        )
+        warn_deprecated(message)
+
+        if local_keys is None:
+            local_keys = set()
+        else:
+            local_keys = set(local_keys)
+
+        # Determine the attribute keys that are common across all cubes and
+        # thereby extend the collection of local_keys for attributes
+        # that should be attributes on data variables.
+        attributes = cubes[0].attributes
+        common_keys = set(attributes)
+        for cube in cubes[1:]:
+            keys = set(cube.attributes)
+            local_keys.update(keys.symmetric_difference(common_keys))
+            common_keys.intersection_update(keys)
+            different_value_keys = []
+            for key in common_keys:
+                if not iris.util._attribute_equal(
+                    attributes[key], cube.attributes[key]
+                ):
+                    different_value_keys.append(key)
+            common_keys.difference_update(different_value_keys)
+            local_keys.update(different_value_keys)
+
+    return cubes, local_keys, global_attributes
 
 
 class _GridMappingAttributeWriter:

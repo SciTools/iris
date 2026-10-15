@@ -442,6 +442,15 @@ def save(
     packspecs = _per_cube(packing, len(cubes), "packing")
     _check_packing(packspecs)
 
+    # A store holds one value of a global attribute and a list of cubes may
+    # carry several, so which of them can be global at all has to be settled
+    # first. That is cube logic rather than storage logic, which is why it is
+    # the same call the netCDF saver makes; done before the store is opened,
+    # so that a warning about it arrives before anything is created.
+    cubes, local_keys, global_attributes = cf_saver.marshal_attributes(
+        cubes, local_keys, "Zarr"
+    )
+
     with Saver(
         filename,
         compute=compute,
@@ -460,7 +469,12 @@ def save(
 
         conventions = cf_saver.CF_CONVENTIONS_VERSION
         if iris.FUTURE.save_split_attrs:
-            saver.update_global_attributes({"Conventions": conventions})
+            # Under split-attribute saving `CFSaver.write` writes no global
+            # attributes at all, so this one call is the whole of them. In
+            # the legacy mode it has already written each cube's as it went,
+            # and `global_attributes` is empty.
+            global_attributes["Conventions"] = conventions
+            saver.update_global_attributes(global_attributes)
         else:
             saver.update_global_attributes(Conventions=conventions)
 

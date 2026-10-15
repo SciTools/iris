@@ -15,6 +15,7 @@ import iris
 from iris.cube import CubeList
 import iris.fileformats.zarr
 import iris.tests.stock as stock
+import iris.warnings
 
 
 @pytest.fixture
@@ -160,6 +161,85 @@ class TestAddingToAnExistingStore:
             loaded.extract_cube("tall").data, [0.0, 1.0, 2.0, 3.0]
         )
         np.testing.assert_array_equal(loaded.extract_cube("short").data, [0.0, 1.0])
+
+
+class TestGlobalAttributes:
+    # `CFSaver.write` deliberately leaves the global attributes to its
+    # caller under split-attribute saving, and computes `local_keys` for the
+    # legacy mode. Both are format-agnostic cube logic, shared with the
+    # netCDF saver - see §4.5 of the native Zarr I/O design.
+    def test_globals_are_written_when_split_attributes_are_enabled(self, tmp_path):
+        path = tmp_path / "out.zarr"
+        cube = iris.cube.Cube(np.arange(3.0), long_name="a", units="1", var_name="a")
+        cube.attributes.globals["title"] = "the title"
+        cube.attributes.globals["institution"] = "Met Office"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(cube, path)
+        loaded = iris.load_cube(path)
+        assert loaded.attributes.globals["title"] == "the title"
+        assert loaded.attributes.globals["institution"] == "Met Office"
+
+    def test_globals_are_written_in_the_legacy_mode_too(self, tmp_path):
+        path = tmp_path / "out.zarr"
+        cube = iris.cube.Cube(np.arange(3.0), long_name="a", units="1", var_name="a")
+        cube.attributes["title"] = "the title"
+        with iris.FUTURE.context(save_split_attrs=False):
+            iris.save(cube, path)
+        assert iris.load_cube(path).attributes["title"] == "the title"
+
+    def test_cubes_that_disagree_keep_their_own_values(self, tmp_path):
+        # One store cannot hold two values of one global attribute, so an
+        # attribute the cubes disagree about becomes a local one on each
+        # data variable, exactly as a netCDF save of the same list does.
+        path = tmp_path / "out.zarr"
+        first = iris.cube.Cube(
+            np.arange(3.0), long_name="first", units="1", var_name="first"
+        )
+        first.attributes["title"] = "first"
+        second = iris.cube.Cube(
+            np.arange(3.0), long_name="second", units="1", var_name="second"
+        )
+        second.attributes["title"] = "second"
+        with iris.FUTURE.context(save_split_attrs=False):
+            iris.save(CubeList([first, second]), path)
+        loaded = iris.load(path)
+        assert loaded.extract_cube("first").attributes["title"] == "first"
+        assert loaded.extract_cube("second").attributes["title"] == "second"
+
+    def test_disagreeing_globals_are_demoted_under_split_attributes(self, tmp_path):
+        path = tmp_path / "out.zarr"
+        first = iris.cube.Cube(
+            np.arange(3.0), long_name="first", units="1", var_name="first"
+        )
+        first.attributes.globals["title"] = "first"
+        second = iris.cube.Cube(
+            np.arange(3.0), long_name="second", units="1", var_name="second"
+        )
+        second.attributes.globals["title"] = "second"
+        with iris.FUTURE.context(save_split_attrs=True):
+            with pytest.warns(iris.warnings.IrisSaveWarning, match="title"):
+                iris.save(CubeList([first, second]), path)
+        loaded = iris.load(path)
+        assert loaded.extract_cube("first").attributes.locals["title"] == "first"
+        assert loaded.extract_cube("second").attributes.locals["title"] == "second"
+
+    def test_the_input_cubes_are_not_modified(self, tmp_path):
+        # The demotion above works on copies: `iris.save` must not rewrite
+        # the caller's own cubes.
+        path = tmp_path / "out.zarr"
+        first = iris.cube.Cube(
+            np.arange(3.0), long_name="first", units="1", var_name="first"
+        )
+        first.attributes.globals["title"] = "first"
+        second = iris.cube.Cube(
+            np.arange(3.0), long_name="second", units="1", var_name="second"
+        )
+        second.attributes.globals["title"] = "second"
+        with iris.FUTURE.context(save_split_attrs=True):
+            with pytest.warns(iris.warnings.IrisSaveWarning):
+                iris.save(CubeList([first, second]), path)
+        assert first.attributes.globals["title"] == "first"
+        assert second.attributes.globals["title"] == "second"
 
 
 class TestWhatTheFormatDoesNotPromise:
