@@ -178,6 +178,21 @@ class Saver(CFSaver):
         #: group held before this call, wrong for two cubes of one call
         #: sharing a name.
         self._pre_existing_names = frozenset(dataset.variables)
+        # The dimensions the group already carries are dimensions this save
+        # has "seen", so that `CFSaver._get_dim_names` disambiguates against
+        # them: an anonymous cube dimension is named "dim0" whatever cube it
+        # came from, so a second save into one store routinely claims a name
+        # the store already uses. Without this the generic layer declares
+        # nothing - the name is already in `dataset.dimensions` - and
+        # `create_variable` sizes the new array from the store's length
+        # instead of the cube's, which zarr-python then truncates to in
+        # silence. Seeded here rather than in `CFSaver` because only a store
+        # that can be added to has anything to seed; under "w-" and "w" the
+        # group is new and this is empty. The disambiguation loops then
+        # increment "dim0" to "dim0_0" for a conflicting length and reuse it
+        # for a matching one, which is what §4.5 of the design already
+        # promises for coordinates.
+        self._existing_dim.update(dataset.dimensions)
 
     def write(self, cube, *args, **kwargs):
         """Write a cube into the store.

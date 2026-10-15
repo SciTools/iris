@@ -143,6 +143,44 @@ def _dimension_names(array) -> tuple:
     return tuple(names)
 
 
+def _selection_shape(shape: tuple, keys) -> tuple | None:
+    """Return the shape `keys` selects out of an array of `shape`.
+
+    Measured with numpy's own indexing rules, which are the rules
+    zarr-python implements for a basic selection, against a zero-strided
+    dummy so that measuring allocates nothing.
+
+    Parameters
+    ----------
+    shape : tuple of int
+        The array's full shape.
+    keys : Any
+        The selection, as it reached ``__setitem__``.
+
+    Returns
+    -------
+    tuple of int or None
+        ``None`` for anything but a basic selection - a boolean mask or an
+        index array, which zarr accepts and Iris never writes, and which
+        would make a copy to measure. A caller treats that as "nothing to
+        check".
+
+    """
+    parts = keys if isinstance(keys, tuple) else (keys,)
+    if not all(
+        isinstance(part, (slice, int, np.integer)) or part is Ellipsis or part is None
+        for part in parts
+    ):
+        return None
+    dummy = np.broadcast_to(np.empty((), dtype=np.int8), shape)
+    try:
+        return dummy[keys].shape
+    except IndexError:
+        # Too many indices for the rank, say. zarr-python raises for these
+        # too, with its own message, so there is nothing to add here.
+        return None
+
+
 def _assemble_dimensions(variables) -> dict:
     """Return the dimension sizes the store's arrays agree on.
 
@@ -389,6 +427,18 @@ class ZarrDatasetVariable(CFDatasetVariable):
         straight to zarr raises inside the bytes codec, naming neither the
         variable nor the mask.
 
+        A value whose shape does not match the selection is refused first.
+        zarr-python truncates an oversized assignment without a word, so a
+        caller that sized the array wrongly loses data in silence; too few
+        values raise, but from inside numpy, naming neither this variable
+        nor the array it belongs to.
+
+        Raises
+        ------
+        ValueError
+            If `values` neither matches the selection's shape nor is a
+            scalar to broadcast over it.
+
         """
         if self._array.ndim == 0 and keys == slice(None):
             # `CFSaver._lazy_stream_data` writes a whole variable as
@@ -397,6 +447,18 @@ class ZarrDatasetVariable(CFDatasetVariable):
             # A scalar cube is ordinary, and this is otherwise the only
             # store that cannot hold one.
             keys = Ellipsis
+
+        selected = _selection_shape(self.shape, keys)
+        given = np.shape(values)
+        if selected is not None and given not in ((), selected):
+            message = (
+                f"Cannot write values of shape {given} into {self.name!r}, "
+                f"whose selected region has shape {selected}. Zarr neither "
+                "resizes an array nor reports an oversized write, so this "
+                "would otherwise lose values in silence."
+            )
+            raise ValueError(message)
+
         packed = _encode.pack(
             values,
             self._attributes.get("scale_factor"),

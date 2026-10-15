@@ -342,6 +342,58 @@ class TestValueWriting:
         assert list(variable[:]) == ["alpha", "beta"]
 
 
+class TestValueShapeGuard:
+    # zarr-python truncates an oversized assignment without a word, so a
+    # caller that sized an array wrongly loses data in silence. The guard
+    # turns that into a failure naming the array. See §4.5 of the native
+    # Zarr I/O design, `docs/superpowers/specs/2026-09-21-zarr-io-design.md`.
+    def test_too_many_values_raises_naming_the_variable(self, writable):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        with pytest.raises(ValueError, match="data"):
+            variable[:] = np.array([1.0, 2.0, 3.0])
+
+    def test_too_many_values_writes_nothing(self, writable):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        with pytest.raises(ValueError, match="data"):
+            variable[:] = np.array([7.0, 8.0, 9.0])
+        # Untouched storage, which reads back as the array's own fill.
+        np.testing.assert_array_equal(variable[:], [variable.fill_value] * 2)
+
+    def test_the_message_gives_both_shapes(self, writable):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        with pytest.raises(ValueError, match=r"\(3,\).*\(2,\)"):
+            variable[:] = np.array([1.0, 2.0, 3.0])
+
+    def test_too_few_values_raises_too(self, writable):
+        # zarr-python raises for this one already, but with a bare numpy
+        # broadcasting message naming nothing.
+        writable.create_dimension("x", 4)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        with pytest.raises(ValueError, match="data"):
+            variable[:] = np.array([1.0, 2.0])
+
+    def test_a_matching_shape_is_written(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        variable[:] = np.array([1.0, 2.0, 3.0])
+        np.testing.assert_array_equal(variable[:], [1.0, 2.0, 3.0])
+
+    def test_a_partial_selection_is_measured_against_the_selection(self, writable):
+        # What `dask.array.store` does: one block at a time, into a slice.
+        writable.create_dimension("x", 4)
+        variable = writable.create_variable("data", np.dtype("f8"), ["x"])
+        variable[2:4] = np.array([5.0, 6.0])
+        np.testing.assert_array_equal(variable[2:4], [5.0, 6.0])
+
+    def test_a_scalar_variable_is_written(self, writable):
+        variable = writable.create_variable("data", np.dtype("f8"), [])
+        variable[:] = np.array(1.5)
+        assert variable[...] == 1.5
+
+
 class TestPacking:
     # netCDF4-python applies `scale_factor`/`add_offset` packing itself, on
     # assignment, once those attributes are set on the variable - zarr-python

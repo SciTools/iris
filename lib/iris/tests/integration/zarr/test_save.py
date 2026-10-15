@@ -121,6 +121,47 @@ class TestRoundTrip:
         assert loaded.shape == renamed.shape
 
 
+class TestAddingToAnExistingStore:
+    def test_two_cubes_with_the_same_anonymous_dimension_both_come_back_whole(
+        self, tmp_path
+    ):
+        # A cube dimension with no dim coord is called "dim0", so two
+        # unrelated cubes routinely claim that name. Sizing the second
+        # cube's array from what the store already calls "dim0" silently
+        # truncated it: spec §4.5's create-once rule means the dimension the
+        # store holds is never resized, so the second cube needs its own.
+        path = tmp_path / "out.zarr"
+        short = iris.cube.Cube(
+            np.arange(2.0), long_name="short", units="1", var_name="short"
+        )
+        tall = iris.cube.Cube(
+            np.arange(3.0), long_name="tall", units="1", var_name="tall"
+        )
+        iris.save(short, path)
+        iris.save(tall, path, mode="a")
+        loaded = iris.load(path)
+        np.testing.assert_array_equal(loaded.extract_cube("short").data, [0.0, 1.0])
+        np.testing.assert_array_equal(loaded.extract_cube("tall").data, [0.0, 1.0, 2.0])
+
+    def test_the_shorter_cube_second_is_whole_too(self, tmp_path):
+        # The other order used to raise a bare numpy broadcasting message
+        # naming neither cube nor array.
+        path = tmp_path / "out.zarr"
+        tall = iris.cube.Cube(
+            np.arange(4.0), long_name="tall", units="1", var_name="tall"
+        )
+        short = iris.cube.Cube(
+            np.arange(2.0), long_name="short", units="1", var_name="short"
+        )
+        iris.save(tall, path)
+        iris.save(short, path, mode="a")
+        loaded = iris.load(path)
+        np.testing.assert_array_equal(
+            loaded.extract_cube("tall").data, [0.0, 1.0, 2.0, 3.0]
+        )
+        np.testing.assert_array_equal(loaded.extract_cube("short").data, [0.0, 1.0])
+
+
 class TestWhatTheFormatDoesNotPromise:
     # Spec §4.5: neither of these is fixable from inside Iris. They are
     # pinned so that a zarr-python release changing one fails here.

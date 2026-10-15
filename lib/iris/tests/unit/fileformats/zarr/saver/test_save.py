@@ -62,6 +62,40 @@ class TestSave:
         group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
         assert group.metadata.consolidated_metadata is None
 
+    def test_a_conflicting_anonymous_dimension_gets_its_own_name(self, tmp_path, cubes):
+        # A cube dimension with no dim coord is named "dim0", "dim1", and so
+        # on, so two unrelated cubes routinely claim the same name. A second
+        # save must not size its array from what the store already calls
+        # "dim0": spec §4.5's create-once rule means an existing array is
+        # never resized, so the new cube needs a dimension of its own.
+        first = Cube(np.arange(2.0), long_name="first", var_name="first")
+        second = Cube(np.arange(3.0), long_name="second", var_name="second")
+        save(first, tmp_path / "out.zarr")
+        save(second, tmp_path / "out.zarr", mode="a")
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group["first"].metadata.dimension_names == ("dim0",)
+        assert group["second"].metadata.dimension_names == ("dim0_0",)
+
+    def test_both_cubes_keep_all_their_values(self, tmp_path):
+        first = Cube(np.arange(2.0), long_name="first", var_name="first")
+        second = Cube(np.arange(3.0), long_name="second", var_name="second")
+        save(first, tmp_path / "out.zarr")
+        save(second, tmp_path / "out.zarr", mode="a")
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        np.testing.assert_array_equal(group["first"][...], [0.0, 1.0])
+        np.testing.assert_array_equal(group["second"][...], [0.0, 1.0, 2.0])
+
+    def test_a_matching_anonymous_dimension_is_reused(self, tmp_path):
+        # The other half of the rule: a name the store already carries at the
+        # length this cube needs is shared, not duplicated.
+        first = Cube(np.arange(2.0), long_name="first", var_name="first")
+        second = Cube(np.arange(2.0) * 2, long_name="second", var_name="second")
+        save(first, tmp_path / "out.zarr")
+        save(second, tmp_path / "out.zarr", mode="a")
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group["second"].metadata.dimension_names == ("dim0",)
+        np.testing.assert_array_equal(group["second"][...], [0.0, 2.0])
+
     def test_mode_a_adds_to_a_consolidated_root(self, tmp_path, cubes):
         # A write mode must see what the store actually holds, not a frozen
         # consolidated snapshot: otherwise a second save believes the store
