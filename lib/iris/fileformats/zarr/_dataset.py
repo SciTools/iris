@@ -856,18 +856,26 @@ class ZarrDataset(CFDataset):
             )
             raise ValueError(message)
 
-        if fill_value is None:
+        if fill_value is None and dtype is str:
+            # A variable-length string array has no entry in the netCDF
+            # default-fill table - there is nothing to look up, so
+            # zarr-python's own default for the dtype is what applies.
+            stored_fill = None
+        elif fill_value is None:
             stored_fill = _encode.default_fill_value(np.dtype(dtype))
         else:
             stored_fill = np.dtype(dtype).type(fill_value)
+
+        create_kwargs = dict(encoding)
+        if stored_fill is not None:
+            create_kwargs["fill_value"] = stored_fill
 
         array = self._group.create_array(
             name,
             shape=shape,
             dtype=dtype,
-            fill_value=stored_fill,
             dimension_names=dimensions or None,
-            **encoding,
+            **create_kwargs,
         )
         variable = ZarrDatasetVariable(array, self._location, self._format)
         if fill_value is not None:

@@ -159,6 +159,15 @@ class TestCreateVariable:
             with pytest.raises(ValueError, match="mode='r'"):
                 dataset.create_variable("data", np.dtype("f4"))
 
+    def test_a_string_variable_with_no_fill_value_works(self, writable):
+        # dtype=str asks for a variable-length string array, which has no
+        # entry in the netCDF default-fill table: there is nothing to look
+        # up, so zarr-python's own default is what applies.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("labels", str, ["x"])
+        variable[:] = np.array(["a", "bb", "ccc"], dtype=str)
+        assert list(variable[:]) == ["a", "bb", "ccc"]
+
 
 class TestCreateVariableFillValue:
     def test_an_undeclared_fill_is_netcdfs_default(self, writable):
