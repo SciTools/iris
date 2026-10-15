@@ -1,0 +1,4 @@
+:user:`trexfeathers` improved robustness of overnight benchmarks in GitHub
+Actions - the start commit is the commit 26 hours ago, instead of the commit
+24 hours after 23:00 yesterday - this is to cope with variability in GHA start
+times.
