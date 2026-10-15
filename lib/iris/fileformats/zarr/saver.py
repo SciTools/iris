@@ -40,6 +40,7 @@ from iris.cube import CubeList
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.saver import CFSaver
 
+from . import _encode
 from ._dataset import ZarrDataset, check_encoding_keywords, existing_name_message
 
 __all__ = ["Saver", "save"]
@@ -267,6 +268,13 @@ class Saver(CFSaver):
             data. Real data is left to the base class, which writes it
             straight in.
 
+        Raises
+        ------
+        ValueError
+            If the data is masked and its dtype has no netCDF default fill
+            value, so that there is no sentinel to declare. This is the one
+            place the mask and the dtype are both known.
+
         """
         # `np.ma.is_masked` is true only when something is actually masked,
         # unlike `np.ma.isMaskedArray`, which is true of an np.ma array whose
@@ -279,6 +287,19 @@ class Saver(CFSaver):
         if (
             is_lazy_masked_data(data) or np.ma.is_masked(data)
         ) and "_FillValue" not in cf_var.attributes:
+            if _encode.default_fill_value(cf_var.dtype) is None:
+                # No netCDF default for this dtype, so the array took
+                # zarr-python's own - which says what unwritten storage reads
+                # back as, not that a value is missing. Declaring that as
+                # `_FillValue` would mask every point that legitimately
+                # holds it, typically every zero.
+                message = (
+                    f"Cannot save masked data of dtype {cf_var.dtype} into the "
+                    f"Zarr array {cf_var.name!r}: there is no default "
+                    "missing-value sentinel for that type. Pass an explicit "
+                    "'fill_value'."
+                )
+                raise ValueError(message)
             # On version 3 the attribute is the masking declaration and the
             # storage fill is not, so a store written with the fill alone
             # reads back with every masked point unmasked. Declared here

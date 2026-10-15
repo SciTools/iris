@@ -41,6 +41,11 @@ class TestJsonNative:
             (1, 1),
             (1.5, 1.5),
             ([1, "two"], [1, "two"]),
+            ([np.float32(1.5), np.float32(2.5)], [1.5, 2.5]),
+            ((np.int16(1), np.int16(2)), [1, 2]),
+            ([[np.float64(1.0)], [np.int8(2)]], [[1.0], [2]]),
+            ([np.array([1, 2], dtype=np.int32)], [[1, 2]]),
+            ((), []),
             (None, None),
         ],
     )
@@ -71,6 +76,24 @@ class TestJsonNative:
 
         with pytest.raises(TypeError, match="an_attribute"):
             json_native(Opaque(), name="an_attribute")
+
+    def test_a_sequence_of_numpy_scalars_is_converted(self):
+        # `[data.min(), data.max()]` is an ordinary way to build a
+        # `valid_range`, and every element of it is a NumPy scalar.
+        result = json_native([np.float32(1.5), np.float32(2.5)], name="valid_range")
+        assert [type(item) for item in result] == [float, float]
+
+    def test_a_tuple_becomes_a_list(self):
+        # JSON has no tuple, and the "a NumPy array becomes a list" rule
+        # already means a sequence comes back as one.
+        assert json_native((1, 2), name="a") == [1, 2]
+
+    def test_an_unserialisable_element_raises_naming_the_attribute(self):
+        class Opaque:
+            pass
+
+        with pytest.raises(TypeError, match="valid_range"):
+            json_native([1.0, Opaque()], name="valid_range")
 
     def test_it_does_not_stringify(self):
         # Spec §4.5: "An attribute the format cannot hold is an error, and is
@@ -149,9 +172,14 @@ class TestDefaultFillValue:
         assert result == np.dtype(dtype).type(expected)
         assert result.dtype == np.dtype(dtype)
 
-    def test_an_unknown_dtype_raises_naming_it(self):
-        with pytest.raises(ValueError, match="complex"):
-            default_fill_value(np.dtype("c8"))
+    @pytest.mark.parametrize("dtype", ["f2", "S1", "c8", "<U4"])
+    def test_a_dtype_outside_the_table_has_no_default(self, dtype):
+        # None, not an error: the table is netCDF's, and a Zarr store holds
+        # plenty that netCDF does not. A dtype with no netCDF default takes
+        # zarr-python's own, and the array declares no sentinel - which only
+        # matters if the data turns out to be masked, and is settled where
+        # that is known.
+        assert default_fill_value(np.dtype(dtype)) is None
 
     def test_every_entry_fits_its_dtype(self):
         for key, value in DEFAULT_FILL_VALUES.items():

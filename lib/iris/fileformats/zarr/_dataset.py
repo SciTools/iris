@@ -1020,13 +1020,18 @@ class ZarrDataset(CFDataset):
         if name in self._group:
             raise ValueError(existing_name_message(name, self._location))
 
-        if fill_value is None and dtype is str:
-            # A variable-length string array has no entry in the netCDF
-            # default-fill table - there is nothing to look up, so
-            # zarr-python's own default for the dtype is what applies.
-            stored_fill = None
-        elif fill_value is None:
-            stored_fill = _encode.default_fill_value(np.dtype(dtype))
+        if fill_value is None:
+            # None here means zarr-python's own default for the dtype
+            # applies, and the array declares no sentinel of its own. That
+            # covers a variable-length string array, which the netCDF
+            # default-fill table has no entry for, and every other dtype it
+            # has no entry for either - a Zarr store holds plenty netCDF
+            # does not. Whether a *missing-value* sentinel is needed is a
+            # question about the data, settled by the saver, which is the
+            # only thing that sees it.
+            stored_fill = (
+                None if dtype is str else _encode.default_fill_value(np.dtype(dtype))
+            )
         else:
             stored_fill = np.dtype(dtype).type(fill_value)
 

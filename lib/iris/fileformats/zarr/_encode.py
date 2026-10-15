@@ -82,7 +82,8 @@ def json_native(value: Any, *, name: str) -> Any:
     -------
     Any
         A JSON-serialisable value: NumPy scalars become Python ones, NumPy
-        arrays become lists, ``bytes`` become ``str`` via ASCII, everything
+        arrays become lists, ``bytes`` become ``str`` via ASCII, a ``list``
+        or ``tuple`` becomes a list of converted elements, and everything
         else is returned unchanged.
 
     Raises
@@ -93,6 +94,7 @@ def json_native(value: Any, *, name: str) -> Any:
         refusal, and a warning would not stop the save.
 
     """
+    converted: Any
     if isinstance(value, bytes):
         try:
             converted = value.decode("ascii")
@@ -106,6 +108,13 @@ def json_native(value: Any, *, name: str) -> Any:
         converted = value.item()
     elif isinstance(value, np.ndarray):
         converted = value.tolist()
+    elif isinstance(value, (list, tuple)):
+        # Element by element, because a sequence of NumPy scalars is an
+        # ordinary thing to build - `[data.min(), data.max()]`, say - and
+        # passing it through unexamined leaves the NumPy inside it for
+        # json.dumps to reject. A tuple comes back as a list because JSON
+        # has no tuple, which the rule above already settles for an array.
+        converted = [json_native(item, name=name) for item in value]
     else:
         converted = value
 
@@ -171,7 +180,7 @@ def encode_missing_values(value: Any, dtype: np.dtype) -> Any:
     return json_native(value, name="missing_value")
 
 
-def default_fill_value(dtype: np.dtype) -> np.generic:
+def default_fill_value(dtype: np.dtype) -> np.generic | None:
     """Return the sentinel to use for a masked source that declares none.
 
     Parameters
@@ -181,23 +190,24 @@ def default_fill_value(dtype: np.dtype) -> np.generic:
 
     Returns
     -------
-    numpy.generic
-        The netCDF default fill for that dtype, as a value of it.
+    numpy.generic or None
+        The netCDF default fill for that dtype, as a value of it, or
+        ``None`` for a dtype the table has no entry for.
 
-    Raises
-    ------
-    ValueError
-        For a dtype with no entry - a complex or structured array, say,
-        which CF cannot express either.
+    Notes
+    -----
+    ``None`` rather than an error, because the table is netCDF's and a Zarr
+    store holds a good deal netCDF does not - ``float16``, ``complex64``, a
+    fixed-width byte string. Nothing about such a dtype stops it being
+    stored; what it lacks is a *missing-value* sentinel, which only matters
+    once the data turns out to be masked. That is known in
+    :meth:`iris.fileformats.zarr.saver.Saver._backend_write`, and refused
+    there, where the message can say so truthfully.
 
     """
     key = dtype.str[1:]
     if key not in DEFAULT_FILL_VALUES:
-        message = (
-            f"No default fill value for dtype {dtype}, so masked data of that "
-            "type cannot be saved to Zarr. Pass an explicit 'fill_value'."
-        )
-        raise ValueError(message)
+        return None
     return dtype.type(DEFAULT_FILL_VALUES[key])
 
 

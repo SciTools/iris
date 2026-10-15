@@ -374,6 +374,49 @@ class TestInputsTheDesignImplies:
         iris.save(wide, path)
         assert iris.load_cube(path, wide.name()).dtype == np.dtype("i8")
 
+    def test_a_dtype_netcdf_has_no_fill_for_still_saves(self, tmp_path):
+        # `ZarrDataset.supports_dtype` answers True for every NumPy dtype, so
+        # nothing is narrowed on the way in. A dtype outside netCDF's
+        # default-fill table must therefore reach the store intact: the fill
+        # table is about missing values, and this data has none.
+        path = tmp_path / "float16.zarr"
+        narrow = iris.cube.Cube(
+            np.arange(4, dtype=np.float16),
+            long_name="narrow",
+            units="1",
+            var_name="narrow",
+        )
+        iris.save(narrow, path)
+        loaded = iris.load_cube(path, narrow.name())
+        assert loaded.dtype == np.dtype("f2")
+        np.testing.assert_allclose(loaded.data, narrow.data)
+
+    def test_a_list_of_numpy_scalars_is_an_attribute(self, tmp_path, cube):
+        # `[data.min(), data.max()]` is an ordinary way to build an
+        # attribute, and netCDF accepts the list it produces.
+        path = tmp_path / "sequence.zarr"
+        cube.attributes["probe"] = [np.float32(1.5), np.float32(2.5)]
+        iris.save(cube, path)
+        loaded = iris.load_cube(path, cube.name())
+        np.testing.assert_allclose(loaded.attributes["probe"], [1.5, 2.5])
+
+    def test_masked_data_with_no_default_fill_says_what_to_pass(self, tmp_path, cube):
+        # The other side of the same coin: with no netCDF default for the
+        # dtype there is no sentinel to declare, and the array's own fill
+        # value says only what unwritten storage reads back as - so a zero
+        # there would mask every valid zero. The refusal names the keyword.
+        path = tmp_path / "masked16.zarr"
+        narrow = cube.copy(np.ma.masked_greater(cube.data.astype(np.float16), 0.0))
+        with pytest.raises(ValueError, match="fill_value"):
+            iris.save(narrow, path)
+
+    def test_an_explicit_fill_value_saves_that_masked_data(self, tmp_path, cube):
+        path = tmp_path / "masked16.zarr"
+        narrow = cube.copy(np.ma.masked_greater(cube.data.astype(np.float16), 0.0))
+        iris.save(narrow, path, fill_value=np.float16(-99.0))
+        loaded = iris.load_cube(path, narrow.name())
+        np.testing.assert_array_equal(loaded.data.mask, narrow.data.mask)
+
     def test_a_non_ascii_attribute_survives(self, tmp_path, cube):
         # A degree sign in a title is ordinary, and netCDF's ASCII-or-bytes
         # coercion does not apply here: JSON is text.
@@ -383,6 +426,20 @@ class TestInputsTheDesignImplies:
         assert iris.load_cube(path, cube.name()).attributes["title"] == (
             "Temperature in °C, naïve grid"
         )
+
+    def test_byte_string_data_saves(self, tmp_path):
+        # Iris supports a cube of fixed-width bytes, and netCDF saves one as
+        # its own character type. A Zarr store holds it too, so nothing may
+        # refuse it on the way in.
+        path = tmp_path / "bytes.zarr"
+        letters = iris.cube.Cube(
+            np.array([b"a", b"b", b"c"], dtype="S1"),
+            long_name="letters",
+            var_name="letters",
+        )
+        iris.save(letters, path)
+        stored = zarr.open_group(store=path, mode="r")["letters"]
+        np.testing.assert_array_equal(stored[...], letters.data)
 
     def test_a_dataless_cube_saves(self, tmp_path, cube):
         # `Cube` supports a dataless form, and the saver has a branch for it
