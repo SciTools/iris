@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for :class:`iris.fileformats.netcdf._attribute_handlers.StashHandler`."""
+"""Unit tests for :class:`iris.fileformats.cf._attribute_handlers.GribParamHandler`."""
 
 import pytest
 
@@ -13,7 +13,7 @@ from iris_grib.grib_phenom_translation._gribcode import (
 )
 import numpy as np
 
-from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+from iris.fileformats.cf._attribute_handlers import ATTRIBUTE_HANDLERS
 
 GP_HANDLER = ATTRIBUTE_HANDLERS["GRIB_PARAM"]
 
