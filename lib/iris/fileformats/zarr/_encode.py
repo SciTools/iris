@@ -21,6 +21,18 @@ string that masks nothing. So the first is packed and the second is not. See
 §4.5 of the native Zarr I/O design,
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
+**Packing is applied here, not assumed from the backend.** netCDF4-python
+applies ``scale_factor``/``add_offset`` packing itself, on assignment, once
+those attributes are set on the variable - which is why the generic CF saver
+only ever writes the attributes and streams the unpacked values through
+unchanged. Zarr has no such behaviour, so :func:`pack` does the arithmetic
+that would otherwise silently not happen. It is the mirror of
+:func:`iris.fileformats.zarr._decode.unpack`, called from
+:meth:`iris.fileformats.zarr._dataset.ZarrDatasetVariable.__setitem__` before
+the fill described above, because the fill value lives in *packed* space and
+the data arrives in *unpacked* space - packing an already-filled sentinel
+would put it through the same transform as real data and lose it.
+
 """
 
 import base64
@@ -215,3 +227,40 @@ def filled(data, fill_value):
     if np.ma.isMaskedArray(data):
         return data.filled(fill_value)
     return data
+
+
+def pack(data, scale_factor, add_offset, dtype: np.dtype):
+    """Return `data` packed by CF's scale and offset, as `dtype`.
+
+    The inverse of :func:`iris.fileformats.zarr._decode.unpack`:
+    ``packed = round((unpacked - add_offset) / scale_factor)``. CF packing is
+    round-to-nearest, not truncation - ``int()`` would truncate toward zero
+    and bias every negative value by up to one count.
+
+    Parameters
+    ----------
+    data : numpy.ndarray, numpy.ma.MaskedArray or dask.array.Array
+        The values to write, in physical units. A mask, if any, is carried
+        through the arithmetic unchanged and is still present in the result.
+    scale_factor, add_offset : optional
+        CF's packing parameters, read from the variable's own attributes.
+        Either absent behaves as its identity - no offset, unit scale.
+    dtype : numpy.dtype
+        The array's stored dtype, which the result is narrowed to.
+
+    Returns
+    -------
+    numpy.ndarray, numpy.ma.MaskedArray or dask.array.Array
+        `data` itself, unchanged, when neither parameter is given - a
+        variable with no packing attributes keeps its own dtype untouched,
+        rather than being rounded and recast to a dtype it already has.
+
+    """
+    if scale_factor is None and add_offset is None:
+        return data
+    result = data
+    if add_offset is not None:
+        result = result - add_offset
+    if scale_factor is not None:
+        result = result / scale_factor
+    return np.round(result).astype(dtype, copy=False)

@@ -342,6 +342,75 @@ class TestValueWriting:
         assert list(variable[:]) == ["alpha", "beta"]
 
 
+class TestPacking:
+    # netCDF4-python applies `scale_factor`/`add_offset` packing itself, on
+    # assignment, once those attributes are set on the variable - zarr-python
+    # does not, so `ZarrDatasetVariable.__setitem__` has to do the arithmetic
+    # netCDF gets for free.
+    def test_scale_and_offset_pack_the_values(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 0.5
+        variable.attributes["add_offset"] = 10.0
+        variable[:] = np.array([10.0, 10.5, 11.0], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [0, 1, 2])
+
+    def test_scale_alone_packs_with_no_offset(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 2.0
+        variable[:] = np.array([2.0, 4.0, 6.0], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [1, 2, 3])
+
+    def test_offset_alone_packs_with_unit_scale(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["add_offset"] = 10.0
+        variable[:] = np.array([11.0, 12.0, 13.0], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [1, 2, 3])
+
+    def test_with_neither_attribute_values_pass_straight_through(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable[:] = np.array([1.5, 2.5, 3.5], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [1.5, 2.5, 3.5])
+
+    def test_packing_rounds_rather_than_truncates(self, writable):
+        # `int()` truncates toward zero, which would turn -0.9 into 0 rather
+        # than -1. CF packing is round-to-nearest.
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 1.0
+        variable[:] = np.array([-0.9, 0.9], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [-1, 1])
+
+    def test_a_masked_packed_value_keeps_the_arrays_own_fill(self, writable):
+        # The sentinel lives in packed (stored) space: the array's own
+        # fill_value, not the unpacked value the pack transform would
+        # otherwise have produced from it.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 0.5
+        variable.attributes["add_offset"] = 10.0
+        variable[:] = np.ma.masked_array(
+            [10.0, 10.5, 11.0], mask=[False, True, False], dtype="f4"
+        )
+        result = variable[:]
+        assert result[0] == 0
+        assert result[1] == -32767
+        assert result[2] == 2
+
+    def test_lazy_packed_values_round_trip(self, writable):
+        import dask.array as da
+
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable.attributes["scale_factor"] = 0.5
+        variable.attributes["add_offset"] = 10.0
+        variable[:] = da.from_array(np.array([10.0, 10.5, 11.0], dtype="f4"), chunks=2)
+        np.testing.assert_array_equal(variable[:], [0, 1, 2])
+
+
 class TestFinalise:
     def test_it_consolidates(self, writable):
         writable.create_dimension("x", 3)

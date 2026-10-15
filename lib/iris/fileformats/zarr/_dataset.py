@@ -376,10 +376,18 @@ class ZarrDatasetVariable(CFDatasetVariable):
     def __setitem__(self, keys, values) -> None:
         """Write `values` into the indexed portion of the array.
 
-        Masked values are filled with the array's own fill value first. A
-        Zarr array has no mask of its own - spec §4.5 settles that the fill
-        goes in the data - and handing numpy.ma straight to zarr raises
-        inside the bytes codec, naming neither the variable nor the mask.
+        Packed first, filled second. `values` arrives in physical units;
+        :func:`~iris.fileformats.zarr._encode.pack` applies this array's own
+        ``scale_factor``/``add_offset`` attributes, the transform
+        netCDF4-python would otherwise have applied automatically on
+        assignment, which a Zarr array has no equivalent of. Masked values are
+        filled with the array's own fill value afterwards, not before: the
+        fill lives in *stored* (packed) space, so filling first would send an
+        already-filled sentinel through the same transform as real data and
+        lose it. A Zarr array has no mask of its own either way - spec §4.5
+        settles that the fill goes in the data - and handing numpy.ma
+        straight to zarr raises inside the bytes codec, naming neither the
+        variable nor the mask.
 
         """
         if self._array.ndim == 0 and keys == slice(None):
@@ -389,7 +397,13 @@ class ZarrDatasetVariable(CFDatasetVariable):
             # A scalar cube is ordinary, and this is otherwise the only
             # store that cannot hold one.
             keys = Ellipsis
-        self._array[keys] = _encode.filled(values, self._array.fill_value)
+        packed = _encode.pack(
+            values,
+            self._attributes.get("scale_factor"),
+            self._attributes.get("add_offset"),
+            self._array.dtype,
+        )
+        self._array[keys] = _encode.filled(packed, self._array.fill_value)
 
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
         """Return this array's data, lazily where a lazy array is worth it.
