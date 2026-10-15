@@ -134,8 +134,10 @@ class TestDeferredSaving:
         return lazy
 
     def test_compute_false_returns_a_real_delayed(self, tmp_path, lazy_cube):
-        # Q5 and SciTools/iris#7291: the netCDF path returns a tuple here, and
-        # the documented `result.compute()` raises AttributeError on it.
+        # SciTools/iris#7291: the inherited delayed_completion() returns a
+        # plain dask.array.core.Array here, never a Delayed despite its own
+        # annotation, and the documented `result.compute()` raises
+        # AttributeError on it.
         from dask.delayed import Delayed
 
         from iris.fileformats.zarr.saver import save
@@ -164,9 +166,9 @@ class TestDeferredSaving:
         assert after.metadata.consolidated_metadata is not None
 
     def test_the_whole_graph_survives_a_pickle(self, tmp_path, lazy_cube):
-        # F7: `write_handle()` returns the ZarrDatasetVariable, not the
-        # zarr.Array the spec checked. A distributed scheduler pickles the
-        # graph, so the substitution has to be re-checked.
+        # write_handle() returns the ZarrDatasetVariable, not the zarr.Array:
+        # a distributed scheduler pickles the graph, so the substitution has
+        # to be re-checked.
         import pickle
 
         from iris.fileformats.zarr.saver import save
@@ -211,6 +213,19 @@ class TestMaskedSaving:
     def test_an_unmasked_cube_declares_nothing(self, tmp_path, cube):
         with Saver(tmp_path / "out.zarr") as saver:
             saver.write(cube)
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert "_FillValue" not in dict(array.attrs)
+
+    def test_a_maskless_masked_array_declares_nothing(self, tmp_path, cube):
+        # np.ma.isMaskedArray is true of an np.ma array with an all-False
+        # mask, and Iris produces those routinely - a cube round-tripped
+        # from netCDF, say. Declaring a fill value for one invents metadata
+        # the source never carried.
+        unmasked = cube.copy(np.ma.masked_array(cube.data))
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(unmasked)
         array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
             "air_temperature"
         ]

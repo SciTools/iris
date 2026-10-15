@@ -74,17 +74,23 @@ class TestTheInvariantHolds:
         assert data_source.chunks == ((64, 64),)
 
     def test_an_aligned_source_is_left_alone(self, tmp_path):
-        # A needless rechunk is a needless graph layer.
+        # A needless rechunk is a needless graph layer. One whole 128-sized
+        # chunk already tiles a 64-sized grid trivially - there is no second
+        # chunk to collide with - but asking dask to rechunk it onto (64,)
+        # regardless would still subdivide it into two, so chunk-shape
+        # equality alone could not tell "left alone" from "rechunked to an
+        # equivalent shape". Identity is the only thing that can.
         cube = Cube(
-            da.from_array(np.arange(128, dtype=np.float32), chunks=64),
+            da.from_array(np.arange(128, dtype=np.float32), chunks=128),
             var_name="data",
         )
         cube.add_dim_coord(DimCoord(np.arange(128, dtype=np.float32), var_name="x"), 0)
+        source = cube.lazy_data()
         with Saver(tmp_path / "out.zarr", compute=False) as saver:
             saver.write(cube, chunks=(8,), shards=(64,))
             sources = [source for source, _ in saver._delayed_writes]
         data_source = [s for s in sources if s.shape == (128,)][0]
-        assert data_source.chunks == ((64, 64),)
+        assert data_source is source
 
     def test_an_unsharded_target_grids_on_chunks(self, tmp_path):
         cube = Cube(

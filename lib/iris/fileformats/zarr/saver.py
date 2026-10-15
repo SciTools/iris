@@ -62,7 +62,7 @@ def _tiles_the_grid(chunks, grid) -> bool:
         cell is permitted, so the last boundary is not checked.
 
     """
-    for lengths, cell in zip(chunks, grid):
+    for lengths, cell in zip(chunks, grid, strict=True):
         offset = 0
         for length in lengths[:-1]:
             offset += length
@@ -253,8 +253,16 @@ class Saver(CFSaver):
             straight in.
 
         """
+        # `np.ma.is_masked` is true only when something is actually masked,
+        # unlike `np.ma.isMaskedArray`, which is true of an np.ma array whose
+        # mask is all-False - and Iris produces those routinely, so that
+        # test would declare a missing-value sentinel on data the source
+        # never marked missing. Lazy data cannot be inspected without
+        # computing it, so `is_lazy_masked_data` is the safe answer there:
+        # declaring unnecessarily costs an attribute, where not declaring
+        # could lose a real mask silently.
         if (
-            is_lazy_masked_data(data) or np.ma.isMaskedArray(data)
+            is_lazy_masked_data(data) or np.ma.is_masked(data)
         ) and "_FillValue" not in cf_var.attributes:
             # On version 3 the attribute is the masking declaration and the
             # storage fill is not, so a store written with the fill alone
