@@ -2851,13 +2851,16 @@ All four findings reproduced and fixed; none disputed.
   through zarr's fill-value parser, which fails the whole dataset open on a
   plain number.
 - A masked source with no declared fill takes netCDF's default fill for its
-  dtype, for every dtype including floating, and the value is always written
+  dtype, for every dtype that table covers, and the value is always written
   as `_FillValue`. zarr-python's own default is 0 for every dtype, which would
-  make a masked point of a float array read back as a real zero.
+  make a masked point of a float array read back as a real zero — so a dtype
+  the table does not cover, such as `float16`, is refused when the data turns
+  out to be masked, and saves normally when it does not.
 - The write-alignment invariant is enforced by rechunking the lazy source to
   the array's write grid at write time, not by deriving the grid from the
   source at create time: `create_variable` never sees the data. The data
-  variable's `chunks` defaults to the cube's own lazy chunking.
+  variable's `chunks` defaults to the cube's own lazy chunking, where the cube
+  has one and the caller passed no `shards`.
 - `finalise()` is wired into the Zarr saver's `delayed_completion`, not into
   `CFSaver`'s: the generic version would put a `netCDF4.Dataset` into a
   delayed closure, and it does not pickle.
@@ -2900,6 +2903,47 @@ All four findings reproduced and fixed; none disputed.
   the consolidation flag bound as plain values rather than reached through
   `self`, so the `Delayed` a deferred save returns survives a plain `pickle`
   round trip and not only cloudpickle.
+
+**2026-10-15 — actioning the whole-branch review of PR 6**
+
+Every finding sat in the seam between the generic saver and the Zarr one:
+`cf/saver.py` had only ever been driven by a saver that creates its store
+from scratch, so the places where "the store already holds something"
+matters were not all swept. All reproduced; none disputed.
+
+- The dimensions a group already carries seed the generic saver's
+  `_existing_dim`, so that `_get_dim_names` disambiguates against them. Two
+  cubes with no dim coord both call their dimension `dim0`, and the generic
+  layer declares nothing for a name it already sees — so a second save sized
+  its array from the store's length rather than the cube's, and zarr-python
+  truncated the write in silence. §4.5.
+- `ZarrDatasetVariable.__setitem__` refuses a value whose shape does not
+  match the selection, naming the array. The second line of defence under
+  the same rule: Zarr neither resizes an array nor reports an oversized
+  write. §4.5.
+- The cube-attribute marshalling that decides which attributes a store holds
+  globally is now `cf.saver.marshal_attributes`, called by both savers. It
+  was written into `netcdf/saver.save` and the Zarr saver did not have it, so
+  every cube global attribute was dropped under split-attribute saving, and a
+  `CubeList` whose cubes disagreed collapsed to the last cube's value under
+  the legacy one. The netCDF path is unchanged except that the deprecation
+  message now names its format; the Zarr path now emits that deprecation too,
+  which it should, the legacy mode being deprecated for every format. §4.5.
+- A dtype with no entry in the netCDF default-fill table falls back to
+  zarr-python's own default rather than raising, so `float16` and `S1` save.
+  `supports_dtype` answers True for every NumPy dtype, and a store that
+  refused what it said it could hold contradicted it. The refusal moved to
+  where the mask is known. §4.5.
+- `json_native` recurses into a `list` or `tuple`, so a sequence of NumPy
+  scalars — `[data.min(), data.max()]` — is an attribute, as it is for
+  netCDF. §4.5.
+- `order` is refused rather than accepted and discarded: zarr-python takes it
+  for a version 2 array and Iris writes version 3, where it has no effect.
+  `append` gets a message naming `mode="a"`. §4.5.
+- `chunks` no longer defaults to the cube's own lazy chunking when `shards`
+  is given: a shard holds a whole number of inner chunks, and Dask's chunking
+  has no reason to divide one the user chose, so the pair failed over a
+  number the user never passed. §4.5.
 
 **2026-10-16 — Q10 closed, at review of #7338 by @stephenworsley**
 
@@ -2962,6 +3006,7 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype, including under `CHUNK_CONTROL.as_dask()` (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
 | 2026-10-15 | PR 6 built, on a branch merging PR 4 and PR 5. Grid-mapping writing made store-agnostic through a fifth hook (Q8 unblocked, not closed); `_attribute_handlers` relocated to `cf/`; `zarr/_encode.py` added to §4.1; `missing_value` separated from `_FillValue` on the write side; the default fill made netCDF's for every dtype; the write-alignment invariant enforced by rechunking at write time. Fifteen decisions logged. |
+| 2026-10-15 | Actioned the whole-branch review of PR 6. Seven findings, all reproduced and fixed, all in the seam between the generic saver and the Zarr one: the group's own dimensions seed `_existing_dim`, so `mode="a"` no longer truncates a cube whose anonymous dimension name collides; a shape guard in `ZarrDatasetVariable.__setitem__`; cube-attribute marshalling extracted to `cf.saver.marshal_attributes` and shared with the netCDF saver, which had been the only caller; a dtype outside netCDF's default-fill table falls back to zarr's own; `json_native` recurses into sequences; `order` and `append` refused with reasons; `chunks` no longer defaulted when `shards` is given (§4.5). |
 | 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |
 | 2026-10-16 | #7337 fixed inside PR 5 rather than carried across it, following review of #7338 by @stephenworsley. Q10 closed into §12.4, and §12.1 now records the issue as closed by PR 5. |
 | 2026-10-16 | Added PR 8, the terms-of-art sweep: this document and the plans predate the rule in `.github/WRITING.md`, and a coinage that reaches `main` passes the test a later agent applies to decide whether a term is already in use. The programme goes from eight pull requests to nine. No design change. |
