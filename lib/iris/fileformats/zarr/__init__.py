@@ -141,6 +141,12 @@ def _save_cubes(cube, target, **kwargs):
     registered: reaching it imports ``zarr``, and registration happens the
     first time *any* format is saved.
 
+    Repeats the checks :func:`__getattr__` runs, rather than relying on it:
+    the import below reaches ``.saver`` directly, bypassing ``__getattr__``.
+    Without this, an installation with no zarr, or too old a zarr, would
+    write a complete store instead of raising the clear ``ImportError`` that
+    the load path already gives.
+
     Parameters
     ----------
     cube : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
@@ -154,7 +160,18 @@ def _save_cubes(cube, target, **kwargs):
     -------
     None or :class:`dask.delayed.Delayed`
 
+    Raises
+    ------
+    ImportError
+        If ``zarr`` is not installed, or is installed below
+        :data:`_MINIMUM_VERSION`.
+
     """
-    from .saver import save
+    _check_zarr_version()
+
+    try:
+        from .saver import save
+    except ImportError as exception:
+        raise ImportError(_MISSING_MESSAGE) from exception
 
     return save(cube, target, **kwargs)
