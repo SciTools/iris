@@ -91,15 +91,22 @@ The Zarr saver takes **zarr-python's** vocabulary, not netCDF's::
         compressors=[zarr.codecs.BloscCodec(cname="zstd")],
     )
 
-``chunks``, ``shards``, ``compressors``, ``filters``, ``serializer`` and
-``order`` are passed through as zarr-python defines them. A netCDF keyword such as
+``chunks``, ``shards``, ``compressors``, ``filters`` and ``serializer`` are
+passed through as zarr-python defines them. A netCDF keyword such as
 ``zlib=True`` raises :class:`TypeError` naming the Zarr replacement where there
 is one, and saying there is none where there is not. The two compression models
 differ, and a keyword that let you say ``complevel=4`` while quietly giving you
-Blosc would be misleading rather than convenient.
+Blosc would be misleading rather than convenient. ``order`` raises too: it is
+zarr-python's own keyword, but it has no effect on a version 3 array, and a
+keyword Iris accepted and then discarded would be worse than one it refuses.
 
-``chunks`` defaults to the cube's own lazy chunking, so data is written in the
-shape it is held in.
+For a cube holding **lazy** data, ``chunks`` defaults to the cube's own lazy
+chunking, so data is written in the shape it is held in. Real data has no
+chunking of its own to inherit, and gets zarr-python's automatic chunking
+instead. Pass ``chunks`` yourself to decide either case. The default is also
+dropped when you pass ``shards``: a shard holds a whole number of inner
+chunks, and the cube's own chunking has no reason to divide a shard you chose
+for storage, so zarr-python picks the inner chunk in that case.
 
 Deferred saving
 ^^^^^^^^^^^^^^^
@@ -117,9 +124,11 @@ Iris writes a consolidated metadata document at the store's root when the save
 completes, because it is what makes a remote store usable: a reader fetches one
 object instead of one per array. Pass ``consolidate_metadata=False`` to decline.
 
-When Iris adds to a store that already carries one, it rewrites it. A
-consolidated document that does not mention what was just written is what a
-default reader believes, so stale consolidation hides data.
+When Iris adds to a store that already carries one, it rewrites it -- or, if
+you declined consolidation for that save, removes it. A consolidated document
+that does not mention what was just written is what a default reader believes,
+so a stale one hides data; having none at all is slower to read but tells the
+truth.
 
 What an interrupted save leaves behind
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

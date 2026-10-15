@@ -180,6 +180,54 @@ class TestDeferredSaving:
         np.testing.assert_array_equal(written["air_temperature"][:], lazy_cube.data)
 
 
+class TestChunksAndShards:
+    @pytest.fixture
+    def awkward_cube(self):
+        import dask.array as da
+
+        # A lazy chunking that does not divide the shard below: ordinary,
+        # since Dask chose it for memory and the user chose the shard for
+        # storage, and the two have no reason to agree.
+        return Cube(
+            da.zeros((64, 64), chunks=(30, 30)),
+            standard_name="air_temperature",
+            units="K",
+            var_name="air_temperature",
+        )
+
+    def test_shards_alone_does_not_inherit_the_cubes_chunking(
+        self, tmp_path, awkward_cube
+    ):
+        # `chunks` defaults to the cube's own lazy chunking, which zarr then
+        # refuses as an inner chunk the shard is not a multiple of - about a
+        # number the user never supplied. With only `shards` given,
+        # zarr-python picks the inner chunk itself.
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(awkward_cube, shards=(64, 64))
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert array.shards == (64, 64)
+        np.testing.assert_array_equal(array[:], np.zeros((64, 64)))
+
+    def test_chunks_still_default_to_the_cubes_own(self, tmp_path, awkward_cube):
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(awkward_cube)
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert array.chunks == (30, 30)
+
+    def test_both_given_are_both_honoured(self, tmp_path, awkward_cube):
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(awkward_cube, chunks=(32, 32), shards=(64, 64))
+        array = zarr.open_group(store=tmp_path / "out.zarr", mode="r")[
+            "air_temperature"
+        ]
+        assert array.chunks == (32, 32)
+        assert array.shards == (64, 64)
+
+
 class TestMaskedSaving:
     def test_a_masked_cube_declares_a_fill_value(self, tmp_path, cube):
         # Spec §4.5: without the attribute, every masked point reads back

@@ -28,8 +28,6 @@ interrupted one destroys the old store without completing the new.
 
 """
 
-from pathlib import Path
-
 import dask
 from dask.delayed import Delayed
 import numpy as np
@@ -154,7 +152,11 @@ class Saver(CFSaver):
             Whether to write a consolidated metadata document at the root
             when the save completes. Consolidation is what makes a remote
             store usable; declining it suits a store that will be added to
-            again before anyone reads it.
+            again before anyone reads it. Declining it when adding to a
+            store that already carries one *removes* that document rather
+            than leaving it: the store is opened without consulting it, so
+            the root metadata is rewritten without one. Slower to read, and
+            true, where a stale document would hide what was just written.
 
         Examples
         --------
@@ -199,10 +201,18 @@ class Saver(CFSaver):
         """Write a cube into the store.
 
         Takes what :meth:`iris.fileformats.cf.saver.CFSaver.write` takes,
-        with Zarr's storage keywords in ``**encoding``. ``chunks`` defaults to
-        the cube's own lazy chunking, so that the data is written in the shape
-        it is held in, and so that the dask source tiles the array's write grid
-        without being rechunked.
+        with Zarr's storage keywords in ``**encoding``. For a cube whose data
+        is lazy, ``chunks`` defaults to the cube's own lazy chunking, so that
+        the data is written in the shape it is held in, and so that the dask
+        source tiles the array's write grid without being rechunked. Real
+        data gets zarr-python's automatic chunking, which is what it has no
+        chunking of its own to offer.
+
+        The default is dropped when ``shards`` is given. A shard must be a
+        whole number of inner chunks, and Dask's chunking has no reason to
+        divide a shard the user chose for storage - so supplying both would
+        fail over a number the user never passed. With only ``shards``
+        given, zarr-python picks an inner chunk that fits it.
 
         Raises
         ------
@@ -219,7 +229,7 @@ class Saver(CFSaver):
             cf_name = self._get_element_variable_name(cube, cube)
             if cf_name in self._pre_existing_names:
                 raise ValueError(existing_name_message(cf_name, self._dataset.location))
-        if "chunks" not in kwargs and cube.has_lazy_data():
+        if "chunks" not in kwargs and "shards" not in kwargs and cube.has_lazy_data():
             kwargs["chunks"] = cube.lazy_data().chunksize
         super().write(cube, *args, **kwargs)
 
@@ -438,9 +448,9 @@ def save(
         the store when computed, instead of writing lazy data here.
     **encoding
         Zarr's own storage keywords for the data variable: ``chunks``,
-        ``shards``, ``compressors``, ``filters``, ``serializer``, ``order``.
-        A netCDF keyword raises :class:`TypeError` naming the Zarr
-        equivalent.
+        ``shards``, ``compressors``, ``filters``, ``serializer``. A netCDF
+        keyword raises :class:`TypeError` naming the Zarr equivalent, and so
+        does a keyword a version 3 store has no use for, such as ``order``.
 
     Returns
     -------

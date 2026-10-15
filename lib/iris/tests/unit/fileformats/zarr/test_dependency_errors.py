@@ -97,6 +97,12 @@ class Test__MISSING_MESSAGE:
         assert "zarr" in _MISSING_MESSAGE
         assert "3.0.8" in _MISSING_MESSAGE
 
+    def test_it_covers_saving_as_well_as_loading(self):
+        # `iris.save` raises this one too, so it cannot be worded as a
+        # loading failure: a user who was saving would be told about the
+        # wrong half of the package.
+        assert "load" not in _MISSING_MESSAGE
+
 
 class Test_zarr_is_missing:
     def test_iris_load_reports_it(self, tmp_path):

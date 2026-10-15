@@ -50,12 +50,12 @@ _MINIMUM_VERSION = "3.0.8"
 
 #: Raised whether ``zarr`` is missing entirely or present below
 #: :data:`_MINIMUM_VERSION`. Defined once here, not in
-#: :func:`iris.fileformats._load_zarr`, so that the two routes a caller can
-#: reach a Zarr load through - ``iris.load`` and calling
-#: :func:`load_cubes` directly - produce the same text rather than each
-#: carrying its own copy.
+#: :func:`iris.fileformats._load_zarr`, so that every route a caller can
+#: reach a Zarr store through - ``iris.load``, ``iris.save``, and calling
+#: :func:`load_cubes` directly - produces the same text rather than each
+#: carrying its own copy. "Use", not "load": ``iris.save`` raises this too.
 _MISSING_MESSAGE = (
-    "Unable to load a Zarr store - the 'zarr' package is not "
+    "Unable to use a Zarr store - the 'zarr' package is not "
     "installed. Install zarr >=3.0.8, for example with "
     "'conda install -c conda-forge zarr'."
 )

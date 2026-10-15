@@ -252,6 +252,28 @@ class TestCreateVariableEncoding:
         with pytest.raises(TypeError, match="wibble"):
             writable.create_variable("data", np.dtype("f4"), ["x"], wibble=1)
 
+    def test_order_is_refused_rather_than_discarded(self, writable):
+        # zarr-python takes `order` for version 2 arrays and warns that it
+        # has no effect on a version 3 one, which is all Iris writes.
+        # Accepting a keyword and then dropping it is worse than refusing it.
+        writable.create_dimension("x", 3)
+        with pytest.raises(TypeError) as excinfo:
+            writable.create_variable("data", np.dtype("f4"), ["x"], order="F")
+        message = str(excinfo.value)
+        assert "order" in message
+        assert "version 2" in message
+        assert "version 3" in message
+
+    def test_append_is_told_about_mode(self, writable):
+        # There is no append, for Zarr or for netCDF. `mode="a"` adds new
+        # arrays, which is the nearest thing and worth naming here.
+        writable.create_dimension("x", 3)
+        with pytest.raises(TypeError) as excinfo:
+            writable.create_variable("data", np.dtype("f4"), ["x"], append=True)
+        message = str(excinfo.value)
+        assert "append" in message
+        assert "mode='a'" in message
+
 
 class TestAttributeWriting:
     def test_a_numpy_scalar_is_converted(self, writable):

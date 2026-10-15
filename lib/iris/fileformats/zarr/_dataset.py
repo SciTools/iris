@@ -648,25 +648,40 @@ _WRITABLE_ZARR_FORMAT = 3
 
 #: The storage keywords `create_variable` passes to zarr-python, which are
 #: zarr-python's own. Iris does not invent names for them and does not
-#: translate netCDF's: see `_NETCDF_KEYWORDS` below, and §4.5 of the design.
+#: translate netCDF's: see `_KEYWORD_ADVICE` below, and §4.5 of the design.
+#:
+#: `order` is **not** here, although zarr-python's own signature takes it:
+#: it has no effect on a version 3 array, which is all Iris writes, and
+#: zarr-python merely warns and ignores it. A keyword Iris accepts and
+#: silently discards is worse than one it refuses with a reason.
 _ZARR_ENCODING_KEYWORDS = frozenset(
-    {"chunks", "shards", "compressors", "filters", "serializer", "order"}
+    {"chunks", "shards", "compressors", "filters", "serializer"}
 )
 
-#: What to say about a netCDF storage keyword someone tried here. The Zarr
-#: name where there is one, and a plain "no equivalent" where there is not -
-#: a compression model that differs is worth saying out loud, and silently
-#: mapping `zlib=True` onto a Blosc codec would be a false equivalence.
-_NETCDF_KEYWORDS = {
-    "zlib": "compressors, e.g. compressors=[zarr.codecs.GzipCodec()]",
-    "complevel": "compressors, which carry their own level",
-    "shuffle": "compressors, e.g. the shuffle option of BloscCodec",
+#: What to say about a keyword someone tried here that this store does not
+#: take. Mostly netCDF's, where the advice is the Zarr name if there is one
+#: and a plain "no equivalent" if there is not - a compression model that
+#: differs is worth saying out loud, and silently mapping `zlib=True` onto a
+#: Blosc codec would be a false equivalence. The rest are keywords that read
+#: as though they ought to work here, and are worth more than silence.
+_KEYWORD_ADVICE = {
+    "zlib": "use compressors, e.g. compressors=[zarr.codecs.GzipCodec()]",
+    "complevel": "use compressors, which carry their own level",
+    "shuffle": "use compressors, e.g. the shuffle option of BloscCodec",
     "fletcher32": "no equivalent; Zarr checksums with a Crc32c codec",
     "contiguous": "no equivalent; a Zarr array is always chunked",
-    "chunksizes": "chunks",
+    "chunksizes": "use chunks",
     "endian": "no equivalent; a Zarr codec decides byte order",
     "least_significant_digit": "no equivalent",
     "unlimited_dimensions": "no equivalent; a Zarr array has a fixed shape",
+    "order": (
+        "zarr-python takes order for a Zarr version 2 array, and Iris writes "
+        "version 3, where it has no effect"
+    ),
+    "append": (
+        "there is no append; use mode='a' to add new arrays to a store that "
+        "already exists"
+    ),
 }
 
 
@@ -681,8 +696,8 @@ def check_encoding_keywords(encoding) -> None:
     Raises
     ------
     TypeError
-        Naming each unknown keyword, and the Zarr replacement where there
-        is one.
+        Naming each unusable keyword, and what to do instead where there is
+        something to say.
 
     """
     unknown = set(encoding) - _ZARR_ENCODING_KEYWORDS
@@ -690,14 +705,14 @@ def check_encoding_keywords(encoding) -> None:
         return
     lines = []
     for keyword in sorted(unknown):
-        replacement = _NETCDF_KEYWORDS.get(keyword)
-        if replacement is None:
+        advice = _KEYWORD_ADVICE.get(keyword)
+        if advice is None:
             lines.append(f"  {keyword}: not a Zarr storage keyword")
         else:
-            lines.append(f"  {keyword}: use {replacement}")
+            lines.append(f"  {keyword}: {advice}")
     message = (
-        "Unknown Zarr storage keyword(s). A Zarr store takes zarr-python's "
-        "own keywords, which Iris does not translate netCDF's onto:\n"
+        "Unusable Zarr storage keyword(s). A Zarr store takes zarr-python's "
+        "own keywords, and Iris does not translate netCDF's onto them:\n"
         + "\n".join(lines)
     )
     raise TypeError(message)
@@ -994,7 +1009,7 @@ class ZarrDataset(CFDataset):
             declares one if it finds the data is masked.
         **encoding
             Zarr's own storage keywords: ``chunks``, ``shards``,
-            ``compressors``, ``filters``, ``serializer``, ``order``.
+            ``compressors``, ``filters``, ``serializer``.
 
         Returns
         -------

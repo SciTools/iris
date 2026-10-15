@@ -62,6 +62,18 @@ class TestSave:
         group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
         assert group.metadata.consolidated_metadata is None
 
+    def test_declining_it_drops_a_document_the_store_already_had(self, tmp_path, cubes):
+        # The store is opened without consulting its consolidated document,
+        # so adding an array rewrites the root metadata without one. That is
+        # the safe outcome - a default reader sees both arrays rather than
+        # believing a snapshot taken before the second - and the Zarr
+        # documentation page says so.
+        save(cubes[0], tmp_path / "out.zarr")
+        save(cubes[1], tmp_path / "out.zarr", mode="a", consolidate_metadata=False)
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group.metadata.consolidated_metadata is None
+        assert {"air_temperature", "air_pressure"} <= set(group.array_keys())
+
     def test_a_conflicting_anonymous_dimension_gets_its_own_name(self, tmp_path, cubes):
         # A cube dimension with no dim coord is named "dim0", "dim1", and so
         # on, so two unrelated cubes routinely claim the same name. A second

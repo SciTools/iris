@@ -132,7 +132,7 @@ class TestEncodeFillValue:
 
 
 class TestEncodeMissingValues:
-    # F10: base64 here would open in xarray and silently not mask.
+    # Spec §4.5: base64 here would open in xarray and silently not mask.
     def test_a_float_scalar_stays_a_number(self):
         assert encode_missing_values(np.float32(-99.0), np.dtype("f4")) == -99.0
 
