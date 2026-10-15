@@ -8,7 +8,10 @@ The check that justifies two decisions in the design. Attributes are written
 as JSON-native values, losing their NumPy dtype, *so that* every other Zarr
 consumer can read them; and a floating ``_FillValue`` is written as base64,
 against CF section 2.5.1, because released xarray fails the whole dataset open
-on a plain JSON number.
+on a plain JSON number. ``missing_value`` is the opposite case of the same
+pair: it is written as a plain number, never base64, because base64 there
+opens cleanly and masks nothing - a quieter failure than refusing to open at
+all, and one a unit test on the encoder alone cannot see.
 
 Both are only worth anything if someone checks, and xarray is the reader to
 check against: it is what most of the Zarr world reads with.
@@ -75,6 +78,20 @@ class TestXarrayReadsIris:
         iris.save(small_cube(masked=True), path, fill_value=np.float32(-99.0))
         values = xr.open_zarr(path)["air_temperature"].values
         assert np.isnan(values[0, 1])
+
+    def test_a_missing_value_sentinel_masks(self, tmp_path):
+        # Not a masked array: a ``missing_value`` attribute is a CF
+        # declaration about ordinary stored values, so the sentinel is
+        # written as real data, and it is xarray's own read that has to
+        # recognise and mask it.
+        path = tmp_path / "missing_value.zarr"
+        cube = small_cube()
+        cube.data[0, 1] = -99.0
+        cube.attributes["missing_value"] = np.float32(-99.0)
+        iris.save(cube, path)
+        values = xr.open_zarr(path)["air_temperature"].values
+        assert np.isnan(values[0, 1])
+        assert not np.isnan(values[0, 0])
 
     def test_the_dimensions_and_coordinates_are_xarrays_too(self, tmp_path):
         path = tmp_path / "dims.zarr"
