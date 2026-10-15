@@ -131,3 +131,30 @@ def __getattr__(name):
         raise ImportError(_MISSING_MESSAGE) from exception
 
     return getattr(module, name)
+
+
+def _save_cubes(cube, target, **kwargs):
+    """Save to a Zarr store, importing zarr-python only when called.
+
+    What :data:`iris.io._savers` holds for the ``zarr`` extension. A plain
+    reference to :func:`iris.fileformats.zarr.saver.save` cannot be
+    registered: reaching it imports ``zarr``, and registration happens the
+    first time *any* format is saved.
+
+    Parameters
+    ----------
+    cube : :class:`iris.cube.Cube` or :class:`iris.cube.CubeList`
+        What to save.
+    target : str or pathlib.Path
+        The store's path or URL.
+    **kwargs : dict
+        Passed to :func:`iris.fileformats.zarr.saver.save`.
+
+    Returns
+    -------
+    None or :class:`dask.delayed.Delayed`
+
+    """
+    from .saver import save
+
+    return save(cube, target, **kwargs)
