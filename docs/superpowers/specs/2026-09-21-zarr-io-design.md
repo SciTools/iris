@@ -2895,10 +2895,16 @@ All four findings reproduced and fixed; none disputed.
   unequal values, differing units and different calendars is its own piece of
   work. A data variable's own name is the one collision that is an error
   rather than a rename.
-- A masked string variable declares `_FillValue: ''`: a string array takes
-  zarr's own default fill, so a legitimately empty label reads back masked.
-  Choosing a string sentinel was not settled here; losing the mask was judged
-  the worse alternative.
+- A masked string variable is **refused**, not written. The only sentinel a
+  Zarr string array could carry is the empty string, which is also a
+  legitimate label — and `zarr/_decode.py` does not restore a mask from one:
+  it warns that the attribute is neither a number nor the base64 of a
+  float64, and reads the empty strings back as data. So writing it would lose
+  the mask in silence, which is the failure this design is least willing to
+  accept. The netCDF saver cannot store a masked string coordinate either, so
+  refusing is parity with it rather than a step back from it. The message
+  names the variable and offers no `fill_value` to pass, because there is
+  none that would work.
 - The deferred completion is a module-level function, with the dataset and
   the consolidation flag bound as plain values rather than reached through
   `self`, so the `Delayed` a deferred save returns survives a plain `pickle`

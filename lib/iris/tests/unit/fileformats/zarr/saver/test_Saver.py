@@ -278,3 +278,19 @@ class TestMaskedSaving:
             "air_temperature"
         ]
         assert "_FillValue" not in dict(array.attrs)
+
+    def test_a_masked_string_variable_is_refused(self, tmp_path, cube):
+        # A Zarr string array's only candidate sentinel is the empty string,
+        # and `iris.fileformats.zarr._decode` does not restore a mask from
+        # one - so writing it would lose the mask in silence, which is the
+        # worse of the two outcomes. netCDF cannot save this either.
+        labels = np.ma.masked_array(["north", "south"], mask=[False, True])
+        cube.add_aux_coord(AuxCoord(labels, long_name="place", var_name="place"), 0)
+        with pytest.raises(ValueError, match="place") as excinfo:
+            with Saver(tmp_path / "out.zarr") as saver:
+                saver.write(cube)
+        message = str(excinfo.value)
+        assert "string" in message
+        # No advice to pass `fill_value`: `iris.save` offers it for the data
+        # variable alone, and this is a coordinate.
+        assert "fill_value" not in message

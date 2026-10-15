@@ -43,6 +43,11 @@ from ._dataset import ZarrDataset, check_encoding_keywords, existing_name_messag
 
 __all__ = ["Saver", "save"]
 
+#: The :attr:`numpy.dtype.kind` codes of a text array: ``T`` for the
+#: variable-length string type a Zarr store holds text in, ``U`` and ``S``
+#: for the fixed-width unicode and bytes a cube may arrive with.
+_TEXT_KINDS = frozenset("TUS")
+
 
 def _tiles_the_grid(chunks, grid) -> bool:
     """Whether every chunk boundary falls on a write-grid boundary.
@@ -283,7 +288,9 @@ class Saver(CFSaver):
         ValueError
             If the data is masked and its dtype has no netCDF default fill
             value, so that there is no sentinel to declare. This is the one
-            place the mask and the dtype are both known.
+            place the mask and the dtype are both known. A text variable
+            gets its own message: a string has no sentinel at all, so there
+            is nothing the caller could pass instead.
 
         """
         # `np.ma.is_masked` is true only when something is actually masked,
@@ -301,14 +308,30 @@ class Saver(CFSaver):
                 # No netCDF default for this dtype, so the array took
                 # zarr-python's own - which says what unwritten storage reads
                 # back as, not that a value is missing. Declaring that as
-                # `_FillValue` would mask every point that legitimately
-                # holds it, typically every zero.
-                message = (
-                    f"Cannot save masked data of dtype {cf_var.dtype} into the "
-                    f"Zarr array {cf_var.name!r}: there is no default "
-                    "missing-value sentinel for that type. Pass an explicit "
-                    "'fill_value'."
-                )
+                # `_FillValue` would mask every point that legitimately holds
+                # it: every zero of a numeric array, every empty string of a
+                # text one.
+                if cf_var.dtype.kind in _TEXT_KINDS:
+                    # A text array's own fill is the empty string, and
+                    # `iris.fileformats.zarr._decode` does not restore a mask
+                    # from one - it warns and reads the empty strings back as
+                    # data. So there is no sentinel to write and none the
+                    # caller could supply instead, and writing one anyway
+                    # would lose the mask in silence. The netCDF saver cannot
+                    # store this either.
+                    message = (
+                        f"Cannot save the masked string variable "
+                        f"{cf_var.name!r} to Zarr: a string has no "
+                        "missing-value sentinel, so the mask could not be "
+                        "read back."
+                    )
+                else:
+                    message = (
+                        f"Cannot save masked data of dtype {cf_var.dtype} into "
+                        f"the Zarr array {cf_var.name!r}: there is no default "
+                        "missing-value sentinel for that type. Pass an "
+                        "explicit 'fill_value'."
+                    )
                 raise ValueError(message)
             # On version 3 the attribute is the masking declaration and the
             # storage fill is not, so a store written with the fill alone
