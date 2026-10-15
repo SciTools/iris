@@ -2209,7 +2209,7 @@ nothing else, and can land beside any of the others.
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | In review | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
-| 6 | Zarr saving | Not started | — |
+| 6 | Zarr saving | Drafted | `zarr-io-pr-6` |
 | 7 | Real-world test data and benchmarks | Not started | — |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
@@ -2258,10 +2258,11 @@ closing keywords live (§5).
 | Q1 | How should the CF attribute model map onto JSON, on write and on read? | JSON-native both ways (§4.4, §4.5) | #7288, §10 | Nothing. Changing it touches only the attribute conversion in `zarr/_dataset.py` |
 | Q9 | Should a user be able to tell the loader that two same-named, same-length dimensions in different Zarr arrays are *not* the same dimension? The version 3 specification permits it, since a name guarantees nothing across arrays | No control. Treating that pair as one dimension is what xarray, NCZarr and netCDF all do, so a store meaning otherwise is relying on something no reader implements. Add one if a real store turns up that needs it | §4.4 | Nothing |
 | Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
-| Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing |
+| Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing. `zarr/saver.py` returns a real `Delayed` and tests `.compute()`; the netCDF path is unchanged |
 | Q6 | The `as_lazy_data` cache is process-wide and keyed on metadata, so it cannot detect a store whose chunk contents changed under identical metadata. Should it be scoped to a load session instead? | Metadata identity closes the cases that were reproduced (§4.4) and matches the netCDF key's existing strength, so it ships. Session scoping is the durable fix and would cover both formats | §4.4 | Nothing |
 | Q7 | Iris writes a floating `_FillValue` as base64 to stay readable by xarray, deviating from CF §2.5.1. Should the deviation be raised with the CF-Zarr conventions group rather than carried privately? | Carry it now, since the alternative is unreadable output; take it upstream to zarr-conventions/CF so the convention settles rather than each reader guessing | §4.4, §4.5 | Nothing |
-| Q8 | `_add_grid_mapping_to_dataset` sets sixty-three CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | PR 6's grid mappings. PR 5 relocated the method into `cf/saver.py`, where the netCDF4 handle is now the one thing in generic code that a non-netCDF store cannot supply |
+| Q8 | `_add_grid_mapping_to_dataset` sets sixty-three CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | Nothing. PR 6 added the `_grid_mapping_writer` hook, so a non-netCDF store writes these through `.attributes` while netCDF keeps its own object and its own encoding |
+| Q10 | Saving int64 data to `NETCDF3_64BIT` fails inside the C library, because netCDF4 reports that format as `NETCDF3_64BIT_OFFSET` and the saver's narrowing list does not have that string **[verified]** | Preserved, not fixed: PR 5 is a relocation and may not change behaviour. `NetCDFDataset.supports_dtype` answers from the same three strings the saver tested, with a test pinning the failure so it is not mistaken for a regression | [#7337](https://github.com/SciTools/iris/issues/7337) | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -2833,6 +2834,72 @@ All four findings reproduced and fixed; none disputed.
   request, once PR 6 has shown where the seams between the two formats really
   fall.
 
+**2026-10-15 — PR 6, Zarr saving**
+
+- Grid-mapping parameters reach a non-netCDF store through a fifth hook,
+  `_grid_mapping_writer`. netCDF returns its own variable, so what lands in a
+  netCDF file is unchanged; everything else gets a writer onto `.attributes`.
+  Q8's regularisation stays out of this programme.
+- `_attribute_handlers` moved to `cf/`, closing the last two-way import
+  between the CF and netCDF packages.
+- `zarr/_encode.py` added to §4.1's layout, holding the write-side value
+  conversions as pure functions, mirroring `_decode.py`.
+- `missing_value` is written as a plain JSON number, not base64. Only
+  `_FillValue` takes the packed encoding: xarray reads the first as an
+  ordinary attribute, where a packed string masks nothing, and the second
+  through zarr's fill-value parser, which fails the whole dataset open on a
+  plain number.
+- A masked source with no declared fill takes netCDF's default fill for its
+  dtype, for every dtype including floating, and the value is always written
+  as `_FillValue`. zarr-python's own default is 0 for every dtype, which would
+  make a masked point of a float array read back as a real zero.
+- The write-alignment invariant is enforced by rechunking the lazy source to
+  the array's write grid at write time, not by deriving the grid from the
+  source at create time: `create_variable` never sees the data. The data
+  variable's `chunks` defaults to the cube's own lazy chunking.
+- `finalise()` is wired into the Zarr saver's `delayed_completion`, not into
+  `CFSaver`'s: the generic version would put a `netCDF4.Dataset` into a
+  delayed closure, and it does not pickle.
+- `xarray` added to the test section of the requirement files; the lock files
+  are regenerated by hand once #7336 lands, so CI skips the cross-reader
+  tests until then.
+- `packing=` is applied by the Zarr write path itself, not inherited from
+  netCDF's. The generic saver sets `scale_factor` and `add_offset` as
+  attributes and streams the data unchanged, because netCDF4-python applies
+  the transform itself on assignment; zarr-python has no such behaviour. A
+  `pack` function in `zarr/_encode.py`, mirroring `_decode.unpack`, does the
+  arithmetic for Zarr, applied by `ZarrDatasetVariable.__setitem__` before the
+  masked fill. The Zarr saver refuses a non-integer packing dtype, matching
+  the netCDF saver's own check and its message.
+- `_CUBELIST_SAVER_MODULES` names the package, `iris.fileformats.zarr`, not
+  `iris.fileformats.zarr.saver`: the registered callable is the `_save_cubes`
+  shim defined in the package's `__init__.py`, and dispatch reads that
+  function's `__module__`.
+- The zarr version floor is checked on the save path as well as the load
+  path. `_save_cubes` bypasses the package's `__getattr__`, so it calls
+  `_check_zarr_version` itself and wraps its own deferred import; otherwise an
+  installation with no zarr, or too old a zarr, would get a clear message from
+  `iris.load` and silence from `iris.save`.
+- A cube with a mesh saves, carrying the full CF-UGRID structure, and cannot
+  yet be loaded back: nothing in the Zarr loader rebuilds a mesh, and
+  `iris.mesh.load_meshes` filters to the netCDF handler. The round trip is a
+  strict `xfail`, so that closing the gap announces itself through the
+  marker rather than needing to be found separately.
+- `mode="a"` writes new coordinate arrays beside the ones a store already
+  holds, rather than matching and reusing them — a second `latitude` is
+  written as `latitude_0`. Deciding when two coordinates are the same across
+  unequal values, differing units and different calendars is its own piece of
+  work. A data variable's own name is the one collision that is an error
+  rather than a rename.
+- A masked string variable declares `_FillValue: ''`: a string array takes
+  zarr's own default fill, so a legitimately empty label reads back masked.
+  Choosing a string sentinel was not settled here; losing the mask was judged
+  the worse alternative.
+- The deferred completion is a module-level function, with the dataset and
+  the consolidation flag bound as plain values rather than reached through
+  `self`, so the `Delayed` a deferred save returns survives a plain `pickle`
+  round trip and not only cloudpickle.
+
 **2026-10-16 — Q10 closed, at review of #7338 by @stephenworsley**
 
 - #7337 is fixed in PR 5, not carried across it. Saving int64 data to
@@ -2893,6 +2960,7 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
 | 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype, including under `CHUNK_CONTROL.as_dask()` (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
+| 2026-10-15 | PR 6 built, on a branch merging PR 4 and PR 5. Grid-mapping writing made store-agnostic through a fifth hook (Q8 unblocked, not closed); `_attribute_handlers` relocated to `cf/`; `zarr/_encode.py` added to §4.1; `missing_value` separated from `_FillValue` on the write side; the default fill made netCDF's for every dtype; the write-alignment invariant enforced by rechunking at write time. Fourteen decisions logged. |
 | 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |
 | 2026-10-16 | #7337 fixed inside PR 5 rather than carried across it, following review of #7338 by @stephenworsley. Q10 closed into §12.4, and §12.1 now records the issue as closed by PR 5. |
 | 2026-10-16 | Added PR 8, the terms-of-art sweep: this document and the plans predate the rule in `.github/WRITING.md`, and a coinage that reaches `main` passes the test a later agent applies to decide whether a term is already in use. The programme goes from eight pull requests to nine. No design change. |
