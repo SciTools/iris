@@ -251,3 +251,126 @@ class TestCreateVariableEncoding:
         writable.create_dimension("x", 3)
         with pytest.raises(TypeError, match="wibble"):
             writable.create_variable("data", np.dtype("f4"), ["x"], wibble=1)
+
+
+class TestAttributeWriting:
+    def test_a_numpy_scalar_is_converted(self, writable):
+        # zarr's encoder rejects numpy types, and a rejected value stays in
+        # the mapping - so converting afterwards is already too late.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable.attributes["scale_factor"] = np.float32(0.5)
+        assert variable.attributes["scale_factor"] == 0.5
+        assert type(variable.attributes["scale_factor"]) is float
+
+    def test_a_numpy_array_becomes_a_list(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable.attributes["valid_range"] = np.array([0.0, 10.0], dtype="f4")
+        assert variable.attributes["valid_range"] == [0.0, 10.0]
+
+    def test_bytes_become_text(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable.attributes["units"] = b"K"
+        assert variable.attributes["units"] == "K"
+
+    def test_a_global_attribute_is_converted_too(self, writable):
+        writable.attributes["history"] = np.str_("made by a test")
+        assert type(writable.attributes["history"]) is str
+
+    def test_an_unserialisable_attribute_raises_and_writes_nothing(self, writable):
+        class Opaque:
+            pass
+
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        with pytest.raises(TypeError, match="odd"):
+            variable.attributes["odd"] = Opaque()
+        assert "odd" not in variable.attributes
+        # And the store itself is clean, not merely the mapping.
+        reopened = zarr.open_group(store=writable.location, mode="r")
+        assert "odd" not in dict(reopened["data"].attrs)
+
+    def test_missing_value_is_a_plain_number(self, writable):
+        # base64 here opens in xarray and masks nothing.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable.attributes["missing_value"] = np.float32(-99.0)
+        assert variable.attributes["missing_value"] == -99.0
+
+    def test_a_fill_value_attribute_is_packed(self, writable):
+        import base64
+        import struct
+
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable.attributes["_FillValue"] = np.float32(-99.0)
+        packed = base64.b64decode(variable.attributes["_FillValue"])
+        assert struct.unpack("<d", packed)[0] == -99.0
+
+
+class TestValueWriting:
+    def test_real_values_are_written(self, writable):
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable("data", np.dtype("f4"), ["x"])
+        variable[:] = np.array([1.0, 2.0, 3.0], dtype="f4")
+        np.testing.assert_array_equal(variable[:], [1.0, 2.0, 3.0])
+
+    def test_masked_values_are_filled(self, writable):
+        # Without this, zarr dies inside numpy.ma with a message about
+        # reshaping, naming neither the cube nor the mask.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable(
+            "data", np.dtype("f4"), ["x"], fill_value=np.float32(-99.0)
+        )
+        variable[:] = np.ma.masked_array(
+            [1.0, 2.0, 3.0], mask=[False, True, False], dtype="f4"
+        )
+        np.testing.assert_array_equal(variable[:], [1.0, -99.0, 3.0])
+
+    def test_masked_values_use_the_arrays_own_fill(self, writable):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("i2"), ["x"])
+        variable[:] = np.ma.masked_array([1, 2], mask=[False, True], dtype="i2")
+        assert variable[:][1] == -32767
+
+    def test_a_string_array_takes_unicode(self, writable):
+        writable.create_dimension("n", 2)
+        variable = writable.create_variable("labels", str, ["n"])
+        variable[:] = np.array(["alpha", "beta"])
+        assert list(variable[:]) == ["alpha", "beta"]
+
+
+class TestFinalise:
+    def test_it_consolidates(self, writable):
+        writable.create_dimension("x", 3)
+        writable.create_variable("data", np.dtype("f4"), ["x"])
+        writable.finalise()
+        reopened = zarr.open_group(store=writable.location, mode="r")
+        assert reopened.metadata.consolidated_metadata is not None
+
+    def test_it_warns_about_nothing(self, writable, recwarn):
+        # zarr-python warns that consolidated metadata is not in the version 3
+        # specification. It is what makes a remote store usable, Iris asks for
+        # it deliberately, and the user cannot act on the warning.
+        writable.create_dimension("x", 3)
+        writable.create_variable("data", np.dtype("f4"), ["x"])
+        writable.finalise()
+        assert [w for w in recwarn if "onsolidated" in str(w.message)] == []
+
+    def test_a_subgroup_save_consolidates_the_root(self, existing):
+        # Spec §4.5: stale consolidated metadata hides the data just written,
+        # and a default reader uses it when it is there.
+        with ZarrDataset(existing, mode="a", group="sub") as dataset:
+            dataset.create_dimension("x", 2)
+            dataset.create_variable("data", np.dtype("f4"), ["x"])
+            dataset.finalise()
+        reopened = zarr.open_group(store=existing, mode="r")
+        assert reopened.metadata.consolidated_metadata is not None
+        assert "sub" in list(reopened.group_keys())
+
+    def test_a_read_only_dataset_refuses(self, existing):
+        with ZarrDataset(existing) as dataset:
+            with pytest.raises(ValueError, match="mode='r'"):
+                dataset.finalise()

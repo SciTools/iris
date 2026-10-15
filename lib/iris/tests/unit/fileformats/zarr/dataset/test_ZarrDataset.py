@@ -146,18 +146,6 @@ class Test_groups:
             ZarrDataset(location, group="nope")
 
 
-class Test_the_write_surface:
-    def test_finalise_refuses(self, tmp_path):
-        # Consolidating a store's metadata is not implemented yet. finalise
-        # exists because the interface declares it; refusing is the honest
-        # answer until it is. create_dimension and create_variable now work on
-        # a writable dataset; their own refusal on a read-only one, as here, is
-        # covered in test_ZarrDataset__write.py.
-        dataset = ZarrDataset(stores.make_store(tmp_path / "s.zarr"))
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.finalise()
-
-
 class Test_supports_dtype:
     @pytest.mark.parametrize(
         "dtype", ["i1", "i2", "i4", "i8", "u1", "u2", "u4", "u8", "f4", "f8", "c8"]

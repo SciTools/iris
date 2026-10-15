@@ -202,13 +202,28 @@ class _ZarrAttributes(MutableMapping):
         node: "zarr.Group | zarr.Array",
         *,
         withhold: frozenset = frozenset(),
+        dtype=None,
     ):
         """Materialise the attributes of `node`, a zarr array or group.
 
         Writing through this mapping writes to `node`, which is the store.
+
+        Parameters
+        ----------
+        node : zarr.Array or zarr.Group
+            Whose attributes these are.
+        withhold : frozenset, optional
+            Names that are storage rather than CF, hidden here and refused
+            on assignment.
+        dtype : numpy.dtype, optional
+            The array's dtype, when `node` is an array. What decides the
+            encoding of ``_FillValue``; a group has neither.
+
+
         """
         self._node = node
         self._withhold = frozenset(withhold)
+        self._dtype = dtype
         self._values = {
             key: value for key, value in node.attrs.items() if key not in self._withhold
         }
@@ -218,12 +233,29 @@ class _ZarrAttributes(MutableMapping):
         return self._values[key]
 
     def __setitem__(self, key: str, value: Any) -> None:
-        """Set `key`'s value, here and in the store."""
+        """Set `key`'s value, here and in the store.
+
+        The value is converted to something JSON can hold *before* zarr sees
+        it. A value zarr's encoder rejects raises **and stays in the
+        mapping**, so converting on failure would mean converting a store
+        that is already wrong.
+
+        """
         if key in self._withhold:
             msg = f"Cannot set a storage attribute through `attributes`: {key}"
             raise KeyError(msg)
-        self._node.attrs[key] = value
-        self._values[key] = value
+        encoded = self._encode(key, value)
+        self._node.attrs[key] = encoded
+        self._values[key] = encoded
+
+    def _encode(self, key: str, value: Any) -> Any:
+        """Return `value` in the form this attribute is stored in."""
+        if self._dtype is not None:
+            if key == "_FillValue":
+                return _encode.encode_fill_value(value, self._dtype)
+            if key == "missing_value":
+                return _encode.encode_missing_values(value, self._dtype)
+        return _encode.json_native(value, name=key)
 
     def __delitem__(self, key: str) -> None:
         """Remove `key`, here and from the store."""
@@ -264,7 +296,7 @@ class ZarrDatasetVariable(CFDatasetVariable):
         self._format = format
         self._dimensions = _dimension_names(array)
         self._attributes = _ZarrAttributes(
-            array, withhold=frozenset({_ARRAY_DIMENSIONS})
+            array, withhold=frozenset({_ARRAY_DIMENSIONS}), dtype=array.dtype
         )
 
     @property
@@ -342,8 +374,15 @@ class ZarrDatasetVariable(CFDatasetVariable):
         return self._array[keys]
 
     def __setitem__(self, keys, values) -> None:
-        """Write `values` into the indexed portion of the array."""
-        self._array[keys] = values
+        """Write `values` into the indexed portion of the array.
+
+        Masked values are filled with the array's own fill value first. A
+        Zarr array has no mask of its own - spec §4.5 settles that the fill
+        goes in the data - and handing numpy.ma straight to zarr raises
+        inside the bytes codec, naming neither the variable nor the mask.
+
+        """
+        self._array[keys] = _encode.filled(values, self._array.fill_value)
 
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
         """Return this array's data, lazily where a lazy array is worth it.
@@ -879,9 +918,7 @@ class ZarrDataset(CFDataset):
         )
         variable = ZarrDatasetVariable(array, self._location, self._format)
         if fill_value is not None:
-            variable.attributes["_FillValue"] = _encode.encode_fill_value(
-                fill_value, np.dtype(dtype)
-            )
+            variable.attributes["_FillValue"] = fill_value
 
         # Both caches describe a group that has just changed.
         self._variables = None
@@ -925,13 +962,48 @@ class ZarrDataset(CFDataset):
         """Do nothing: a Zarr write is not buffered."""
 
     def finalise(self) -> None:
-        """Raise: saving to Zarr is not supported.
+        """Write consolidated metadata for the whole store.
 
-        A Zarr store's completion step is consolidating its metadata, which
-        only a writer performs.
+        One document at the root listing every array and group, which is what
+        makes a remote store usable: a reader fetches one object instead of
+        one per node. Separate from :meth:`close` because it is a write, and
+        a one-shot one - a worker that fills part of a store must not do it,
+        since several writers of one metadata object race.
+
+        Always consolidates from the root, even when this dataset is one
+        group of the store. A consolidated document that does not mention the
+        group just written is what a default reader would believe.
+
+        Raises
+        ------
+        ValueError
+            If this dataset was opened read-only.
+        RuntimeError
+            If the store cannot be consolidated. Raised rather than returned
+            quietly: a store left with stale consolidated metadata hides the
+            data just written from every default reader.
 
         """
-        raise NotImplementedError("Saving to Zarr is not supported.")
+        self._check_writable("finalise")
+        assert self._group is not None
+        with warnings.catch_warnings():
+            # zarr-python warns that consolidated metadata is not part of the
+            # version 3 specification. Iris asks for it deliberately, and the
+            # user cannot act on it.
+            warnings.filterwarnings(
+                "ignore",
+                message="Consolidated metadata is currently not part",
+                category=UserWarning,
+            )
+            try:
+                zarr.consolidate_metadata(self._group.store)
+            except Exception as exception:
+                message = (
+                    f"Could not consolidate the metadata of the Zarr store "
+                    f"{self._location!r}. The data written is in the store, but "
+                    "a reader that uses consolidated metadata may not see it."
+                )
+                raise RuntimeError(message) from exception
 
     def close(self) -> None:
         """Record that this dataset is finished with.
