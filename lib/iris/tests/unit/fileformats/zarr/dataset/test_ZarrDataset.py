@@ -159,11 +159,6 @@ class Test_the_write_surface:
         with pytest.raises(NotImplementedError, match="Saving"):
             dataset.finalise()
 
-    def test_a_write_mode_refuses(self, tmp_path):
-        stores.make_store(tmp_path / "s.zarr")
-        with pytest.raises(NotImplementedError, match="Saving"):
-            ZarrDataset(str(tmp_path / "s.zarr"), mode="w")
-
 
 class Test_supports_dtype:
     @pytest.mark.parametrize(

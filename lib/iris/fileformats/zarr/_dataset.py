@@ -494,17 +494,34 @@ class ZarrDatasetVariable(CFDatasetVariable):
         )
 
 
-#: What `mode` a dataset may be opened in. Writing is not implemented.
+#: The modes that only read. Writing through one of these is refused before
+#: zarr-python gets the chance, so the message names Iris's keyword.
 _READ_MODES = ("r",)
 
-#: The one message every unimplemented write member raises.
-_NO_SAVING = "Saving to Zarr is not supported."
+#: The modes that may write. ``"r+"`` is here for the region write a future
+#: multi-process saver needs: open an existing store for update, creating
+#: nothing. See §4.5 of the design document.
+_WRITE_MODES = ("w-", "w", "a", "r+")
+
+#: Every mode, in the order the error message lists them.
+_MODES = _READ_MODES + _WRITE_MODES
+
+#: The only Zarr version Iris writes. Reading handles both. Adding version 2
+#: writing means the three version-specific points of §4.5 and deleting this.
+_WRITABLE_ZARR_FORMAT = 3
 
 
 class ZarrDataset(CFDataset):
     """A Zarr store, or one group of one, presented through the CF interface."""
 
-    def __init__(self, location, mode: str = "r", *, group: str | None = None):
+    def __init__(
+        self,
+        location,
+        mode: str = "r",
+        *,
+        group: str | None = None,
+        zarr_format: int = 3,
+    ):
         """Open a Zarr store.
 
         Parameters
@@ -518,18 +535,27 @@ class ZarrDataset(CFDataset):
             `location` then becomes zarr-python's own rendering of it, the
             best name available for a store with no address.
         mode : str, default="r"
-            Only ``"r"`` is supported.
+            One of ``"r"``, ``"r+"``, ``"a"``, ``"w"`` or ``"w-"``, with
+            zarr-python's meanings. ``"w-"`` creates and refuses an existing
+            target; ``"w"`` replaces one; ``"a"`` adds to one.
         group : str, optional
             A ``/``-separated path to a group within the store. The root group
             by default. Iris reads one group per call and does not walk
             nested groups.
+        zarr_format : int, default=3
+            The version to create. Only version 3 can be written. Reading
+            handles either version, and ignores this.
 
         Raises
         ------
+        ValueError
+            For an unknown `mode`.
         NotImplementedError
-            For any `mode` other than ``"r"``.
+            For a write `mode` with any `zarr_format` but 3.
+        FileExistsError
+            For ``mode="w-"`` onto a target that already exists.
         FileNotFoundError
-            If `location` does not exist.
+            If `location` does not exist and `mode` does not create it.
         zarr.errors.GroupNotFoundError
             If `location` is not a Zarr store, or holds no such `group`.
 
@@ -541,8 +567,23 @@ class ZarrDataset(CFDataset):
         self._attributes: _ZarrAttributes | None = None
         self._dimensions: dict[str, int] | None = None
 
-        if mode not in _READ_MODES:
-            raise NotImplementedError(f"{_NO_SAVING} Cannot open with mode={mode!r}.")
+        #: The dimensions `create_dimension` has declared, by name. Zarr has
+        #: no dimension object, so this dict is the whole of the concept on
+        #: the write side, and what lets a size conflict be caught.
+        self._declared_dimensions: dict[str, int] = {}
+
+        if mode not in _MODES:
+            message = (
+                f"Unknown mode {mode!r} for a Zarr store. Expected one of {_MODES}."
+            )
+            raise ValueError(message)
+        writing = mode in _WRITE_MODES
+        if writing and zarr_format != _WRITABLE_ZARR_FORMAT:
+            message = (
+                f"Iris writes Zarr version {_WRITABLE_ZARR_FORMAT} stores only, "
+                f"so mode={mode!r} cannot be used with zarr_format={zarr_format!r}."
+            )
+            raise NotImplementedError(message)
 
         self._mode = mode
         target = str(location)
@@ -551,7 +592,20 @@ class ZarrDataset(CFDataset):
         # `location` itself, not its stringified `target`, is handed to
         # zarr-python: stringifying a store object such as a `MemoryStore`
         # loses the store, leaving only a name zarr-python cannot reopen.
-        self._group = zarr.open_group(store=location, mode=mode, path=group)
+        try:
+            self._group = zarr.open_group(
+                store=location,
+                mode=mode,
+                path=group,
+                zarr_format=zarr_format if writing else None,
+            )
+        except FileExistsError as exception:
+            message = (
+                f"Cannot create the Zarr store {self._location!r}: it already "
+                f"exists, and mode={mode!r} will not overwrite it. Pass "
+                "mode='w' to replace it, or mode='a' to add to it."
+            )
+            raise FileExistsError(message) from exception
         self._format = _FORMAT_BY_ZARR_VERSION[self._group.metadata.zarr_format]
 
         # Assembled here rather than on first access, because assembling is
@@ -631,13 +685,13 @@ class ZarrDataset(CFDataset):
 
     def create_dimension(self, name: str, size: int | None) -> None:
         """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError(_NO_SAVING)
+        raise NotImplementedError("Saving to Zarr is not supported.")
 
     def create_variable(
         self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
     ):
         """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError(_NO_SAVING)
+        raise NotImplementedError("Saving to Zarr is not supported.")
 
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.
@@ -671,7 +725,7 @@ class ZarrDataset(CFDataset):
         only a writer performs.
 
         """
-        raise NotImplementedError(_NO_SAVING)
+        raise NotImplementedError("Saving to Zarr is not supported.")
 
     def close(self) -> None:
         """Record that this dataset is finished with.
