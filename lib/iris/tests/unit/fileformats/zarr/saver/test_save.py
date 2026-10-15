@@ -62,6 +62,15 @@ class TestSave:
         group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
         assert group.metadata.consolidated_metadata is None
 
+    def test_mode_a_adds_to_a_consolidated_root(self, tmp_path, cubes):
+        # A write mode must see what the store actually holds, not a frozen
+        # consolidated snapshot: otherwise a second save believes the store
+        # still holds only what the first one wrote.
+        save(cubes[0], tmp_path / "out.zarr")
+        save(cubes[1], tmp_path / "out.zarr", mode="a")
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert {"air_temperature", "air_pressure"} <= set(group.array_keys())
+
 
 class TestSaveRefusals:
     def test_an_existing_store_is_refused(self, tmp_path, cubes):
@@ -80,6 +89,18 @@ class TestSaveRefusals:
         save(cubes[0], tmp_path / "out.zarr")
         with pytest.raises(ValueError, match="air_temperature"):
             save(cubes[0], tmp_path / "out.zarr", mode="a")
+
+    def test_two_cubes_sharing_a_name_in_one_call_is_not_a_repeat(
+        self, tmp_path, cubes
+    ):
+        # Nothing pre-existed before this call: the first of the pair's own
+        # name belongs to this call, not to something the store already
+        # held, even under a mode that would refuse a genuine repeat.
+        pair = CubeList([cubes[0], cubes[0].copy()])
+        save(pair, tmp_path / "out.zarr", mode="a")
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert "air_temperature" in list(group.array_keys())
+        assert "air_temperature_0" in list(group.array_keys())
 
     def test_a_netcdf_keyword_is_refused_before_anything_is_created(
         self, tmp_path, cubes

@@ -38,7 +38,7 @@ from iris.cube import CubeList
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.saver import CFSaver
 
-from ._dataset import ZarrDataset, check_encoding_keywords
+from ._dataset import ZarrDataset, check_encoding_keywords, existing_name_message
 
 __all__ = ["Saver", "save"]
 
@@ -96,6 +96,14 @@ class Saver(CFSaver):
         super().__init__(dataset, compute=compute)
         #: Whether the completed store gets a consolidated metadata document.
         self.consolidate_metadata = consolidate_metadata
+        #: Names the group already held when this `Saver` opened it.
+        #: Snapshotted once, here, rather than read live from
+        #: `self._dataset.variables`: that mapping is invalidated on every
+        #: `create_variable` call, so a live read would also catch a name
+        #: this same call created moments before - right for something the
+        #: group held before this call, wrong for two cubes of one call
+        #: sharing a name.
+        self._pre_existing_names = frozenset(dataset.variables)
 
     def write(self, cube, *args, **kwargs):
         """Write a cube into the store.
@@ -119,14 +127,8 @@ class Saver(CFSaver):
         """
         if self._dataset.mode in ("a", "r+"):
             cf_name = self._get_element_variable_name(cube, cube)
-            if cf_name in self._dataset.variables:
-                message = (
-                    f"Cannot create {cf_name!r} in the Zarr group "
-                    f"{self._dataset.location!r}: it already holds something "
-                    "of that name, and Iris neither overwrites nor merges "
-                    "into one."
-                )
-                raise ValueError(message)
+            if cf_name in self._pre_existing_names:
+                raise ValueError(existing_name_message(cf_name, self._dataset.location))
         if "chunks" not in kwargs and cube.has_lazy_data():
             kwargs["chunks"] = cube.lazy_data().chunksize
         super().write(cube, *args, **kwargs)
@@ -169,9 +171,13 @@ class Saver(CFSaver):
         Returns
         -------
         :class:`dask.delayed.Delayed`
-            A real one. ``dask.array.store(..., compute=False)`` returns a
-            *tuple* when given a sequence of sources, which is what makes the
-            documented ``result.compute()`` fail on the netCDF path
+            A real one. The inherited
+            :meth:`~iris.fileformats.cf.saver.CFSaver.delayed_completion`
+            returns a :class:`dask.array.core.Array` for one delayed write,
+            or a tuple of them for several - never actually a
+            :class:`~dask.delayed.Delayed`, despite its own annotation -
+            which is what makes the documented ``result.compute()`` fail on
+            the netCDF path
             (`SciTools/iris#7291 <https://github.com/SciTools/iris/issues/7291>`_).
             Wrapping it here is what keeps the promise this saver's docstring
             makes.

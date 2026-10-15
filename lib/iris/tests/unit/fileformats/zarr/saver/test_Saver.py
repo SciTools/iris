@@ -94,6 +94,21 @@ class TestStringVariables:
         assert not {name for name in names if name.startswith("string")}
 
 
+class TestScalarCubes:
+    def test_a_scalar_cube_is_saved(self, tmp_path):
+        # A scalar cube is ordinary, and saves to netCDF without complaint.
+        cube = Cube(
+            np.float32(3.0),
+            standard_name="air_temperature",
+            units="K",
+            var_name="air_temperature",
+        )
+        with Saver(tmp_path / "out.zarr") as saver:
+            saver.write(cube)
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group["air_temperature"][()] == pytest.approx(3.0)
+
+
 class TestGridMappings:
     def test_a_coordinate_system_is_written(self, tmp_path, cube):
         # `_grid_mapping_writer`'s base implementation, reached for real:

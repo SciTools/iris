@@ -382,6 +382,13 @@ class ZarrDatasetVariable(CFDatasetVariable):
         inside the bytes codec, naming neither the variable nor the mask.
 
         """
+        if self._array.ndim == 0 and keys == slice(None):
+            # `CFSaver._lazy_stream_data` writes a whole variable as
+            # `cf_var[:] = data`, which is `slice(None)` - one axis too many
+            # for a 0-d array, which zarr indexes with `...` or `()` instead.
+            # A scalar cube is ordinary, and this is otherwise the only
+            # store that cannot hold one.
+            keys = Ellipsis
         self._array[keys] = _encode.filled(values, self._array.fill_value)
 
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
@@ -606,6 +613,32 @@ def check_encoding_keywords(encoding) -> None:
     raise TypeError(message)
 
 
+def existing_name_message(name: str, location: str) -> str:
+    """Return the message for a name a Zarr group already holds.
+
+    One sentence, shared by :meth:`ZarrDataset.create_variable` and
+    :class:`iris.fileformats.zarr.saver.Saver`'s own earlier check of the
+    same fact, so the two call sites cannot drift into saying it two ways.
+
+    Parameters
+    ----------
+    name : str
+        The array name that already exists.
+    location : str
+        The group's path or URL, as :attr:`ZarrDataset.location` reports it.
+
+    Returns
+    -------
+    str
+
+    """
+    return (
+        f"Cannot create {name!r} in the Zarr group {location!r}: it "
+        "already holds something of that name, and Iris neither "
+        "overwrites nor merges into one."
+    )
+
+
 class ZarrDataset(CFDataset):
     """A Zarr store, or one group of one, presented through the CF interface."""
 
@@ -693,6 +726,13 @@ class ZarrDataset(CFDataset):
                 mode=mode,
                 path=group,
                 zarr_format=zarr_format if writing else None,
+                # A write mode must see what the store actually holds, not a
+                # frozen consolidated snapshot: `mode="a"` onto a store this
+                # saver already consolidated would otherwise list only the
+                # arrays present at the last consolidation, and never the one
+                # this call is about to add. A read mode keeps the
+                # consolidated fast path, which is what it is for.
+                use_consolidated=False if writing else None,
             )
         except FileExistsError as exception:
             message = (
@@ -888,12 +928,7 @@ class ZarrDataset(CFDataset):
         shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
 
         if name in self._group:
-            message = (
-                f"Cannot create {name!r} in the Zarr group {self._location!r}: "
-                "it already holds something of that name, and Iris neither "
-                "overwrites nor merges into one."
-            )
-            raise ValueError(message)
+            raise ValueError(existing_name_message(name, self._location))
 
         if fill_value is None and dtype is str:
             # A variable-length string array has no entry in the netCDF
