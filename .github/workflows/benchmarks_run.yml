@@ -169,7 +169,7 @@ jobs:
       - name: Upload any benchmark reports
         # Uploading enables more downstream processing e.g. posting a PR comment.
         if: success() || steps.overnight.outcome == 'failure'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: benchmark_reports
           path: .github/workflows/benchmark_reports
@@ -177,7 +177,7 @@ jobs:
       - name: Archive asv results
         # Store the raw ASV database(s) to help manual investigations.
         if: ${{ always() }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: asv-raw-results
           path: benchmarks/.asv/results

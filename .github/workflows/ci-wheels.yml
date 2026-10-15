@@ -41,7 +41,7 @@ jobs:
       run: |
         pipx run build
 
-    - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a
+    - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist/*
@@ -66,7 +66,7 @@ jobs:
         fetch-depth: 0
         persist-credentials: false
 
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
@@ -121,7 +121,7 @@ jobs:
     name: "show artifacts"
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
@@ -142,7 +142,7 @@ jobs:
     # and check for the SciTools repo
     if: github.event_name == 'push' && github.event.ref == 'refs/heads/main' && github.repository_owner == 'SciTools'
     steps:
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
@@ -164,7 +164,7 @@ jobs:
     # upload to PyPI for every tag starting with 'v'
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags/v') && github.repository_owner == 'SciTools'
     steps:
-    - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333
       with:
         name: pypi-artifacts
         path: ${{ github.workspace }}/dist
