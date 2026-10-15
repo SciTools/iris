@@ -92,11 +92,13 @@ class TestRoundTrip:
         other.rename("air_pressure")
         other.var_name = "air_pressure"
         iris.save(CubeList([cube, other]), path)
-        # Both of the cubes that were saved come back, alongside the
-        # orography cube the `cube` fixture's hybrid-height factory always
-        # brings with it.
-        loaded_names = {loaded.name() for loaded in iris.load(path)}
-        assert loaded_names >= {cube.name(), other.name()}
+        loaded = iris.load(path)
+        # Three, not two: `cube`'s hybrid-height factory always brings its
+        # orography cube along as well (see the `cube` fixture above), so
+        # both saved names are checked explicitly rather than trusting a
+        # bare count to mean the right two cubes came back.
+        assert len(loaded) == 3
+        assert {one.name() for one in loaded} >= {cube.name(), other.name()}
 
     def test_a_group_round_trips(self, tmp_path, cube):
         path = tmp_path / "out.zarr"
@@ -158,11 +160,42 @@ class TestRefusals:
 
 
 class TestInputsTheDesignImplies:
+    def test_a_mesh_cube_writes_cf_ugrid_structure(self, tmp_path):
+        # Iris supports unstructured meshes, and a mesh cube reaching the
+        # Zarr saver is ordinary: the mesh variables go through the same
+        # generic path as everything else, and nothing above has proved it.
+        # This is the saver's own promise, independent of what a loader can
+        # rebuild from it - see the xfail below for that.
+        path = tmp_path / "mesh.zarr"
+        mesh_cube = stock.realistic_4d_w_everything(w_mesh=True)
+        iris.save(mesh_cube, path)
+        store = zarr.open_group(store=path, mode="r")
+
+        data_var = store[mesh_cube.var_name]
+        assert data_var.attrs["location"] == mesh_cube.location
+
+        topology = store[data_var.attrs["mesh"]]
+        assert topology.attrs["cf_role"] == "mesh_topology"
+        assert topology.attrs["topology_dimension"] == mesh_cube.mesh.topology_dimension
+
+        connectivity = store[topology.attrs["face_node_connectivity"]]
+        assert connectivity.attrs["cf_role"] == "face_node_connectivity"
+        assert "start_index" in connectivity.attrs
+
+        # The mesh's own dimensions carry no coordinate variable of their
+        # own name - that is how UGRID keeps a mesh dimension distinct from
+        # an ordinary CF one.
+        assert mesh_cube.mesh.face_dimension not in store.array_keys()
+        assert mesh_cube.mesh.node_dimension not in store.array_keys()
+
+    @pytest.mark.xfail(
+        reason=(
+            "The Zarr loader does not build a MeshXY from a store, so a "
+            "cube it loads never carries one, however completely the "
+            "store describes it - see the passing test above for that."
+        )
+    )
     def test_a_mesh_cube_round_trips(self, tmp_path):
-        # Iris supports unstructured meshes and PR 4 taught load_meshes about
-        # stores, so a mesh cube reaching the Zarr saver is ordinary. The mesh
-        # variables go through the same generic path as everything else, and
-        # nothing above has proved it.
         path = tmp_path / "mesh.zarr"
         mesh_cube = stock.realistic_4d_w_everything(w_mesh=True)
         iris.save(mesh_cube, path)
