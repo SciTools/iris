@@ -59,22 +59,24 @@ if the target already exists, because replacing a store means deleting many
 objects one at a time, and an interrupted replacement destroys what was there
 without completing what replaces it. Say so explicitly to opt in::
 
-    iris.save(cubes, "/data/forecast.zarr", mode="w")   # replace
-    iris.save(cubes, "/data/forecast.zarr", mode="a")   # add to
+    iris.save(cubes, "/data/forecast.zarr", mode="w")       # replace
+    iris.save(more_cubes, "/data/forecast.zarr", mode="a")  # add what is not there
 
 ``mode="a"`` adds a *new* array or group to a store that already holds others.
 It never extends, rewrites, resizes or re-chunks an array that is already
-there, and a name that already exists in the target group is an error rather
-than an overwrite. Appending to data is not supported, for Zarr or for netCDF:
-deciding whether incoming data is compatible with what a store already holds is
-a data-model problem, and the storage format does not solve it.
+there. Saving a cube whose own data variable already exists in the target
+group is an error rather than an overwrite, so saving the same cube twice with
+``mode="a"`` raises rather than duplicating it. Appending to data is not
+supported, for Zarr or for netCDF: deciding whether incoming data is
+compatible with what a store already holds is a data-model problem, and the
+storage format does not solve it.
 
-A cube's coordinates are not matched against what a store already holds,
-either. Adding a cube to a store that already carries a ``latitude`` array
-writes a second one, named ``latitude_0``, rather than reusing the first.
-Deciding whether two coordinates are "the same" across unequal values,
-differing units and different calendars is its own piece of work, so Iris
-does not attempt it.
+Everything else a cube carries -- its coordinates, bounds and cell measures --
+is not matched against what the store already holds. Adding a cube to a store
+that already carries a ``latitude`` array writes a second one, named
+``latitude_0``, rather than reusing the first. Deciding whether two
+coordinates are "the same" across unequal values, differing units and
+different calendars is its own piece of work, so Iris does not attempt it.
 
 Storage keywords
 ^^^^^^^^^^^^^^^^
@@ -89,8 +91,8 @@ The Zarr saver takes **zarr-python's** vocabulary, not netCDF's::
         compressors=[zarr.codecs.BloscCodec(cname="zstd")],
     )
 
-``chunks``, ``shards``, ``compressors``, ``filters`` and ``serializer`` are
-passed through as zarr-python defines them. A netCDF keyword such as
+``chunks``, ``shards``, ``compressors``, ``filters``, ``serializer`` and
+``order`` are passed through as zarr-python defines them. A netCDF keyword such as
 ``zlib=True`` raises :class:`TypeError` naming the Zarr replacement where there
 is one, and saying there is none where there is not. The two compression models
 differ, and a keyword that let you say ``complevel=4`` while quietly giving you
@@ -105,7 +107,7 @@ Deferred saving
 ``compute=False`` returns a :class:`dask.delayed.Delayed` that writes the lazy
 data when computed, and consolidates the store's metadata after the last chunk::
 
-    result = iris.save(cubes, "out.zarr", compute=False)
+    result = iris.save(cubes, "deferred.zarr", compute=False)
     result.compute()
 
 Consolidated metadata
@@ -175,6 +177,16 @@ To read another group, call the Zarr loader directly::
             "/data/sentinel.zarr", group="measurements/reflectance/r10m"
         )
     )
+
+Saving takes a group more directly: ``iris.save`` itself takes a ``group=``
+keyword, naming a ``/``-separated path within the store::
+
+    iris.save(cubes, "/data/sentinel.zarr", group="measurements/reflectance/r10m")
+
+Passing ``group=`` implies ``mode="a"``, because writing a group into a store
+means the store may already hold others. ``iris.load`` and ``iris.load_cube``
+have no equivalent keyword: reading a group other than the root means calling
+the Zarr loader directly, as above.
 
 Dimension names
 ---------------
