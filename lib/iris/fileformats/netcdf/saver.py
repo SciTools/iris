@@ -414,6 +414,29 @@ class Saver(_CFSaver):
         # 'variable.name = value': it defines no __setattr__.
         cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
 
+    def _grid_mapping_writer(self, cf_var):
+        """Return the netCDF4 variable itself, which is what has always received these.
+
+        Assignments to a netCDF4 variable bypass the ASCII-to-bytes coercion
+        that ``.attributes`` applies, so ``crs_wkt`` is written as
+        ``NC_STRING`` while ``grid_mapping_name`` is ``NC_CHAR``. Regularising
+        that is Q8 in §12.3 of the native Zarr I/O design,
+        ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``; until then,
+        this returns the same object the parameters have always been written
+        to, so the file is unchanged.
+
+        Parameters
+        ----------
+        cf_var : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+            The grid-mapping variable.
+
+        Returns
+        -------
+        :class:`netCDF4.Variable`
+
+        """
+        return cf_var.variable
+
     def _create_string_variable(
         self, cube_or_mesh, cf_name, element, element_dims, data
     ):

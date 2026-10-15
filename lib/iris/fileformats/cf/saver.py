@@ -12,16 +12,19 @@
 Everything about writing a cube that does not depend on what it is written
 into. The CF data model is here - dimension naming, coordinate and bounds
 variables, cell methods, grid mappings, meshes, attribute compliance. Every
-storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`, with
-one exception: ``_add_grid_mapping_to_dataset``.
+storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`,
+except where a store's own ``_grid_mapping_writer`` hands back something
+that is not part of it; netCDF's override does that, and every other
+store's does not.
 
 A format supplies a subclass of ``_CFSaver`` holding its own vocabulary of
-storage keywords, and whatever of the four hooks it needs:
-``_create_string_variable``, ``_backend_write``, ``_flush_before_close`` and
-``_patch_dataset``. :class:`iris.fileformats.netcdf.saver.Saver` is one such
-subclass, and is where a user of the netCDF format meets all of this.
+storage keywords, and whatever of the five hooks it needs:
+``_create_string_variable``, ``_backend_write``, ``_flush_before_close``,
+``_patch_dataset`` and ``_grid_mapping_writer``.
+:class:`iris.fileformats.netcdf.saver.Saver` is one such subclass, and is where
+a user of the netCDF format meets all of this.
 
-``_CFSaver`` is private. What a format must supply is the four hooks, which
+``_CFSaver`` is private. What a format must supply is the five hooks, which
 are private too, and one subclass is not enough evidence to promise their
 shape; everything public on the class is the caller's API, inherited
 unchanged by each format's own public saver. Contrast
@@ -29,14 +32,16 @@ unchanged by each format's own public saver. Contrast
 member of it is something a format must implement, and because a user can
 reach one through :attr:`iris.fileformats.cf.CFVariable.cf_data`.
 
-Two things here are still netCDF-specific.
+Nothing here is netCDF-specific any longer: the last thing that was is now a
+hook like the rest.
 
-``_add_grid_mapping_to_dataset`` writes the CF grid-mapping parameters onto a
-netCDF4 variable, not through the ``attributes`` mapping. A subclass backed by
-any other store fails there, for every cube that has a coordinate system.
-Making those writes store-agnostic is its own piece of work -- see Q8 in §12.3
-of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+``_add_grid_mapping_to_dataset`` writes the CF grid-mapping parameters by plain
+attribute assignment, to whatever ``_grid_mapping_writer`` hands back. netCDF
+hands back its own variable, because what that does to the type of each
+attribute in the file is long-standing behaviour and not this module's to
+change -- see Q8 in §12.3 of the native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store gets
+a writer onto the ``attributes`` mapping.
 
 ``ATTRIBUTE_HANDLERS`` lives beside this module, in
 :mod:`iris.fileformats.cf._attribute_handlers`. The handlers serialise the
@@ -290,6 +295,31 @@ class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
 
     # TODO: remove at the next major release.
     pass
+
+
+class _GridMappingAttributeWriter:
+    """An assignment target that writes into a variable's attributes.
+
+    ``_CFSaver._add_grid_mapping_to_dataset`` sets sixty-three CF
+    grid-mapping parameters by plain attribute assignment. On netCDF those
+    assignments go to the netCDF4 variable itself and have done since long
+    before the CF layer existed, and that decides how each one is typed in
+    the file. Regularising it is its own piece of work -- see Q8 in §12.3 of
+    the native Zarr I/O design,
+    ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store
+    needs them to arrive in the ``attributes`` mapping instead, and this is the
+    object that puts them there.
+
+    """
+
+    def __init__(self, cf_var):
+        # Bypass this class's own __setattr__, which would otherwise write
+        # the variable into the variable.
+        object.__setattr__(self, "_cf_var", cf_var)
+
+    def __setattr__(self, name, value):
+        """Write one grid-mapping parameter into the variable's attributes."""
+        self._cf_var.attributes[name] = value
 
 
 class _CFSaver:
@@ -1883,12 +1913,11 @@ class _CFSaver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # Assignments to properties of ``grid_variable`` bypass the ASCII-to-bytes
-        # coercion that .attributes applies, so moving them there would change
-        # the file. They need the netCDF4 variable itself. Not
-        # deprecated_netcdf_member(), so a store with no netCDF4 object behind it
-        # raises a bare AttributeError here.
-        grid_variable = cf_var_grid.variable
+        # The 63 assignments below decide how each parameter is typed in the
+        # file, and on netCDF they go to the netCDF4 variable itself, exactly
+        # as they always have; see Q8 in the design document. Every other
+        # store gets a writer onto `.attributes`.
+        grid_variable = self._grid_mapping_writer(cf_var_grid)
 
         def add_ellipsoid(ellipsoid):
             grid_variable.longitude_of_prime_meridian = (
@@ -2440,6 +2469,24 @@ class _CFSaver:
 
         """
         return False
+
+    def _grid_mapping_writer(self, cf_var):
+        """Return the object the grid-mapping parameters are assigned to.
+
+        Parameters
+        ----------
+        cf_var : :class:`~iris.fileformats.cf.dataset.CFDatasetVariable`
+            The grid-mapping variable, newly created and otherwise empty.
+
+        Returns
+        -------
+        object
+            Something that accepts a plain attribute assignment per CF
+            grid-mapping parameter. Here, a writer onto ``cf_var.attributes``.
+            A store that types those attributes some other way overrides this.
+
+        """
+        return _GridMappingAttributeWriter(cf_var)
 
     def _lazy_stream_data(
         self,
