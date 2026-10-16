@@ -174,6 +174,17 @@ a human treats it as documentation.
   and `__ne__` — "Return a string representation." is noise nothing asked for.
 
 
+### TODO Comments
+
+`# TODO: ` is house style, and Ruff's `TD` and `FIX` rules are in `ignore`
+(`pyproject.toml`) — use it.
+
+- Mark the deferral in the file, not only in the pull request body.
+- Name the event that removes it: `# TODO: drop once the saver is relocated`.
+- No such event and it is not a TODO: a permanent caveat is a plain comment,
+  schedulable work is an issue.
+
+
 ## Facts Learned by Debugging
 
 Most over-long comments in Iris were written after the code already worked. A
