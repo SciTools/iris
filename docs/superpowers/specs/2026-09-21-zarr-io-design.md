@@ -11,10 +11,10 @@
 | **Next action** | PR 2.5 and PR 4 — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
-| **Delivery** | Eight pull requests into `brownfield`, then one merge-back into `main` — §5 |
+| **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-12 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-16 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -33,12 +33,12 @@ variables as length-one arrays. This document specifies **native Zarr support**
 built on zarr-python: reading Zarr version 2 and version 3 stores, and writing
 version 3 stores.
 
-The work is structured as eight pull requests against the `brownfield` branch.
+The work is structured as nine pull requests against the `brownfield` branch.
 Four of them are behaviour-preserving refactors that promote
 `iris.fileformats.cf` to a package and extract the format-agnostic CF machinery
 out of `iris.fileformats.netcdf`; four add user-visible Zarr capability, or
-change behaviour, on top. No pull request both moves code and changes
-behaviour.
+change behaviour, on top; the last changes prose only. No pull request both
+moves code and changes behaviour.
 
 The central design move is a `CFDataset` abstraction: a narrow, explicit
 interface describing what a CF-conforming array store must provide, with one
@@ -1480,7 +1480,7 @@ Warnings are emitted on **use**, not on import, so simply importing
 
 ## 5. The programme
 
-Eight pull requests into `brownfield`, each opened separately so that every
+Nine pull requests into `brownfield`, each opened separately so that every
 step gets its own CI signal and can be verified on its own, followed by a
 single merge-back into `main`. PR 2.5 was inserted after PR 2 had merged, so
 the later numbers are unchanged from the original seven. Each carries the `Agentic` and
@@ -1610,8 +1610,8 @@ After this pull request, `iris.load("store.zarr")` and
 
 ### PR 5 — Relocate the CF saver
 
-`git mv netcdf/saver.py cf/saver.py`, same shape as PR 3. The largest diff of
-the eight, and the relocated module is a pure move, which is precisely why it
+`git mv netcdf/saver.py cf/saver.py`, same shape as PR 3. The largest code diff of
+the nine, and the relocated module is a pure move, which is precisely why it
 is on its own. The branch carries one behaviour change beside the move, in a
 netCDF-only module the move does not touch: the #7337 fix below.
 
@@ -1667,6 +1667,28 @@ Integration tests against the cut-down NOAA GFS and ESA EOPF samples, plus ASV
 coverage: `ZarrSave` beside `NetcdfSave` in `benchmarks/benchmarks/save.py`,
 and Zarr variants of `LoadAndRealise` in `benchmarks/benchmarks/load/`.
 Depends on a companion pull request to `SciTools/iris-test-data`.
+
+### PR 8 — The terms-of-art sweep
+
+`.github/WRITING.md` bans introducing a term of art that appears exactly once
+in the repository. This document and the plans under `docs/superpowers/plans/`
+were written before that rule existed, so they may carry coinages it would now
+reject. The cost is not that they read oddly. A later agent decides whether a
+term is safe by checking whether the repository already uses it, so a coinage
+that reaches `main` becomes indistinguishable from an established term and
+gets copied in good faith. Removing them before the merge is the last point at
+which that is cheap.
+
+The sweep covers every prose line the branch adds: run `git diff
+main...brownfield` over this document, the plans, the agent instruction files,
+docstrings, comments, changelog fragments and the Zarr user documentation
+written in PRs 4 and 6. For each candidate term, grep `main`. A term that
+appears only on lines this branch added is a coinage — replace it with words
+Iris already uses, or keep it and record why it earns its place.
+
+Last of the nine because it reads the finished branch. It changes prose only;
+a diff that touches behaviour belongs in the pull request that introduced the
+behaviour.
 
 ### Merge back — `brownfield` into `main`
 
@@ -2027,9 +2049,9 @@ the design changes.
 
 Scope for each is in §5. Dependencies are strictly sequential within the
 `cf`/`netcdf` refactor chain (1 → 2 → 3 → 5); the Zarr features (4, 6) depend
-on the relocation before them, and PR 7 depends on everything. PR 2.5 is the
-exception: it touches only `cf/_variables.py`, so it needs PR 2 and nothing
-else, and can land beside any of the others.
+on the relocation before them, and PRs 7 and 8 depend on everything. PR 2.5 is
+the exception: it touches only `cf/_variables.py`, so it needs PR 2 and
+nothing else, and can land beside any of the others.
 
 | # | Title | State | Link |
 |---|---|---|---|
@@ -2041,6 +2063,7 @@ else, and can land beside any of the others.
 | 5 | Relocate the CF saver | In review | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | Not started | — |
 | 7 | Real-world test data and benchmarks | Not started | — |
+| 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
 Companion work outside `SciTools/iris`:
@@ -2683,3 +2706,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
 | 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |
 | 2026-10-16 | #7337 fixed inside PR 5 rather than carried across it, following review of #7338 by @stephenworsley. Q10 closed into §12.4, and §12.1 now records the issue as closed by PR 5. |
+| 2026-10-16 | Added PR 8, the terms-of-art sweep: this document and the plans predate the rule in `.github/WRITING.md`, and a coinage that reaches `main` passes the test a later agent applies to decide whether a term is already in use. The programme goes from eight pull requests to nine. No design change. |
