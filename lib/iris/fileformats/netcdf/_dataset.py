@@ -413,10 +413,16 @@ class NetCDFDatasetVariable(CFDatasetVariable):
 _LEGACY_FORMATS = ("NETCDF3_CLASSIC", "NETCDF3_64BIT")
 
 #: The formats that cannot hold every dtype netCDF4 itself accepts.
-#: What netCDF4 reports as 'file_format', not what Saver was asked for: a file
-#: created as "NETCDF3_64BIT" reports "NETCDF3_64BIT_OFFSET" and so is absent
-#: from this list, which is the defect in SciTools/iris#7337.
-_RESTRICTED_FORMATS = ("NETCDF3_CLASSIC", "NETCDF3_64BIT", "NETCDF4_CLASSIC")
+#: These are what netCDF4 reports as 'file_format', not what Saver was asked
+#: for. A file created as "NETCDF3_64BIT" reports "NETCDF3_64BIT_OFFSET", so
+#: both spellings are listed; omitting the reported one was the defect in
+#: SciTools/iris#7337.
+_RESTRICTED_FORMATS = (
+    "NETCDF3_CLASSIC",
+    "NETCDF3_64BIT",
+    "NETCDF3_64BIT_OFFSET",
+    "NETCDF4_CLASSIC",
+)
 
 
 class NetCDFDataset(CFDataset):

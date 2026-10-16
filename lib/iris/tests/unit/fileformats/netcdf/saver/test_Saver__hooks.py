@@ -4,9 +4,9 @@
 # See LICENSE in the root of the repository for full licensing details.
 """The netCDF-specific parts of the save chain, named and tested.
 
-Relocating the CF saver (SciTools/iris#6977) moves the rest of the class to a
-format-agnostic home. Each test here covers one of the parts that stays
-behind, from the outside, so that the move cannot quietly change what a
+Relocating the CF saver (SciTools/iris#6977) moved the rest of the class to a
+format-agnostic home. Each test here covers one of the parts that stayed
+behind, from the outside, so that the move could not quietly change what a
 backend is asked to do.
 """
 

@@ -1493,8 +1493,9 @@ fires when the pull request merges into the repository's *default* branch, so
 `Closes #6977` on a pull request based on `brownfield` would link the issue and
 never close it. The feature-branch pull requests therefore write
 `Part of #6977`, and the merge-back pull request carries the closing keywords
-for all three sub-issues. This is bookkeeping, not caution: #6977, #6979 and
-#6980 are genuinely resolved by this programme, just not one branch merge
+for the three sub-issues and for any defect a feature-branch pull request
+fixes along the way. This is bookkeeping, not caution: #6977, #6979, #6980 and
+#7337 are genuinely resolved by this programme, just not one branch merge
 earlier than they should be. Issue *state* is not tracked in this document at
 all — that lives on GitHub (§12.2).
 
@@ -1610,8 +1611,9 @@ After this pull request, `iris.load("store.zarr")` and
 ### PR 5 — Relocate the CF saver
 
 `git mv netcdf/saver.py cf/saver.py`, same shape as PR 3. The largest diff of
-the eight and the one with no behaviour change at all, which is precisely why
-it is on its own.
+the eight, and the relocated module is a pure move, which is precisely why it
+is on its own. The branch carries one behaviour change beside the move, in a
+netCDF-only module the move does not touch: the #7337 fix below.
 
 The generic half is `_CFSaver`, built from an open `CFDataset`, and private.
 `iris.fileformats.netcdf.saver.Saver` subclasses it, supplying the netCDF
@@ -1630,12 +1632,13 @@ modules **[verified]**, so this is a relocation with no behaviour change — it
 puts the scheduler-aware locking toolkit where a future Zarr implementation
 can reach it (§4.5).
 
-Adds `CFDataset.format` and `CFDataset.supports_dtype` (§4.2) and uses the
-latter at `saver.py:1479` and `:1500`, the one place where relocated generic
-code would otherwise test netCDF format strings. This is the only behaviour-
-adjacent part of the pull request and it is not a behaviour change: the netCDF
-implementation answers from the same `file_format` values the code reads
-today, and the resulting error message still names the format.
+Adds `CFDataset.format` and `CFDataset.supports_dtype` (§4.2), and asks the
+latter wherever relocated generic code would otherwise test netCDF format
+strings. Gathering the question into one method is what makes #7337 a
+one-constant fix: `NetCDFDataset` answers from a list of the formats that
+cannot hold every dtype, and that list had been missing the name netCDF4
+reports for a 64-bit-offset file. Fixed here rather than carried across
+(§12.4, 2026-10-16).
 
 ### PR 6 — Zarr saving
 
@@ -1670,7 +1673,7 @@ Depends on a companion pull request to `SciTools/iris-test-data`.
 Labelled `Type: Merge Back`. This is where the programme becomes a release, and
 where three obligations deferred by the feature-branch pull requests are met.
 
-**Closing keywords** for #6977, #6979 and #6980.
+**Closing keywords** for #6977, #6979, #6980 and #7337.
 
 **Changelog fragments**, numbered for the merge-back pull request. Per
 `changelog/AGENTS.md`, one pull request may own several fragments of different
@@ -1681,7 +1684,7 @@ types, which is what this needs:
 | `feature` | Native Zarr version 2 and version 3 reading, and version 3 writing |
 | `dependency` | `zarr` added as an optional dependency; xarray as a test dependency |
 | `deprecation` | The relocated public names in §4.8, and `CFVariable.__getattr__` (§4.3) — all warn on use |
-| `bugfix` | Attributes whose name collides with a netCDF4 Python member — `shape`, `size`, `dtype`, `name`, `dimensions`, `mask` — are no longer silently dropped on save, nor silently shadowed on load (§12.4, 2026-09-24) |
+| `bugfix` | Attributes whose name collides with a netCDF4 Python member — `shape`, `size`, `dtype`, `name`, `dimensions`, `mask` — are no longer silently dropped on save, nor silently shadowed on load (§12.4, 2026-09-24). Saving int64 data to `NETCDF3_64BIT` narrows it to int32 instead of failing inside the netCDF C library (#7337) |
 | `internal` | The `cf` package split and the CF loader/saver relocation |
 
 Every fragment credits `` :user:`claude` `` per `changelog/AGENTS.md`.
@@ -2072,7 +2075,7 @@ closing keywords live (§5).
 | [#7328](https://github.com/SciTools/iris/issues/7328) | The netCDF `createVariable` keyword API (§12.4). Out of scope (§9); the Zarr saver avoids the pattern rather than inheriting it (§4.5) |
 | [#7329](https://github.com/SciTools/iris/issues/7329) | Checking attribute content against netCDF's constraints before saving (§12.4). Out of scope (§9); the Zarr write path already has the policy (§4.5) |
 | [#7332](https://github.com/SciTools/iris/issues/7332) | The UGRID loader's unguarded `cf_role` and `start_index` reads, turned up by PR 2.5 (§5). Not fixed by this programme |
-| [#7337](https://github.com/SciTools/iris/issues/7337) | The netCDF saver's int64 failure on `NETCDF3_64BIT`, turned up by PR 5 (§12.3 Q10). Not fixed by this programme |
+| [#7337](https://github.com/SciTools/iris/issues/7337) | The netCDF saver's int64 failure on `NETCDF3_64BIT`, turned up by PR 5. Fixed by PR 5; closed at merge-back |
 | [#7259](https://github.com/SciTools/iris/pull/7259) | @trexfeathers' unit test coverage for `cf.py` (`cf_reader_zarr`, +2361/-643), carried into PR 1 with credit. Post a courtesy comment before opening PR 1 |
 
 ### 12.3 Open questions
@@ -2087,7 +2090,6 @@ closing keywords live (§5).
 | Q6 | The `as_lazy_data` cache is process-wide and keyed on metadata, so it cannot detect a store whose chunk contents changed under identical metadata. Should it be scoped to a load session instead? | Metadata identity closes the cases that were reproduced (§4.4) and matches the netCDF key's existing strength, so it ships. Session scoping is the durable fix and would cover both formats | §4.4 | Nothing |
 | Q7 | Iris writes a floating `_FillValue` as base64 to stay readable by xarray, deviating from CF §2.5.1. Should the deviation be raised with the CF-Zarr conventions group rather than carried privately? | Carry it now, since the alternative is unreadable output; take it upstream to zarr-conventions/CF so the convention settles rather than each reader guessing | §4.4, §4.5 | Nothing |
 | Q8 | `_add_grid_mapping_to_dataset` sets sixty-three CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | PR 6's grid mappings. PR 5 relocated the method into `cf/saver.py`, where the netCDF4 handle is now the one thing in generic code that a non-netCDF store cannot supply |
-| Q10 | Saving int64 data to `NETCDF3_64BIT` fails inside the C library, because netCDF4 reports that format as `NETCDF3_64BIT_OFFSET` and the saver's narrowing list does not have that string **[verified]** | Preserved, not fixed: PR 5 is a relocation and may not change behaviour. `NetCDFDataset.supports_dtype` answers from the same three strings the saver tested, with a test pinning the failure so it is not mistaken for a regression | [#7337](https://github.com/SciTools/iris/issues/7337) | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -2621,6 +2623,26 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
   request, once PR 6 has shown where the seams between the two formats really
   fall.
 
+**2026-10-16 — Q10 closed, at review of #7338 by @stephenworsley**
+
+- #7337 is fixed in PR 5, not carried across it. Saving int64 data to
+  `NETCDF3_64BIT` narrows to int32, as every other restricted format already
+  did, and a value too large to narrow raises `ValueError`. The fix is
+  `"NETCDF3_64BIT_OFFSET"` added to `_RESTRICTED_FORMATS` in
+  `netcdf/_dataset.py`, which netCDF4 reports for a file created under the
+  other spelling.
+- The relocated module is untouched by the fix. `cf/saver.py` asks
+  `supports_dtype` and is a pure move either way, so the one promise the
+  relocation's review rests on survives.
+- Fixing it on `main` instead would have conflicted at the merge-back. `main`
+  has no `netcdf/_dataset.py`; the same defect lives in an inline tuple in
+  `netcdf/saver.py` that this branch has already deleted, so the merge would
+  have had to be resolved by editing a third file.
+- The `ValueError` names `NETCDF3_64BIT_OFFSET`, which is not the string the
+  caller passed. Left as it is, and pinned by a test: the message names the
+  format of the file that was opened, which is the honest answer and the same
+  rule every other format follows.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -2660,3 +2682,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
 | 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |
+| 2026-10-16 | #7337 fixed inside PR 5 rather than carried across it, following review of #7338 by @stephenworsley. Q10 closed into §12.4, and §12.1 now records the issue as closed by PR 5. |

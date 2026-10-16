@@ -276,8 +276,8 @@ class TestFormat:
             ("NETCDF4", "NETCDF4"),
             ("NETCDF4_CLASSIC", "NETCDF4_CLASSIC"),
             ("NETCDF3_CLASSIC", "NETCDF3_CLASSIC"),
-            # netCDF4 renames this one. The saver's restricted-format list does
-            # not know the reported name: SciTools/iris#7337.
+            # netCDF4 renames this one, so anything matching on the reported
+            # name has to know both spellings: SciTools/iris#7337.
             ("NETCDF3_64BIT", "NETCDF3_64BIT_OFFSET"),
         ],
     )
@@ -300,12 +300,16 @@ class TestSupportsDtype:
         assert dataset.supports_dtype(np.dtype(dtype)) is True
 
     @pytest.mark.parametrize(
-        "dataset", ["NETCDF4_CLASSIC", "NETCDF3_CLASSIC"], indirect=True
+        "dataset",
+        ["NETCDF4_CLASSIC", "NETCDF3_CLASSIC", "NETCDF3_64BIT"],
+        indirect=True,
     )
     @pytest.mark.parametrize("dtype", ["i8", "u1", "u4"])
     def test_the_restricted_formats_refuse_wide_and_unsigned_integers(
         self, dataset, dtype
     ):
+        # "NETCDF3_64BIT" is here because netCDF4 reports it under a second
+        # name, which the format list used to miss: SciTools/iris#7337.
         assert dataset.supports_dtype(np.dtype(dtype)) is False
 
     @pytest.mark.parametrize(
@@ -316,10 +320,3 @@ class TestSupportsDtype:
     @pytest.mark.parametrize("dtype", ["f4", "f8", "i2", "i4"])
     def test_every_format_holds_the_dtypes_the_saver_writes(self, dataset, dtype):
         assert dataset.supports_dtype(np.dtype(dtype)) is True
-
-    @pytest.mark.parametrize("dataset", ["NETCDF3_64BIT"], indirect=True)
-    def test_64bit_offset_claims_to_hold_int64(self, dataset):
-        # The honest answer is False. Answering it would turn the failure
-        # recorded in SciTools/iris#7337 into a successful save, which is a
-        # behaviour change this relocation may not make.
-        assert dataset.supports_dtype(np.dtype("i8")) is True

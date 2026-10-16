@@ -4,9 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """What the netCDF saver does with a dtype the target format cannot hold.
 
-Every test here passes both before and after the saver stops reading netCDF
-format strings and starts asking the dataset. Relocating the CF saver for Zarr
-support (SciTools/iris#6977) must not change any answer in this file.
+Relocating the CF saver for Zarr support (SciTools/iris#6977) moved the
+narrowing decision out of the saver, which now asks the dataset instead of
+reading netCDF format strings. Every answer here survived that move except
+one: SciTools/iris#7337 was fixed in the same change, so "NETCDF3_64BIT"
+narrows now where it used to fail inside the netCDF C library.
 """
 
 import numpy as np
@@ -42,24 +44,30 @@ class TestInt64:
     def test_netcdf4_keeps_it(self, int64_cube, tmp_path):
         assert saved_dtype(int64_cube, tmp_path / "out.nc", "NETCDF4") == np.int64
 
-    @pytest.mark.parametrize("netcdf_format", ["NETCDF4_CLASSIC", "NETCDF3_CLASSIC"])
+    @pytest.mark.parametrize(
+        "netcdf_format", ["NETCDF4_CLASSIC", "NETCDF3_CLASSIC", "NETCDF3_64BIT"]
+    )
     def test_the_restricted_formats_narrow_it(
         self, int64_cube, tmp_path, netcdf_format
     ):
         assert saved_dtype(int64_cube, tmp_path / "out.nc", netcdf_format) == np.int32
 
-    def test_64bit_offset_fails_in_the_library(self, int64_cube, tmp_path):
-        # Known defect, left alone on purpose: netCDF4 reports this file as
-        # NETCDF3_64BIT_OFFSET, which is not one of the three strings the
-        # narrowing tests against, so no narrowing happens and netCDF4 refuses
-        # the variable. SciTools/iris#7337.
-        with pytest.raises(RuntimeError, match="Not a valid data type"):
-            iris.save(int64_cube, tmp_path / "out.nc", netcdf_format="NETCDF3_64BIT")
-
-    def test_a_value_too_large_to_narrow_names_the_format(self, tmp_path):
+    @pytest.mark.parametrize(
+        ("netcdf_format", "named"),
+        [
+            ("NETCDF4_CLASSIC", "NETCDF4_CLASSIC"),
+            ("NETCDF3_CLASSIC", "NETCDF3_CLASSIC"),
+            # The message names the format netCDF4 reports, which for this one
+            # is not the format the caller asked for: SciTools/iris#7337.
+            ("NETCDF3_64BIT", "NETCDF3_64BIT_OFFSET"),
+        ],
+    )
+    def test_a_value_too_large_to_narrow_names_the_format(
+        self, tmp_path, netcdf_format, named
+    ):
         cube = Cube(np.array([2**40], dtype=np.int64), var_name="payload")
-        with pytest.raises(ValueError, match="NETCDF3_CLASSIC"):
-            iris.save(cube, tmp_path / "out.nc", netcdf_format="NETCDF3_CLASSIC")
+        with pytest.raises(ValueError, match=named):
+            iris.save(cube, tmp_path / "out.nc", netcdf_format=netcdf_format)
 
 
 class TestDtypesEveryFormatHolds:
