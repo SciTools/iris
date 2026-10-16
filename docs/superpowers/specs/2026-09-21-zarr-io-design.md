@@ -1613,7 +1613,7 @@ After this pull request, `iris.load("store.zarr")` and
 the eight and the one with no behaviour change at all, which is precisely why
 it is on its own.
 
-The generic half is `CFSaver`, built from an open `CFDataset`.
+The generic half is `_CFSaver`, built from an open `CFDataset`, and private.
 `iris.fileformats.netcdf.saver.Saver` subclasses it, supplying the netCDF
 vocabulary of storage keywords and four hooks: `_create_string_variable`,
 because netCDF stores unicode as bytes over a string dimension;
@@ -2560,9 +2560,23 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
 
 **2026-10-14 — PR 5, the CF saver relocation**
 
-- The generic saver is `CFSaver`, constructed from an open `CFDataset` rather
+- The generic saver is `_CFSaver`, constructed from an open `CFDataset` rather
   than from a filename. Each format's `Saver` opens its own store and passes it
   down.
+- `_CFSaver` is private, unlike `CFDataset`. The two look like peers and are
+  not. Every member of `CFDataset` is something a format must implement, so
+  its public surface and its contract are the same set of names, and a user
+  can hold one of its variables through `CFVariable.cf_data`. What a format
+  implements on the saver is four hooks, all private, and the Zarr saver
+  supplies one of them and inherits three; everything public on the class is
+  the caller's API, which each format's own public `Saver` inherits unchanged.
+  Making the class public would promise the shape of thirty-six methods on one
+  subclass's evidence, and only a deprecation cycle could take it back.
+  Private costs nothing and PR 6 can promote it. The `cf/saver.py` module
+  stays public either way - it holds the four relocated names of §4.8, and its
+  docstring is where a format author is told what to subclass. This matches
+  `cf/loader.py`, whose generic body is likewise private functions in a public
+  module.
 - Four hooks are what a format supplies beyond the dataset:
   `_create_string_variable`, `_backend_write`, `_flush_before_close` and
   `_patch_dataset`. Two of them raise on the base class rather than guessing a
@@ -2645,3 +2659,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-12 | PR 2.5 built, correcting §5's account of it. Four reads inside Iris still reached `__getattr__` after PR 2, not none; they are named, and so is the measurement that found them. The silent-load test records warnings rather than promoting them to errors, because `iris.load` captures a build exception into `LOAD_PROBLEMS` and an `error` filter degrades the load instead of failing the test. `IrisDeprecation`'s module corrected to `iris._deprecation`. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
+| 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |

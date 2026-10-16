@@ -15,10 +15,19 @@ variables, cell methods, grid mappings, meshes, attribute compliance. Every
 storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`, with
 one exception: ``_add_grid_mapping_to_dataset``.
 
-A format supplies a subclass of :class:`CFSaver` holding its own vocabulary of
+A format supplies a subclass of ``_CFSaver`` holding its own vocabulary of
 storage keywords, and whatever of the four hooks it needs:
 ``_create_string_variable``, ``_backend_write``, ``_flush_before_close`` and
-``_patch_dataset``. :mod:`iris.fileformats.netcdf.saver` is one such subclass.
+``_patch_dataset``. :class:`iris.fileformats.netcdf.saver.Saver` is one such
+subclass, and is where a user of the netCDF format meets all of this.
+
+``_CFSaver`` is private. What a format must supply is the four hooks, which
+are private too, and one subclass is not enough evidence to promise their
+shape; everything public on the class is the caller's API, inherited
+unchanged by each format's own public saver. Contrast
+:class:`~iris.fileformats.cf.dataset.CFDataset`, which is public because every
+member of it is something a format must implement, and because a user can
+reach one through :attr:`iris.fileformats.cf.CFVariable.cf_data`.
 
 Two things here are still netCDF-specific.
 
@@ -289,8 +298,12 @@ class SaverFillValueWarning(iris.warnings.IrisSaverFillValueWarning):
     pass
 
 
-class CFSaver:
-    """A manager for saving cubes to a CF-conforming store."""
+class _CFSaver:
+    """A manager for saving cubes to a CF-conforming store.
+
+    Private: a format's own saver subclasses this and is the public class.
+    The module docstring says why.
+    """
 
     def __init__(self, dataset, compute=True, *, owns_dataset=True):
         """Manage saving cubes into an open store.

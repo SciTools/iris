@@ -37,11 +37,11 @@ import iris.fileformats.cf
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.dataset import CFDatasetVariable
 
-# Beside CFSaver, SaverFillValueWarning also moved to iris.fileformats.cf.saver,
+# Beside _CFSaver, SaverFillValueWarning also moved to iris.fileformats.cf.saver,
 # and is imported back rather than forwarded, so that reading it here stays
 # silent. It is public, and spec section 4.8 does not relocate it, so
 # iris.fileformats.netcdf.saver.SaverFillValueWarning must keep resolving.
-from iris.fileformats.cf.saver import CFSaver, SaverFillValueWarning
+from iris.fileformats.cf.saver import SaverFillValueWarning, _CFSaver
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
 from iris.fileformats.netcdf._dataset import NetCDFDataset, NetCDFDatasetVariable
@@ -131,7 +131,7 @@ def __dir__():
 CFVariable = NetCDFDatasetVariable
 
 
-class Saver(CFSaver):
+class Saver(_CFSaver):
     """A manager for saving NetCDF/NcZarr files."""
 
     def __init__(self, filename, netcdf_format, compute=True):

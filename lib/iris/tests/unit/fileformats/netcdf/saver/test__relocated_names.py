@@ -33,7 +33,7 @@ RELOCATED = [
 ]
 
 #: Method names the netCDF Saver must answer to: those it carried before the
-#: generic half of it became CFSaver, plus the hooks CFSaver calls on a
+#: generic half of it became _CFSaver, plus the hooks _CFSaver calls on a
 #: subclass. A name missing from the class is an override, somewhere outside
 #: Iris, that has silently stopped overriding anything.
 SAVER_METHODS = [
@@ -117,7 +117,7 @@ class TestSaverMethods:
         assert callable(getattr(netcdf_saver.Saver, name, None))
 
     def test_the_netcdf_saver_is_a_cf_saver(self):
-        assert issubclass(netcdf_saver.Saver, cf_saver.CFSaver)
+        assert issubclass(netcdf_saver.Saver, cf_saver._CFSaver)
 
     def test_write_keeps_its_signature(self):
         # Documented API with defaults users rely on, and save() passes some

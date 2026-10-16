@@ -52,7 +52,7 @@ from iris.aux_factory import (
 )
 import iris.coords
 import iris.fileformats.cf
-from iris.fileformats.cf.saver import _CF_ATTRS, CFSaver
+from iris.fileformats.cf.saver import _CF_ATTRS, _CFSaver
 import iris.warnings
 
 
@@ -353,7 +353,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    if CFSaver._DATALESS_ATTRNAME in cf_var.attributes:
+    if _CFSaver._DATALESS_ATTRNAME in cf_var.attributes:
         # This data-variable represents a dataless cube.
         # The variable array content was never written (to take up no space).
         data = None
