@@ -10,8 +10,7 @@ import pytest
 
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
-import iris.fileformats.netcdf
-from iris.fileformats.netcdf.loader import _load_cube
+from iris.fileformats.cf.loader import _load_cube
 from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import ncgen_from_cdl
 from iris.warnings import IrisLoadWarning
@@ -73,7 +72,7 @@ class Mixin__nc_load_actions:
             # Grab a data variable : FOR NOW always grab the 'phenom' variable.
             cf_var = cf.cf_group.data_variables["phenom"]
 
-            engine = iris.fileformats.netcdf.loader._actions_engine()
+            engine = iris.fileformats.cf.loader._actions_engine()
 
             # If debug enabled, switch on the activation summary debug output.
             # Use 'patch' so it is restored after the test.
@@ -101,7 +100,7 @@ class Mixin__nc_load_actions:
             # by the rules operation.
             # Unlike the other translations, _load_cube does *not* convert this
             # information into actual cube elements.  That is instead done by
-            # `iris.fileformats.netcdf._load_aux_factory`.
+            # `iris.fileformats.cf.loader._load_aux_factory`.
             # For rules testing, it is anyway more convenient to deal with the raw
             # data, as each factory type has different validity requirements to
             # build it, and none of that is relevant to the rules operation.

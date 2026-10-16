@@ -210,12 +210,12 @@ def _build_aux_coord(coord_var):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridAuxiliaryCoordinateVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(coord_var, CFUGridAuxiliaryCoordinateVariable)
     attributes = {}
     attr_units = get_attr_units(coord_var, attributes)
-    points_data = nc_loader._get_cf_var_data(coord_var)
+    points_data = cf_loader._get_cf_var_data(coord_var)
 
     # Bounds will not be loaded:
     # Bounds may be present, but the UGRID conventions state this would
@@ -227,7 +227,7 @@ def _build_aux_coord(coord_var):
     climatological = False
     # TODO: use CF_ATTR_CLIMATOLOGY on re-integration, when no longer
     #  'experimental'.
-    attr_climatology = getattr(coord_var, "climatology", None)
+    attr_climatology = coord_var.attributes.get("climatology")
     if attr_climatology is not None:
         climatology_vars = coord_var.cf_group.climatology
         climatological = attr_climatology in climatology_vars
@@ -267,15 +267,21 @@ def _build_connectivity(connectivity_var, element_dims):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridConnectivityVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(connectivity_var, CFUGridConnectivityVariable)
     attributes = {}
     attr_units = get_attr_units(connectivity_var, attributes)
-    indices_data = nc_loader._get_cf_var_data(connectivity_var)
+    indices_data = cf_loader._get_cf_var_data(connectivity_var)
 
-    cf_role = connectivity_var.cf_role
-    start_index = connectivity_var.start_index
+    # UGRID requires both of these on a connectivity variable and Iris
+    # validates neither. CFUGridConnectivityVariable.identify finds this
+    # variable through the mesh variable's role attribute, never through
+    # anything on the variable itself, so neither name is guaranteed to be
+    # here. A file omitting either raises, and the mesh build is captured into
+    # LOAD_PROBLEMS - the cube then loads without a mesh. SciTools/iris#7332.
+    cf_role = connectivity_var.attributes["cf_role"]
+    start_index = connectivity_var.attributes["start_index"]
 
     dim_names = connectivity_var.dimensions
     # Connectivity arrays must have two dimensions.
@@ -312,18 +318,18 @@ def _build_mesh(cf, mesh_var):
     # NOTE: dynamic imports avoid circularity : see note with module imports
     from iris.fileformats._nc_load_rules.helpers import get_attr_units, get_names
     from iris.fileformats.cf import CFUGridMeshVariable
-    from iris.fileformats.netcdf import loader as nc_loader
+    from iris.fileformats.cf import loader as cf_loader
 
     assert isinstance(mesh_var, CFUGridMeshVariable)
     attributes = {}
     attr_units = get_attr_units(mesh_var, attributes)
 
     cf_role_message = None
-    if not hasattr(mesh_var, "cf_role"):
+    if "cf_role" not in mesh_var.attributes:
         cf_role_message = f"{mesh_var.cf_name} has no cf_role attribute."
         cf_role = "mesh_topology"
     else:
-        cf_role = getattr(mesh_var, "cf_role")
+        cf_role = mesh_var.attributes["cf_role"]
     if cf_role != "mesh_topology":
         cf_role_message = f"{mesh_var.cf_name} has an inappropriate cf_role: {cf_role}."
     if cf_role_message:
@@ -333,17 +339,17 @@ def _build_mesh(cf, mesh_var):
             category=_WarnComboCfDefaulting,
         )
 
-    if hasattr(mesh_var, "volume_node_connectivity"):
+    if "volume_node_connectivity" in mesh_var.attributes:
         topology_dimension = 3
-    elif hasattr(mesh_var, "face_node_connectivity"):
+    elif "face_node_connectivity" in mesh_var.attributes:
         topology_dimension = 2
-    elif hasattr(mesh_var, "edge_node_connectivity"):
+    elif "edge_node_connectivity" in mesh_var.attributes:
         topology_dimension = 1
     else:
         # Nodes only.  We aren't sure yet whether this is a valid option.
         topology_dimension = 0
 
-    if not hasattr(mesh_var, "topology_dimension"):
+    if "topology_dimension" not in mesh_var.attributes:
         msg = (
             f"MeshXY variable {mesh_var.cf_name} has no 'topology_dimension'"
             f" : *Assuming* topology_dimension={topology_dimension}"
@@ -351,7 +357,7 @@ def _build_mesh(cf, mesh_var):
         )
         warnings.warn(msg, category=_WarnComboCfDefaulting)
     else:
-        quoted_topology_dimension = mesh_var.topology_dimension
+        quoted_topology_dimension = mesh_var.attributes["topology_dimension"]
         if quoted_topology_dimension != topology_dimension:
             msg = (
                 f"*Assuming* 'topology_dimension'={topology_dimension}"
@@ -367,8 +373,8 @@ def _build_mesh(cf, mesh_var):
             )
 
     node_dimension = None
-    edge_dimension = getattr(mesh_var, "edge_dimension", None)
-    face_dimension = getattr(mesh_var, "face_dimension", None)
+    edge_dimension = mesh_var.attributes.get("edge_dimension")
+    face_dimension = mesh_var.attributes.get("face_dimension")
 
     node_coord_args = []
     edge_coord_args = []
@@ -377,12 +383,12 @@ def _build_mesh(cf, mesh_var):
         coord_and_axis = _build_aux_coord(coord_var)
         coord = coord_and_axis[0]
 
-        if coord.var_name in mesh_var.node_coordinates.split():
+        if coord.var_name in mesh_var.attributes["node_coordinates"].split():
             node_coord_args.append(coord_and_axis)
             node_dimension = coord_var.dimensions[0]
-        elif coord.var_name in getattr(mesh_var, "edge_coordinates", "").split():
+        elif coord.var_name in mesh_var.attributes.get("edge_coordinates", "").split():
             edge_coord_args.append(coord_and_axis)
-        elif coord.var_name in getattr(mesh_var, "face_coordinates", "").split():
+        elif coord.var_name in mesh_var.attributes.get("face_coordinates", "").split():
             face_coord_args.append(coord_and_axis)
         # TODO: support volume_coordinates.
         else:
@@ -403,7 +409,7 @@ def _build_mesh(cf, mesh_var):
         connectivity, first_dim_name = _build_connectivity(
             connectivity_var, element_dims
         )
-        assert connectivity.var_name == getattr(mesh_var, connectivity.cf_role)
+        assert connectivity.var_name == mesh_var.attributes[connectivity.cf_role]
         connectivity_args.append(connectivity)
 
         # If the mesh_var has not supplied the dimension name, it is safe to
@@ -434,7 +440,7 @@ def _build_mesh(cf, mesh_var):
     mesh_elements = list(mesh.all_coords) + list(mesh.all_connectivities) + [mesh]
     mesh_elements = filter(None, mesh_elements)
     for iris_object in mesh_elements:
-        nc_loader._add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
+        cf_loader._add_unused_attributes(iris_object, cf.cf_group[iris_object.var_name])
 
     return mesh
 
@@ -453,12 +459,13 @@ def _build_mesh_coords(mesh, cf_var):
         "edge": mesh.edge_dimension,
         "face": mesh.face_dimension,
     }
-    location = getattr(cf_var, "location", "<empty>")
+    location = cf_var.attributes.get("location", "<empty>")
     if location is None or location not in element_dimensions:
         # We should probably issue warnings and recover, but that is too much
         # work.  Raising a more intelligible error is easy to do though.
         msg = (
-            f"mesh data variable {cf_var.name!r} has an invalid location={location!r}."
+            f"mesh data variable {cf_var.cf_name!r} has an invalid "
+            f"location={location!r}."
         )
         raise ValueError(msg)
     mesh_dim_name = element_dimensions.get(location)
@@ -469,10 +476,10 @@ def _build_mesh_coords(mesh, cf_var):
         mesh_dim = cf_var.dimensions.index(mesh_dim_name)
     else:
         msg = (
-            f"mesh data variable {cf_var.name!r} does not have the "
+            f"mesh data variable {cf_var.cf_name!r} does not have the "
             f"{location} mesh dimension {mesh_dim_name!r}, in its dimensions."
         )
         raise ValueError(msg)
 
-    mesh_coords = mesh.to_MeshCoords(location=cf_var.location)
+    mesh_coords = mesh.to_MeshCoords(location=location)
     return mesh_coords, mesh_dim

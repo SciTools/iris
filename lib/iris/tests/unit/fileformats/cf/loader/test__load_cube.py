@@ -2,14 +2,14 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the `iris.fileformats.netcdf._load_cube` function."""
+"""Unit tests for :func:`iris.fileformats.cf.loader._load_cube`."""
 
 import numpy as np
 import pytest
 
 from iris.coords import DimCoord
 import iris.fileformats.cf
-from iris.fileformats.netcdf.loader import _load_cube
+from iris.fileformats.cf.loader import _load_cube
 from iris.loading import LOAD_PROBLEMS
 from iris.tests.unit.fileformats import MockerMixin
 
@@ -30,7 +30,7 @@ class TestCoordAttributes(MockerMixin):
 
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
+        this = "iris.fileformats.cf.loader._assert_case_specific_facts"
         _ = mocker.patch(this, side_effect=self._patcher)
         self.engine = mocker.Mock()
         self.filename = "DUMMY"
@@ -51,7 +51,7 @@ class TestCoordAttributes(MockerMixin):
             cf_group[name] = self.mocker.Mock(cf_attrs_unused=cf_attrs_unused)
         cf = self.mocker.Mock(cf_group=cf_group)
 
-        cf_data = self.mocker.Mock(_FillValue=None)
+        cf_data = self.mocker.Mock()
         cf_data.chunking = self.mocker.MagicMock(return_value=shape)
         cf_var = self.mocker.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
@@ -61,6 +61,7 @@ class TestCoordAttributes(MockerMixin):
             cf_group=coords,
             shape=shape,
             size=np.prod(shape),
+            attributes={},
         )
         return cf, cf_var
 
@@ -126,7 +127,7 @@ class TestCoordAttributes(MockerMixin):
 class TestCubeAttributes(MockerMixin):
     @pytest.fixture(autouse=True)
     def _setup(self, mocker):
-        this = "iris.fileformats.netcdf.loader._assert_case_specific_facts"
+        this = "iris.fileformats.cf.loader._assert_case_specific_facts"
         _ = mocker.patch(this)
         self.engine = mocker.Mock()
         self.cf = None
@@ -141,7 +142,7 @@ class TestCubeAttributes(MockerMixin):
     def _make(self, attrs):
         shape = (1,)
         cf_attrs_unused = self.mocker.Mock(return_value=attrs)
-        cf_data = self.mocker.Mock(_FillValue=None)
+        cf_data = self.mocker.Mock()
         cf_data.chunking = self.mocker.MagicMock(return_value=shape)
         cf_var = self.mocker.MagicMock(
             spec=iris.fileformats.cf.CFVariable,
@@ -153,6 +154,7 @@ class TestCubeAttributes(MockerMixin):
             cf_attrs_unused=cf_attrs_unused,
             shape=shape,
             size=np.prod(shape),
+            attributes={},
         )
         return cf_var
 
