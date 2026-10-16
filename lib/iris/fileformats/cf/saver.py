@@ -371,6 +371,7 @@ class _CFSaver:
         overrides this and writes its lazy data while it is still open.
 
         """
+        pass
 
     def write(
         self,
