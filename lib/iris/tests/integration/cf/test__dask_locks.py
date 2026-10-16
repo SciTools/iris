@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for the :mod:`iris.fileformats.netcdf._dask_locks` package.
+"""Unit tests for the :mod:`iris.fileformats.cf._dask_locks` package.
 
 Note: these integration tests replace any unit testing of this module, due to its total
 dependence on Dask, and even on Dask's implementation details rather than supported
@@ -20,7 +20,7 @@ import pytest
 
 import iris
 from iris.cube import Cube
-from iris.fileformats.netcdf._dask_locks import (
+from iris.fileformats.cf._dask_locks import (
     DaskSchedulerTypeError,
     dask_scheduler_is_distributed,
     get_dask_array_scheduler_type,
