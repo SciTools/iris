@@ -44,8 +44,10 @@ imports nothing from :mod:`iris.fileformats.cf`. This module's body runs while
 the netCDF package is itself part-way through importing, so a netCDF submodule
 that reached back here would find this module half-built. The handlers
 serialise the Iris-only attribute types that every CF store needs - STASH,
-GRIB_PARAM, ukmo__process_flags - so they want relocating here. The load rules
-read them too, which makes that a move of its own.
+GRIB_PARAM, ukmo__process_flags - so they are relocating here, and this import
+goes when they do. The load rules read them too, which is what makes that a
+move of its own; it is made alongside Zarr saving,
+https://github.com/SciTools/iris/issues/6980.
 
 See : `CF Conventions <https://cfconventions.org/>`_.
 
@@ -87,6 +89,8 @@ from iris.coords import (
 import iris.exceptions
 from iris.fileformats.cf.dataset import CFDatasetVariable
 
+# TODO: remove when the handlers relocate here, with Zarr saving -
+#  https://github.com/SciTools/iris/issues/6980
 # The one place the generic saver still reaches into the netCDF package. The
 # module docstring has the import cycle this closes, and why it is still here.
 from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
