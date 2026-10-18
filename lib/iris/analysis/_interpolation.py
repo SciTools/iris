@@ -587,7 +587,116 @@ class RectilinearInterpolator:
 
         return result
 
-    def __call__(self, sample_points, collapse_scalar=True):
+    def _trajectory(self, sample_points, data, data_dims=None):
+        """Interpolate at the specified trajectory points.
+
+        Like :meth:`_points`, but instead of forming a Cartesian product of
+        the coordinate values, treats each position in the sample_points lists
+        as a single paired sample point — i.e. the diagonal of the grid.
+        This avoids the O(N²) memory cost of the meshgrid expansion and is
+        significantly faster when only trajectory points are required.
+
+        Parameters
+        ----------
+        sample_points :
+            A list of N iterables, where N is the number of coordinates
+            passed to the constructor.
+            [sample_values_for_coord_0, sample_values_for_coord_1, ...].
+            All iterables must have the same length (the trajectory length).
+        data :
+            The data to interpolate - not necessarily the data from the cube
+            that was used to construct this interpolator. If the data has
+            fewer dimensions, then data_dims must be defined.
+        data_dims : optional
+            The dimensions of the given data array in terms of the original
+            cube passed through to this interpolator's constructor. If None,
+            the data dimensions must map one-to-one onto the increasing
+            dimension order of the cube.
+
+        Returns
+        -------
+        :class:`~numpy.ndarray` or :class:`~numpy.ma.MaskedArray`
+            An array of interpolated data values with shape
+            ``remaining_dims + (trajectory_length,)``.
+
+        """
+        # Realise lazy data — map_complete_blocks targets the meshgrid case;
+        # for the trajectory diagonal we work directly with numpy/masked arrays.
+        if hasattr(data, "compute"):
+            data = data.compute()
+
+        dims = list(range(self._src_cube.ndim))
+        data_dims = data_dims or dims
+
+        if len(data_dims) != data.ndim:
+            raise ValueError(
+                "Data being interpolated is not consistent with "
+                "the data passed through."
+            )
+
+        if sorted(data_dims) != list(data_dims):
+            raise NotImplementedError(
+                "Currently only increasing data_dims is supported."
+            )
+
+        # Broadcast the data into the shape of the original cube.
+        if data_dims != list(range(self._src_cube.ndim)):
+            strides = list(data.strides)
+            for dim in range(self._src_cube.ndim):
+                if dim not in data_dims:
+                    strides.insert(dim, 0)
+            data = as_strided(data, strides=strides, shape=self._src_cube.shape)
+
+        data = self._account_for_inverted(data)
+
+        # Calculate the transpose order to move the interpolated dimensions
+        # to the front for the interpolation algorithm, and the inverse order
+        # to restore the original dimension layout afterwards.
+        di = self._interp_dims
+        ds = sorted(dims, key=lambda d: d not in di)
+        dmap = {d: di.index(d) if d in di else ds.index(d) for d in dims}
+        interp_order, _ = zip(*sorted(dmap.items(), key=operator.itemgetter(1)))
+        _, src_order = zip(*sorted(dmap.items(), key=operator.itemgetter(0)))
+
+        # Prepare sample points — stack column-wise to get shape
+        # (trajectory_length, n_coords) instead of a Cartesian product.
+        interp_points = []
+        for index, points in enumerate(sample_points):
+            dtype = _interpolated_dtype(self._src_points[index].dtype, self._method)
+            points = np.array(points, dtype=dtype, ndmin=1)
+            interp_points.append(points)
+
+        trajectory_length = interp_points[0].size
+        # interp_shape for _interpolate must be 1-D with the trajectory length.
+        interp_shape = [trajectory_length]
+
+        # Stack into (trajectory_length, n_coords) — the diagonal, not the grid.
+        interp_points = np.column_stack(interp_points)
+
+        # Adjust for circularity.
+        interp_points, data = self._account_for_circular(interp_points, data)
+
+        if interp_order != dims:
+            data = np.transpose(data, interp_order)
+
+        # Call the static interpolator directly (no map_complete_blocks, since
+        # the trajectory points do not form a regular grid of chunks).
+        result = self._interpolate(
+            data,
+            self._src_points,
+            interp_points,
+            interp_shape,
+            method=self._method,
+            extrapolation_mode=self._mode,
+        )
+
+        if result.ndim > 1:
+            if src_order != dims:
+                result = result.T
+
+        return result
+
+    def __call__(self, sample_points, collapse_scalar=True, trajectory=False):
         """Construct a cube from the specified orthogonal interpolation points.
 
         If the source cube has lazy data, the returned cube will also
@@ -602,13 +711,24 @@ class RectilinearInterpolator:
         collapse_scalar : bool, default=True
             Whether to collapse the dimension of the scalar sample points
             in the resulting cube. Default is True.
+        trajectory : bool, default=False
+            If True, treat the sample points as paired trajectory points
+            rather than forming a Cartesian product grid. The i-th position
+            of each coordinate array is interpolated together as a single
+            sample point. This is significantly more memory- and
+            time-efficient when only trajectory points are required.
+            When True, the raw interpolated array is returned directly
+            (coordinate reconstruction is handled by the caller,
+            e.g. :func:`iris.analysis.trajectory.interpolate`).
 
         Returns
         -------
-        :class:`iris.cube.Cube`
+        :class:`iris.cube.Cube` or :class:`~numpy.ndarray`
             A cube interpolated at the given sample points. The dimensionality
             of the cube will be the number of original cube dimensions minus
             the number of scalar coordinates, if collapse_scalar is True.
+            If ``trajectory=True``, a raw :class:`~numpy.ndarray` is returned
+            instead.
 
         Notes
         -----
@@ -617,6 +737,7 @@ class RectilinearInterpolator:
             If the source cube has lazy data,
             `chunks <https://docs.dask.org/en/latest/array-chunks.html>`__
             in the interpolated dimensions will be combined before regridding.
+            When ``trajectory=True``, lazy data is always realised.
 
         """
         if len(sample_points) != len(self._src_coords):
@@ -627,6 +748,8 @@ class RectilinearInterpolator:
 
         data = self._src_cube.core_data()
         # Interpolate the cube payload.
+        if trajectory:
+            return self._trajectory(sample_points, data)
         interpolated_data = self._points(sample_points, data)
 
         if collapse_scalar:
