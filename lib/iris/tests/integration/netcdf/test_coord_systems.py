@@ -15,7 +15,10 @@ from iris.cube import Cube
 from iris.tests import _shared_utils
 from iris.tests import stock as stock
 from iris.tests.stock.netcdf import ncgen_from_cdl
-from iris.tests.unit.fileformats.netcdf.loader import test_load_cubes as tlc
+from iris.tests.unit.fileformats.netcdf.loader.test_load_cubes import cdl_to_nc
+
+# Avoid a linter complaint that the imported fixture is not referenced
+cdl_to_nc
 
 
 @pytest.fixture
@@ -168,14 +171,6 @@ data:
     """
 
 
-@pytest.fixture(autouse=True, scope="module")
-def _setup(tmp_path_factory):
-    if not hasattr(tlc, "TMP_DIR"):
-        tlc.TMP_DIR = tmp_path_factory.mktemp("temp")
-        yield
-        delattr(tlc, "TMP_DIR")
-
-
 @_shared_utils.skip_data
 class TestCoordSystem:
     def test_load_laea_grid(self, request):
@@ -186,52 +181,52 @@ class TestCoordSystem:
         )
         _shared_utils.assert_CML(request, cube, ("netcdf", "netcdf_laea.cml"))
 
-    def test_load_datum_wkt(self, datum_wkt_cdl):
+    def test_load_datum_wkt(self, datum_wkt_cdl, cdl_to_nc):
         expected = "OSGB 1936"
-        nc_path = tlc.cdl_to_nc(datum_wkt_cdl)
+        nc_path = cdl_to_nc(datum_wkt_cdl, "datum_wkt")
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
 
-    def test_no_load_datum_wkt(self, datum_wkt_cdl):
-        nc_path = tlc.cdl_to_nc(datum_wkt_cdl)
+    def test_no_load_datum_wkt(self, datum_wkt_cdl, cdl_to_nc):
+        nc_path = cdl_to_nc(datum_wkt_cdl, "no_datum_wkt")
         with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
 
-    def test_no_datum_no_warn(self, datum_wkt_cdl):
+    def test_no_datum_no_warn(self, datum_wkt_cdl, cdl_to_nc):
         new_cdl = datum_wkt_cdl.splitlines()
         new_cdl = [line for line in new_cdl if "DATUM" not in line]
         new_cdl = "\n".join(new_cdl)
-        nc_path = tlc.cdl_to_nc(new_cdl)
+        nc_path = cdl_to_nc(new_cdl, "no_warn")
         with warnings.catch_warnings():
             # pytest's recommended way to assert for no warnings.
             warnings.simplefilter("error", FutureWarning)
             _ = iris.load_cube(nc_path)
 
-    def test_load_datum_cf_var(self, datum_cf_var_cdl):
+    def test_load_datum_cf_var(self, datum_cf_var_cdl, cdl_to_nc):
         expected = "OSGB 1936"
-        nc_path = tlc.cdl_to_nc(datum_cf_var_cdl)
+        nc_path = cdl_to_nc(datum_cf_var_cdl, "datum_var")
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == expected
 
-    def test_no_load_datum_cf_var(self, datum_cf_var_cdl):
-        nc_path = tlc.cdl_to_nc(datum_cf_var_cdl)
+    def test_no_load_datum_cf_var(self, datum_cf_var_cdl, cdl_to_nc):
+        nc_path = cdl_to_nc(datum_cf_var_cdl, "no_datum_var")
         with pytest.warns(FutureWarning, match="iris.FUTURE.datum_support"):
             cube = iris.load_cube(nc_path)
         test_crs = cube.coord("projection_y_coordinate").coord_system
         actual = str(test_crs.as_cartopy_crs().datum)
         assert actual == "unknown"
 
-    def test_load_multi_cs_wkt(self, multi_cs_osgb_wkt):
-        nc_path = tlc.cdl_to_nc(multi_cs_osgb_wkt)
+    def test_load_multi_cs_wkt(self, multi_cs_osgb_wkt, cdl_to_nc):
+        nc_path = cdl_to_nc(multi_cs_osgb_wkt, "multi_cs")
         with iris.FUTURE.context(datum_support=True):
             cube = iris.load_cube(nc_path)
 
