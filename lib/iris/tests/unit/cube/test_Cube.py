@@ -500,11 +500,30 @@ class Test_collapsed__multidim_weighted_with_arr:
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
         # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
-        # Note: the same test with lazy data fails:
-        # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed("y", SUM, weights=self.y_weights)
         assert cube_collapsed.units == "kg m-2 s-1"
         assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_sum_1dweights_adapt_units_lazy_y(self):
+        # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
+        cube_collapsed = self.cube_lazy.collapsed("y", SUM, weights=self.y_weights)
+        assert cube_collapsed.has_lazy_data()
+        assert cube_collapsed.units == "kg m-2 s-1"
+        assert cube_collapsed.units.origin == "kg m-2 s-1"
+
+    def test_weighted_sum_1dweights_lazy_y(self):
+        # 1-D weights, lazy data :  Check lazy result, same values as real calc.
+        expected = self.cube_real.collapsed("y", SUM, weights=self.y_weights)
+        cube_collapsed = self.cube_lazy.collapsed("y", SUM, weights=self.y_weights)
+        assert cube_collapsed.has_lazy_data()
+        _shared_utils.assert_array_almost_equal(cube_collapsed.data, expected.data)
+
+    def test_weighted_sum_1dweights_lazy_x(self):
+        # 1-D weights, lazy data, ** collapse X ** :  as for 'y' case above
+        expected = self.cube_real.collapsed("x", SUM, weights=self.x_weights)
+        cube_collapsed = self.cube_lazy.collapsed("x", SUM, weights=self.x_weights)
+        assert cube_collapsed.has_lazy_data()
+        _shared_utils.assert_array_almost_equal(cube_collapsed.data, expected.data)
 
     def test_weighted_sum_with_unknown_units_real_y(self):
         # Check that units are adapted correctly ('unknown' * '1' = 'unknown')
@@ -602,8 +621,6 @@ class Test_collapsed__multidim_weighted_with_arr_dataless:
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
         # Check that units are adapted correctly (kg m-2 s-1 * 1 = kg m-2 s-1)
-        # Note: the same test with lazy data fails:
-        # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube.collapsed("y", SUM, weights=self.y_weights)
         assert cube_collapsed.data is None
         assert not cube_collapsed.has_lazy_data()
@@ -659,9 +676,13 @@ class Test_collapsed__multidim_weighted_with_cube(
 
     def test_weighted_sum_1dweights_adapt_units_real_y(self):
         # Check that units are adapted correctly (kg m-2 s-1 * m2 = kg s-1)
-        # Note: the same test with lazy data fails:
-        # https://github.com/SciTools/iris/issues/5083
         cube_collapsed = self.cube_real.collapsed("y", SUM, weights=self.y_weights)
+        assert cube_collapsed.units == "kg s-1"
+
+    def test_weighted_sum_1dweights_adapt_units_lazy_y(self):
+        # Check that units are adapted correctly (kg m-2 s-1 * m2 = kg s-1)
+        cube_collapsed = self.cube_lazy.collapsed("y", SUM, weights=self.y_weights)
+        assert cube_collapsed.has_lazy_data()
         assert cube_collapsed.units == "kg s-1"
 
 
@@ -709,6 +730,62 @@ class Test_collapsed__multidim_weighted_with_dim_metadata(
         self.full_weights_x = self.dim_metadata_full_x
         self.y_weights = self.dim_metadata_1d_y
         self.x_weights = self.dim_metadata_1d_x
+
+
+class Test_collapsed__1d_weights_array:
+    # Weights given as a 1-D array for the collapsed dimension should be applied
+    # along that dimension, for real and lazy data and all weighted aggregators.
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.data = np.arange(9.0).reshape((3, 3))
+        self.weights = np.array([1.0, 0.0, 0.0])
+        cube = Cube(self.data)
+        cube.add_dim_coord(DimCoord(np.arange(3), long_name="y"), 0)
+        cube.add_dim_coord(DimCoord(np.arange(3), long_name="x"), 1)
+        self.cube_real = cube
+        self.cube_lazy = cube.copy(data=as_lazy_data(self.data))
+
+    @pytest.mark.parametrize("lazy", [False, True], ids=["real", "lazy"])
+    @pytest.mark.parametrize("dim", [0, 1])
+    def test_sum_weights_along_collapsed_dim(self, lazy, dim):
+        cube = self.cube_lazy if lazy else self.cube_real
+        name = ("y", "x")[dim]
+        expected = np.sum(self.data * np.expand_dims(self.weights, 1 - dim), axis=dim)
+        result = cube.collapsed(name, SUM, weights=self.weights)
+        assert result.has_lazy_data() == lazy
+        _shared_utils.assert_array_almost_equal(result.data, expected)
+
+    @pytest.mark.parametrize("lazy", [False, True], ids=["real", "lazy"])
+    def test_sum_returned(self, lazy):
+        cube = self.cube_lazy if lazy else self.cube_real
+        result, weights_sum = cube.collapsed(
+            "y", SUM, weights=self.weights, returned=True
+        )
+        _shared_utils.assert_array_almost_equal(result.data, self.data[0])
+        _shared_utils.assert_array_almost_equal(np.asarray(weights_sum), [1, 1, 1])
+
+    @pytest.mark.parametrize("lazy", [False, True], ids=["real", "lazy"])
+    @pytest.mark.parametrize("aggregator", [MEAN, SUM])
+    def test_list_weights(self, lazy, aggregator):
+        cube = self.cube_lazy if lazy else self.cube_real
+        expected = cube.collapsed("y", aggregator, weights=self.weights)
+        result = cube.collapsed("y", aggregator, weights=self.weights.tolist())
+        _shared_utils.assert_array_almost_equal(result.data, expected.data)
+
+    def test_lazy_weights(self):
+        result = self.cube_lazy.collapsed("y", SUM, weights=as_lazy_data(self.weights))
+        assert result.has_lazy_data()
+        _shared_utils.assert_array_almost_equal(result.data, self.data[0])
+
+    def test_wpercentile(self):
+        full_weights = np.broadcast_to(self.weights.reshape((3, 1)), self.data.shape)
+        expected = self.cube_real.collapsed(
+            "y", iris.analysis.WPERCENTILE, weights=full_weights, percent=50
+        )
+        result = self.cube_real.collapsed(
+            "y", iris.analysis.WPERCENTILE, weights=self.weights, percent=50
+        )
+        _shared_utils.assert_array_almost_equal(result.data, expected.data)
 
 
 class Test_collapsed__cellmeasure_ancils:
