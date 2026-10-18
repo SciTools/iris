@@ -1,0 +1,6 @@
+:user:`trexfeathers` fixed a module-scoped fixture in
+``iris.tests.integration.netcdf.test_coord_systems`` that returned without
+yielding when its set-up work had already been done, erroring every test in
+the module whenever
+``iris.tests.unit.fileformats.netcdf.loader.test_load_cubes`` ran earlier in
+the same process.
