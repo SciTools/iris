@@ -2,10 +2,8 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Test the cf module."""
+"""Integration tests for :mod:`iris.fileformats.cf`."""
 
-import contextlib
-import io
 from typing import Iterable
 
 import pytest
@@ -28,37 +26,6 @@ def fetch_cfvar_data(var, indices=()):
     if hasattr(data, "compute"):
         data = data.compute()
     return data
-
-
-class TestCaching:
-    def test_cached(self, mocker):
-        # Make sure attribute access to the underlying netCDF4.Variable
-        # is cached.
-        name = "foo"
-        nc_var = mocker.MagicMock()
-        cf_var = cf.CFAncillaryDataVariable(name, nc_var)
-        assert nc_var.ncattrs.call_count == 1
-
-        # Accessing a netCDF attribute should result in no further calls
-        # to nc_var.ncattrs() and the creation of an attribute on the
-        # cf_var.
-        # NB. Can't use hasattr() because that triggers the attribute
-        # to be created!
-        assert "coordinates" not in cf_var.__dict__
-        _ = cf_var.coordinates
-        assert nc_var.ncattrs.call_count == 1
-        assert "coordinates" in cf_var.__dict__
-
-        # Trying again results in no change.
-        _ = cf_var.coordinates
-        assert nc_var.ncattrs.call_count == 1
-        assert "coordinates" in cf_var.__dict__
-
-        # Trying another attribute results in just a new attribute.
-        assert "standard_name" not in cf_var.__dict__
-        _ = cf_var.standard_name
-        assert nc_var.ncattrs.call_count == 1
-        assert "standard_name" in cf_var.__dict__
 
 
 @_shared_utils.skip_data
@@ -244,30 +211,6 @@ class TestCFReader:
             ("standard_name", "latitude"),
             ("units", "degrees_north"),
         )
-
-    def test_destructor(self, tmp_path):
-        """Test the destructor when reading the dataset fails.
-        Related to issue #3312: previously, the `CFReader` would
-        always call `close()` on its `_dataset` attribute, even if it
-        didn't exist because opening the dataset had failed.
-        """
-        fn = tmp_path / "tmp.nc"
-        with fn.open("wb+") as fh:
-            fh.write(b"\x89HDF\r\n\x1a\nBroken file with correct signature")
-            fh.flush()
-
-            with io.StringIO() as buf:
-                with contextlib.redirect_stderr(buf):
-                    try:
-                        _ = cf.CFReader(str(fn))
-                    except OSError:
-                        pass
-                    try:
-                        _ = iris.load_cubes(str(fn))
-                    except OSError:
-                        pass
-                buf.seek(0)
-                assert buf.read() == ""
 
 
 @_shared_utils.skip_data

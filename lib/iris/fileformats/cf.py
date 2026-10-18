@@ -1661,6 +1661,7 @@ class CFReader:
         # those formula terms that are reference surface/phenomenon.
         for cf_var in self.cf_group.formula_terms.values():
             if iris.FUTURE.derived_bounds:
+                # TODO: is this supposed to be an isinstance()?
                 if self.cf_group[cf_var.cf_name] is CFBoundaryVariable:
                     continue
             for cf_root, cf_term in cf_var.cf_terms_by_root.items():
