@@ -10,6 +10,7 @@ import cf_units
 import numpy as np
 import pytest
 
+from iris._deprecation import IrisDeprecation
 from iris.tests import _shared_utils
 
 # Import ESMF if installed, else fail quietly + disable all the tests.
@@ -24,6 +25,13 @@ skip_esmf = pytest.mark.skipif(
 import iris
 import iris.analysis
 import iris.analysis.cartography as i_cartog
+
+# The following functions are deprecated but testing their behavior is the purpose
+# of this module.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*regrid_conservative_via_esmpy.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.regrid_conservative import regrid_conservative_via_esmpy
 import iris.tests.stock as istk
 
