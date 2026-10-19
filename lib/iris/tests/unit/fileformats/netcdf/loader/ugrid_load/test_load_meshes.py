@@ -190,6 +190,19 @@ class TestLoadErrors:
         assert destination.iris_class is CFVariableMixin
         assert destination.identifier == "NOT_APPLICABLE"
 
+    def test_connectivity_without_cf_role(self, tmp_path):
+        cdl = self.ref_cdl.replace(
+            'face_nodes:cf_role = "face_node_connectivity" ;', ""
+        )
+        nc_path = cdl_to_nc(cdl, tmp_path)
+        _ = load_meshes(nc_path)
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert (
+            "UGRID connectivity variable has no cf_role attribute: face_nodes"
+            in "".join(load_problem.stack_trace.format())
+        )
+
 
 class TestsHttp:
     # Tests of HTTP (OpenDAP) loading need mocking since we can't have tests
