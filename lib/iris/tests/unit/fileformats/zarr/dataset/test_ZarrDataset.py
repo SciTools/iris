@@ -64,15 +64,19 @@ def test_a_name_used_at_two_sizes_is_omitted_and_warns(tmp_path):
     The version 3 specification "does not place any restrictions on the use of
     the same dimension name across multiple arrays", so this is conforming
     Zarr and must not raise. Merging the two would produce a wrong cube.
+
+    Opening the store is what reports it. The mapping is assembled in
+    `__init__` so that the warning reaches a load, which asks each variable
+    for its own `dimensions` and never asks the dataset for this mapping.
     """
     group = zarr.open_group(store=tmp_path / "c.zarr", mode="w", zarr_format=3)
     stores.make_array(group, "short", (2,), "f8", 3, dimensions=("t",))
     stores.make_array(group, "long", (5,), "f8", 3, dimensions=("t",))
 
-    dataset = ZarrDataset(str(tmp_path / "c.zarr"))
     with pytest.warns(IrisCfLoadWarning, match="t"):
-        dimensions = dict(dataset.dimensions)
+        dataset = ZarrDataset(str(tmp_path / "c.zarr"))
 
+    dimensions = dict(dataset.dimensions)
     assert "t" not in dimensions
     # The arrays keep the name in their own dimensions: nothing is renamed or
     # dropped, only the dataset-wide mapping declines to link them.

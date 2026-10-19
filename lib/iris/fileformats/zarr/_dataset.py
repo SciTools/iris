@@ -646,6 +646,14 @@ class ZarrDataset(CFDataset):
         self._group = zarr.open_group(store=location, mode=mode, path=group)
         self._format = _FORMAT_BY_ZARR_VERSION[self._group.metadata.zarr_format]
 
+        # Assembled here rather than on first access, because assembling is
+        # what warns about a dimension name used at two different lengths and
+        # a load never asks for the mapping: the CF layer reads each
+        # variable's own `dimensions`. Left to first access, that warning
+        # reached the unit tests and no user. It costs no extra reads -
+        # `variables` is materialised by everything that opens a store.
+        self._dimensions = _assemble_dimensions(self.variables)
+
     @property
     def location(self) -> str:
         """The store's path or URL, with the group path when there is one."""
@@ -684,9 +692,11 @@ class ZarrDataset(CFDataset):
 
     @property
     def dimensions(self) -> Mapping:
-        """The dimension sizes this group's arrays agree on."""
-        if self._dimensions is None:
-            self._dimensions = _assemble_dimensions(self.variables)
+        """The dimension sizes this group's arrays agree on.
+
+        Assembled when the store is opened, not on first access here.
+        """
+        assert self._dimensions is not None
         return self._dimensions
 
     @property
