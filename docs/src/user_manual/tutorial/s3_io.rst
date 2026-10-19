@@ -24,14 +24,17 @@ Zarr stores are accessed directly
 ---------------------------------
 
 Everything below concerns **files** -- netCDF, PP, GRIB -- which Iris reaches
-through a file-system path. A :ref:`Zarr store <zarr_io>` is different: Iris
-passes an ``s3://`` URL straight to zarr-python, which reads the objects it
-needs over the network::
+through a file-system path. A :ref:`Zarr store <zarr_io_loading>` is
+different: Iris passes an ``s3://`` URL straight to zarr-python, which reads
+the objects it needs over the network::
 
     cubes = iris.load("s3://my-bucket/data.zarr")
 
 That needs ``s3fs`` installed and configured, and no mount. If your data is in
 Zarr, prefer this to the FUSE approach described below.
+
+Other filetypes via a virtual file system
+-----------------------------------------
 
 While it would be possible for Iris to support S3 access directly, as it does the
 "OpenDAP" protocol for netCDF data, this approach has some serious limitations for
