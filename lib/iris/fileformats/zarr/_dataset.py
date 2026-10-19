@@ -52,6 +52,7 @@ import numpy as np
 import zarr
 
 from iris._lazy_data import _optimum_chunksize, as_lazy_data
+from iris.exceptions import TranslationError
 from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
@@ -90,6 +91,13 @@ def _dimension_names(array) -> tuple:
     tuple
         Of length ``array.ndim``. ``None`` where the store names no dimension.
 
+    Raises
+    ------
+    iris.exceptions.TranslationError
+        If `array` declares any Zarr version but 2 or 3. zarr-python parses
+        ``zarr_format`` as a ``Literal`` and rejects such an array before
+        Iris sees it, so this guards against a future widening there.
+
     Warns
     -----
     IrisCfLoadWarning
@@ -103,13 +111,17 @@ def _dimension_names(array) -> tuple:
     if not array.ndim:
         return ()
 
-    if array.metadata.zarr_format == 3:
+    zarr_format = array.metadata.zarr_format
+    if zarr_format == 3:
         names = array.metadata.dimension_names
-    else:
-        # Version 2, and no third case to answer for: zarr-python parses
-        # `zarr_format` as a `Literal` and raises on anything else, so a node
-        # of another version never reaches Iris.
+    elif zarr_format == 2:
         names = array.attrs.get(_ARRAY_DIMENSIONS)
+    else:
+        message = (
+            "Iris reads Zarr version 2 and version 3 stores. This array "
+            f"declares Zarr version {zarr_format!r}: {array.basename}"
+        )
+        raise TranslationError(message)
 
     if names is None:
         return anonymous

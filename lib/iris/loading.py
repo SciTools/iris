@@ -84,16 +84,9 @@ def _generate_cubes(uris, callback, constraints):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
-    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
-        scheme, part, fragment = decoded
-        category = "nczarr" if iris.io._is_nczarr_fragment(fragment) else scheme
-        if fragment:
-            part = f"{part}#{fragment}"
-        return category, scheme, part
-
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names
-    uri_tuples = sorted(_categorise(iris.io.decode_uri(uri)) for uri in uris)
+    uri_tuples = sorted(iris.io._categorise_uri(uri) for uri in uris)
     for category, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
@@ -119,7 +112,7 @@ def _generate_cubes(uris, callback, constraints):
             urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_http(urls, callback):
                 yield cube
-        elif category in iris.io.REMOTE_STORE_SCHEMES:
+        elif category in iris.io._REMOTE_STORE_SCHEMES:
             urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_stores(urls, callback, constraints):
                 yield cube

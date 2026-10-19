@@ -5,12 +5,14 @@
 """Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDatasetVariable`."""
 
 import json
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
 import zarr
 
-from iris.fileformats.zarr._dataset import ZarrDatasetVariable
+from iris.exceptions import TranslationError
+from iris.fileformats.zarr._dataset import ZarrDatasetVariable, _dimension_names
 from iris.warnings import IrisCfLoadWarning
 
 from .. import stores
@@ -71,14 +73,28 @@ def test_repeated_name_within_one_array(tmp_path):
     assert wrap(array).dimensions == ("d", "d")
 
 
-def test_zarr_python_rejects_an_unsupported_zarr_format(tmp_path):
-    """`_dimension_names` reads version 3 or else assumes version 2.
+def test_an_unsupported_zarr_format_raises():
+    """`_dimension_names` names the versions it reads, and refuses others.
 
-    That `else` answers for every other value, and is only safe because
-    zarr-python parses `zarr_format` as a `Literal` and raises on anything
-    else - `expected Literal[3], got 4` for an array in a version 3 group.
-    If it ever widens that, Iris would read a newer store as version 2 and
-    silently find no dimension names. This fails first.
+    Reached through a stand-in because zarr-python cannot produce the input,
+    which is the point of the companion test below.
+    """
+    array = SimpleNamespace(
+        ndim=1,
+        basename="v",
+        attrs={},
+        metadata=SimpleNamespace(zarr_format=4, dimension_names=("t",)),
+    )
+    with pytest.raises(TranslationError, match="declares Zarr version 4"):
+        _dimension_names(array)
+
+
+def test_zarr_python_rejects_an_unsupported_zarr_format(tmp_path):
+    """zarr-python is what makes the branch above unreachable in practice.
+
+    It parses `zarr_format` as a `Literal` and raises on anything else -
+    `expected Literal[3], got 4` for an array in a version 3 group. If it
+    ever widens that, the branch above starts earning its keep.
     """
     group = zarr.open_group(store=tmp_path / "v4.zarr", mode="w", zarr_format=3)
     stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))

@@ -38,10 +38,10 @@ def _is_nczarr_fragment(fragment):
     return False
 
 
-#: URI schemes Iris hands to a store library rather than resolving as a local
-#: path. Iris depends on none of them: zarr-python raises its own ImportError
-#: naming what to install.
-REMOTE_STORE_SCHEMES = frozenset({"s3", "gs", "az", "abfs"})
+# URI schemes Iris hands to a store library rather than resolving as a local
+# path. Iris depends on none of them: zarr-python raises its own ImportError
+# naming what to install.
+_REMOTE_STORE_SCHEMES = frozenset({"s3", "gs", "az", "abfs"})
 
 
 def _is_remote_store_uri(spec):
@@ -53,7 +53,7 @@ def _is_remote_store_uri(spec):
     if not isinstance(spec, str):
         return False
     scheme, _part, _fragment = decode_uri(spec)
-    return scheme in REMOTE_STORE_SCHEMES
+    return scheme in _REMOTE_STORE_SCHEMES
 
 
 # Saving routines, indexed by file extension.
@@ -190,6 +190,29 @@ def decode_uri(uri, default="file"):
         fragment = None
 
     return scheme, part, fragment
+
+
+def _categorise_uri(uri) -> tuple[str, str, str]:
+    """Return `uri` as ``(category, scheme, part)``, for grouping by handler.
+
+    The category is the scheme, except that an NCZarr fragment makes it
+    ``"nczarr"``. netCDF-c's Zarr driver is asked for by ``#mode=nczarr,...``
+    rather than by scheme, so ``file:///s.zarr`` and
+    ``file:///s.zarr#mode=nczarr,file`` need different handlers despite
+    sharing one scheme. The fragment is folded back into `part`, because a
+    handler is handed a URI to reopen rather than the decoded pieces.
+
+    A native Zarr store has no category of its own. Remotely it is known by
+    its scheme, and locally it is a directory that only a marker file
+    distinguishes from any other - see
+    :func:`iris.fileformats._is_zarr_store`. Deciding it here would put a
+    filesystem test inside a function that otherwise only reads a string.
+    """
+    scheme, part, fragment = decode_uri(uri)
+    category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
+    if fragment:
+        part = f"{part}#{fragment}"
+    return category, scheme, part
 
 
 def expand_filespecs(file_specs, files_expected=True):

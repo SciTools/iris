@@ -30,9 +30,8 @@ from iris.common.mixin import CFVariableMixin
 from iris.config import get_logger
 from iris.coords import AuxCoord
 from iris.io import (
-    REMOTE_STORE_SCHEMES,
-    _is_nczarr_fragment,
-    decode_uri,
+    _REMOTE_STORE_SCHEMES,
+    _categorise_uri,
     expand_filespecs,
 )
 from iris.loading import LoadProblems
@@ -156,23 +155,16 @@ def load_meshes(uris, var_name=None):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
-    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
-        scheme, part, fragment = decoded
-        category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
-        if fragment:
-            part = f"{part}#{fragment}"
-        return category, scheme, part
-
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names.
-    uri_tuples = sorted(_categorise(decode_uri(uri)) for uri in uris)
+    uri_tuples = sorted(_categorise_uri(uri) for uri in uris)
     valid_sources = []
     for category, groups in groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
             filenames = [part for _cat, _scheme, part in groups]
             sources = expand_filespecs(filenames)
-        elif category in {"http", "https", "nczarr"} | REMOTE_STORE_SCHEMES:
+        elif category in {"http", "https", "nczarr"} | _REMOTE_STORE_SCHEMES:
             sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
         else:
             message = f"Iris cannot handle the URI scheme: {category}"

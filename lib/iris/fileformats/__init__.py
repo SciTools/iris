@@ -12,7 +12,7 @@
 
 from pathlib import Path
 
-from iris.io import REMOTE_STORE_SCHEMES, _is_nczarr_fragment, decode_uri
+from iris.io import _REMOTE_STORE_SCHEMES, _is_nczarr_fragment, decode_uri
 from iris.io.format_picker import (
     DataSourceObjectProtocol,
     FileExtension,
@@ -75,7 +75,7 @@ def _is_zarr_store(target):
         # disk is a real one, so the local test below would otherwise claim it.
         return False
 
-    if scheme in REMOTE_STORE_SCHEMES:
+    if scheme in _REMOTE_STORE_SCHEMES:
         return part.rstrip("/").endswith(".zarr")
 
     directory = Path(part)
