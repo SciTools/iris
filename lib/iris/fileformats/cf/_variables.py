@@ -76,11 +76,15 @@ _CF_PARSE = re.compile(
 _NCZARR_SCALAR_DIMENSION = "_scalar_"
 
 
-class _AnonymousDimension:
-    """One dimension the store gives no name.
+class _DimensionIdentity:
+    """One dimension of a CF variable, as something to match on.
 
-    A distinct instance per dimension, relying on object identity for
-    equality, so that an anonymous dimension matches nothing: not a named
+    A named dimension compares on ``(name, size)``: two variables share it
+    when they name it identically *and* it is the same length in both. A name
+    reused at two lengths links nothing, which is the only reading that
+    cannot produce a wrong cube.
+
+    An unnamed dimension is **anonymous**, and matches nothing: not a named
     dimension, not another anonymous one, and not itself as seen from a
     second variable. There is nothing to match on, so claiming a match would
     be invention.
@@ -90,20 +94,30 @@ class _AnonymousDimension:
     not be an error. No netCDF variable ever has one.
     """
 
+    def __init__(self, name: str | None, size: int):
+        self.name = name
+        self.size = size
+
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, _DimensionIdentity):
+            return NotImplemented
+        if self.name is None or other.name is None:
+            return self is other
+        return self.name == other.name and self.size == other.size
+
+    def __hash__(self) -> int:
+        if self.name is None:
+            return object.__hash__(self)
+        return hash((self.name, self.size))
+
     def __repr__(self) -> str:
-        return "<anonymous dimension>"
+        if self.name is None:
+            return f"<anonymous dimension of {self.size}>"
+        return f"<dimension {self.name!r} of {self.size}>"
 
 
-def _dimension_identities(cf_variable) -> tuple:
+def _dimension_identities(cf_variable) -> tuple[_DimensionIdentity, ...]:
     """Return one hashable identity per dimension `cf_variable` spans.
-
-    A named dimension's identity is the pair ``(name, size)``: two variables
-    share a dimension when they name it identically *and* it is the same
-    length in both. A name reused at two lengths links nothing, which is the
-    only reading that cannot produce a wrong cube.
-
-    An unnamed dimension gets a fresh :class:`_AnonymousDimension`, which
-    equals nothing but itself.
 
     A function rather than a method, because the netCDF loading rules decide
     which cube dimensions to attach a coordinate to, and have to decide it by
@@ -115,7 +129,7 @@ def _dimension_identities(cf_variable) -> tuple:
     invariant that ``dimensions`` and ``shape`` have the same length.
     """
     return tuple(
-        (name, size) if name is not None else _AnonymousDimension()
+        _DimensionIdentity(name, size)
         for name, size in zip(cf_variable.dimensions, cf_variable.shape)
     )
 

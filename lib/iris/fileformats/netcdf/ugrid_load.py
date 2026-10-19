@@ -172,9 +172,7 @@ def load_meshes(uris, var_name=None):
         if category == "file":
             filenames = [part for _cat, _scheme, part in groups]
             sources = expand_filespecs(filenames)
-        elif category in ["http", "https", "nczarr"]:
-            sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
-        elif category in REMOTE_STORE_SCHEMES:
+        elif category in {"http", "https", "nczarr"} | REMOTE_STORE_SCHEMES:
             sources = [f"{scheme}:{part}" for _cat, scheme, part in groups]
         else:
             message = f"Iris cannot handle the URI scheme: {category}"

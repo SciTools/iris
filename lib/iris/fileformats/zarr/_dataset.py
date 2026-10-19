@@ -106,6 +106,9 @@ def _dimension_names(array) -> tuple:
     if array.metadata.zarr_format == 3:
         names = array.metadata.dimension_names
     else:
+        # Version 2, and no third case to answer for: zarr-python parses
+        # `zarr_format` as a `Literal` and raises on anything else, so a node
+        # of another version never reaches Iris.
         names = array.attrs.get(_ARRAY_DIMENSIONS)
 
     if names is None:
@@ -179,6 +182,12 @@ def _fixed_flags(dims_fixed, ndim: int) -> tuple:
     if dims_fixed is None or len(dims_fixed) != ndim:
         return (False,) * ndim
     return tuple(bool(flag) for flag in dims_fixed)
+
+
+def _store_chunk_exceeds_dask_target(store_chunks: tuple, dtype: np.dtype) -> bool:
+    """Whether one whole store chunk is larger than Dask's target chunk size."""
+    target = dask.utils.parse_bytes(dask.config.get("array.chunk-size"))
+    return int(np.prod(store_chunks)) * dtype.itemsize > target
 
 
 def _align_chunks(
@@ -264,12 +273,6 @@ def _align_chunks(
     return tuple(aligned)
 
 
-def _store_chunk_exceeds_dask_target(store_chunks: tuple, dtype: np.dtype) -> bool:
-    """Whether one whole store chunk is larger than Dask's target chunk size."""
-    target = dask.utils.parse_bytes(dask.config.get("array.chunk-size"))
-    return int(np.prod(store_chunks)) * dtype.itemsize > target
-
-
 class _ZarrAttributes(MutableMapping):
     """A Zarr node's attributes as a mapping, less the ones that are storage.
 
@@ -286,8 +289,16 @@ class _ZarrAttributes(MutableMapping):
     every cube loaded from an NCZarr-written store, and nothing else wrote it.
     """
 
-    def __init__(self, node, *, withhold: frozenset = frozenset()):
-        """Materialise the attributes of `node`, a zarr array or group."""
+    def __init__(
+        self,
+        node: "zarr.Group | zarr.Array",
+        *,
+        withhold: frozenset = frozenset(),
+    ):
+        """Materialise the attributes of `node`, a zarr array or group.
+
+        Writing through this mapping writes to `node`, which is the store.
+        """
         self._node = node
         self._withhold = frozenset(withhold)
         self._values = {
@@ -715,6 +726,7 @@ class ZarrDataset(CFDataset):
     def attributes(self) -> MutableMapping:
         """The group's attributes, less netCDF-c's own bookkeeping stamp."""
         if self._attributes is None:
+            assert self._group is not None
             self._attributes = _ZarrAttributes(
                 self._group, withhold=frozenset({_NC_PROPERTIES})
             )

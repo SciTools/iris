@@ -4,6 +4,8 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDatasetVariable`."""
 
+import json
+
 import numpy as np
 import pytest
 import zarr
@@ -67,6 +69,27 @@ def test_repeated_name_within_one_array(tmp_path):
         "v", shape=(2, 2), dtype="f8", dimension_names=("d", "d")
     )
     assert wrap(array).dimensions == ("d", "d")
+
+
+def test_zarr_python_rejects_an_unsupported_zarr_format(tmp_path):
+    """`_dimension_names` reads version 3 or else assumes version 2.
+
+    That `else` answers for every other value, and is only safe because
+    zarr-python parses `zarr_format` as a `Literal` and raises on anything
+    else - `expected Literal[3], got 4` for an array in a version 3 group.
+    If it ever widens that, Iris would read a newer store as version 2 and
+    silently find no dimension names. This fails first.
+    """
+    group = zarr.open_group(store=tmp_path / "v4.zarr", mode="w", zarr_format=3)
+    stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))
+
+    metadata_path = tmp_path / "v4.zarr" / "v" / "zarr.json"
+    metadata = json.loads(metadata_path.read_text())
+    metadata["zarr_format"] = 4
+    metadata_path.write_text(json.dumps(metadata))
+
+    with pytest.raises(Exception, match="zarr_format"):
+        zarr.open_group(store=tmp_path / "v4.zarr", mode="r")["v"]
 
 
 def test_wrong_length_dimension_names_warns_and_loads_anonymous(tmp_path):
