@@ -15,7 +15,6 @@ import zarr
 from iris import _lazy_data
 from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.zarr._dataset import ZarrDataset
-from iris.warnings import IrisLoadWarning
 
 from .. import stores
 
@@ -405,11 +404,14 @@ def test_as_dask_is_still_dasks_own_answer(tmp_path, monkeypatch):
     assert lazy.chunksize[0] % 7 != 0
 
 
-def test_a_lazy_read_aligns_to_the_store_chunks(tmp_path, monkeypatch):
-    """The alignment reaches the array, not just the function that computes it.
+def test_a_lazy_read_divides_a_store_chunk_to_meet_dasks_target(tmp_path, monkeypatch):
+    """Chunking follows Dask's target, even where that divides a store chunk.
 
-    Dask's target is shrunk below one store chunk, so an unaligned result
-    would be the 8 elements the target asks for, subdividing the store's 16.
+    Iris used to round back up to whole store chunks here. Dividing one costs
+    a re-read per division, because a chunk is fetched and decompressed
+    whole - but netCDF has always made the same trade, and which side of it a
+    caller wants depends on their case. `CHUNK_CONTROL` is how they say, and
+    `iris.fileformats.cf.loader` warns so that they know to.
     """
     monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = str(tmp_path / "b.zarr")
@@ -420,8 +422,8 @@ def test_a_lazy_read_aligns_to_the_store_chunks(tmp_path, monkeypatch):
     array[:] = np.arange(64, dtype="i4")
 
     with dask.config.set({"array.chunk-size": "32B"}):
-        with pytest.warns(IrisLoadWarning, match="v"):
-            lazy = ZarrDataset(location).variables["v"].read_data(policy)
+        lazy = ZarrDataset(location).variables["v"].read_data(policy)
 
-    assert lazy.chunks == ((16, 16, 16, 16),)
+    # 32 bytes of int32 is 8 elements, half the store's chunk of 16.
+    assert lazy.chunksize[0] == 8
     np.testing.assert_array_equal(lazy.compute(), np.arange(64))

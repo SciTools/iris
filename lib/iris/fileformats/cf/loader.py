@@ -42,6 +42,8 @@ from functools import partial
 import threading
 import warnings
 
+import dask.config
+import dask.utils
 import numpy as np
 
 from iris.aux_factory import (
@@ -228,6 +230,38 @@ def _get_actual_dtype(cf_var):
 _LAZYVAR_MIN_BYTES = 5000
 
 
+def _warn_if_storage_chunk_binds(cf_var) -> None:
+    """Warn when one stored chunk is larger than Dask's target chunk size.
+
+    Storage reads a chunk whole and decompresses it whole, for netCDF and for
+    Zarr alike. So when Dask's target is the smaller of the two, the stored
+    chunking is what sets peak memory per task, and the chunking Iris picks
+    divides stored chunks rather than tiling them - fetching each one once per
+    division.
+
+    Iris does not correct for this. Which trade is right depends on the case,
+    and :data:`CHUNK_CONTROL` is how a caller says so; this warning exists so
+    that they know there is something to say. See section 4.6 of
+    ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+    """
+    storage_chunks = cf_var.cf_data.chunking
+    if storage_chunks is None:
+        return
+
+    target = dask.utils.parse_bytes(dask.config.get("array.chunk-size"))
+    stored_bytes = int(np.prod(storage_chunks)) * _get_actual_dtype(cf_var).itemsize
+    if stored_bytes <= target:
+        return
+
+    message = (
+        "One stored chunk is larger than Dask's target chunk size, so the "
+        "stored chunking sets peak memory per task and Iris's chunking will "
+        "divide it. Use iris.fileformats.cf.loader.CHUNK_CONTROL to choose "
+        f"the chunking yourself: {cf_var.cf_name}"
+    )
+    warnings.warn(message, category=iris.warnings.IrisLoadWarning)
+
+
 def _chunks_from_chunk_control(cf_var):
     """Return the ``(chunks, dims_fixed)`` pair for a lazy array of this variable.
 
@@ -301,6 +335,11 @@ def _chunks_from_chunk_control(cf_var):
                 dims_fixed[i_dim] = True
     if dims_fixed is None:
         dims_fixed = [dims_fixed]
+    if not any(dims_fixed):
+        # Nothing pinned, so Iris is choosing and the caller may want to know
+        # that the store's own layout has a say. A caller who has pinned
+        # anything has already taken that decision.
+        _warn_if_storage_chunk_binds(cf_var)
     return chunks, tuple(dims_fixed)
 
 

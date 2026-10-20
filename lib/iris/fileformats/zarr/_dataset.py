@@ -28,8 +28,13 @@ it as the storage fact it is, and the masking decision is made in
 **The read unit is the inner chunk, even when the array is sharded.** Zarr's
 sharding codec is indexed, so a reader fetches only the inner chunks it needs.
 :attr:`ZarrDatasetVariable.chunking` therefore returns ``Array.chunks``, never
-``Array.shards``, and :func:`_align_chunks` aggregates upward into whole
-multiples of it.
+``Array.shards``.
+
+Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same way
+the netCDF path sizes it, and is not then adjusted to the store's own
+chunking. Iris warns when a stored chunk is larger than Dask's target, from
+:func:`iris.fileformats.cf.loader._chunks_from_chunk_control`, and leaves the
+choice to ``CHUNK_CONTROL``.
 
 See sections 4.2, 4.4 and 4.6 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
@@ -182,107 +187,6 @@ def _assemble_dimensions(variables) -> dict:
         del sizes[name]
 
     return sizes
-
-
-def _fixed_flags(dims_fixed, ndim: int) -> tuple:
-    """Return one "do not change this" flag per dimension.
-
-    `iris.fileformats.cf.loader._chunks_from_chunk_control` answers ``(None,)``
-    when nothing is fixed, whatever the rank, so a length that does not match
-    means nothing is fixed.
-    """
-    if dims_fixed is None or len(dims_fixed) != ndim:
-        return (False,) * ndim
-    return tuple(bool(flag) for flag in dims_fixed)
-
-
-def _store_chunk_exceeds_dask_target(store_chunks: tuple, dtype: np.dtype) -> bool:
-    """Whether one whole store chunk is larger than Dask's target chunk size."""
-    target = dask.utils.parse_bytes(dask.config.get("array.chunk-size"))
-    return int(np.prod(store_chunks)) * dtype.itemsize > target
-
-
-def _align_chunks(
-    chunks: tuple,
-    store_chunks: tuple | None,
-    shape: tuple,
-    dtype: np.dtype,
-    dims_fixed,
-    name: str,
-) -> tuple:
-    """Round `chunks` up to whole multiples of the store's own chunk shape.
-
-    A Zarr chunk is the atomic unit of storage: reading any part of one
-    fetches and decompresses the whole object. So a Dask chunking that
-    subdivides the store's costs a re-read per subdivision - and over a remote
-    store, one HTTP GET per subdivision for the same object. Aggregating
-    upward costs nothing, because peak memory per task is a whole decompressed
-    store chunk either way.
-
-    Parameters
-    ----------
-    chunks : tuple of int
-        The chunking computed for this variable, already through
-        :func:`iris._lazy_data._optimum_chunksize`.
-    store_chunks : tuple of int, optional
-        The store's own chunk shape. ``None`` for an unchunked store, which
-        constrains nothing.
-    shape : tuple of int
-        The variable's full shape. A result is never larger than this.
-    dtype : numpy.dtype
-        The dtype the values will have once decoded, for deciding whether one
-        store chunk already exceeds Dask's target chunk size. Decoded rather
-        than stored, because a task holds a whole store chunk's worth of
-        decoded values - unpacking a packed variable happens block by block,
-        on the way out.
-    dims_fixed : sequence of bool, optional
-        Dimensions an explicit ``CHUNK_CONTROL`` setting pinned. These are
-        left exactly as given: the keyword is an instruction, not a
-        suggestion.
-    name : str
-        The variable's name, for the warning.
-
-    Returns
-    -------
-    tuple of int
-
-    Warns
-    -----
-    IrisLoadWarning
-        When the result cannot tile the store grid without subdividing it -
-        either because one store chunk already exceeds Dask's target size, so
-        the store's layout is the binding constraint, or because an explicit
-        setting subdivides it.
-
-    """
-    if store_chunks is None:
-        return tuple(chunks)
-
-    fixed = _fixed_flags(dims_fixed, len(shape))
-    aligned = []
-    subdivided = False
-    for size, store_size, extent, is_fixed in zip(chunks, store_chunks, shape, fixed):
-        if is_fixed:
-            aligned.append(size)
-            subdivided |= size < store_size
-            continue
-        # Rounding up never subdivides, and capping at the extent leaves one
-        # block spanning the dimension, which cannot subdivide either - so a
-        # free dimension has nothing to report.
-        aligned.append(min(-(-size // store_size) * store_size, extent))
-
-    if _store_chunk_exceeds_dask_target(store_chunks, dtype):
-        subdivided = True
-
-    if subdivided:
-        message = (
-            "A Zarr chunk is read whole, so this store's chunking is the "
-            "binding constraint on memory per task rather than Dask's target "
-            f"chunk size: {name}"
-        )
-        warnings.warn(message, category=iris.warnings.IrisLoadWarning)
-
-    return tuple(aligned)
 
 
 class _ZarrAttributes(MutableMapping):
@@ -536,12 +440,9 @@ class ZarrDatasetVariable(CFDatasetVariable):
             chunks = _optimum_chunksize(
                 chunks, shape=self.shape, dtype=decoded_dtype, dims_fixed=dims_fixed
             )
-            chunks = _align_chunks(
-                chunks, self.chunking, self.shape, decoded_dtype, dims_fixed, self.name
-            )
-            # Fixed in every dimension, because the alignment above is the
-            # final word: as_lazy_data would otherwise re-run the
-            # optimisation and undo it.
+            # Fixed in every dimension, because the sizing above is the final
+            # word: as_lazy_data would otherwise re-run the optimisation on
+            # the stored dtype and undo it.
             lazy = as_lazy_data(
                 self._array,
                 chunks=chunks,

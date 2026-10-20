@@ -67,6 +67,11 @@ calculated based on a number of factors, including:
     >>> print(cube.core_data().chunksize)
     (60, 37, 49)
 
+A file chunk is read and decompressed whole, so a Dask chunk smaller than one
+costs a re-read per division. Iris does not adjust its chunking to avoid
+that, but it warns when a file chunk is larger than Dask's default chunksize,
+which is where the cost starts to be worth your attention.
+
 For more user control, functionality was updated in :pull:`5588`, with the
 creation of the :data:`iris.fileformats.cf.loader.CHUNK_CONTROL` class.
 

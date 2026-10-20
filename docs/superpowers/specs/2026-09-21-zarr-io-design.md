@@ -915,20 +915,43 @@ target (128 MiB by default) it shrinks below it **[verified]**:
 | `(6000, 6000)` | 275 MiB | `(6000, 6000)` | `(2000, 6000)` | 3 × re-read |
 
 Subdividing buys nothing here. Peak memory per task is still a whole
-decompressed chunk, because that is what the store hands back; only the
-I/O and decompression multiply. So on the Zarr path the loader rounds the
-computed chunking **up** to a whole multiple of the store chunk, never below
-it, and emits an `IrisLoadWarning` naming the variable when the store's own
-chunking exceeds the dask target — the store's layout is then the binding
-constraint and the user should know. An explicit `CHUNK_CONTROL` setting still
-wins, since that is a deliberate instruction, but it warns on the same terms.
+decompressed chunk, because that is what the store hands back; only the I/O
+and decompression multiply.
 
-This trap is not new and not Zarr-specific: `NetCDFDataProxy` reopens the
-`Dataset` on every `__getitem__`, so HDF5's chunk cache is discarded between
-tasks and the netCDF path re-reads sub-chunks too. It simply costs far more
-over a network than over a page cache. Changing the netCDF path is out of scope
-here — the relocation PRs must not alter behaviour — but it is recorded as an
-open question in §12.3.
+**Iris does not correct for this, and warns instead.** The loader sizes
+chunks with `_optimum_chunksize` and stops there, for both storage backends.
+When a stored chunk is larger than the dask target it emits an
+`IrisLoadWarning` naming the variable, and `CHUNK_CONTROL` is how a caller
+who wants the other trade takes it.
+
+An earlier revision of this section had the Zarr path round the computed
+chunking **up** to a whole multiple of the store chunk. That was removed on
+review (#7336), on grounds of proportionality rather than mechanism:
+
+- The mechanism was never in doubt, and measurement sharpened it. Against a
+  33.6 MiB store chunk subdivided into quarters, aligned chunking held lower
+  peak RSS at every worker count above one (305 MiB against 446 MiB at four
+  workers) and ran in roughly half the time, with 1.0 fetches per store chunk
+  against 3.2 **[verified]**.
+- But alignment only ever changes the answer in the shrink case above.
+  Wherever `_optimum_chunksize` expands, it already lands on a whole multiple
+  and alignment is a no-op **[verified]**. So the whole of it existed to
+  override one decision.
+- And that decision is one the netCDF path makes too. Both backends pass the
+  file's own chunking into the same `_optimum_chunksize`, and netCDF has
+  always accepted the subdivision — `NetCDFDataProxy` additionally reopens the
+  `Dataset` on every `__getitem__`, discarding HDF5's chunk cache between
+  tasks. Correcting it on one path only would make two formats behave
+  differently over physics they share, and would make `CHUNK_CONTROL` mean
+  different things depending on what was loaded.
+
+The house preference decides it: give the user the tools to adapt their own
+case rather than second-guess it. The warning is what makes that fair — it
+says the situation exists and names the tool — and it now covers both
+backends, from `iris.fileformats.cf.loader`. The remaining asymmetry is only
+that this costs far more over a network than over a page cache, which is an
+argument for the user reaching for `CHUNK_CONTROL` sooner, not for Iris
+choosing on their behalf.
 
 **Chunks are sized on the decoded dtype, not the stored one.** A packed
 variable's values are unpacked block by block, on the way out of the graph, so
@@ -938,8 +961,8 @@ layer runs. Sized on the stored dtype, a `(512, 512, 512)` `int8` array gets
 one chunk spanning the array — 128 MiB stored, 1 GiB decoded, against a 128
 MiB target. The netCDF path reaches the same answer from the other end: its
 data proxy declares the decoded dtype, and `as_lazy_data` sizes on the array
-it is given. Both `_optimum_chunksize` and the alignment above therefore take
-the decoded dtype, which for an unpacked variable is the stored one.
+it is given. `_optimum_chunksize` therefore takes the decoded dtype, which for
+an unpacked variable is the stored one.
 
 `CHUNK_CONTROL.as_dask()` is not exempt. That setting hands sizing to Dask,
 and `da.from_array` sizes on the array it is given — which is the stored one,
@@ -980,9 +1003,10 @@ between cannot, so the block is materialised in full. On a `shape=(1024,)`,
 | shard `(1024,)` | **yes** | **6,148** — the whole shard |
 
 2,052 of those bytes are the shard index and 32 are the data actually wanted.
-So `chunking` returns `Array.chunks`, and the alignment rule above aggregates
-*upward* into whole multiples of it — never down, and never to a shard
-boundary. This is not academic: the NOAA GFS fixture is sharded (§7).
+So `chunking` returns `Array.chunks`, never a shard boundary — the read unit
+is the inner chunk, and that is what the chunking policy and the warning above
+are both sized against. This is not academic: the NOAA GFS fixture is sharded
+(§7).
 
 Shard-sized blocks remain a *write* requirement, for a different reason and in
 one direction only. §4.5 keeps them there.
@@ -2704,5 +2728,6 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
 | 2026-10-13 | PR 4 built, on a branch based on PR 3. `format` moved to PR 4 (§5); the shared `CFDataset` contract split into read and write halves, so PR 4 runs only the read half; `load_files` split into a public glob-expanding wrapper over a private `_load_files` (§4.7); `_NCProperties` withheld from `ZarrDataset.attributes` alongside `_ARRAY_DIMENSIONS` (§4.4). Q2 closed. Four decisions logged. |
+| 2026-10-20 | Read-side chunk alignment removed (§4.4), reversing the 2026-09-22 entry that added it. The mechanism held up under measurement, but alignment only ever changed the answer where a stored chunk exceeds the dask target, and that is a trade the netCDF path has always accepted; correcting one backend would make two formats differ over shared physics. The warning it carried is kept and moved to `iris.fileformats.cf.loader`, where it covers both backends, and `CHUNK_CONTROL` is the answer for a caller who wants the other trade. Decided with @trexfeathers on #7336, following review by @pp-mo. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
 | 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype, including under `CHUNK_CONTROL.as_dask()` (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |

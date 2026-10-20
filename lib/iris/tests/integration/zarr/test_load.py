@@ -107,9 +107,10 @@ def test_the_cube_is_lazy_and_chunked_to_the_store(gfs_like, monkeypatch):
     monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     cube = iris.load_cube(gfs_like, "air_temperature")
     assert cube.has_lazy_data()
-    # Whatever the chunking works out to, it tiles the store's inner chunk
-    # grid: a Zarr chunk is read whole, so a dask block that subdivides one
-    # costs a re-read.
+    # The chunking here tiles the store's inner chunk grid, which is what
+    # `_optimum_chunksize` gives wherever it expands rather than shrinks.
+    # Iris does not enforce it: a store chunk larger than Dask's target is
+    # divided, and warned about, rather than rounded back up.
     store_chunks = (1, 1, 3, 5)
     for sizes, store_size in zip(cube.lazy_data().chunks, store_chunks):
         assert all(size % store_size == 0 for size in sizes[:-1])

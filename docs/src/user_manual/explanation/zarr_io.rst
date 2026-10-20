@@ -132,12 +132,12 @@ Iris chooses Dask chunks from the store's own chunking, as it does for
 netCDF, and :data:`~iris.fileformats.cf.loader.CHUNK_CONTROL` works the same
 way for both formats.
 
-One rule is specific to Zarr. A Zarr chunk is the atomic unit of storage:
-reading any part of one fetches and decompresses the whole object. So Iris
-rounds the computed chunking **up** to a whole multiple of the store's
-chunking, never below it. When a single store chunk is already larger than
-Dask's target chunk size, the store's layout is the binding constraint on
-memory per task, and Iris warns to say so.
+A Zarr chunk is the atomic unit of storage: reading any part of one fetches
+and decompresses the whole object, so a Dask chunk smaller than a store chunk
+costs a re-read per division. Iris does not adjust its chunking to avoid
+that, any more than it does for netCDF, but it warns when a store chunk is
+larger than Dask's target chunk size -- where the cost starts to be worth
+your attention. Use ``CHUNK_CONTROL`` to choose the chunking yourself.
 
 A **sharded** array is chunked on its inner chunks, not its shards. Zarr's
 sharding codec is indexed, so a reader fetches only the inner chunks it
