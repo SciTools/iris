@@ -265,6 +265,19 @@ class CFDataset(ABC):
 
     @property
     @abstractmethod
+    def format(self) -> str:
+        """The concrete format of this dataset.
+
+        Examples: ``NETCDF4``, ``NETCDF3_CLASSIC``, ``ZARR_V2`` or ``ZARR_V3``.
+
+        What the loader, the saver and ``LOAD_PROBLEMS`` *say* when they have
+        to name the format. Reconstructing it from the implementation class
+        would be the type test this interface exists to forbid.
+
+        """
+
+    @property
+    @abstractmethod
     def closed(self) -> bool:
         """Whether :meth:`close` has already released the store."""
 
@@ -301,6 +314,25 @@ class CFDataset(ABC):
         ``**encoding`` is storage-specific: ``zlib``, ``complevel`` and
         ``chunksizes`` for netCDF; ``compressors``, ``chunks`` and ``shards``
         for Zarr.
+
+        """
+
+    @abstractmethod
+    def supports_dtype(self, dtype) -> bool:
+        """Whether this store can hold a variable of this dtype.
+
+        The capability question the saver asks before it narrows an integer
+        type. Asking it of the store, rather than testing the format, is what
+        keeps the saver free of format names.
+
+        Parameters
+        ----------
+        dtype : :class:`numpy.dtype`
+            The dtype a variable would be created with.
+
+        Returns
+        -------
+        bool
 
         """
 

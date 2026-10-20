@@ -1078,7 +1078,7 @@ class CubeAttrsDict(MutableMapping):
             store = self.globals
         else:
             # If NO existing attribute, create local unless it is a "known global" one.
-            from iris.fileformats.netcdf.saver import _CF_GLOBAL_ATTRS
+            from iris.fileformats.cf.saver import _CF_GLOBAL_ATTRS
 
             if key in _CF_GLOBAL_ATTRS:
                 store = self.globals

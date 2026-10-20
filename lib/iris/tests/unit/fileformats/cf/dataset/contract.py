@@ -87,6 +87,14 @@ class CFDatasetContract:
     def test_mode_is_a_read_mode(self, readable):
         assert readable.mode in ("r", "r+", "a")
 
+    def test_format_is_a_non_empty_string(self, readable):
+        assert isinstance(readable.format, str)
+        assert readable.format
+
+    def test_supports_the_contract_dtype(self, readable):
+        # Whatever a store is, it holds the dtype the contract writes into it.
+        assert readable.supports_dtype(CONTRACT_DATA.dtype) is True
+
     def test_starts_open(self, readable):
         assert readable.closed is False
 

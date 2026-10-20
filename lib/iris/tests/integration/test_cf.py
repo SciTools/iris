@@ -443,7 +443,7 @@ class TestLoadingIsSilent:
         self, tmp_path, cube_name, coord_name
     ):
         # Belt and braces, not a test of attribute tracking. "bounds" and
-        # "climatology" are both in iris.fileformats.netcdf.saver._CF_ATTRS,
+        # "climatology" are both in iris.fileformats.cf.saver._CF_ATTRS,
         # which _add_unused_attributes filters on whatever tracking recorded,
         # so they stay off the coordinate either way. The connectivity test
         # below is the one that pins tracking: "cf_role" and "start_index" are
@@ -458,7 +458,7 @@ class TestLoadingIsSilent:
 
     def test_a_cf_reserved_attribute_does_not_reach_the_connectivity(self, tmp_path):
         # "cf_role" and "start_index" are consumed by the UGRID loader and are
-        # not in netcdf.saver._CF_ATTRS, so attribute tracking is the only
+        # not in cf.saver._CF_ATTRS, so attribute tracking is the only
         # thing keeping them off the connectivity. Reading them through the
         # mapping has to record them exactly as reading them as attributes did.
         path = tmp_path / "mesh.nc"

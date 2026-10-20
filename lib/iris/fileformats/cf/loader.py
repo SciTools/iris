@@ -14,13 +14,9 @@ This module is the CF half of what used to be
 :class:`~iris.fileformats.cf.CFVariable` objects a
 :class:`~iris.fileformats.cf.CFReader` produced, runs the loading rules over
 them and returns :class:`~iris.cube.Cube` objects. None of that is specific to
-netCDF, and nothing here imports netCDF4 - though three deferred imports still
-reach back into :mod:`iris.fileformats.netcdf` for now: ``saver._CF_ATTRS``
-and ``saver.Saver``, because the saver's own relocation is still to come (see
-section 5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``), and
-``loader.DEBUG``, which never moves (see below). Each is commented at its own
-call site with why; the two that go carry a ``TODO:``, so ``grep`` finds them
-when the saver lands.
+netCDF, and nothing here imports netCDF4 - though one deferred import still
+reaches back into :mod:`iris.fileformats.netcdf` for ``loader.DEBUG``, which
+never moves (see below). It is commented at its own call site with why.
 
 Where a storage format *does* show through - reading a variable's array - the
 work is delegated to :meth:`~iris.fileformats.cf.dataset.CFDatasetVariable.read_data`,
@@ -56,6 +52,7 @@ from iris.aux_factory import (
 )
 import iris.coords
 import iris.fileformats.cf
+from iris.fileformats.cf.saver import _CF_ATTRS, _CFSaver
 import iris.warnings
 
 
@@ -179,12 +176,6 @@ def _add_unused_attributes(iris_object, cf_var):
 
     """
     from iris.fileformats._nc_load_rules.helpers import _add_or_capture
-
-    # TODO: make this a plain module-scope import once the saver is relocated
-    # (see section 5 of docs/superpowers/specs/2026-09-21-zarr-io-design.md).
-    # It is deferred because iris.fileformats.netcdf.saver imports the CF
-    # layer, so importing it at module scope would close the loop.
-    from iris.fileformats.netcdf.saver import _CF_ATTRS
     from iris.loading import LoadProblems
 
     def attribute_predicate(item):
@@ -362,13 +353,7 @@ def _load_cube_inner(engine, cf, cf_var, filename):
     from iris.cube import Cube
 
     """Create the cube associated with the CF-netCDF data variable."""
-    # TODO: make this a plain module-scope import once the saver is relocated
-    # (see section 5 of docs/superpowers/specs/2026-09-21-zarr-io-design.md).
-    # It is deferred because iris.fileformats.netcdf.saver imports the CF
-    # layer, so importing it at module scope would close the loop.
-    from iris.fileformats.netcdf.saver import Saver
-
-    if Saver._DATALESS_ATTRNAME in cf_var.attributes:
+    if _CFSaver._DATALESS_ATTRNAME in cf_var.attributes:
         # This data-variable represents a dataless cube.
         # The variable array content was never written (to take up no space).
         data = None

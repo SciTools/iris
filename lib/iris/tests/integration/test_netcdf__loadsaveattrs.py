@@ -34,6 +34,7 @@ import iris
 import iris.coord_systems
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.fileformats.cf.saver
 import iris.fileformats.netcdf
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
@@ -48,7 +49,7 @@ import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 # A list of "global-style" attribute names : those which should be global attributes by
 # default (i.e. file- or group-level, *not* attached to a variable).
 
-_GLOBAL_TEST_ATTRS = sorted(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
+_GLOBAL_TEST_ATTRS = sorted(iris.fileformats.cf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
 # one is processed.
@@ -66,8 +67,8 @@ def global_attr(request):
 # A list of "local-style" attribute names : those which should be variable attributes
 # by default (aka "local", "variable" or "data" attributes) .
 _LOCAL_TEST_ATTRS = (
-    iris.fileformats.netcdf.saver._CF_DATA_ATTRS
-    + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
+    iris.fileformats.cf.saver._CF_DATA_ATTRS
+    + iris.fileformats.cf.saver._UKMO_DATA_ATTRS
 )
 # For simplicity, we exclude several special cases that don't act with "standard"
 #  behaviour (because they translate in special ways):

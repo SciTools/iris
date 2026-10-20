@@ -30,10 +30,11 @@ import numpy as np
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import as_lazy_data
+from iris.fileformats.cf import _dask_locks
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
-from . import _bytecoding_datasets, _dask_locks, _thread_safe_nc
+from . import _bytecoding_datasets, _thread_safe_nc
 
 #: What ``netCDF4.Variable.chunking()`` answers for an unchunked variable.
 #: ``None`` means the same thing, and arrives from non-version-4 files.
@@ -411,6 +412,18 @@ class NetCDFDatasetVariable(CFDatasetVariable):
 #: from with "nccopy".
 _LEGACY_FORMATS = ("NETCDF3_CLASSIC", "NETCDF3_64BIT")
 
+#: The formats that cannot hold every dtype netCDF4 itself accepts.
+#: These are what netCDF4 reports as 'file_format', not what Saver was asked
+#: for. A file created as "NETCDF3_64BIT" reports "NETCDF3_64BIT_OFFSET", so
+#: both spellings are listed; omitting the reported one was the defect in
+#: SciTools/iris#7337.
+_RESTRICTED_FORMATS = (
+    "NETCDF3_CLASSIC",
+    "NETCDF3_64BIT",
+    "NETCDF3_64BIT_OFFSET",
+    "NETCDF4_CLASSIC",
+)
+
 
 class NetCDFDataset(CFDataset):
     """A netCDF file, presented through the CF interface."""
@@ -533,6 +546,12 @@ class NetCDFDataset(CFDataset):
         return self._mode
 
     @property
+    def format(self) -> str:
+        """The netCDF format of this file, as netCDF4 reports it."""
+        assert self._dataset is not None
+        return self._dataset.file_format
+
+    @property
     def closed(self) -> bool:
         """Whether the file has been released, by this object or by its owner.
 
@@ -612,6 +631,27 @@ class NetCDFDataset(CFDataset):
         # rather than a second wrapper with its own attribute cache.
         self._materialised_variables()[name] = wrapped
         return wrapped
+
+    def supports_dtype(self, dtype) -> bool:
+        """Whether this file can hold a variable of this dtype.
+
+        Parameters
+        ----------
+        dtype : :class:`numpy.dtype`
+            The dtype a variable would be created with.
+
+        Returns
+        -------
+        bool
+            False for 64-bit and unsigned integers on the restricted formats,
+            which have no such types. True otherwise.
+
+        """
+        if self.format not in _RESTRICTED_FORMATS:
+            return True
+        return not (
+            np.issubdtype(dtype, np.int64) or np.issubdtype(dtype, np.unsignedinteger)
+        )
 
     def sync(self) -> None:
         """Flush buffered writes to the file."""
