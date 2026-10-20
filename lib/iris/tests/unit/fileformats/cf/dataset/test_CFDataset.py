@@ -15,7 +15,7 @@ class MinimalVariable(CFDatasetVariable):
 
     name = "air_temperature"
     location = "<memory>"
-    format = "NETCDF4"
+    format = "MINIMAL"
     dimensions = ("time", "lat")
     shape = (3, 4)
     dtype = np.dtype("f4")
@@ -43,7 +43,7 @@ class MinimalDataset(CFDataset):
 
     location = "<memory>"
     mode = "r"
-    format = "NETCDF4"
+    format = "MINIMAL"
     closed = False
     variables: dict = {}
     dimensions: dict = {}
@@ -58,6 +58,9 @@ class MinimalDataset(CFDataset):
 
     def create_variable(self, name, dtype, dimensions=(), *, fill_value=None, **kw):
         raise NotImplementedError
+
+    def supports_dtype(self, dtype):
+        return True
 
     def sync(self):
         pass
@@ -117,6 +120,7 @@ class TestAbstractness:
             "encoding",
             "create_dimension",
             "create_variable",
+            "supports_dtype",
             "sync",
             "finalise",
             "close",

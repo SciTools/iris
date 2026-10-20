@@ -89,6 +89,10 @@ class CFDatasetReadContract:
         assert isinstance(readable.format, str)
         assert readable.format
 
+    def test_supports_the_contract_dtype(self, readable):
+        # Whatever a store is, it holds the dtype the contract writes into it.
+        assert readable.supports_dtype(CONTRACT_DATA.dtype) is True
+
     def test_encoding_is_a_readable_mapping(self, readable):
         # Its keys are the backend's own spelling and generic code must never
         # branch on one, but it must be possible to read them: otherwise a

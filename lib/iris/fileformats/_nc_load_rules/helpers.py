@@ -1269,8 +1269,9 @@ def get_names(cf_coord_var, coord_name, attributes):
 ################################################################################
 def get_cf_bounds_var(cf_coord_var):
     """Return the CF variable representing the bounds of a coordinate variable."""
-    attr_bounds = getattr(cf_coord_var, CF_ATTR_BOUNDS, None)
-    attr_climatology = getattr(cf_coord_var, CF_ATTR_CLIMATOLOGY, None)
+    attributes = cf_coord_var.attributes
+    attr_bounds = attributes.get(CF_ATTR_BOUNDS)
+    attr_climatology = attributes.get(CF_ATTR_CLIMATOLOGY)
 
     # Determine bounds, preferring standard bounds over climatology.
     # NB. No need to raise a warning if the bounds/climatology

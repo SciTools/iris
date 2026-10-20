@@ -174,6 +174,17 @@ a human treats it as documentation.
   and `__ne__` — "Return a string representation." is noise nothing asked for.
 
 
+### TODO Comments
+
+`# TODO: ` is house style, and Ruff's `TD` and `FIX` rules are in `ignore`
+(`pyproject.toml`) — use it.
+
+- Mark the deferral in the file, not only in the pull request body.
+- Name the event that removes it: `# TODO: drop once the saver is relocated`.
+- No such event and it is not a TODO: a permanent caveat is a plain comment,
+  schedulable work is an issue.
+
+
 ## Facts Learned by Debugging
 
 Most over-long comments in Iris were written after the code already worked. A
@@ -237,6 +248,8 @@ code in a private sibling module instead.
 - New modules: aim under ~1000 lines, one coherent concept each.
 - Functions: aim to fit one screen (~50 lines).
 - Use guard clauses and early returns instead of nested conditionals.
+- Give a function one exit where it must still warn, record or close something
+  on the way out. A second exit added later silently skips that work.
 - Nesting beyond three levels is a signal to extract a named helper.
 
 

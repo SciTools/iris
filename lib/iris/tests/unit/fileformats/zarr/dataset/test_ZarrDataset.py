@@ -154,6 +154,19 @@ def test_the_write_surface_refuses(tmp_path):
         dataset.finalise()
 
 
+@pytest.mark.parametrize(
+    "dtype", ["i1", "i2", "i4", "i8", "u1", "u2", "u4", "u8", "f4", "f8", "c8"]
+)
+def test_supports_every_dtype(tmp_path, zarr_format, dtype):
+    # The netCDF 3 formats have no 64-bit or unsigned integer type, which is
+    # what makes supports_dtype worth asking. Zarr has every one of them, in
+    # both versions, so the Zarr answer carries no format test.
+    dataset = ZarrDataset(
+        stores.make_store(tmp_path / "s.zarr", zarr_format=zarr_format)
+    )
+    assert dataset.supports_dtype(np.dtype(dtype)) is True
+
+
 def test_a_write_mode_refuses(tmp_path):
     stores.make_store(tmp_path / "s.zarr")
     with pytest.raises(NotImplementedError, match="Saving"):

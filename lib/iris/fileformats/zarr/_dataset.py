@@ -655,6 +655,28 @@ class ZarrDataset(CFDataset):
         """Raise: saving to Zarr is not supported."""
         raise NotImplementedError(_NO_SAVING)
 
+    def supports_dtype(self, dtype) -> bool:
+        """Whether this store can hold a variable of this dtype.
+
+        Always True. Zarr's data types cover the whole of NumPy's fixed-width
+        numeric range, in both versions, so there is no dtype a caller could
+        reach here with that the store would have to narrow. Contrast
+        :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
+        which answers False for the integer types the netCDF 3 formats have no
+        type for.
+
+        Parameters
+        ----------
+        dtype : :class:`numpy.dtype`
+            The dtype a variable would be created with.
+
+        Returns
+        -------
+        bool
+
+        """
+        return True
+
     def sync(self) -> None:
         """Do nothing: a Zarr write is not buffered."""
 
