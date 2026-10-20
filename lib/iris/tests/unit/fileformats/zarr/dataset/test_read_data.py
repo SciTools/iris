@@ -54,25 +54,25 @@ def test_a_small_variable_never_consults_the_policy(tmp_path):
     variable(location).read_data(raising_policy)
 
 
-def test_a_large_variable_is_lazy(tmp_path, monkeypatch):
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+def test_a_large_variable_is_lazy(tmp_path, mocker):
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = stores.make_store(tmp_path / "s.zarr")
     result = variable(location).read_data(policy)
     assert isinstance(result, da.Array)
     np.testing.assert_array_equal(result.compute(), stores.DATA)
 
 
-def test_a_plain_array_gets_an_unmasked_meta(tmp_path, monkeypatch):
+def test_a_plain_array_gets_an_unmasked_meta(tmp_path, mocker):
     # No decode layer, so no masked meta: a masked meta with nothing beneath
     # it is a meta that lies about its own graph.
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = stores.make_store(tmp_path / "s.zarr")
     result = variable(location).read_data(policy)
     assert not isinstance(result._meta, np.ma.MaskedArray)
 
 
-def test_a_decoded_array_gets_a_masked_meta(tmp_path, monkeypatch):
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+def test_a_decoded_array_gets_a_masked_meta(tmp_path, mocker):
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     group = zarr.open_group(store=tmp_path / "m.zarr", mode="w", zarr_format=3)
     array = stores.make_array(
         group,
@@ -182,7 +182,7 @@ def test_the_key_is_sensitive_to_attributes(tmp_path):
     assert key_of(location) != before
 
 
-def test_two_cubes_sharing_an_array_share_one_dask_array(tmp_path, monkeypatch):
+def test_two_cubes_sharing_an_array_share_one_dask_array(tmp_path, mocker):
     """What the cache is for: many cubes in one store sharing a coordinate.
 
     Comparing the two Dask names proves nothing on its own: Dask tokenises a
@@ -195,9 +195,9 @@ def test_two_cubes_sharing_an_array_share_one_dask_array(tmp_path, monkeypatch):
     it is process-wide and holds only its last hundred entries - a test that
     counted the real one would depend on what ran before it.
     """
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     cache = _lazy_data.LRUCache(100)
-    monkeypatch.setattr(_lazy_data, "CACHE", cache)
+    mocker.patch.object(_lazy_data, "CACHE", cache)
     location = stores.make_store(tmp_path / "s.zarr")
 
     first = variable(location).read_data(policy)
@@ -270,9 +270,7 @@ def test_a_sharded_array_is_read_by_the_inner_chunk(tmp_path):
     assert ZarrDataset(location).variables["v"].chunking == (8,)
 
 
-def test_the_declared_dtype_matches_what_the_decode_layer_produces(
-    tmp_path, monkeypatch
-):
+def test_the_declared_dtype_matches_what_the_decode_layer_produces(tmp_path, mocker):
     """A packed variable's lazy dtype must equal its realised dtype.
 
     On the netCDF path netCDF4 does the arithmetic and reports the dtype. On
@@ -280,7 +278,7 @@ def test_the_declared_dtype_matches_what_the_decode_layer_produces(
     Dask does not check them against each other: a mismatch builds a graph
     and surfaces later as a wrong dtype on the cube.
     """
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     group = zarr.open_group(store=tmp_path / "p.zarr", mode="w", zarr_format=3)
     array = stores.make_array(
         group,
@@ -359,7 +357,7 @@ def packed_store(tmp_path, shape, chunks):
 
 
 @pytest.mark.parametrize("chunking", ["default", "as_dask"])
-def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch, chunking):
+def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, mocker, chunking):
     """What a task holds is the unpacked block, not the stored one.
 
     An int8 variable unpacking to float64 is eight times its stored size the
@@ -370,7 +368,7 @@ def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch, chunking):
     `da.from_array` would otherwise size on the array it is given, which is
     the stored one.
     """
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = packed_store(tmp_path, (64, 64), (4, 64))
     chunking_policy = {"default": policy, "as_dask": dask_policy}[chunking]
 
@@ -383,7 +381,7 @@ def test_chunks_are_sized_on_the_decoded_dtype(tmp_path, monkeypatch, chunking):
     assert block_bytes <= target
 
 
-def test_as_dask_is_still_dasks_own_answer(tmp_path, monkeypatch):
+def test_as_dask_is_still_dasks_own_answer(tmp_path, mocker):
     """Calling Dask's policy by hand must not turn into replacing it.
 
     Sizing on the decoded dtype means calling `normalize_chunks` here rather
@@ -392,7 +390,7 @@ def test_as_dask_is_still_dasks_own_answer(tmp_path, monkeypatch):
     Dask's policy gives for the decoded dtype, and the store's chunking of 7
     leaves no mark on it.
     """
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = packed_store(tmp_path, (64, 64), (7, 64))
 
     with dask.config.set({"array.chunk-size": "2048B"}):
@@ -404,7 +402,7 @@ def test_as_dask_is_still_dasks_own_answer(tmp_path, monkeypatch):
     assert lazy.chunksize[0] % 7 != 0
 
 
-def test_a_lazy_read_divides_a_store_chunk_to_meet_dasks_target(tmp_path, monkeypatch):
+def test_a_lazy_read_divides_a_store_chunk_to_meet_dasks_target(tmp_path, mocker):
     """Chunking follows Dask's target, even where that divides a store chunk.
 
     Iris used to round back up to whole store chunks here. Dividing one costs
@@ -413,7 +411,7 @@ def test_a_lazy_read_divides_a_store_chunk_to_meet_dasks_target(tmp_path, monkey
     caller wants depends on their case. `CHUNK_CONTROL` is how they say, and
     `iris.fileformats.cf.loader` warns so that they know to.
     """
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     location = str(tmp_path / "b.zarr")
     group = zarr.open_group(store=location, mode="w", zarr_format=3)
     array = group.create_array(

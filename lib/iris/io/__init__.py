@@ -58,7 +58,18 @@ def _is_remote_store_uri(spec):
 
 # Saving routines, indexed by file extension.
 class _SaversDict(dict):
-    """A dictionary that can only have string keys with no overlap."""
+    """A dictionary that can only have string keys with no overlap.
+
+    :attr:`cubelist_savers` records which of the registered savers take a
+    ``CubeList`` directly, rather than one cube at a time with
+    ``append=True``. It holds the saver functions themselves, not extensions,
+    because :func:`save` is also reached with a saver it never looked up here
+    - passed by the caller, or chosen directly for an NCZarr target.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cubelist_savers = set()
 
     def __setitem__(self, key, value):
         if not isinstance(key, str):
@@ -72,10 +83,6 @@ class _SaversDict(dict):
 
 
 _savers = _SaversDict()
-
-#: Modules whose `save` takes a CubeList directly, rather than one cube at a
-#: time with `append=True`. One line per format.
-_CUBELIST_SAVER_MODULES = frozenset({"iris.fileformats.netcdf.saver"})
 
 
 def run_callback(callback, cube, field, filename):
@@ -461,6 +468,8 @@ def _check_init_savers():
                 "grib2": _grib_save,
             }
         )
+        # One line per format that takes a CubeList whole.
+        _savers.cubelist_savers.add(netcdf.save)
 
 
 def add_saver(file_extension, new_saver):
@@ -638,7 +647,8 @@ def save(source, target, saver=None, **kwargs):
         isinstance(source, (list, tuple)) and all([isinstance(i, Cube) for i in source])
     ):
         # Only allow cubelist saving for those fileformats that are capable.
-        if saver.__module__ not in _CUBELIST_SAVER_MODULES:
+        _check_init_savers()
+        if saver not in _savers.cubelist_savers:
             # Make sure the saver accepts an append keyword
             if "append" not in saver.__code__.co_varnames:
                 raise ValueError(

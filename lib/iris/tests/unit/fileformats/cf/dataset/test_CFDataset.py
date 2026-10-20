@@ -22,7 +22,7 @@ class MinimalVariable(CFDatasetVariable):
     size = 12
     fill_value = None
     chunking = None
-    encoding: dict = {}
+    storage_settings: dict = {}
     attributes: dict = {}
 
     def __getitem__(self, keys):
@@ -48,7 +48,7 @@ class MinimalDataset(CFDataset):
     variables: dict = {}
     dimensions: dict = {}
     attributes: dict = {}
-    encoding: dict = {}
+    storage_settings: dict = {}
 
     def __init__(self):
         self.closes = 0
@@ -93,7 +93,7 @@ class TestAbstractness:
             "size",
             "fill_value",
             "chunking",
-            "encoding",
+            "storage_settings",
             "attributes",
             "ndim",
             "__getitem__",
@@ -117,7 +117,7 @@ class TestAbstractness:
             "variables",
             "dimensions",
             "attributes",
-            "encoding",
+            "storage_settings",
             "create_dimension",
             "create_variable",
             "supports_dtype",

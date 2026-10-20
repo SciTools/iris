@@ -191,7 +191,7 @@ class CFDatasetVariable(ABC):
 
     @property
     @abstractmethod
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The storage settings this variable holds, in the backend's spelling.
 
         ``zlib``, ``complevel``, ``chunksizes`` for netCDF; ``chunks``,
@@ -301,7 +301,7 @@ class CFDataset(ABC):
 
     @property
     @abstractmethod
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The store-wide settings this store holds, in the backend's spelling."""
 
     @property
@@ -335,11 +335,11 @@ class CFDataset(ABC):
 
     @abstractmethod
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
     ) -> "CFDatasetVariable":
         """Create and return a new variable.
 
-        ``**encoding`` is storage-specific: ``zlib``, ``complevel`` and
+        ``**storage_settings`` is storage-specific: ``zlib``, ``complevel`` and
         ``chunksizes`` for netCDF; ``compressors``, ``chunks`` and ``shards``
         for Zarr.
 

@@ -122,10 +122,10 @@ def test_nested_groups_are_not_walked(tmp_path):
     assert [cube.var_name for cube in cubes] == ["top"]
 
 
-def test_the_cube_is_lazy(tmp_path, monkeypatch):
+def test_the_cube_is_lazy(tmp_path, mocker):
     from iris.fileformats.cf import loader as cf_loader
 
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     cube = list(load_cubes(stores.make_store(tmp_path / "s.zarr")))[0]
     assert cube.has_lazy_data()
 

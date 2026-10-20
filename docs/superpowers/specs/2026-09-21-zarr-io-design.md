@@ -303,7 +303,7 @@ class CFDatasetVariable(ABC):
     size: int
     fill_value: Any | None
     chunking: tuple[int, ...] | None   # None when the store is unchunked
-    encoding: Mapping[str, Any]        # backend storage settings; see below
+    storage_settings: Mapping[str, Any]        # backend storage settings; see below
     attributes: MutableMapping[str, Any]   # materialised once
 
     def __getitem__(self, keys) -> np.ndarray: ...
@@ -323,12 +323,12 @@ class CFDataset(ABC):
     closed: bool                        # F3
     variables: Mapping[str, CFDatasetVariable]
     dimensions: Mapping[str, int]
-    encoding: Mapping[str, Any]         # backend store settings; see below
+    storage_settings: Mapping[str, Any]         # backend store settings; see below
     attributes: MutableMapping[str, Any]
 
     def create_dimension(self, name: str, size: int | None) -> None: ...
     def create_variable(self, name, dtype, dimensions=(), *,
-                        fill_value=None, **encoding) -> CFDatasetVariable: ...
+                        fill_value=None, **storage_settings) -> CFDatasetVariable: ...
     def supports_dtype(self, dtype: np.dtype) -> bool: ...   # see below
     def sync(self) -> None: ...
     def finalise(self) -> None: ...     # one-shot; NOT part of close()
@@ -367,7 +367,7 @@ this store hold this dtype?", so that is what the interface offers.
 for every dtype Zarr has a data type for. The error message that follows
 names `format`, so the user still reads `NETCDF3_CLASSIC`.
 
-#### `format` and `encoding`
+#### `format` and `storage_settings`
 
 `format` names the concrete format an implementation provides — `"NETCDF4"`,
 `"NETCDF3_CLASSIC"`, `"ZARR_V2"`, `"ZARR_V3"`. Some parts of the loader and
@@ -377,7 +377,7 @@ the class is exactly the type test the rule above forbids. On a variable it
 repeats its dataset's value, for the same reason `location` does: so a
 variable can answer for itself without a back-reference.
 
-`encoding` is the open-ended bag of backend storage settings: what
+`storage_settings` is the open-ended bag of backend storage settings: what
 `create_variable` was given on write, and what the store actually holds on
 read — `zlib`, `complevel`, `chunksizes` for netCDF; `compressors`, `chunks`,
 `shards`, `zarr_format` for Zarr. Its keys are backend-specific by nature and
@@ -389,7 +389,7 @@ that is the abstraction leaking at exactly the point it is supposed to hold.
 
 It overlaps `chunking` deliberately and they are not duplicates. `chunking` is
 load-bearing: it is typed, it is guaranteed present on every implementation,
-and §4.4's chunk calculation reads it. `encoding["chunks"]` is a backend's own
+and §4.4's chunk calculation reads it. `storage_settings["chunks"]` is a backend's own
 spelling of its own settings, which generic code must never depend on.
 
 Three members exist only to keep multi-process writing reachable later, and
@@ -428,12 +428,12 @@ The split that matters is `attributes` versus everything else. Today
 cannot tell. After this change, CF attributes are only ever reached through
 `.attributes`, and properties are named fields.
 
-`create_variable` takes `**encoding` against the general rule about keyword
+`create_variable` takes `**storage_settings` against the general rule about keyword
 passthrough, because the accepted keys are backend-specific by nature
 (`zlib`/`complevel`/`chunksizes` for netCDF, `compressors`/`chunks`/`shards`
 for Zarr). Each implementation documents its own accepted keys, and
 `cf/saver.py` never constructs them. What it is given is retained and surfaced
-on `CFDatasetVariable.encoding`, so create-time configuration is readable
+on `CFDatasetVariable.storage_settings`, so create-time configuration is readable
 afterwards rather than write-only.
 
 ### 4.3 `CFVariable.__getattr__` and backwards compatibility

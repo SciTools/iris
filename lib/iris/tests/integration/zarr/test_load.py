@@ -98,13 +98,13 @@ def test_the_base64_fill_value_masks_nothing_here(gfs_like):
     assert not np.ma.is_masked(cube.data)
 
 
-def test_the_cube_is_lazy_and_chunked_to_the_store(gfs_like, monkeypatch):
+def test_the_cube_is_lazy_and_chunked_to_the_store(gfs_like, mocker):
     # `temperature_2m` is a few hundred bytes, well under the small-array
     # cutoff (`_LAZYVAR_MIN_BYTES`) below which the CF loader reads a
     # variable whole rather than lazily. A real store is nowhere near that
     # small, so the cutoff is lowered here to exercise the chunking this
     # test is actually about.
-    monkeypatch.setattr(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+    mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
     cube = iris.load_cube(gfs_like, "air_temperature")
     assert cube.has_lazy_data()
     # The chunking here tiles the store's inner chunk grid, which is what

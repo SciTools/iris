@@ -190,19 +190,11 @@ def _assemble_dimensions(variables) -> dict:
 
 
 class _ZarrAttributes(MutableMapping):
-    """A Zarr node's attributes as a mapping, less the ones that are storage.
+    """A Zarr node's attributes as a mapping, less the ones `withhold` names.
 
-    ``_ARRAY_DIMENSIONS`` is how a version 2 store records dimension names.
-    Under the interface's split that is a property, reported by
-    :attr:`ZarrDatasetVariable.dimensions`, not a CF attribute - so it is
-    withheld here. Leaving it in would put it on every cube loaded from a
-    version 2 store, since every attribute the loading rules do not consume
-    reaches ``cube.attributes``.
-
-    ``_NCProperties`` is netCDF-c's own bookkeeping stamp on the root group of
-    every store it writes, withheld from :attr:`ZarrDataset.attributes` for
-    the same reason: left in, it would turn up as a `cube.attributes` entry on
-    every cube loaded from an NCZarr-written store, and nothing else wrote it.
+    Which attributes those are is the caller's decision, taken where the
+    mapping is built. Both the constants named there - `_ARRAY_DIMENSIONS`
+    and `_NC_PROPERTIES` - carry the reason with them.
     """
 
     def __init__(
@@ -329,7 +321,7 @@ class ZarrDatasetVariable(CFDatasetVariable):
         return tuple(chunks) if chunks else None
 
     @property
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The Zarr storage settings this array holds."""
         return MappingProxyType(
             {
@@ -624,7 +616,7 @@ class ZarrDataset(CFDataset):
         return self._dimensions
 
     @property
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The store-wide Zarr settings."""
         assert self._group is not None
         consolidated = self._group.metadata.consolidated_metadata
@@ -650,7 +642,7 @@ class ZarrDataset(CFDataset):
         raise NotImplementedError(_NO_SAVING)
 
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
     ):
         """Raise: saving to Zarr is not supported."""
         raise NotImplementedError(_NO_SAVING)

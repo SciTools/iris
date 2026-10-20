@@ -93,14 +93,14 @@ class CFDatasetReadContract:
         # Whatever a store is, it holds the dtype the contract writes into it.
         assert readable.supports_dtype(CONTRACT_DATA.dtype) is True
 
-    def test_encoding_is_a_readable_mapping(self, readable):
+    def test_storage_settings_is_a_readable_mapping(self, readable):
         # Its keys are the backend's own spelling and generic code must never
         # branch on one, but it must be possible to read them: otherwise a
         # caller that wants to know how a store is laid out has to reach
         # through to the netCDF4 or zarr object, which is the abstraction
         # leaking at the point it exists to hold.
-        assert isinstance(readable.encoding, Mapping)
-        dict(readable.encoding)
+        assert isinstance(readable.storage_settings, Mapping)
+        dict(readable.storage_settings)
 
     # -- A variable --------------------------------------------------------
 
@@ -124,13 +124,13 @@ class CFDatasetReadContract:
     def test_variable_format_matches_its_dataset(self, variable, readable):
         assert variable.format == readable.format
 
-    def test_variable_encoding_reports_the_chunking(self, variable):
-        encoding = variable.encoding
-        assert isinstance(encoding, Mapping)
+    def test_variable_storage_settings_reports_the_chunking(self, variable):
+        storage_settings = variable.storage_settings
+        assert isinstance(storage_settings, Mapping)
         # Whatever a backend spells it, the chunk shape it reports through
-        # `chunking` has to be somewhere in `encoding` too, or `encoding` is
+        # `chunking` has to be somewhere in `storage_settings` too, or `storage_settings` is
         # not reporting what the store holds.
-        assert variable.chunking in (None, *encoding.values())
+        assert variable.chunking in (None, *storage_settings.values())
 
     def test_variable_dimensions(self, variable):
         assert variable.dimensions == tuple(CONTRACT_DIMENSIONS)

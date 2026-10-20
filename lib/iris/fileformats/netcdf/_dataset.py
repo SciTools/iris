@@ -192,7 +192,7 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         return tuple(chunks)
 
     @property
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The netCDF storage settings this variable holds.
 
         Read back off the file, so a variable created with `zlib=True` reports
@@ -575,7 +575,7 @@ class NetCDFDataset(CFDataset):
         return self._dataset.file_format
 
     @property
-    def encoding(self) -> Mapping:
+    def storage_settings(self) -> Mapping:
         """The store-wide netCDF settings. Only the format is one."""
         return MappingProxyType({"format": self.format})
 
@@ -640,18 +640,18 @@ class NetCDFDataset(CFDataset):
         self._dataset.createDimension(name, size)
 
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
     ) -> NetCDFDatasetVariable:
         """Create and return a new variable.
 
-        ``**encoding`` reaches :meth:`netCDF4.Dataset.createVariable`
+        ``**storage_settings`` reaches :meth:`netCDF4.Dataset.createVariable`
         unaltered: ``compression``, ``zlib``, ``complevel``, ``shuffle``,
         ``chunksizes``, ``least_significant_digit`` and the rest.
 
         """
         assert self._dataset is not None
         variable = self._dataset.createVariable(
-            name, dtype, tuple(dimensions), fill_value=fill_value, **encoding
+            name, dtype, tuple(dimensions), fill_value=fill_value, **storage_settings
         )
         wrapped = NetCDFDatasetVariable(
             variable,

@@ -29,7 +29,7 @@ def test_opens_and_reports_itself(tmp_path, zarr_format):
     assert dataset.closed is False
     assert sorted(dataset.variables) == ["air_temperature", "grid"]
     assert dict(dataset.attributes) == stores.GLOBALS
-    assert dataset.encoding["zarr_format"] == zarr_format
+    assert dataset.storage_settings["zarr_format"] == zarr_format
 
 
 def test_nc_properties_is_not_a_cf_attribute(tmp_path):

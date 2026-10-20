@@ -94,14 +94,14 @@ except ImportError as exception:
     assert _run(probe) == _MISSING_MESSAGE
 
 
-def test_iris_load_reports_it_when_zarr_is_too_old(monkeypatch, tmp_path):
+def test_iris_load_reports_it_when_zarr_is_too_old(mocker, tmp_path):
     """Zarr 2.x imports fine, so only a version check catches it.
 
     Without this, `ZarrDataset.__init__` reaches
     `self._group.metadata.zarr_format` against a zarr 2 `Group`, which has no
     `.metadata`, and the user sees a bare `AttributeError` instead.
     """
-    monkeypatch.setattr(zarr_package.importlib.metadata, "version", _report_old_zarr)
+    mocker.patch.object(zarr_package.importlib.metadata, "version", _report_old_zarr)
     store = tmp_path / "s.zarr"
     store.mkdir()
     (store / "zarr.json").write_text("{}")
@@ -111,8 +111,8 @@ def test_iris_load_reports_it_when_zarr_is_too_old(monkeypatch, tmp_path):
     assert str(excinfo.value) == _MISSING_MESSAGE
 
 
-def test_load_cubes_reports_it_when_zarr_is_too_old(monkeypatch):
-    monkeypatch.setattr(zarr_package.importlib.metadata, "version", _report_old_zarr)
+def test_load_cubes_reports_it_when_zarr_is_too_old(mocker):
+    mocker.patch.object(zarr_package.importlib.metadata, "version", _report_old_zarr)
 
     with pytest.raises(ImportError) as excinfo:
         zarr_package.load_cubes("irrelevant")

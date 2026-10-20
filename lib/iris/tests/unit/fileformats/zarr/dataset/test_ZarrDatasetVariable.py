@@ -174,15 +174,15 @@ def test_chunking_is_the_inner_chunk_not_the_shard(tmp_path):
     )
     variable = wrap(array)
     assert variable.chunking == (8,)
-    assert variable.encoding["shards"] == (1024,)
+    assert variable.storage_settings["shards"] == (1024,)
 
 
-def test_encoding_reports_the_store(tmp_path, zarr_format):
+def test_storage_settings_reports_the_store(tmp_path, zarr_format):
     location = stores.make_store(tmp_path / "e.zarr", zarr_format=zarr_format)
     array = zarr.open_group(store=location, mode="r")["air_temperature"]
-    encoding = wrap(array, location).encoding
-    assert encoding["chunks"] == array.chunks
-    assert encoding["zarr_format"] == zarr_format
+    storage_settings = wrap(array, location).storage_settings
+    assert storage_settings["chunks"] == array.chunks
+    assert storage_settings["zarr_format"] == zarr_format
 
 
 def test_array_dimensions_is_not_a_cf_attribute(tmp_path):

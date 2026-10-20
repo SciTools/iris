@@ -128,19 +128,6 @@ def test_find_saver_tolerates_a_trailing_separator():
     assert find_saver("out.nc") is find_saver("out.nc/")
 
 
-def test_the_cubelist_saver_set_names_the_netcdf_saver():
-    """The substring test it replaces matched by accident of module naming.
-
-    `"iris.fileformats.netcdf" not in saver.__module__` is true of any module
-    whose path happens to contain that string, and says nothing a reader can
-    check. The set is one line per format.
-    """
-    from iris.fileformats.netcdf import save as netcdf_save
-    from iris.io import _CUBELIST_SAVER_MODULES
-
-    assert netcdf_save.__module__ in _CUBELIST_SAVER_MODULES
-
-
 @_shared_utils.skip_data
 def test_saving_a_cubelist_to_netcdf_still_takes_one_call(tmp_path):
     cubes = iris.load(
