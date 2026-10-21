@@ -410,6 +410,18 @@ class Test_Guess_Bounds_Yearly:
         expected_dates = units.num2date(expected)
         _shared_utils.assert_array_equal(dates, expected_dates)
 
+    def test_yearly_single_point(self):
+        units = cf_units.Unit("days since epoch", calendar="gregorian")
+        expected = [
+            [datetime(1990, 1, 1), datetime(1991, 1, 1)],
+        ]
+        expected_points = units.date2num(expected)
+        points = expected_points.mean(axis=1)
+        coord = iris.coords.AuxCoord(points=points, units=units, standard_name="time")
+        coord.guess_bounds(yearly=True)
+        dates = units.num2date(coord.bounds)
+        _shared_utils.assert_array_equal(dates, expected)
+
 
 class Test_cell:
     def _mock_coord(self, mocker):
