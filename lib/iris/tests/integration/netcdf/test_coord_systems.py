@@ -339,6 +339,39 @@ class TestCoordSystem:
         assert cube.extended_grid_mapping is True
 
 
+class TestSavePolarStereographic:
+    def test_true_scale_lat(self, tmp_path):
+        # CF stores the true scale latitude as "standard_parallel".
+        saved_crs = iris.coord_systems.PolarStereographic(
+            central_lat=-90.0,
+            central_lon=0.0,
+            true_scale_lat=-71.0,
+            ellipsoid=iris.coord_systems.GeogCS(6378137.0, 6356752.314245),
+        )
+        y_coord = DimCoord(
+            np.arange(4.0),
+            standard_name="projection_y_coordinate",
+            units="m",
+            coord_system=saved_crs,
+        )
+        x_coord = DimCoord(
+            np.arange(3.0),
+            standard_name="projection_x_coordinate",
+            units="m",
+            coord_system=saved_crs,
+        )
+        test_cube = Cube(
+            np.zeros((4, 3)),
+            var_name="data",
+            dim_coords_and_dims=((y_coord, 0), (x_coord, 1)),
+        )
+        filename = tmp_path / "output.nc"
+        iris.save(test_cube, filename)
+        cube = iris.load_cube(filename)
+
+        assert cube.coord_system() == saved_crs
+
+
 @pytest.fixture(scope="module")
 def geostationary_problem_cdl():
     return """

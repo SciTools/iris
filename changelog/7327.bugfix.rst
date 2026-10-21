@@ -1,0 +1,4 @@
+:user:`raashish1601` fixed NetCDF saving of a
+:class:`~iris.coord_systems.PolarStereographic` coordinate system with a
+``true_scale_lat``, which is now written to the CF ``standard_parallel``
+attribute so the file can be loaded back. (:issue:`5238`)
