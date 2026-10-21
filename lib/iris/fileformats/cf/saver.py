@@ -468,8 +468,8 @@ def marshal_attributes(cubes, local_keys, format_name):
 class _GridMappingAttributeWriter:
     """An assignment target that writes into a variable's attributes.
 
-    ``_CFSaver._add_grid_mapping_to_dataset`` sets sixty-three CF
-    grid-mapping parameters by plain attribute assignment. On netCDF those
+    ``_CFSaver._add_grid_mapping_to_dataset`` sets its CF grid-mapping
+    parameters by plain attribute assignment. On netCDF those
     assignments go to the netCDF4 variable itself and have done since long
     before the CF layer existed, and that decides how each one is typed in
     the file. Regularising it is its own piece of work -- see Q8 in §12.3 of
@@ -2081,7 +2081,7 @@ class _CFSaver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # The 63 assignments below decide how each parameter is typed in the
+        # The assignments below decide how each parameter is typed in the
         # file, and on netCDF they go to the netCDF4 variable itself, exactly
         # as they always have; see Q8 in the design document. Every other
         # store gets a writer onto `.attributes`.

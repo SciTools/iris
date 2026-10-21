@@ -74,8 +74,8 @@ class TestTheWriterItself:
 
 class TestTheNetCDFOverride:
     def test_it_is_the_netcdf4_variable_itself(self, tmp_path, cube):
-        # Not "writes the same values": the same object, so the 63 assignments
-        # take the identical path they take today and the file cannot change.
+        # Not "writes the same values": the same object, so the grid-mapping
+        # assignments take the path they always have and the file cannot change.
         from iris.fileformats.netcdf.saver import Saver
 
         with Saver(tmp_path / "out.nc", "NETCDF4") as saver:
