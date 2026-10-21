@@ -1029,9 +1029,16 @@ lives in `ZarrDataset`:
 - which codecs are available;
 - whether sharding is offered.
 
-`ZarrDataset.__init__` takes `zarr_format: int = 3`. Today it raises
-`NotImplementedError` for anything but 3, in one place. Adding version 2 write
-means implementing those three points and deleting that guard.
+`ZarrDataset.__init__` takes `zarr_format: int | None = None`, matching
+`NetCDFDataset.__init__`'s `netcdf_format=None`. A write resolves `None` to
+`_DEFAULT_ZARR_FORMAT` and raises `NotImplementedError` for a version outside
+`_WRITABLE_ZARR_FORMATS`, in one place. Adding version 2 write means
+implementing those three points and adding 2 to that tuple.
+
+A read drops the value rather than passing it on. zarr-python does not ignore
+`zarr_format` on a read, it constrains detection: a store whose version
+disagrees is reported as a missing group, which names the wrong problem.
+Verified against zarr-python 3.4.1.
 
 #### Dimensions
 

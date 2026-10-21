@@ -61,6 +61,18 @@ class TestOpening:
         with pytest.raises(FileNotFoundError):
             ZarrDataset(tmp_path / "missing.zarr", mode="r+")
 
+    def test_r_plus_adds_to_an_existing_store(self, existing):
+        # The one thing "r+" does that "a" does not is refuse to create the
+        # store, which the test above covers. Everything else about it is
+        # this: an array created through it lands alongside what was there.
+        with ZarrDataset(existing, mode="r+") as dataset:
+            dataset.create_dimension("y", 3)
+            variable = dataset.create_variable("added", "f4", ("y",))
+            variable[:] = np.array([1.0, 2.0, 3.0], dtype="f4")
+        with ZarrDataset(existing) as dataset:
+            assert sorted(dataset.variables) == ["added", "already_here"]
+            assert dataset.variables["added"][:].tolist() == [1.0, 2.0, 3.0]
+
     def test_an_unknown_mode_names_itself(self, tmp_path):
         with pytest.raises(ValueError, match="'a\\+'"):
             ZarrDataset(tmp_path / "new.zarr", mode="a+")
@@ -70,20 +82,37 @@ class TestOpening:
             assert dataset.mode == "r"
 
 
+@pytest.fixture
+def version_2(tmp_path):
+    """Return the path of a Zarr version 2 store holding one array."""
+    path = tmp_path / "v2.zarr"
+    group = zarr.open_group(store=path, mode="w-", zarr_format=2)
+    array = group.create_array("data", shape=(2,), dtype="f4")
+    array.attrs["_ARRAY_DIMENSIONS"] = ["x"]
+    return path
+
+
 class TestTheVersionGuard:
     @pytest.mark.parametrize("mode", ["w-", "w", "a", "r+"])
     def test_writing_version_2_is_refused(self, tmp_path, mode):
-        with pytest.raises(NotImplementedError, match="version 3"):
+        with pytest.raises(NotImplementedError, match="version 2"):
             ZarrDataset(tmp_path / "new.zarr", mode=mode, zarr_format=2)
 
-    def test_reading_version_2_is_unaffected(self, tmp_path):
-        path = tmp_path / "v2.zarr"
-        group = zarr.open_group(store=path, mode="w-", zarr_format=2)
-        array = group.create_array("data", shape=(2,), dtype="f4")
-        array.attrs["_ARRAY_DIMENSIONS"] = ["x"]
-        with ZarrDataset(path, mode="r", zarr_format=2) as dataset:
+    def test_the_refusal_names_the_versions_iris_writes(self, tmp_path):
+        with pytest.raises(NotImplementedError, match=r"\(3,\)"):
+            ZarrDataset(tmp_path / "new.zarr", mode="w-", zarr_format=2)
+
+    def test_reading_version_2_is_unaffected(self, version_2):
+        with ZarrDataset(version_2, mode="r") as dataset:
             assert dataset.format == "ZARR_V2"
             assert list(dataset.variables) == ["data"]
+
+    def test_reading_ignores_the_version_asked_for(self, version_2):
+        # zarr-python does not ignore `zarr_format` on a read, it constrains
+        # detection: asking for 3 here would report the store as a missing
+        # group. Iris drops the value instead, so the store still opens.
+        with ZarrDataset(version_2, mode="r", zarr_format=3) as dataset:
+            assert dataset.format == "ZARR_V2"
 
     def test_a_version_3_store_is_what_a_write_produces(self, tmp_path):
         with ZarrDataset(tmp_path / "new.zarr", mode="w-") as dataset:

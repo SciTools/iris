@@ -630,21 +630,27 @@ class ZarrDatasetVariable(CFDatasetVariable):
         )
 
 
-#: The modes that only read. Writing through one of these is refused before
-#: zarr-python gets the chance, so the message names Iris's keyword.
+#: The modes that only read.
 _READ_MODES = ("r",)
 
-#: The modes that may write. ``"r+"`` is here for the region write a future
-#: multi-process saver needs: open an existing store for update, creating
-#: nothing. See §4.5 of the design document.
+#: The modes that may write. ``"r+"`` opens an existing store for update and
+#: creates nothing, which is what the region write of a future multi-process
+#: saver needs. See §4.5 of docs/superpowers/specs/2026-09-21-zarr-io-design.md.
 _WRITE_MODES = ("w-", "w", "a", "r+")
 
 #: Every mode, in the order the error message lists them.
 _MODES = _READ_MODES + _WRITE_MODES
 
-#: The only Zarr version Iris writes. Reading handles both. Adding version 2
-#: writing means the three version-specific points of §4.5 and deleting this.
-_WRITABLE_ZARR_FORMAT = 3
+#: The Zarr versions Iris can write. This constrains writing only; reading
+#: handles either version. Adding version 2 here also means implementing the
+#: three version-specific points of §4.5 of
+#: docs/superpowers/specs/2026-09-21-zarr-io-design.md.
+_WRITABLE_ZARR_FORMATS = (3,)
+
+#: The version a write creates when the caller names none. Separate from
+#: `_WRITABLE_ZARR_FORMATS` because the order of that tuple says nothing
+#: about which member is the default.
+_DEFAULT_ZARR_FORMAT = 3
 
 #: The storage keywords `create_variable` passes to zarr-python, which are
 #: zarr-python's own. Iris does not invent names for them and does not
@@ -753,7 +759,7 @@ class ZarrDataset(CFDataset):
         mode: str = "r",
         *,
         group: str | None = None,
-        zarr_format: int = 3,
+        zarr_format: int | None = None,
     ):
         """Open a Zarr store.
 
@@ -770,21 +776,25 @@ class ZarrDataset(CFDataset):
         mode : str, default="r"
             One of ``"r"``, ``"r+"``, ``"a"``, ``"w"`` or ``"w-"``, with
             zarr-python's meanings. ``"w-"`` creates and refuses an existing
-            target; ``"w"`` replaces one; ``"a"`` adds to one.
+            target; ``"w"`` replaces one; ``"a"`` adds to one; ``"r+"`` adds
+            to one and refuses to create it.
         group : str, optional
             A ``/``-separated path to a group within the store. The root group
             by default. Iris reads one group per call and does not walk
             nested groups.
-        zarr_format : int, default=3
-            The version to create. Only version 3 can be written. Reading
-            handles either version, and ignores this.
+        zarr_format : int, optional
+            The version to create, when writing. Version 3 when not given,
+            and version 3 is the only one Iris writes. Reading handles either
+            version and ignores this: zarr-python reads the version from the
+            store, and a version named here that the store disagrees with
+            would be reported as a missing group.
 
         Raises
         ------
         ValueError
             For an unknown `mode`.
         NotImplementedError
-            For a write `mode` with any `zarr_format` but 3.
+            For a write `mode` with a `zarr_format` Iris does not write.
         FileExistsError
             For ``mode="w-"`` onto a target that already exists.
         FileNotFoundError
@@ -800,9 +810,10 @@ class ZarrDataset(CFDataset):
         self._attributes: _ZarrAttributes | None = None
         self._dimensions: dict[str, int] | None = None
 
-        #: The dimensions `create_dimension` has declared, by name. Zarr has
-        #: no dimension object, so this dict is the whole of the concept on
-        #: the write side, and what lets a size conflict be caught.
+        #: The sizes `create_dimension` has been given, by dimension name.
+        #: Zarr stores no dimension object of its own, so this is the only
+        #: record of a declared size, and the only way to catch two arrays
+        #: declaring one name at two sizes.
         self._declared_dimensions: dict[str, int] = {}
 
         if mode not in _MODES:
@@ -810,11 +821,20 @@ class ZarrDataset(CFDataset):
                 f"Unknown mode {mode!r} for a Zarr store. Expected one of {_MODES}."
             )
             raise ValueError(message)
+
         writing = mode in _WRITE_MODES
-        if writing and zarr_format != _WRITABLE_ZARR_FORMAT:
+        if not writing:
+            # Reading detects the version from the store. Naming one here
+            # would constrain that detection, and a store of the other
+            # version would then be reported as a missing group.
+            zarr_format = None
+        elif zarr_format is None:
+            zarr_format = _DEFAULT_ZARR_FORMAT
+        elif zarr_format not in _WRITABLE_ZARR_FORMATS:
             message = (
-                f"Iris writes Zarr version {_WRITABLE_ZARR_FORMAT} stores only, "
-                f"so mode={mode!r} cannot be used with zarr_format={zarr_format!r}."
+                f"Iris cannot write a Zarr version {zarr_format} store. The "
+                f"versions it writes are {_WRITABLE_ZARR_FORMATS}. "
+                f"mode={mode!r} writes, so it needs one of those."
             )
             raise NotImplementedError(message)
 
@@ -830,7 +850,7 @@ class ZarrDataset(CFDataset):
                 store=location,
                 mode=mode,
                 path=group,
-                zarr_format=zarr_format if writing else None,
+                zarr_format=zarr_format,
                 # A write mode must see what the store actually holds, not a
                 # frozen consolidated snapshot: `mode="a"` onto a store this
                 # saver already consolidated would otherwise list only the
