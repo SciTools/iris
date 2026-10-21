@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :class:`iris.mesh.MeshXY` class."""
 
+import pickle
 import re
 
 import numpy as np
@@ -839,6 +840,17 @@ class TestOperations1D(TestMeshCommon):
         assert false_metadata_manager == self.mesh._metadata_manager
         assert false_coord_manager == self.mesh._coord_manager
         assert false_connectivity_manager == self.mesh._connectivity_manager
+
+    def test_pickle(self):
+        # The unpickled managers must be fully usable, not just comparable.
+        mesh = pickle.loads(pickle.dumps(self.mesh))
+        assert mesh == self.mesh
+        assert mesh.connectivities() == self.mesh.connectivities()
+        assert mesh.coords() == self.mesh.coords()
+
+        edge_node = self.new_connectivity(self.EDGE_NODE)
+        mesh.add_connectivities(edge_node)
+        assert edge_node == mesh.edge_node_connectivity
 
     def test_add_connectivities(self):
         # Cannot test ADD - 1D - nothing extra to add beyond minimum.
