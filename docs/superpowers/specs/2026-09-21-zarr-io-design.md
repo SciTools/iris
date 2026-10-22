@@ -2269,7 +2269,7 @@ closing keywords live (§5).
 | Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing. `zarr/saver.py` returns a real `Delayed` and tests `.compute()`; the netCDF path is unchanged |
 | Q6 | The `as_lazy_data` cache is process-wide and keyed on metadata, so it cannot detect a store whose chunk contents changed under identical metadata. Should it be scoped to a load session instead? | Metadata identity closes the cases that were reproduced (§4.4) and matches the netCDF key's existing strength, so it ships. Session scoping is the durable fix and would cover both formats | §4.4 | Nothing |
 | Q7 | Iris writes a floating `_FillValue` as base64 to stay readable by xarray, deviating from CF §2.5.1. Should the deviation be raised with the CF-Zarr conventions group rather than carried privately? | Carry it now, since the alternative is unreadable output; take it upstream to zarr-conventions/CF so the convention settles rather than each reader guessing | §4.4, §4.5 | Nothing |
-| Q8 | `_add_grid_mapping_to_dataset` sets its CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | Nothing. PR 6 added the `_grid_mapping_writer` hook, so a non-netCDF store writes these through `.attributes` while netCDF keeps its own object and its own encoding |
+| Q8 | `_add_grid_mapping_to_dataset` sets its CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | Nothing. PR 6 added the `_grid_mapping_writer` hook, which hands back a function taking a parameter name and a value: netCDF's writes onto its own object and keeps its own encoding, every other store's writes into `.attributes`. Review asked for the function rather than an assignment proxy, so that the store-dependent step is visible at each call site; that also leaves the call sites in the shape regularisation needs, reducing it to deleting netCDF's override |
 | Q10 | Saving int64 data to `NETCDF3_64BIT` fails inside the C library, because netCDF4 reports that format as `NETCDF3_64BIT_OFFSET` and the saver's narrowing list does not have that string **[verified]** | Preserved, not fixed: PR 5 is a relocation and may not change behaviour. `NetCDFDataset.supports_dtype` answers from the same three strings the saver tested, with a test pinning the failure so it is not mistaken for a regression | [#7337](https://github.com/SciTools/iris/issues/7337) | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
@@ -2845,9 +2845,10 @@ All four findings reproduced and fixed; none disputed.
 **2026-10-15 — PR 6, Zarr saving**
 
 - Grid-mapping parameters reach a non-netCDF store through a fifth hook,
-  `_grid_mapping_writer`. netCDF returns its own variable, so what lands in a
-  netCDF file is unchanged; everything else gets a writer onto `.attributes`.
-  Q8's regularisation stays out of this programme.
+  `_grid_mapping_writer`, which returns the function that writes one parameter.
+  netCDF's writes onto its own variable, so what lands in a netCDF file is
+  unchanged; everything else writes into `.attributes`. Q8's regularisation
+  stays out of this programme.
 - `_attribute_handlers` moved to `cf/`, closing the last two-way import
   between the CF and netCDF packages.
 - `zarr/_encode.py` added to §4.1's layout, holding the write-side value

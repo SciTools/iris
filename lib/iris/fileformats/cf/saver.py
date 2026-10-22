@@ -13,9 +13,8 @@ Everything about writing a cube that does not depend on what it is written
 into. The CF data model is here - dimension naming, coordinate and bounds
 variables, cell methods, grid mappings, meshes, attribute compliance. Every
 storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`,
-except where a store's own ``_grid_mapping_writer`` hands back something
-that is not part of it; netCDF's override does that, and every other
-store's does not.
+except where a store's own ``_grid_mapping_writer`` writes somewhere that is
+not part of it; netCDF's override does that, and every other store's does not.
 
 A format supplies a subclass of ``_CFSaver`` holding its own vocabulary of
 storage keywords, and whatever of the five hooks it needs:
@@ -35,13 +34,14 @@ reach one through :attr:`iris.fileformats.cf.CFVariable.cf_data`.
 Nothing here is netCDF-specific any longer: the last thing that was is now a
 hook like the rest.
 
-``_add_grid_mapping_to_dataset`` writes the CF grid-mapping parameters by plain
-attribute assignment, to whatever ``_grid_mapping_writer`` hands back. netCDF
-hands back its own variable, because what that does to the type of each
-attribute in the file is long-standing behaviour and not this module's to
-change -- see Q8 in §12.3 of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store gets
-a writer onto the ``attributes`` mapping.
+``_add_grid_mapping_to_dataset`` writes each CF grid-mapping parameter through
+the function ``_grid_mapping_writer`` hands back, so that where a parameter
+lands is visible at the point it is written. netCDF's function writes onto its
+own variable, because what that does to the type of each attribute in the file
+is long-standing behaviour and not this module's to change -- see Q8 in §12.3
+of the native Zarr I/O design,
+``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store
+writes into the ``attributes`` mapping.
 
 ``ATTRIBUTE_HANDLERS`` lives beside this module, in
 :mod:`iris.fileformats.cf._attribute_handlers`. The handlers serialise the
@@ -463,31 +463,6 @@ def marshal_attributes(cubes, local_keys, format_name):
             local_keys.update(different_value_keys)
 
     return cubes, local_keys, global_attributes
-
-
-class _GridMappingAttributeWriter:
-    """An assignment target that writes into a variable's attributes.
-
-    ``_CFSaver._add_grid_mapping_to_dataset`` sets its CF grid-mapping
-    parameters by plain attribute assignment. On netCDF those
-    assignments go to the netCDF4 variable itself and have done since long
-    before the CF layer existed, and that decides how each one is typed in
-    the file. Regularising it is its own piece of work -- see Q8 in §12.3 of
-    the native Zarr I/O design,
-    ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store
-    needs them to arrive in the ``attributes`` mapping instead, and this is the
-    object that puts them there.
-
-    """
-
-    def __init__(self, cf_var):
-        # Bypass this class's own __setattr__, which would otherwise write
-        # the variable into the variable.
-        object.__setattr__(self, "_cf_var", cf_var)
-
-    def __setattr__(self, name, value):
-        """Write one grid-mapping parameter into the variable's attributes."""
-        self._cf_var.attributes[name] = value
 
 
 class _CFSaver:
@@ -2081,25 +2056,25 @@ class _CFSaver:
         cf_var_grid = self._dataset.create_variable(cs.grid_mapping_name, np.int32)
         cf_var_grid.attributes["grid_mapping_name"] = cs.grid_mapping_name
 
-        # The assignments below decide how each parameter is typed in the
-        # file, and on netCDF they go to the netCDF4 variable itself, exactly
-        # as they always have; see Q8 in the design document. Every other
-        # store gets a writer onto `.attributes`.
-        grid_variable = self._grid_mapping_writer(cf_var_grid)
+        # Where each parameter below lands decides how it is typed in the
+        # store, so the store supplies the function that puts it there. On
+        # netCDF that is the netCDF4 variable itself, exactly as it always
+        # has been; see Q8 in the design document.
+        gm_write_param = self._grid_mapping_writer(cf_var_grid)
 
         def add_ellipsoid(ellipsoid):
-            grid_variable.longitude_of_prime_meridian = (
-                ellipsoid.longitude_of_prime_meridian
+            gm_write_param(
+                "longitude_of_prime_meridian", ellipsoid.longitude_of_prime_meridian
             )
             semi_major = ellipsoid.semi_major_axis
             semi_minor = ellipsoid.semi_minor_axis
             if semi_minor == semi_major:
-                grid_variable.earth_radius = semi_major
+                gm_write_param("earth_radius", semi_major)
             else:
-                grid_variable.semi_major_axis = semi_major
-                grid_variable.semi_minor_axis = semi_minor
+                gm_write_param("semi_major_axis", semi_major)
+                gm_write_param("semi_minor_axis", semi_minor)
             if ellipsoid.datum is not None:
-                grid_variable.horizontal_datum_name = ellipsoid.datum
+                gm_write_param("horizontal_datum_name", ellipsoid.datum)
 
         # latlon
         if isinstance(cs, iris.coord_systems.GeogCS):
@@ -2109,79 +2084,81 @@ class _CFSaver:
         elif isinstance(cs, iris.coord_systems.RotatedGeogCS):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.grid_north_pole_latitude = cs.grid_north_pole_latitude
-            grid_variable.grid_north_pole_longitude = cs.grid_north_pole_longitude
-            grid_variable.north_pole_grid_longitude = cs.north_pole_grid_longitude
+            gm_write_param("grid_north_pole_latitude", cs.grid_north_pole_latitude)
+            gm_write_param("grid_north_pole_longitude", cs.grid_north_pole_longitude)
+            gm_write_param("north_pole_grid_longitude", cs.north_pole_grid_longitude)
 
         # tmerc
         elif isinstance(cs, iris.coord_systems.TransverseMercator):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_central_meridian = (
-                cs.longitude_of_central_meridian
+            gm_write_param(
+                "longitude_of_central_meridian", cs.longitude_of_central_meridian
             )
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
-            grid_variable.scale_factor_at_central_meridian = (
-                cs.scale_factor_at_central_meridian
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
+            gm_write_param(
+                "scale_factor_at_central_meridian", cs.scale_factor_at_central_meridian
             )
 
         # merc
         elif isinstance(cs, iris.coord_systems.Mercator):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_projection_origin = (
-                cs.longitude_of_projection_origin
+            gm_write_param(
+                "longitude_of_projection_origin", cs.longitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
             # Only one of these should be set
             if cs.standard_parallel is not None:
-                grid_variable.standard_parallel = cs.standard_parallel
+                gm_write_param("standard_parallel", cs.standard_parallel)
             elif cs.scale_factor_at_projection_origin is not None:
-                grid_variable.scale_factor_at_projection_origin = (
-                    cs.scale_factor_at_projection_origin
+                gm_write_param(
+                    "scale_factor_at_projection_origin",
+                    cs.scale_factor_at_projection_origin,
                 )
 
         # lcc
         elif isinstance(cs, iris.coord_systems.LambertConformal):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.standard_parallel = cs.secant_latitudes
-            grid_variable.latitude_of_projection_origin = cs.central_lat
-            grid_variable.longitude_of_central_meridian = cs.central_lon
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
+            gm_write_param("standard_parallel", cs.secant_latitudes)
+            gm_write_param("latitude_of_projection_origin", cs.central_lat)
+            gm_write_param("longitude_of_central_meridian", cs.central_lon)
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
 
         # polar stereo (have to do this before Stereographic because it subclasses it)
         elif isinstance(cs, iris.coord_systems.PolarStereographic):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.latitude_of_projection_origin = cs.central_lat
-            grid_variable.straight_vertical_longitude_from_pole = cs.central_lon
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
+            gm_write_param("latitude_of_projection_origin", cs.central_lat)
+            gm_write_param("straight_vertical_longitude_from_pole", cs.central_lon)
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
             # Only one of these should be set
             if cs.true_scale_lat is not None:
-                grid_variable.true_scale_lat = cs.true_scale_lat
+                gm_write_param("true_scale_lat", cs.true_scale_lat)
             elif cs.scale_factor_at_projection_origin is not None:
-                grid_variable.scale_factor_at_projection_origin = (
-                    cs.scale_factor_at_projection_origin
+                gm_write_param(
+                    "scale_factor_at_projection_origin",
+                    cs.scale_factor_at_projection_origin,
                 )
             else:
-                grid_variable.scale_factor_at_projection_origin = 1.0
+                gm_write_param("scale_factor_at_projection_origin", 1.0)
 
         # stereo
         elif isinstance(cs, iris.coord_systems.Stereographic):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_projection_origin = cs.central_lon
-            grid_variable.latitude_of_projection_origin = cs.central_lat
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
+            gm_write_param("longitude_of_projection_origin", cs.central_lon)
+            gm_write_param("latitude_of_projection_origin", cs.central_lat)
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
             # Only one of these should be set
             if cs.true_scale_lat is not None:
                 msg = (
@@ -2190,11 +2167,12 @@ class _CFSaver:
                 )
                 raise ValueError(msg)
             elif cs.scale_factor_at_projection_origin is not None:
-                grid_variable.scale_factor_at_projection_origin = (
-                    cs.scale_factor_at_projection_origin
+                gm_write_param(
+                    "scale_factor_at_projection_origin",
+                    cs.scale_factor_at_projection_origin,
                 )
             else:
-                grid_variable.scale_factor_at_projection_origin = 1.0
+                gm_write_param("scale_factor_at_projection_origin", 1.0)
 
         # osgb (a specific tmerc)
         elif isinstance(cs, iris.coord_systems.OSGB):
@@ -2207,57 +2185,57 @@ class _CFSaver:
         elif isinstance(cs, iris.coord_systems.LambertAzimuthalEqualArea):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_projection_origin = (
-                cs.longitude_of_projection_origin
+            gm_write_param(
+                "longitude_of_projection_origin", cs.longitude_of_projection_origin
             )
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
 
         # albers conical equal area
         elif isinstance(cs, iris.coord_systems.AlbersEqualArea):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_central_meridian = (
-                cs.longitude_of_central_meridian
+            gm_write_param(
+                "longitude_of_central_meridian", cs.longitude_of_central_meridian
             )
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
-            grid_variable.standard_parallel = cs.standard_parallels
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
+            gm_write_param("standard_parallel", cs.standard_parallels)
 
         # vertical perspective
         elif isinstance(cs, iris.coord_systems.VerticalPerspective):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_projection_origin = (
-                cs.longitude_of_projection_origin
+            gm_write_param(
+                "longitude_of_projection_origin", cs.longitude_of_projection_origin
             )
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
-            grid_variable.perspective_point_height = cs.perspective_point_height
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
+            gm_write_param("perspective_point_height", cs.perspective_point_height)
 
         # geostationary
         elif isinstance(cs, iris.coord_systems.Geostationary):
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.longitude_of_projection_origin = (
-                cs.longitude_of_projection_origin
+            gm_write_param(
+                "longitude_of_projection_origin", cs.longitude_of_projection_origin
             )
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
-            grid_variable.perspective_point_height = cs.perspective_point_height
-            grid_variable.sweep_angle_axis = cs.sweep_angle_axis
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
+            gm_write_param("perspective_point_height", cs.perspective_point_height)
+            gm_write_param("sweep_angle_axis", cs.sweep_angle_axis)
 
         # oblique mercator (and rotated variant)
         # Use duck-typing over isinstance() - subclasses (i.e.
@@ -2269,17 +2247,18 @@ class _CFSaver:
             #  all mention of RM.
             if cs.ellipsoid:
                 add_ellipsoid(cs.ellipsoid)
-            grid_variable.azimuth_of_central_line = cs.azimuth_of_central_line
-            grid_variable.latitude_of_projection_origin = (
-                cs.latitude_of_projection_origin
+            gm_write_param("azimuth_of_central_line", cs.azimuth_of_central_line)
+            gm_write_param(
+                "latitude_of_projection_origin", cs.latitude_of_projection_origin
             )
-            grid_variable.longitude_of_projection_origin = (
-                cs.longitude_of_projection_origin
+            gm_write_param(
+                "longitude_of_projection_origin", cs.longitude_of_projection_origin
             )
-            grid_variable.false_easting = cs.false_easting
-            grid_variable.false_northing = cs.false_northing
-            grid_variable.scale_factor_at_projection_origin = (
-                cs.scale_factor_at_projection_origin
+            gm_write_param("false_easting", cs.false_easting)
+            gm_write_param("false_northing", cs.false_northing)
+            gm_write_param(
+                "scale_factor_at_projection_origin",
+                cs.scale_factor_at_projection_origin,
             )
 
         # other
@@ -2293,7 +2272,7 @@ class _CFSaver:
 
         # add WKT string
         if extended_grid_mapping:
-            grid_variable.crs_wkt = cs.as_cartopy_crs().to_wkt()
+            gm_write_param("crs_wkt", cs.as_cartopy_crs().to_wkt())
 
     def _create_cf_grid_mapping(self, cube, cf_var_cube):
         """Create CF-netCDF grid mapping and associated CF-netCDF variable.
@@ -2639,7 +2618,7 @@ class _CFSaver:
         return False
 
     def _grid_mapping_writer(self, cf_var):
-        """Return the object the grid-mapping parameters are assigned to.
+        """Return the function that writes one CF grid-mapping parameter.
 
         Parameters
         ----------
@@ -2648,13 +2627,17 @@ class _CFSaver:
 
         Returns
         -------
-        object
-            Something that accepts a plain attribute assignment per CF
-            grid-mapping parameter. Here, a writer onto ``cf_var.attributes``.
-            A store that types those attributes some other way overrides this.
+        callable
+            Called with a parameter name and a value. Here it puts them in
+            ``cf_var.attributes``, which is where a CF store keeps them. A
+            store that types those attributes some other way overrides this.
 
         """
-        return _GridMappingAttributeWriter(cf_var)
+
+        def write_parameter(name, value):
+            cf_var.attributes[name] = value
+
+        return write_parameter
 
     def _lazy_stream_data(
         self,

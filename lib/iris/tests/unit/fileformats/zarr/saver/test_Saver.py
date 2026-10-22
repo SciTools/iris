@@ -112,7 +112,8 @@ class TestScalarCubes:
 class TestGridMappings:
     def test_a_coordinate_system_is_written(self, tmp_path, cube):
         # `_grid_mapping_writer`'s base implementation, reached for real:
-        # without it this raises AttributeError on `.variable`.
+        # without it the parameters would be written onto a netCDF4 object
+        # that a Zarr store does not have.
         from iris.coord_systems import GeogCS
 
         for coord in cube.coords():

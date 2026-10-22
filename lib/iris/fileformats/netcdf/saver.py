@@ -414,15 +414,15 @@ class Saver(_CFSaver):
         cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
 
     def _grid_mapping_writer(self, cf_var):
-        """Return the netCDF4 variable itself, which is what has always received these.
+        """Return a function writing onto the netCDF4 variable, as has always happened.
 
-        Assignments to a netCDF4 variable bypass the ASCII-to-bytes coercion
-        that ``.attributes`` applies, so ``crs_wkt`` is written as
+        Setting an attribute on a netCDF4 variable bypasses the ASCII-to-bytes
+        coercion that ``.attributes`` applies, so ``crs_wkt`` is written as
         ``NC_STRING`` while ``grid_mapping_name`` is ``NC_CHAR``. Regularising
         that is Q8 in §12.3 of the native Zarr I/O design,
         ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``; until then,
-        this returns the same object the parameters have always been written
-        to, so the file is unchanged.
+        this writes each parameter exactly where netCDF has always written it,
+        so the file is unchanged.
 
         Parameters
         ----------
@@ -431,10 +431,15 @@ class Saver(_CFSaver):
 
         Returns
         -------
-        :class:`netCDF4.Variable`
+        callable
+            Called with a parameter name and a value.
 
         """
-        return cf_var.variable
+
+        def write_parameter(name, value):
+            setattr(cf_var.variable, name, value)
+
+        return write_parameter
 
     def _create_string_variable(
         self, cube_or_mesh, cf_name, element, element_dims, data
