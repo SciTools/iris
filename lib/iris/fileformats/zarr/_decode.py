@@ -16,6 +16,12 @@ sight. :func:`mask_and_scale` is what the loader lays over a raw array as a
 ``map_blocks`` layer - visible in the graph, fusable with its neighbours, and
 testable on a plain ndarray.
 
+Three names are this module's surface: :func:`decode_parameters`,
+:func:`decoding_required` and :func:`mask_and_scale`. Everything else is a
+step of one of those, and carries a leading underscore to say so - the module
+being private already does not make the distinction worthless, since
+``_dataset.py`` should not be reaching for a decode step on its own.
+
 Two traps, both from the Zarr specification rather than from CF.
 
 **A floating ``_FillValue`` is base64 on version 3.** Released xarray encodes
@@ -62,7 +68,7 @@ _PACKED_DOUBLE_BYTES = 8
 _FILL_VALUE_IS_A_MASK_BEFORE = 3
 
 
-def decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
+def _decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
     """Return a CF missing-value sentinel as a value of `dtype`.
 
     Parameters
@@ -121,7 +127,7 @@ def decode_fill_value(value: Any, dtype: np.dtype, variable_name: str) -> Any:
         return None
 
 
-def decode_missing_values(value: Any, dtype: np.dtype, variable_name: str) -> list:
+def _decode_missing_values(value: Any, dtype: np.dtype, variable_name: str) -> list:
     """Return every sentinel a ``missing_value`` attribute declares.
 
     CF section 2.5.1 makes ``missing_value`` "a scalar or vector containing
@@ -143,7 +149,7 @@ def decode_missing_values(value: Any, dtype: np.dtype, variable_name: str) -> li
     Returns
     -------
     list
-        One entry per element :func:`decode_fill_value` could read. An
+        One entry per element :func:`_decode_fill_value` could read. An
         element it could not is warned about and dropped, leaving the rest:
         one bad sentinel in a vector is no reason to ignore the good ones.
 
@@ -154,7 +160,9 @@ def decode_missing_values(value: Any, dtype: np.dtype, variable_name: str) -> li
         elements = list(value)
     else:
         elements = [value]
-    decoded = (decode_fill_value(element, dtype, variable_name) for element in elements)
+    decoded = (
+        _decode_fill_value(element, dtype, variable_name) for element in elements
+    )
     return [sentinel for sentinel in decoded if sentinel is not None]
 
 
@@ -220,12 +228,12 @@ def decode_parameters(
     # "a scalar or vector".
     sentinels = []
     if "_FillValue" in attributes:
-        decoded = decode_fill_value(attributes["_FillValue"], dtype, variable_name)
+        decoded = _decode_fill_value(attributes["_FillValue"], dtype, variable_name)
         if decoded is not None:
             sentinels.append(decoded)
     if "missing_value" in attributes:
         sentinels.extend(
-            decode_missing_values(attributes["missing_value"], dtype, variable_name)
+            _decode_missing_values(attributes["missing_value"], dtype, variable_name)
         )
 
     if (
@@ -301,7 +309,7 @@ def decoding_required(parameters: dict) -> bool:
     )
 
 
-def mask_by_sentinels(block: np.ndarray, sentinels: tuple) -> np.ndarray:
+def _mask_by_sentinels(block: np.ndarray, sentinels: tuple) -> np.ndarray:
     """Return a boolean mask of the elements equal to any sentinel.
 
     A NaN sentinel is matched with :func:`numpy.isnan`, because NaN does not
@@ -317,7 +325,7 @@ def mask_by_sentinels(block: np.ndarray, sentinels: tuple) -> np.ndarray:
     return mask
 
 
-def mask_by_valid_range(block: np.ndarray, valid_min, valid_max) -> np.ndarray:
+def _mask_by_valid_range(block: np.ndarray, valid_min, valid_max) -> np.ndarray:
     """Return a boolean mask of the elements outside the valid range."""
     mask = np.zeros(block.shape, dtype=bool)
     if valid_min is not None:
@@ -327,7 +335,7 @@ def mask_by_valid_range(block: np.ndarray, valid_min, valid_max) -> np.ndarray:
     return mask
 
 
-def unpack(block: np.ndarray, scale_factor, add_offset, dtype: np.dtype) -> np.ndarray:
+def _unpack(block: np.ndarray, scale_factor, add_offset, dtype: np.dtype) -> np.ndarray:
     """Return `block` unpacked by CF's scale and offset, as `dtype`."""
     result = block
     if scale_factor is not None:
@@ -372,6 +380,8 @@ def mask_and_scale(
     numpy.ma.MaskedArray
 
     """
-    mask = mask_by_sentinels(block, sentinels)
-    mask |= mask_by_valid_range(block, valid_min, valid_max)
-    return np.ma.masked_array(unpack(block, scale_factor, add_offset, dtype), mask=mask)
+    mask = _mask_by_sentinels(block, sentinels)
+    mask |= _mask_by_valid_range(block, valid_min, valid_max)
+    return np.ma.masked_array(
+        _unpack(block, scale_factor, add_offset, dtype), mask=mask
+    )

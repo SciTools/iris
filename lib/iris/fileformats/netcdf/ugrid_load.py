@@ -20,6 +20,8 @@ Extension functions for Iris NetCDF loading, to construct
 
 """
 
+from contextlib import ExitStack
+from dataclasses import dataclass
 from functools import partial
 from itertools import groupby
 from pathlib import Path
@@ -91,8 +93,119 @@ def _meshes_from_cf(cf_reader):
     return meshes
 
 
+@dataclass
+class _PendingMeshCoords:
+    """MeshCoords built ahead of their cube, waiting to be attached to it."""
+
+    coords: list
+    dim: int | None
+    capture_kwargs: dict
+
+
+def _prepare_mesh_coords(cf_reader, meshes, cf_var):
+    """Build the MeshCoords a data variable needs, before its cube exists.
+
+    Unconventional 'split' usage of ``_add_or_capture``: this half builds and
+    captures, :func:`_attach_mesh_coords` adds. The split is forced by
+    attribute handling - built after the cube,
+    ``helpers._add_unused_attributes`` has already taken the variable's
+    ``mesh`` and ``location`` attributes for cube attributes.
+
+    Parameters
+    ----------
+    cf_reader : iris.fileformats.cf.CFReader
+        The reader the mesh variables were found in.
+    meshes : dict
+        Meshes by name, as returned by :func:`_meshes_from_cf`.
+    cf_var : iris.fileformats.cf.CFDataVariable
+        The data variable about to be built into a cube.
+
+    Returns
+    -------
+    _PendingMeshCoords or None
+        None when `cf_var` names no mesh, or names one this dataset does not
+        hold.
+
+    """
+    # NOTE: dynamic imports avoid circularity : see note with module imports
+    from iris.cube import Cube
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
+
+    # Not this module's `logger`, which sits at INFO and would drop a debug
+    #  message at source. `TestsMesh.test_missing_mesh` asserts the package
+    #  logger, where this message has always been raised.
+    from iris.fileformats.netcdf import logger as netcdf_logger
+
+    mesh_name = cf_var.attributes.get("mesh")
+    if mesh_name is None:
+        return None
+
+    mesh = meshes.get(mesh_name)
+    if mesh is None:
+        message = (
+            f"Mesh '{mesh_name}' - "
+            f"referenced by variable: '{cf_var.cf_name}' - "
+            "could not be found in file."
+        )
+        netcdf_logger.debug(message)
+        return None
+
+    pending = _PendingMeshCoords(
+        coords=[],
+        dim=None,
+        capture_kwargs=dict(
+            cf_var=cf_reader.cf_group.meshes[mesh_name],
+            # MeshCoords are an Iris concept; the best fallback we have is to
+            #  capture the CF Mesh.
+            destination=LoadProblems.Problem.Destination(
+                iris_class=Cube,
+                identifier=cf_var.cf_name,
+            ),
+        ),
+    )
+
+    def _stash(coords_and_dim):
+        pending.coords, pending.dim = coords_and_dim
+
+    _ = _add_or_capture(
+        build_func=partial(_build_mesh_coords, mesh, cf_var),
+        add_method=partial(_stash),
+        **pending.capture_kwargs,
+    )
+    return pending
+
+
+def _attach_mesh_coords(pending, cube):
+    """Attach MeshCoords prepared by :func:`_prepare_mesh_coords` to their cube.
+
+    Parameters
+    ----------
+    pending : _PendingMeshCoords
+        The return of :func:`_prepare_mesh_coords`. Its `coords` are empty if
+        the build failed, in which case the failure is already recorded and
+        this call adds nothing.
+    cube : iris.cube.Cube
+        The cube built from the data variable the MeshCoords were prepared
+        for.
+
+    """
+    # NOTE: dynamic imports avoid circularity : see note with module imports
+    from iris.fileformats._nc_load_rules.helpers import _add_or_capture
+
+    def _add(coords_and_dim):
+        coords, dim = coords_and_dim
+        for coord in coords:
+            cube.add_aux_coord(coord, dim)
+
+    _ = _add_or_capture(
+        build_func=partial(lambda: (pending.coords, pending.dim)),
+        add_method=partial(_add),
+        **pending.capture_kwargs,
+    )
+
+
 def load_mesh(uris, var_name=None):
-    """Load a single :class:`~iris.mesh.MeshXY` object from one or more NetCDF files.
+    """Load a single :class:`~iris.mesh.MeshXY` from one or more files or stores.
 
     Raises an error if more/less than one
     :class:`~iris.mesh.MeshXY` is found.
@@ -100,8 +213,9 @@ def load_mesh(uris, var_name=None):
     Parameters
     ----------
     uris : str or iterable of str
-        One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP or NcZarr.
+        One or more filenames/URI's. Filenames can include wildcards. NetCDF
+        files and Zarr stores are read; anything else is ignored. Any URI's
+        must support OpenDAP, NcZarr, or a Zarr remote store scheme.
     var_name : str, optional
         Only return a :class:`~iris.mesh.MeshXY` if its
         var_name matches this value.
@@ -121,13 +235,14 @@ def load_mesh(uris, var_name=None):
 
 
 def load_meshes(uris, var_name=None):
-    r"""Load :class:`~iris.mesh.MeshXY` objects from one or more NetCDF files.
+    r"""Load :class:`~iris.mesh.MeshXY` objects from files or Zarr stores.
 
     Parameters
     ----------
     uris : str or iterable of str
-        One or more filenames/URI's. Filenames can include wildcards. Any URI's
-        must support OpenDAP nor NcZarr.
+        One or more filenames/URI's. Filenames can include wildcards. NetCDF
+        files and Zarr stores are read; anything else is ignored. Any URI's
+        must support OpenDAP, NcZarr, or a Zarr remote store scheme.
     var_name : str, optional
         Only return :class:`~iris.mesh.MeshXY` that have
         var_names matching this value.
@@ -143,7 +258,7 @@ def load_meshes(uris, var_name=None):
     # NOTE: no constraints or callbacks supported - these assume they are operating
     #  on a Cube.
     # NOTE: dynamic imports avoid circularity : see note with module imports
-    from iris.fileformats import FORMAT_AGENT
+    from iris.fileformats import FORMAT_AGENT, _load_zarr
     from iris.fileformats.cf import CFReader
     import iris.fileformats.netcdf.loader as nc_loader
 
@@ -180,15 +295,31 @@ def load_meshes(uris, var_name=None):
             else:
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
+            # `_load_zarr` is compared rather than `zarr.load_cubes` so that
+            #  a store's presence, not this module's import, is what reaches
+            #  zarr-python: see `iris.fileformats.zarr.__getattr__`.
             if handling_format_spec.handler == nc_loader.load_cubes:
-                valid_sources.append(source)
+                valid_sources.append((source, False))
+            elif handling_format_spec.handler == _load_zarr:
+                valid_sources.append((source, True))
             else:
-                message = f"Ignoring non-NetCDF file: {source}"
+                message = f"Ignoring file of a format that holds no mesh: {source}"
                 logger.info(msg=message, extra=dict(cls=None))
 
     result = {}
-    for source in valid_sources:
-        with CFReader(source) as cf_reader:
+    for source, is_zarr in valid_sources:
+        with ExitStack() as stack:
+            if is_zarr:
+                # Deferred: this is what reaches zarr-python, and it must not
+                #  happen for a caller that named no Zarr store.
+                from iris.fileformats.zarr._dataset import ZarrDataset
+
+                # CFReader takes an open CFDataset or a filename; the mesh
+                #  machinery below never learns which it was given.
+                target = stack.enter_context(ZarrDataset(source))
+            else:
+                target = source
+            cf_reader = stack.enter_context(CFReader(target))
             meshes_dict = _meshes_from_cf(cf_reader)
         meshes = list(meshes_dict.values())
         if var_name is not None:

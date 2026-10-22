@@ -20,9 +20,13 @@ Iris loads **one** group per call. A Zarr store can legitimately hold
 unrelated datasets, and merging them into one ``CubeList`` would be wrong, so
 nested groups are not walked and ``group=`` selects which one to read.
 
-UGRID meshes are not built here. :func:`iris.mesh.load_meshes` reaches a Zarr
-store through the same format dispatch, but the mesh machinery lives in
-:mod:`iris.fileformats.netcdf.ugrid_load` and this package does not import it.
+UGRID meshes load from a Zarr store exactly as they do from a netCDF file.
+Nothing in the mesh machinery is netCDF-specific - it reads a
+:class:`~iris.fileformats.cf.CFReader`, and a `CFReader` over a `ZarrDataset`
+answers the same questions - so this module calls into
+:mod:`iris.fileformats.netcdf.ugrid_load` rather than growing a second copy.
+That module's name is the historical home of the code, not a statement about
+what it can read.
 
 See sections 4.6 and 4.7 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
@@ -101,6 +105,11 @@ def load_cubes(file_sources, callback=None, constraints=None, group=None):
     This function maintains laziness; it does not realise data.
 
     """
+    from iris.fileformats.netcdf.ugrid_load import (
+        _attach_mesh_coords,
+        _meshes_from_cf,
+        _prepare_mesh_coords,
+    )
     from iris.io import run_callback
 
     var_callback = _translate_constraints_to_var_callback(constraints)
@@ -114,6 +123,8 @@ def load_cubes(file_sources, callback=None, constraints=None, group=None):
             with CFReader(dataset) as cf:
                 _check_has_data_variables(cf, dataset)
 
+                meshes = _meshes_from_cf(cf)
+
                 data_variables = list(cf.cf_group.data_variables.values()) + list(
                     cf.cf_group.promoted.values()
                 )
@@ -121,7 +132,15 @@ def load_cubes(file_sources, callback=None, constraints=None, group=None):
                     if var_callback and not var_callback(cf_var):
                         continue
 
+                    # MeshCoords are built before the cube and attached after
+                    # it: see _prepare_mesh_coords for why the two cannot be
+                    # one step.
+                    pending_mesh_coords = _prepare_mesh_coords(cf, meshes, cf_var)
+
                     cube = _load_cube(engine, cf, cf_var, cf.filename)
+
+                    if pending_mesh_coords is not None:
+                        _attach_mesh_coords(pending_mesh_coords, cube)
 
                     try:
                         _load_aux_factory(engine, cube)

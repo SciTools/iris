@@ -18,12 +18,16 @@ from .. import stores
 
 
 class TestZarrDatasetVersion3(contract.CFDatasetReadContract):
+    chunking_key = "chunks"
+
     @pytest.fixture
     def readable(self, tmp_path):
         return ZarrDataset(stores.make_store(tmp_path / "contract.zarr"))
 
 
 class TestZarrDatasetVersion2(contract.CFDatasetReadContract):
+    chunking_key = "chunks"
+
     @pytest.fixture
     def readable(self, tmp_path):
         location = stores.make_store(tmp_path / "contract.zarr", zarr_format=2)

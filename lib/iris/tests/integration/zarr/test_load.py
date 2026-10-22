@@ -14,6 +14,7 @@ from iris.coord_systems import GeogCS
 from iris.fileformats.cf import loader as cf_loader
 from iris.loading import LOAD_PROBLEMS
 from iris.tests import stock
+from iris.tests.unit.fileformats.zarr import stores as zarr_stores
 from iris.warnings import IrisLoadWarning
 
 from . import fixtures
@@ -191,3 +192,29 @@ def test_array_dimensions_does_not_reach_the_cube(tmp_path, realistic_4d_w_every
         assert "_ARRAY_DIMENSIONS" not in cube.attributes
         for coord in cube.coords():
             assert "_ARRAY_DIMENSIONS" not in coord.attributes
+
+
+def test_a_mesh_from_zarr_is_a_full_iris_mesh(tmp_path):
+    """The claim the Zarr mesh path rests on, taken to netCDF and back.
+
+    `iris.fileformats.netcdf.ugrid_load` reads a `CFReader`, and a `CFReader`
+    over a `ZarrDataset` answers the same questions. A mesh built from a Zarr
+    store that then survives a netCDF round trip unchanged is a mesh with
+    nothing Zarr-shaped left in it.
+    """
+    from_zarr = iris.load_cube(zarr_stores.make_mesh_store(tmp_path / "mesh.zarr"))
+    assert from_zarr.mesh is not None
+    assert from_zarr.mesh_dim() is not None
+
+    with iris.FUTURE.context(save_split_attrs=True):
+        iris.save(from_zarr, tmp_path / "roundtrip.nc")
+    reloaded = iris.load_cube(str(tmp_path / "roundtrip.nc"))
+
+    assert reloaded.mesh == from_zarr.mesh
+    assert reloaded.mesh_dim() == from_zarr.mesh_dim()
+    np.testing.assert_array_equal(reloaded.data, from_zarr.data)
+    # Not the whole cube: the netCDF saver writes its own `Conventions`, so
+    # `CF-1.7, UGRID-1.0` comes back as `CF-1.7`. Nothing mesh-shaped.
+    assert reloaded.metadata._replace(attributes=None) == from_zarr.metadata._replace(
+        attributes=None
+    )

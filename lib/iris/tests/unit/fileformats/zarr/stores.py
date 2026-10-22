@@ -4,23 +4,34 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Builders for the small Zarr stores these tests ask questions of.
 
-One canonical store, deliberately the same contents as the shared CFDataset
-contract writes, so that a Zarr answer and a netCDF answer can be compared
-without translating between two sets of fixtures.
+One canonical store, built from the constants the shared CFDataset contract
+writes, so that a Zarr answer and a netCDF answer can be compared without
+translating between two sets of fixtures - and so that the two cannot drift
+apart.
 """
 
 import numpy as np
 import zarr
 
-#: The canonical store's dimensions, in order.
-DIMENSIONS = {"y": 3, "x": 2}
-DATA = np.arange(6, dtype="f8").reshape(3, 2)
-VARIABLE_ATTRS = {
-    "units": "K",
-    "long_name": "surface temperature",
-    "grid_mapping": "grid",
-}
-GLOBALS = {"Conventions": "CF-1.7", "title": "contract"}
+from iris.tests.unit.fileformats.cf.dataset.contract import (
+    CONTRACT_DATA as DATA,
+)
+from iris.tests.unit.fileformats.cf.dataset.contract import (
+    CONTRACT_DIMENSIONS as DIMENSIONS,
+)
+from iris.tests.unit.fileformats.cf.dataset.contract import (
+    CONTRACT_GLOBALS as GLOBALS,
+)
+from iris.tests.unit.fileformats.cf.dataset.contract import (
+    CONTRACT_VARIABLE_ATTRS,
+)
+
+#: The canonical store's variable attributes.
+#:
+#: The contract's own, plus the `grid_mapping` that makes the `grid` array
+#: below mean something. The contract checks its attributes are present
+#: rather than that they are all there is, so the extra is legitimate.
+VARIABLE_ATTRS = {**CONTRACT_VARIABLE_ATTRS, "grid_mapping": "grid"}
 
 #: The version 2 attribute carrying dimension names.
 ARRAY_DIMENSIONS = "_ARRAY_DIMENSIONS"
@@ -109,5 +120,105 @@ def make_store(path, *, zarr_format=3, chunks="auto", shards=None):
         },
     )
     scalar[()] = 0
+
+    return str(path)
+
+
+#: The UGRID store's mesh topology variable, as CF attributes.
+MESH_ATTRS = {
+    "cf_role": "mesh_topology",
+    "topology_dimension": 2,
+    "node_coordinates": "node_x node_y",
+    "face_node_connectivity": "face_nodes",
+    "face_coordinates": "face_x face_y",
+    "long_name": "topology of a 2D mesh",
+}
+
+#: The UGRID store's arrays: name -> (values, dimension names, attributes).
+#:
+#: Two quadrilateral faces over six nodes, with a time dimension on the data
+#: so that the mesh dimension is not the only one. Every dimension is a
+#: different size, so a coordinate cannot be attached to the right axis by
+#: accident - see `_DimensionIdentity`.
+MESH_ARRAYS = {
+    "node_x": (
+        np.array([0.0, 1.0, 2.0, 0.0, 1.0, 2.0]),
+        ("node",),
+        {"standard_name": "longitude", "units": "degrees_east"},
+    ),
+    "node_y": (
+        np.array([0.0, 0.0, 0.0, 1.0, 1.0, 1.0]),
+        ("node",),
+        {"standard_name": "latitude", "units": "degrees_north"},
+    ),
+    "face_x": (
+        np.array([0.5, 1.5]),
+        ("face",),
+        {"standard_name": "longitude", "units": "degrees_east"},
+    ),
+    "face_y": (
+        np.array([0.5, 0.5]),
+        ("face",),
+        {"standard_name": "latitude", "units": "degrees_north"},
+    ),
+    "face_nodes": (
+        np.array([[0, 1, 4, 3], [1, 2, 5, 4]], dtype="i4"),
+        ("face", "vertex"),
+        {"cf_role": "face_node_connectivity", "start_index": 0},
+    ),
+    "time": (
+        np.array([0.0, 1.0, 2.0]),
+        ("time",),
+        {"standard_name": "time", "units": "days since 2000-01-01"},
+    ),
+    "temp": (
+        np.arange(6, dtype="f8").reshape(3, 2),
+        ("time", "face"),
+        {
+            "standard_name": "air_temperature",
+            "units": "K",
+            "mesh": "mesh",
+            "location": "face",
+            "coordinates": "face_x face_y",
+        },
+    ),
+}
+
+
+def make_mesh_store(path, *, zarr_format=3):
+    """Write a UGRID store at `path`, and return `path` as a string.
+
+    The same topology this module's netCDF counterpart writes, so that the
+    two backends' meshes can be compared directly.
+
+    Every array is written with no fill value. A mesh is full of legitimate
+    zeros - node coordinates on an axis, and connectivity indices under
+    `start_index = 0` - and on a version 2 store zarr-python's default fill
+    value is zero, which Iris reads as "mask the zeros". That rule has its
+    own test; a mesh fixture that tripped it would be testing it twice and
+    reading its own topology back full of masks.
+    """
+    root = zarr.open_group(store=path, mode="w", zarr_format=zarr_format)
+    root.attrs["Conventions"] = "CF-1.7, UGRID-1.0"
+
+    mesh = make_array(
+        root, "mesh", (), "i4", zarr_format, dimensions=(), fill_value=None
+    )
+    for key, value in MESH_ATTRS.items():
+        mesh.attrs[key] = value
+    mesh[()] = 0
+
+    for name, (values, dimensions, attributes) in MESH_ARRAYS.items():
+        array = make_array(
+            root,
+            name,
+            values.shape,
+            values.dtype,
+            zarr_format,
+            dimensions=dimensions,
+            fill_value=None,
+            attributes=attributes,
+        )
+        array[:] = values
 
     return str(path)

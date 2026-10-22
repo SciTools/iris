@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 import zarr
 
+import iris
 from iris.cube import Cube
 from iris.exceptions import TranslationError
 from iris.fileformats.zarr import load_cubes
@@ -33,7 +34,7 @@ def _assert_clean_load():
     assert LOAD_PROBLEMS.problems == []
 
 
-def test_one_cube_per_data_variable(tmp_path):
+def test_the_canonical_store_loads_its_one_data_variable(tmp_path):
     location = stores.make_store(tmp_path / "s.zarr")
     cubes = list(load_cubes(location))
     assert len(cubes) == 1
@@ -44,10 +45,49 @@ def test_one_cube_per_data_variable(tmp_path):
     np.testing.assert_array_equal(cube.data, stores.DATA)
 
 
+def test_one_cube_per_data_variable(tmp_path):
+    root = zarr.open_group(store=tmp_path / "two.zarr", mode="w", zarr_format=3)
+    for name in ("first", "second", "third"):
+        array = stores.make_array(
+            root, name, (2,), "f8", 3, dimensions=("p",), attributes={"units": "1"}
+        )
+        array[:] = [1.0, 2.0]
+
+    cubes = list(load_cubes(str(tmp_path / "two.zarr")))
+    assert sorted(cube.var_name for cube in cubes) == ["first", "second", "third"]
+
+
 def test_a_version_2_store_loads_the_same_cube(tmp_path):
     v3 = list(load_cubes(stores.make_store(tmp_path / "v3.zarr")))[0]
     v2 = list(load_cubes(stores.make_store(tmp_path / "v2.zarr", zarr_format=2)))[0]
     assert v2 == v3
+
+
+def test_a_name_constraint_skips_variables_before_they_are_built(tmp_path, mocker):
+    """`constraints` is a pre-build filter, not a post-build one.
+
+    `_translate_constraints_to_var_callback` only answers for a bare
+    `NameConstraint`; any other constraint returns None and every variable is
+    built. The spy is what distinguishes "filtered early" from "built then
+    discarded" - the cube list alone cannot.
+    """
+    from iris.fileformats.zarr import loader as zarr_loader
+
+    root = zarr.open_group(store=tmp_path / "two.zarr", mode="w", zarr_format=3)
+    for name in ("wanted", "unwanted"):
+        array = stores.make_array(
+            root, name, (2,), "f8", 3, dimensions=("p",), attributes={"units": "1"}
+        )
+        array[:] = [1.0, 2.0]
+
+    # The loader binds `_load_cube` at import, so the spy must go on its own
+    #  module reference rather than on `cf.loader`'s.
+    spy = mocker.spy(zarr_loader, "_load_cube")
+    constraint = iris.NameConstraint(var_name="wanted")
+    cubes = list(load_cubes(str(tmp_path / "two.zarr"), constraints=constraint))
+
+    assert [cube.var_name for cube in cubes] == ["wanted"]
+    assert spy.call_count == 1
 
 
 def test_a_callback_can_reject_a_cube(tmp_path):
@@ -291,3 +331,77 @@ def test_a_cf_fill_value_beats_the_storage_one(tmp_path):
 
     cube = list(load_cubes(str(tmp_path / "z.zarr")))[0]
     assert cube.data.mask.tolist() == [False, True, False]
+
+
+class TestMesh:
+    """UGRID data, which a Zarr store holds exactly as a netCDF file does.
+
+    Nothing in `iris.fileformats.netcdf.ugrid_load` is netCDF-specific: it
+    reads a `CFReader`, and a `CFReader` over a `ZarrDataset` answers the
+    same questions. These assert that, rather than re-testing the mesh
+    machinery itself.
+    """
+
+    @pytest.fixture
+    def cube(self, tmp_path):
+        location = stores.make_mesh_store(tmp_path / "mesh.zarr")
+        return list(load_cubes(location))[0]
+
+    def test_the_cube_carries_a_mesh(self, cube):
+        assert cube.mesh is not None
+        assert cube.mesh.var_name == "mesh"
+        assert cube.mesh.topology_dimension == 2
+
+    def test_the_mesh_is_on_the_right_dimension(self, cube):
+        assert cube.mesh_dim() == cube.coord_dims("time")[0] + 1
+
+    def test_the_mesh_coords_are_attached(self, cube):
+        names = sorted(coord.name() for coord in cube.coords(mesh_coords=True))
+        assert names == ["latitude", "longitude"]
+
+    def test_the_connectivity_is_read(self, cube):
+        connectivity = cube.mesh.face_node_connectivity
+        np.testing.assert_array_equal(
+            connectivity.indices, stores.MESH_ARRAYS["face_nodes"][0]
+        )
+
+    def test_mesh_attributes_do_not_also_reach_the_cube(self, cube):
+        """`mesh` and `location` are consumed by the mesh build, not carried.
+
+        They reach the cube as stray attributes if the MeshCoords are built
+        after it rather than before - which is why `_prepare_mesh_coords` and
+        `_attach_mesh_coords` are two calls with `_load_cube` between them.
+        """
+        assert "mesh" not in cube.attributes
+        assert "location" not in cube.attributes
+
+    def test_a_version_2_store_gives_the_same_mesh(self, tmp_path):
+        v3 = list(load_cubes(stores.make_mesh_store(tmp_path / "v3.zarr")))[0]
+        v2 = list(
+            load_cubes(stores.make_mesh_store(tmp_path / "v2.zarr", zarr_format=2))
+        )[0]
+        assert v2.mesh == v3.mesh
+        assert v2 == v3
+
+    def test_load_meshes_reads_a_zarr_store(self, tmp_path):
+        """`iris.mesh.load_meshes` dispatches on format, so it reaches Zarr too.
+
+        Its dispatch is a second copy of the main loader's; the two are meant
+        to move together.
+        """
+        location = stores.make_mesh_store(tmp_path / "mesh.zarr")
+        meshes = iris.mesh.load_meshes(location)
+        assert list(meshes) == [location]
+        assert [mesh.var_name for mesh in meshes[location]] == ["mesh"]
+
+    def test_a_store_naming_an_absent_mesh_still_loads(self, tmp_path):
+        """A dangling `mesh` reference is logged, not raised.
+
+        Same treatment as netCDF: the cube is worth having without its mesh.
+        """
+        location = stores.make_mesh_store(tmp_path / "mesh.zarr")
+        group = zarr.open_group(store=location, mode="r+")
+        group["temp"].attrs["mesh"] = "absent"
+
+        cube = list(load_cubes(location))[0]
+        assert cube.mesh is None

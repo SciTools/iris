@@ -382,81 +382,73 @@ class ZarrDatasetVariable(CFDatasetVariable):
 
         if self.size * self.dtype.itemsize < cf_loader._LAZYVAR_MIN_BYTES:
             # A lazy array would cost more memory AND more time to access.
-            block = np.asanyarray(self._array[...])
+            result = np.asanyarray(self._array[...])
             if decoding:
-                return _decode.mask_and_scale(block, **parameters)
-            return block
-
-        chunks, dims_fixed = chunking_policy()
-        raw_meta = np.empty((0,) * self.ndim, dtype=self.dtype)
-        # Chunks are sized on the dtype the values will have once decoded, not
-        # on the one the store holds: a packed int8 that unpacks to float64
-        # costs eight times its stored size the moment the decode layer runs,
-        # and Dask's target chunk size is a target for what one task holds.
-        # The netCDF path arrives at the same place from the other end - its
-        # data proxy declares the decoded dtype, and `as_lazy_data` sizes on
-        # the array it is given. `_unpacked_dtype` returns the stored dtype
-        # for a variable with no packing, so nothing moves in the usual case.
-        decoded_dtype = parameters["dtype"]
-
-        if chunks == "auto":
-            # CHUNK_CONTROL.as_dask(): the user asked for Dask's own policy,
-            # so the store's layout is deliberately not consulted. The policy
-            # is still Dask's - its algorithm, its configured target - but it
-            # is called here rather than left to `from_array`, which is the
-            # only way to hand it the decoded dtype. `from_array` would size
-            # on the array it is given, and the array it is given is the
-            # stored one.
-            chunks = tuple(
-                sizes[0]
-                for sizes in normalize_chunks(
-                    "auto", shape=self.shape, dtype=decoded_dtype
-                )
-            )
-            # Fixed in every dimension: Dask has sized these, and
-            # `as_lazy_data` would otherwise re-size them on the stored dtype
-            # and undo it.
-            lazy = as_lazy_data(
-                self._array,
-                chunks=chunks,
-                meta=raw_meta,
-                dims_fixed=(True,) * self.ndim,
-                cache_key=self.cache_key,
-            )
+                result = _decode.mask_and_scale(result, **parameters)
         else:
-            if chunks is None:
-                # What `as_lazy_data` makes of None, done here because this
-                # path reaches `_optimum_chunksize` first and that does not
-                # accept it: one chunk spanning the array, divided down below.
-                chunks = self.shape
-            chunks = _optimum_chunksize(
-                chunks, shape=self.shape, dtype=decoded_dtype, dims_fixed=dims_fixed
-            )
+            chunks, dims_fixed = chunking_policy()
+            # Chunks are sized on the dtype the values will have once decoded,
+            # not on the one the store holds: a packed int8 that unpacks to
+            # float64 costs eight times its stored size the moment the decode
+            # layer runs, and Dask's target chunk size is a target for what one
+            # task holds. The netCDF path arrives at the same place from the
+            # other end - its data proxy declares the decoded dtype, and
+            # `as_lazy_data` sizes on the array it is given. `_unpacked_dtype`
+            # returns the stored dtype for a variable with no packing, so
+            # nothing moves in the usual case.
+            decoded_dtype = parameters["dtype"]
+
+            if chunks == "auto":
+                # CHUNK_CONTROL.as_dask(): the user asked for Dask's own
+                # policy, so the store's layout is deliberately not consulted.
+                # The policy is still Dask's - its algorithm, its configured
+                # target - but it is called here rather than left to
+                # `from_array`, which is the only way to hand it the decoded
+                # dtype. `from_array` would size on the array it is given, and
+                # the array it is given is the stored one.
+                chunks = tuple(
+                    sizes[0]
+                    for sizes in normalize_chunks(
+                        "auto", shape=self.shape, dtype=decoded_dtype
+                    )
+                )
+            else:
+                if chunks is None:
+                    # What `as_lazy_data` makes of None, done here because this
+                    # path reaches `_optimum_chunksize` first and that does not
+                    # accept it: one chunk spanning the array, divided down
+                    # below.
+                    chunks = self.shape
+                chunks = _optimum_chunksize(
+                    chunks, shape=self.shape, dtype=decoded_dtype, dims_fixed=dims_fixed
+                )
+
             # Fixed in every dimension, because the sizing above is the final
-            # word: as_lazy_data would otherwise re-run the optimisation on
-            # the stored dtype and undo it.
-            lazy = as_lazy_data(
+            # word whichever branch produced it: `as_lazy_data` would otherwise
+            # re-run its own sizing on the stored dtype and undo it.
+            result = as_lazy_data(
                 self._array,
                 chunks=chunks,
-                meta=raw_meta,
+                meta=np.empty((0,) * self.ndim, dtype=self.dtype),
                 dims_fixed=(True,) * self.ndim,
                 cache_key=self.cache_key,
             )
 
-        if not decoding:
-            return lazy
+            if decoding:
+                # `partial` rather than `**parameters` on the `map_blocks`
+                # call: `dtype` is a keyword `map_blocks` consumes for itself
+                # rather than forwarding, and `mask_and_scale` needs it too.
+                # Binding it once here also makes the dtype Dask declares and
+                # the dtype the layer produces one value rather than two
+                # statements that could disagree.
+                result = da.map_blocks(
+                    partial(_decode.mask_and_scale, **parameters),
+                    result,
+                    dtype=decoded_dtype,
+                    meta=np.ma.masked_array(np.empty((0,) * self.ndim, decoded_dtype)),
+                )
 
-        # `partial` rather than `**parameters` on the `map_blocks` call:
-        # `dtype` is a keyword `map_blocks` consumes for itself rather than
-        # forwarding, and `mask_and_scale` needs it too. Binding it once here
-        # also makes the dtype Dask declares and the dtype the layer produces
-        # one value rather than two statements that could disagree.
-        return da.map_blocks(
-            partial(_decode.mask_and_scale, **parameters),
-            lazy,
-            dtype=parameters["dtype"],
-            meta=np.ma.masked_array(np.empty((0,) * self.ndim, parameters["dtype"])),
-        )
+        return result
 
     def write_handle(self) -> "ZarrDatasetVariable":
         """Return self: a Zarr write target needs no proxy.

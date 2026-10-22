@@ -16,6 +16,8 @@ from iris.tests.unit.fileformats.cf.dataset.contract import (
 class TestNetCDFDatasetContract(CFDatasetReadContract, CFDatasetWriteContract):
     """The netCDF side of the contract."""
 
+    chunking_key = "chunksizes"
+
     @pytest.fixture
     def readable(self, tmp_path):
         path = tmp_path / "contract.nc"

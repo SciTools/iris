@@ -40,6 +40,10 @@ Iris recognises a local store by the metadata file at its root -- ``zarr.json``
 for version 3, ``.zgroup`` for version 2 -- not by the ``.zarr`` suffix, so a
 directory that merely has the suffix is not mistaken for one.
 
+A store holding UGRID mesh data loads as a mesh cube, the same as the
+equivalent netCDF file would. :func:`iris.mesh.load_meshes` reads a store
+too.
+
 Saving
 ------
 

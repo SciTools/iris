@@ -42,6 +42,14 @@ CONTRACT_GLOBALS = {"Conventions": "CF-1.7", "title": "contract"}
 class CFDatasetReadContract:
     """What every CFDataset implementation must answer, whatever it reads from."""
 
+    #: The key this backend files its chunk shape under in `storage_settings`.
+    #:
+    #: `storage_settings` keys are each backend's own spelling - netCDF4 says
+    #: `chunksizes`, Zarr says `chunks` - so the contract cannot name one. It
+    #: can still insist that `chunking` and `storage_settings` agree, which is
+    #: what the subclass naming its key buys.
+    chunking_key: str
+
     @pytest.fixture
     def readable(self):
         """Return an open read-mode dataset holding what populate() writes."""
@@ -127,10 +135,7 @@ class CFDatasetReadContract:
     def test_variable_storage_settings_reports_the_chunking(self, variable):
         storage_settings = variable.storage_settings
         assert isinstance(storage_settings, Mapping)
-        # Whatever a backend spells it, the chunk shape it reports through
-        # `chunking` has to be somewhere in `storage_settings` too, or `storage_settings` is
-        # not reporting what the store holds.
-        assert variable.chunking in (None, *storage_settings.values())
+        assert variable.chunking == storage_settings[self.chunking_key]
 
     def test_variable_dimensions(self, variable):
         assert variable.dimensions == tuple(CONTRACT_DIMENSIONS)

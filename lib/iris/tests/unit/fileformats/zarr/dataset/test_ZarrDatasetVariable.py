@@ -12,7 +12,7 @@ import pytest
 import zarr
 
 from iris.exceptions import TranslationError
-from iris.fileformats.zarr._dataset import ZarrDatasetVariable, _dimension_names
+from iris.fileformats.zarr._dataset import ZarrDatasetVariable
 from iris.warnings import IrisCfLoadWarning
 
 from .. import stores
@@ -74,9 +74,9 @@ def test_repeated_name_within_one_array(tmp_path):
 
 
 def test_an_unsupported_zarr_format_raises():
-    """`_dimension_names` names the versions it reads, and refuses others.
+    """Iris names the Zarr versions it reads, and refuses others.
 
-    Reached through a stand-in because zarr-python cannot produce the input,
+    The array is a stand-in because zarr-python cannot produce the input,
     which is the point of the companion test below.
     """
     array = SimpleNamespace(
@@ -86,7 +86,7 @@ def test_an_unsupported_zarr_format_raises():
         metadata=SimpleNamespace(zarr_format=4, dimension_names=("t",)),
     )
     with pytest.raises(TranslationError, match="declares Zarr version 4"):
-        _dimension_names(array)
+        wrap(array)
 
 
 def test_zarr_python_rejects_an_unsupported_zarr_format(tmp_path):

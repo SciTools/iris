@@ -54,66 +54,76 @@ def _report_old_zarr(name):
     return "2.18.0"
 
 
-def test_message_names_the_package_and_the_version_floor():
-    assert "zarr" in _MISSING_MESSAGE
-    assert "3.0.8" in _MISSING_MESSAGE
-
-
-def test_iris_load_reports_it_when_zarr_is_missing(tmp_path):
-    store = tmp_path / "s.zarr"
-    store.mkdir()
-    (store / "zarr.json").write_text("{}")
-
-    probe = (
-        _BLOCK_ZARR
-        + f"""
+#: What the probe subprocess runs, once `_BLOCK_ZARR` has taken zarr away.
+#:
+#: Kept at module level, and so at column zero, because it is source for
+#: another interpreter: indenting it to sit inside a test body would indent
+#: the code the subprocess has to compile.
+_LOAD_PROBE = """
 import iris
 try:
-    iris.load({str(store)!r})
+    iris.load({location!r})
 except ImportError as exception:
     print(exception)
 """
-    )
-    assert _run(probe) == _MISSING_MESSAGE
 
-
-def test_load_cubes_reports_it_when_zarr_is_missing(tmp_path):
-    store = tmp_path / "s.zarr"
-    store.mkdir()
-
-    probe = (
-        _BLOCK_ZARR
-        + f"""
+_LOAD_CUBES_PROBE = """
 import iris.fileformats.zarr
 try:
-    iris.fileformats.zarr.load_cubes({str(store)!r})
+    iris.fileformats.zarr.load_cubes({location!r})
 except ImportError as exception:
     print(exception)
 """
-    )
-    assert _run(probe) == _MISSING_MESSAGE
 
 
-def test_iris_load_reports_it_when_zarr_is_too_old(mocker, tmp_path):
-    """Zarr 2.x imports fine, so only a version check catches it.
-
-    Without this, `ZarrDataset.__init__` reaches
-    `self._group.metadata.zarr_format` against a zarr 2 `Group`, which has no
-    `.metadata`, and the user sees a bare `AttributeError` instead.
-    """
-    mocker.patch.object(zarr_package.importlib.metadata, "version", _report_old_zarr)
-    store = tmp_path / "s.zarr"
-    store.mkdir()
-    (store / "zarr.json").write_text("{}")
-
-    with pytest.raises(ImportError) as excinfo:
-        iris.load(str(store))
-    assert str(excinfo.value) == _MISSING_MESSAGE
+class Test__MISSING_MESSAGE:
+    def test_it_names_the_package_and_the_version_floor(self):
+        assert "zarr" in _MISSING_MESSAGE
+        assert "3.0.8" in _MISSING_MESSAGE
 
 
-def test_load_cubes_reports_it_when_zarr_is_too_old(mocker):
-    mocker.patch.object(zarr_package.importlib.metadata, "version", _report_old_zarr)
+class Test_zarr_is_missing:
+    def test_iris_load_reports_it(self, tmp_path):
+        store = tmp_path / "s.zarr"
+        store.mkdir()
+        (store / "zarr.json").write_text("{}")
 
-    with pytest.raises(ImportError) as excinfo:
-        zarr_package.load_cubes("irrelevant")
-    assert str(excinfo.value) == _MISSING_MESSAGE
+        probe = _BLOCK_ZARR + _LOAD_PROBE.format(location=str(store))
+        assert _run(probe) == _MISSING_MESSAGE
+
+    def test_load_cubes_reports_it(self, tmp_path):
+        store = tmp_path / "s.zarr"
+        store.mkdir()
+
+        probe = _BLOCK_ZARR + _LOAD_CUBES_PROBE.format(location=str(store))
+        assert _run(probe) == _MISSING_MESSAGE
+
+
+class Test_zarr_is_too_old:
+    def test_iris_load_reports_it(self, mocker, tmp_path):
+        """Zarr 2.x imports fine, so only a version check catches it.
+
+        Without this, `ZarrDataset.__init__` reaches
+        `self._group.metadata.zarr_format` against a zarr 2 `Group`, which
+        has no `.metadata`, and the user sees a bare `AttributeError`
+        instead.
+        """
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", _report_old_zarr
+        )
+        store = tmp_path / "s.zarr"
+        store.mkdir()
+        (store / "zarr.json").write_text("{}")
+
+        with pytest.raises(ImportError) as excinfo:
+            iris.load(str(store))
+        assert str(excinfo.value) == _MISSING_MESSAGE
+
+    def test_load_cubes_reports_it(self, mocker):
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", _report_old_zarr
+        )
+
+        with pytest.raises(ImportError) as excinfo:
+            zarr_package.load_cubes("irrelevant")
+        assert str(excinfo.value) == _MISSING_MESSAGE

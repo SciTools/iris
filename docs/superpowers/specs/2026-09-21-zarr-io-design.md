@@ -1543,7 +1543,11 @@ already expanded for itself and partitioned between `_load_files` and
 `load_stores`. Neither routine learns about the other's kind of target.
 
 The duplicated dispatch in `netcdf/ugrid_load.py:156-183` is updated in step
-with `loading.py`, so `iris.mesh.load_meshes` accepts Zarr stores too.
+with `loading.py`, so `iris.mesh.load_meshes` accepts Zarr stores too. It also
+has to accept the Zarr *handler*, not only the Zarr scheme: the format spec it
+gets back for a store names `iris.fileformats._load_zarr`, and a test against
+`nc_loader.load_cubes` alone sends every store down the "ignore this" branch
+while the scheme dispatch above says the store was fine.
 
 **NCZarr is unaffected, and native Zarr is already the default.** No
 precedence rule is needed to make it so, because the native reader and the
@@ -1727,8 +1731,22 @@ Also carries three changes to generic code that only Zarr can exercise:
   adds the variable's half and `ZarrDataset`'s answer to both it and
   `supports_dtype` (§12.4).
 
+**UGRID meshes load too**, through
+`iris.fileformats.netcdf.ugrid_load`. Nothing in that module is netCDF-specific
+— it reads a `CFReader`, and `CFReader` over a `ZarrDataset` answers the same
+questions — so the Zarr loader calls into it rather than growing a second copy.
+The mesh block that was inline in `netcdf/loader.py` becomes
+`_prepare_mesh_coords` and `_attach_mesh_coords`, two functions because the
+MeshCoords have to be built *before* `_load_cube` and attached *after* it: built
+after, `helpers._add_unused_attributes` has already taken the data variable's
+`mesh` and `location` attributes and left them on the cube as ordinary
+attributes. One netCDF detail survives the move: the "mesh could not be found"
+message keeps being raised on the `iris.fileformats.netcdf` logger rather than
+`ugrid_load`'s own, which sits at `INFO` and would drop it.
+
 After this pull request, `iris.load("store.zarr")` and
-`iris.load("s3://bucket/store.zarr")` work for version 2 and version 3 stores.
+`iris.load("s3://bucket/store.zarr")` work for version 2 and version 3 stores,
+mesh data included.
 
 ### PR 5 — Relocate the CF saver
 
@@ -1836,6 +1854,14 @@ Every fragment credits `` :user:`claude` `` per `changelog/AGENTS.md`.
 **Documentation** is written in PRs 4 and 6, alongside the code it describes,
 and becomes visible to users only here. The merge-back checks it builds clean
 against `main` with `-W`, since the two branches can drift.
+
+**Issues to raise, not to act on.** One deliberately deferred follow-up,
+raised *here* rather than when it was found, so that nobody starts on it while
+the programme's pull requests are still in flight and depending on each other:
+
+| What | Why it waits |
+|---|---|
+| Unify the cube-building loops in `netcdf/loader.py` and `zarr/loader.py` | Raised by @pp-mo reviewing PR 4. Since PR 4 gave the Zarr loader the same mesh handling, the two bodies differ only in how the dataset is opened. The refactor is internal — neither `load_cubes` signature moves — so it is safe to do later and disruptive to do now |
 
 **Ordering rationale.** Refactor and feature alternate so that no feature pull
 request is large, and every relocation is a separate, skimmable diff. Tests
@@ -2872,3 +2898,5 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-16 | Added PR 8, the terms-of-art sweep: this document and the plans predate the rule in `.github/WRITING.md`, and a coinage that reaches `main` passes the test a later agent applies to decide whether a term is already in use. The programme goes from eight pull requests to nine. No design change. |
 | 2026-10-20 | Read-side chunk alignment removed (§4.4), reversing the 2026-09-22 entry that added it. The mechanism held up under measurement, but alignment only ever changed the answer where a stored chunk exceeds the dask target, and that is a trade the netCDF path has always accepted; correcting one backend would make two formats differ over shared physics. The warning it carried is kept and moved to `iris.fileformats.cf.loader`, where it covers both backends, and `CHUNK_CONTROL` is the answer for a caller who wants the other trade. Decided with @trexfeathers on #7336, following review by @pp-mo. |
 | 2026-10-20 | #7338 merged, and PR 4 merged `brownfield` back in. The three predicted collisions resolved as PR 5's plan said they would: one copy of `format` kept on each class, PR 4's `encoding` kept beside it, and `supports_dtype` implemented on `ZarrDataset` (§4.2). |
+| 2026-10-22 | UGRID meshes load from Zarr, closing a gap @pp-mo found reviewing #7336. §4.7 already said `load_meshes` would accept a store; it reached one and then rejected it, because the handler test named only `nc_loader.load_cubes`. Worse, `iris.load` on a UGRID store returned a cube that had silently dropped its mesh coordinates: `CFReader` classifies them as UGRID coords, and nothing then built the mesh. The fix is wiring, not machinery - `_meshes_from_cf` already built a correct `MeshXY` from a `ZarrDataset`. The inline mesh block in `netcdf/loader.py` became `_prepare_mesh_coords` and `_attach_mesh_coords`, shared by both loaders (§5). |
+| 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |
