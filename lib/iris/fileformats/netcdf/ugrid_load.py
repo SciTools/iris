@@ -295,9 +295,14 @@ def load_meshes(uris, var_name=None):
             else:
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
-            # `_load_zarr` is compared rather than `zarr.load_cubes` so that
-            #  a store's presence, not this module's import, is what reaches
-            #  zarr-python: see `iris.fileformats.zarr.__getattr__`.
+            # TODO: drop this format dispatch once the netCDF and Zarr
+            #  cube-building loops are unified. This copy, not the mesh code
+            #  below, is the only reason a netCDF-named module names Zarr at
+            #  all. See the merge-back section of
+            #  `docs/superpowers/specs/2026-09-21-zarr-io-design.md`.
+            #
+            # `_load_zarr` is compared, never `zarr.load_cubes`: a store's
+            #  presence is what should reach zarr-python, not this comparison.
             if handling_format_spec.handler == nc_loader.load_cubes:
                 valid_sources.append((source, False))
             elif handling_format_spec.handler == _load_zarr:
@@ -310,11 +315,11 @@ def load_meshes(uris, var_name=None):
     for source, is_zarr in valid_sources:
         with ExitStack() as stack:
             if is_zarr:
-                # Deferred: this is what reaches zarr-python, and it must not
-                #  happen for a caller that named no Zarr store.
+                # Deferred: a caller that named no Zarr store must not reach
+                #  zarr-python at all.
                 from iris.fileformats.zarr._dataset import ZarrDataset
 
-                # CFReader takes an open CFDataset or a filename; the mesh
+                # CFReader takes an open CFDataset or a filename, so the mesh
                 #  machinery below never learns which it was given.
                 target = stack.enter_context(ZarrDataset(source))
             else:

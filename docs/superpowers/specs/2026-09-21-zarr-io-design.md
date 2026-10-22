@@ -1861,7 +1861,7 @@ the programme's pull requests are still in flight and depending on each other:
 
 | What | Why it waits |
 |---|---|
-| Unify the cube-building loops in `netcdf/loader.py` and `zarr/loader.py` | Raised by @pp-mo reviewing PR 4. Since PR 4 gave the Zarr loader the same mesh handling, the two bodies differ only in how the dataset is opened. The refactor is internal — neither `load_cubes` signature moves — so it is safe to do later and disruptive to do now |
+| Unify the cube-building loops in `netcdf/loader.py` and `zarr/loader.py`, and with them the format dispatch `load_meshes` duplicates (§2.3) | Raised by @pp-mo reviewing PR 4. Since PR 4 gave the Zarr loader the same mesh handling, the two bodies differ only in how the dataset is opened. The duplicated dispatch is the same defect wearing a different hat, and is the only reason `netcdf/ugrid_load.py` names Zarr: the mesh code it shares with the Zarr loader names no format at all. A `TODO` in that function points here. The refactor is internal — neither `load_cubes` signature moves — so it is safe to do later and disruptive to do now |
 
 **Ordering rationale.** Refactor and feature alternate so that no feature pull
 request is large, and every relocation is a separate, skimmable diff. Tests
