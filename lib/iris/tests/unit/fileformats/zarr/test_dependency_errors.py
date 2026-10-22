@@ -8,9 +8,9 @@
 :func:`iris.fileformats._load_zarr`; the Zarr page of the user manual also
 tells a reader to call :func:`iris.fileformats.zarr.load_cubes` directly, for
 the ``group=`` keyword; and ``iris.save`` reaches it through the
-``_save_cubes`` shim. All three must raise the same ``ImportError``, naming
-the package and the version floor, whether ``zarr`` is missing entirely or
-merely too old.
+:func:`iris.io._zarr_save` wrapper. All three must raise the same
+``ImportError``, naming the package and the version floor, whether ``zarr``
+is missing entirely or merely too old.
 """
 
 import subprocess
@@ -157,11 +157,12 @@ class Test_zarr_is_too_old:
     def test_iris_save_reports_it(self, mocker, tmp_path):
         """The save path must use the same version gate as the load path.
 
-        ``_save_cubes`` reaches :func:`iris.fileformats.zarr.saver.save` with
-        a plain ``from .saver import save``, which bypasses ``__getattr__``
-        and the version check it runs. Without its own call to
-        ``_check_zarr_version``, an installation with too old a zarr would
-        write a complete store instead of raising.
+        :func:`iris.io._zarr_save` gets there with ``from
+        iris.fileformats.zarr import save``, which runs this package's
+        ``__getattr__`` and so the version check inside it. Importing from
+        ``.saver`` instead would reach the saver directly, and an
+        installation with too old a zarr would write a complete store rather
+        than raising.
         """
         mocker.patch.object(
             zarr_package.importlib.metadata, "version", _report_old_zarr

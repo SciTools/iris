@@ -30,7 +30,7 @@ class TestFindSaver:
 
     def test_it_is_the_zarr_one(self):
         saver = iris.io.find_saver("out.zarr")
-        assert saver.__module__ == "iris.fileformats.zarr"
+        assert saver is iris.io._zarr_save
 
     def test_a_netcdf_target_is_unaffected(self):
         saver = iris.io.find_saver("out.nc")
@@ -56,9 +56,8 @@ class TestRegistrationIsLazy:
 
 class TestSavingACubeList:
     def test_the_whole_list_goes_into_one_store(self, tmp_path, cubes):
-        # Without the module in _CUBELIST_SAVER_MODULES, iris.save loops
-        # over the cubes, and the second one meets a store that mode="w-"
-        # refuses.
+        # Without the saver in _CUBELIST_SAVERS, iris.save loops over the
+        # cubes, and the second one meets a store that mode="w-" refuses.
         pytest.importorskip("zarr")
         import zarr
 

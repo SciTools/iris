@@ -442,6 +442,18 @@ def _dot_save_png(cube, target, **kwargs):
     return save_png(cube, target, **kwargs)
 
 
+def _zarr_save(cube, target, **kwargs):
+    # A simple wrapper for `iris.fileformats.zarr.save` which allows the
+    # saver to be registered without triggering the import of `zarr`, an
+    # optional dependency. Importing the name from the package rather than
+    # from `iris.fileformats.zarr.saver` runs the package's `__getattr__`,
+    # which is what checks the installed zarr version and reports a missing
+    # or too-old one.
+    from iris.fileformats.zarr import save
+
+    return save(cube, target, **kwargs)
+
+
 def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for the grib save routine, which allows the saver to be
     # registered without having the grib implementation installed.
@@ -456,14 +468,14 @@ def _grib_save(cube, target, append=False, **kwargs):
 
 
 def _check_init_savers():
-    from iris.fileformats import netcdf, pp, zarr
+    from iris.fileformats import netcdf, pp
 
     if "pp" not in _savers:
         _savers.update(
             {
                 "pp": pp.save,
                 "nc": netcdf.save,
-                "zarr": zarr._save_cubes,
+                "zarr": _zarr_save,
                 "dot": _dot_save,
                 "dotpng": _dot_save_png,
                 "grib2": _grib_save,
@@ -471,7 +483,7 @@ def _check_init_savers():
         )
         # One line per format that takes a CubeList whole.
         _savers.cubelist_savers.add(netcdf.save)
-        _savers.cubelist_savers.add(zarr._save_cubes)
+        _savers.cubelist_savers.add(_zarr_save)
 
 
 def add_saver(file_extension, new_saver):

@@ -41,8 +41,8 @@ class TestSave:
         assert "air_temperature" in list(group.array_keys())
 
     def test_a_cubelist_goes_into_one_store(self, tmp_path, cubes):
-        # One store, opened once: this is why the module joins
-        # _CUBELIST_SAVER_MODULES.
+        # One store, opened once: this is why the saver joins
+        # _CUBELIST_SAVERS.
         save(cubes, tmp_path / "out.zarr")
         group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
         assert {"air_temperature", "air_pressure"} <= set(group.array_keys())

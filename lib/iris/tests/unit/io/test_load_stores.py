@@ -125,6 +125,22 @@ class Test_load_files:
 
 
 class Test_saving:
+    def test_the_zarr_saver_takes_a_cubelist_whole(self):
+        """A Zarr store is opened once and holds many arrays.
+
+        Registered by identity, beside the netCDF saver: were it missing,
+        `iris.save` would call it once per cube, and every cube after the
+        first would meet a store that the default `mode="w-"` refuses.
+        `_zarr_save` shares `iris.io` with `_dot_save`, which must keep
+        being handed one cube at a time, so the registry naming functions
+        rather than modules is what keeps the two apart.
+        """
+        import iris.io
+
+        iris.io._check_init_savers()
+        assert iris.io._zarr_save in iris.io._savers.cubelist_savers
+        assert iris.io._dot_save not in iris.io._savers.cubelist_savers
+
     def test_find_saver_tolerates_a_trailing_separator(self):
         from iris.io import find_saver
 

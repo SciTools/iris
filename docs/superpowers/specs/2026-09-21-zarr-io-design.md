@@ -1524,10 +1524,10 @@ Four changes make the chain reach that specification:
    raising, and routes a local path to it when the path is a directory.
 3. `iris.io.find_saver` matches `.zarr` with or without a trailing separator,
    since `iris.save(cube, "out.zarr/")` is a natural thing to type.
-4. `iris.io.save` gets a module-level `_CUBELIST_SAVER_MODULES` frozenset
-   naming the modules whose `save` accepts a `CubeList` directly, replacing the
-   `"iris.fileformats.netcdf" not in saver.__module__` substring test at
-   io/__init__.py:530. Explicit and greppable; one line per new format.
+4. `iris.io.save` gets a module-level `_CUBELIST_SAVERS` frozenset naming the
+   savers that accept a `CubeList` directly, replacing the
+   `"iris.fileformats.netcdf" not in saver.__module__` substring test.
+   Explicit and greppable; one line per new format.
 
 **`load_files` is not taught about directories.** Do not have it skip its
 `open(fn, "rb")` and pass `None` as the buffer when the path is a directory.
@@ -2883,15 +2883,16 @@ All four findings reproduced and fixed; none disputed.
   arithmetic for Zarr, applied by `ZarrDatasetVariable.__setitem__` before the
   masked fill. The Zarr saver refuses a non-integer packing dtype, matching
   the netCDF saver's own check and its message.
-- `_CUBELIST_SAVER_MODULES` names the package, `iris.fileformats.zarr`, not
-  `iris.fileformats.zarr.saver`: the registered callable is the `_save_cubes`
-  shim defined in the package's `__init__.py`, and dispatch reads that
-  function's `__module__`.
-- The zarr version floor is checked on the save path as well as the load
-  path. `_save_cubes` bypasses the package's `__getattr__`, so it calls
-  `_check_zarr_version` itself and wraps its own deferred import; otherwise an
-  installation with no zarr, or too old a zarr, would get a clear message from
-  `iris.load` and silence from `iris.save`.
+- `iris.save` reaches the Zarr saver through `iris.io._zarr_save`, a deferred-
+  import wrapper beside `_dot_save` and `_grib_save`, which is where review
+  asked for it. It imports `save` from the package, not from `.saver`, so the
+  package's `__getattr__` runs and with it the zarr version check: an
+  installation with no zarr, or too old a zarr, gets the same message from
+  `iris.save` as from `iris.load`. An earlier `_save_cubes` shim in the
+  package repeated those checks by hand, because importing from `.saver`
+  bypasses `__getattr__`; importing from the package makes it redundant.
+- `_CUBELIST_SAVERS` names savers, not their modules: `_zarr_save` shares
+  `iris.io` with `_dot_save`, which must keep being handed one cube at a time.
 - A cube with a mesh saves, carrying the full CF-UGRID structure, and cannot
   yet be loaded back: nothing in the Zarr loader rebuilds a mesh, and
   `iris.mesh.load_meshes` filters to the netCDF handler. The round trip is a
