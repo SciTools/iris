@@ -7,14 +7,14 @@
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1 and 2 merged into `brownfield` ([#7298](https://github.com/SciTools/iris/pull/7298), [#7303](https://github.com/SciTools/iris/pull/7303)); PR 3 in review ([#7316](https://github.com/SciTools/iris/pull/7316)); merge-back not started — see §12.1 |
-| **Next action** | PR 2.5 and PR 4 — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3 and 5 merged into `brownfield`; PR 4 in review ([#7336](https://github.com/SciTools/iris/pull/7336)); merge-back not started — see §12.1 |
+| **Next action** | PR 4's review, then PR 6 — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-16 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-20 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -303,7 +303,7 @@ class CFDatasetVariable(ABC):
     size: int
     fill_value: Any | None
     chunking: tuple[int, ...] | None   # None when the store is unchunked
-    encoding: Mapping[str, Any]        # backend storage settings; see below
+    storage_settings: Mapping[str, Any]        # backend storage settings; see below
     attributes: MutableMapping[str, Any]   # materialised once
 
     def __getitem__(self, keys) -> np.ndarray: ...
@@ -323,12 +323,12 @@ class CFDataset(ABC):
     closed: bool                        # F3
     variables: Mapping[str, CFDatasetVariable]
     dimensions: Mapping[str, int]
-    encoding: Mapping[str, Any]         # backend store settings; see below
+    storage_settings: Mapping[str, Any]         # backend store settings; see below
     attributes: MutableMapping[str, Any]
 
     def create_dimension(self, name: str, size: int | None) -> None: ...
     def create_variable(self, name, dtype, dimensions=(), *,
-                        fill_value=None, **encoding) -> CFDatasetVariable: ...
+                        fill_value=None, **storage_settings) -> CFDatasetVariable: ...
     def supports_dtype(self, dtype: np.dtype) -> bool: ...   # see below
     def sync(self) -> None: ...
     def finalise(self) -> None: ...     # one-shot; NOT part of close()
@@ -367,7 +367,7 @@ this store hold this dtype?", so that is what the interface offers.
 for every dtype Zarr has a data type for. The error message that follows
 names `format`, so the user still reads `NETCDF3_CLASSIC`.
 
-#### `format` and `encoding`
+#### `format` and `storage_settings`
 
 `format` names the concrete format an implementation provides — `"NETCDF4"`,
 `"NETCDF3_CLASSIC"`, `"ZARR_V2"`, `"ZARR_V3"`. Some parts of the loader and
@@ -377,7 +377,7 @@ the class is exactly the type test the rule above forbids. On a variable it
 repeats its dataset's value, for the same reason `location` does: so a
 variable can answer for itself without a back-reference.
 
-`encoding` is the open-ended bag of backend storage settings: what
+`storage_settings` is the open-ended bag of backend storage settings: what
 `create_variable` was given on write, and what the store actually holds on
 read — `zlib`, `complevel`, `chunksizes` for netCDF; `compressors`, `chunks`,
 `shards`, `zarr_format` for Zarr. Its keys are backend-specific by nature and
@@ -389,7 +389,7 @@ that is the abstraction leaking at exactly the point it is supposed to hold.
 
 It overlaps `chunking` deliberately and they are not duplicates. `chunking` is
 load-bearing: it is typed, it is guaranteed present on every implementation,
-and §4.4's chunk calculation reads it. `encoding["chunks"]` is a backend's own
+and §4.4's chunk calculation reads it. `storage_settings["chunks"]` is a backend's own
 spelling of its own settings, which generic code must never depend on.
 
 Three members exist only to keep multi-process writing reachable later, and
@@ -428,12 +428,12 @@ The split that matters is `attributes` versus everything else. Today
 cannot tell. After this change, CF attributes are only ever reached through
 `.attributes`, and properties are named fields.
 
-`create_variable` takes `**encoding` against the general rule about keyword
+`create_variable` takes `**storage_settings` against the general rule about keyword
 passthrough, because the accepted keys are backend-specific by nature
 (`zlib`/`complevel`/`chunksizes` for netCDF, `compressors`/`chunks`/`shards`
 for Zarr). Each implementation documents its own accepted keys, and
 `cf/saver.py` never constructs them. What it is given is retained and surfaced
-on `CFDatasetVariable.encoding`, so create-time configuration is readable
+on `CFDatasetVariable.storage_settings`, so create-time configuration is readable
 afterwards rather than write-only.
 
 ### 4.3 `CFVariable.__getattr__` and backwards compatibility
@@ -571,7 +571,30 @@ whose entries are names or `None`:
 
 A `dimension_names` whose length is not `ndim` *is* a malformation — the
 specification says "must" — so it is ignored with an `IrisCfLoadWarning`
-naming the array, and the array loads with anonymous dimensions.
+naming the array, and the array loads with anonymous dimensions. zarr-python
+enforces the length match on **read** as well as on write, so this case
+reaches Iris only through a version 2 store: `_ARRAY_DIMENSIONS` is a plain
+attribute with no such check, where a version 3 array in the same shape is
+rejected before `open_group` ever returns it. The check in the reader is
+written for both versions regardless, as defensive code that costs nothing
+and happens to be exercised by only one of them.
+
+**Two attributes are storage conventions rather than CF metadata, and are
+withheld from `attributes` for that reason.** `_ARRAY_DIMENSIONS` is version
+2's own carrier for the dimension names above — `dimensions` already reads
+it, so leaving it in `attributes` too would put it on every cube loaded from
+a version 2 store. `_NCProperties` is netCDF-c's own bookkeeping stamp,
+written onto the root group of every store its NCZarr driver produces;
+netCDF4-python already hides it from `Dataset.ncattrs()`, so it has never
+reached a cube loaded through netCDF, and Zarr has no equivalent convention
+to hide it by. Left in, it would surface only on cubes loaded from an
+NCZarr-written store, so the same data would produce cubes that differ by a
+provenance string depending on which writer made the store. `_ARRAY_DIMENSIONS`
+is withheld from an array's own `attributes`, where it lives; `_NCProperties`
+is withheld from the dataset's, where it lives. Neither is withheld from the
+other kind of node, because neither ever appears there: `_ARRAY_DIMENSIONS` is
+not a group attribute and `_NCProperties` is not an array or subgroup
+attribute.
 
 **The identity that links two variables is the pair `(name, size)`, and an
 anonymous dimension has no identity.** One rule covers every case above:
@@ -594,6 +617,21 @@ today (`_variables.py:221`, and `:530`, `:606`, `:929`); they must compare the
 pairs, and must treat `None` as unmatchable. PR 4 makes that change and tests
 it on both backends, since it is reachable only from Zarr but must not disturb
 netCDF.
+
+**The same rule decides which cube dimensions a coordinate is attached to.**
+`spans` is only the first half of the question. Once a coordinate is found to
+span the data variable, the loading rules have to say *which* of the data
+variable's dimensions it covers, and they did that by name alone —
+`cf_var.dimensions.index(name)`, in `_add_dimension_coordinate`,
+`_add_auxiliary_coordinate`, `_add_cell_measure` and `_add_ancil_var`. Given a
+data variable whose dimensions are `('d', 'd')` at sizes `(2, 3)` and a
+three-point coordinate on `d`, `spans` says yes and `.index('d')` answers 0,
+so the coordinate is rejected as the wrong length and lands in
+`LOAD_PROBLEMS` — with the axis it belongs on uniquely identifiable. The
+identity rule is therefore a function, `_dimension_identities(cf_variable)` in
+`cf/_variables.py`, used by `spans` and by one shared
+`helpers._common_data_dims`: one rule, not two that can drift. netCDF cannot
+observe the difference, its dimension names being unique within a group.
 
 **`CFDataset.dimensions` is the names that are used consistently.** It maps
 name to size, as it does for netCDF, and on Zarr it is assembled from the
@@ -705,9 +743,14 @@ carries `stac_discovery`, `other_metadata` and `processing_history` as nested
 objects **[verified, two independent producers]**.
 
 Iris carries such values onto the cube unchanged, does not interpret them, and
-does not write them back through the netCDF saver. This is the provisional
-answer; the durable one needs the attribute-model discussion in
-SciTools/iris#7288 (§10).
+does not write them back through the netCDF saver. A cube carrying one
+therefore cannot be saved as netCDF: the attempt fails inside netCDF4 with a
+`TypeError` naming the attribute — `illegal data type for attribute
+b'stac_discovery', ..., got O` — but not the cube, since checking attribute
+content before saving and raising a message that does both is
+[#7329](https://github.com/SciTools/iris/issues/7329), out of scope here
+(§4.5, §9). This is the provisional answer; the durable one needs the
+attribute-model discussion in SciTools/iris#7288 (§10).
 
 #### Masking and unpacking
 
@@ -717,6 +760,16 @@ netCDF4 applies `_FillValue`/`missing_value` masking,
 `zarr/_decode.py` implements the same CF rules. It is Zarr-side rather than
 shared because the netCDF path gets the behaviour from the C library and has
 nothing to reuse.
+
+`missing_value` may be a **vector**. CF section 2.5.1 makes it "a scalar or
+vector containing values indicating missing data", and netCDF4 masks on every
+element of one, so a store and a file carrying the same attribute have to mask
+the same values. `_FillValue` is not read that way: the same section makes it
+a scalar, and a vector there warns and is ignored. Read as a scalar, a vector
+`missing_value` fails twice over — the declared sentinels do not mask, and on
+version 2 the variable then looks as though it declared no CF attribute at
+all, so the storage fill value becomes the sentinel and every valid zero is
+masked.
 
 Decoding is applied as **explicit dask graph layers** over the raw array —
 `da.map_blocks(_mask_and_scale, raw, ...)` — not hidden inside an opaque
@@ -862,20 +915,66 @@ target (128 MiB by default) it shrinks below it **[verified]**:
 | `(6000, 6000)` | 275 MiB | `(6000, 6000)` | `(2000, 6000)` | 3 × re-read |
 
 Subdividing buys nothing here. Peak memory per task is still a whole
-decompressed chunk, because that is what the store hands back; only the
-I/O and decompression multiply. So on the Zarr path the loader rounds the
-computed chunking **up** to a whole multiple of the store chunk, never below
-it, and emits an `IrisLoadWarning` naming the variable when the store's own
-chunking exceeds the dask target — the store's layout is then the binding
-constraint and the user should know. An explicit `CHUNK_CONTROL` setting still
-wins, since that is a deliberate instruction, but it warns on the same terms.
+decompressed chunk, because that is what the store hands back; only the I/O
+and decompression multiply.
 
-This trap is not new and not Zarr-specific: `NetCDFDataProxy` reopens the
-`Dataset` on every `__getitem__`, so HDF5's chunk cache is discarded between
-tasks and the netCDF path re-reads sub-chunks too. It simply costs far more
-over a network than over a page cache. Changing the netCDF path is out of scope
-here — the relocation PRs must not alter behaviour — but it is recorded as an
-open question in §12.3.
+**Iris does not correct for this, and warns instead.** The loader sizes
+chunks with `_optimum_chunksize` and stops there, for both storage backends.
+When a stored chunk is larger than the dask target it emits an
+`IrisLoadWarning` naming the variable, and `CHUNK_CONTROL` is how a caller
+who wants the other trade takes it.
+
+An earlier revision of this section had the Zarr path round the computed
+chunking **up** to a whole multiple of the store chunk. That was removed on
+review (#7336), on grounds of proportionality rather than mechanism:
+
+- The mechanism was never in doubt, and measurement sharpened it. Against a
+  33.6 MiB store chunk subdivided into quarters, aligned chunking held lower
+  peak RSS at every worker count above one (305 MiB against 446 MiB at four
+  workers) and ran in roughly half the time, with 1.0 fetches per store chunk
+  against 3.2 **[verified]**.
+- But alignment only ever changes the answer in the shrink case above.
+  Wherever `_optimum_chunksize` expands, it already lands on a whole multiple
+  and alignment is a no-op **[verified]**. So the whole of it existed to
+  override one decision.
+- And that decision is one the netCDF path makes too. Both backends pass the
+  file's own chunking into the same `_optimum_chunksize`, and netCDF has
+  always accepted the subdivision — `NetCDFDataProxy` additionally reopens the
+  `Dataset` on every `__getitem__`, discarding HDF5's chunk cache between
+  tasks. Correcting it on one path only would make two formats behave
+  differently over physics they share, and would make `CHUNK_CONTROL` mean
+  different things depending on what was loaded.
+
+The house preference decides it: give the user the tools to adapt their own
+case rather than second-guess it. The warning is what makes that fair — it
+says the situation exists and names the tool — and it now covers both
+backends, from `iris.fileformats.cf.loader`. The remaining asymmetry is only
+that this costs far more over a network than over a page cache, which is an
+argument for the user reaching for `CHUNK_CONTROL` sooner, not for Iris
+choosing on their behalf.
+
+**Chunks are sized on the decoded dtype, not the stored one.** A packed
+variable's values are unpacked block by block, on the way out of the graph, so
+what a task holds is the decoded block: an `int8` array with a `scale_factor`
+that unpacks to `float64` is eight times its stored size the moment the decode
+layer runs. Sized on the stored dtype, a `(512, 512, 512)` `int8` array gets
+one chunk spanning the array — 128 MiB stored, 1 GiB decoded, against a 128
+MiB target. The netCDF path reaches the same answer from the other end: its
+data proxy declares the decoded dtype, and `as_lazy_data` sizes on the array
+it is given. `_optimum_chunksize` therefore takes the decoded dtype, which for
+an unpacked variable is the stored one.
+
+`CHUNK_CONTROL.as_dask()` is not exempt. That setting hands sizing to Dask,
+and `da.from_array` sizes on the array it is given — which is the stored one,
+so the same multiplier survives there. The Zarr path therefore calls
+`dask.array.core.normalize_chunks("auto", shape, dtype=decoded_dtype)`
+itself and passes the result on with every dimension fixed. The algorithm and
+the configured target are still Dask's; only the dtype it budgets against is
+supplied rather than inferred. Fixing the dimensions is what stops
+`as_lazy_data` re-sizing the result on the stored dtype and undoing it — and
+is the thing to watch in that branch, since Iris's own sizing or the store
+alignment creeping back in on top would make `as_dask()` mean something other
+than what it says.
 
 `CFDatasetVariable.chunking` returns the store's own chunk shape, which
 `cf/loader.py` uses exactly as it uses `chunking()` today.
@@ -904,9 +1003,10 @@ between cannot, so the block is materialised in full. On a `shape=(1024,)`,
 | shard `(1024,)` | **yes** | **6,148** — the whole shard |
 
 2,052 of those bytes are the shard index and 32 are the data actually wanted.
-So `chunking` returns `Array.chunks`, and the alignment rule above aggregates
-*upward* into whole multiples of it — never down, and never to a shard
-boundary. This is not academic: the NOAA GFS fixture is sharded (§7).
+So `chunking` returns `Array.chunks`, never a shard boundary — the read unit
+is the inner chunk, and that is what the chunking policy and the warning above
+are both sized against. This is not academic: the NOAA GFS fixture is sharded
+(§7).
 
 Shard-sized blocks remain a *write* requirement, for a different reason and in
 one direction only. §4.5 keeps them there.
@@ -1386,6 +1486,17 @@ so it is consulted when no file handle is available. It matches when:
 The split is local-versus-remote, and the two tests are not alternatives for
 the same target.
 
+**The element answers `None` when a file handle is supplied**, so the
+specification cannot match a target that opened as a file. `requires_fh =
+False` means "consult me without a handle", not "consult me with one". Two
+things go wrong otherwise. A store is a directory or a URL, so a target with a
+handle is settled already. And the caller that opened the file —
+`iris.io._load_files` — passes `pathlib.Path(fn).name`, a basename rather than
+a path, which resolves against the working directory: a NIMROD file named
+`weather` was classified as Zarr whenever the working directory happened to
+contain a `weather/zarr.json`, the priority-5 Zarr specification being
+consulted before priority-3 NIMROD.
+
 **Do not add a third rule matching any path that ends in `.zarr`.** Joined by
 "or" it swallows the remote rule whole, leaving the scheme test unreachable,
 and it is the wrong rule locally in any case. Reading the marker file is what
@@ -1419,14 +1530,24 @@ rather than once in `load_files` and again in the scheme dispatch.
 
 The one thing this costs is that the file-or-store decision has to happen
 *after* glob expansion and *before* format dispatch, because `iris.load` must
-still accept `"data/*"` matching a mix of `.nc` files and `.zarr` stores.
-`expand_filespecs` already runs first and already returns concrete paths, so
-`_generate_cubes` partitions what comes back and calls `load_files` and
-`load_stores` with their own share. Neither routine learns about the other's
-kind of target.
+still accept `"data/*"` matching a mix of `.nc` files and `.zarr` stores. And
+it must happen only **once**: `expand_filespecs` keys its own glob cache by
+the spec string, so expanding an already-expanded list collapses two
+identical paths matched by two different patterns into one. `load_files`
+cannot simply receive the partitioned, already-expanded list, because its
+public signature promises a glob-accepting `filenames` to every other caller.
+So the expansion stays behind that signature — `load_files` expands once and
+delegates to a private `_load_files`, which expects a list already expanded
+— and `_generate_cubes` calls `_load_files` directly, with the list it has
+already expanded for itself and partitioned between `_load_files` and
+`load_stores`. Neither routine learns about the other's kind of target.
 
 The duplicated dispatch in `netcdf/ugrid_load.py:156-183` is updated in step
-with `loading.py`, so `iris.mesh.load_meshes` accepts Zarr stores too.
+with `loading.py`, so `iris.mesh.load_meshes` accepts Zarr stores too. It also
+has to accept the Zarr *handler*, not only the Zarr scheme: the format spec it
+gets back for a store names `iris.fileformats._load_zarr`, and a test against
+`nc_loader.load_cubes` alone sends every store down the "ignore this" branch
+while the scheme dispatch above says the store was fine.
 
 **NCZarr is unaffected, and native Zarr is already the default.** No
 precedence rule is needed to make it so, because the native reader and the
@@ -1596,7 +1717,7 @@ Carries the §6 read tests for the rules that are easiest to get wrong: the
 version-aware masking split, both `_FillValue` encodings, the inner-chunk read
 unit on a sharded array, and the cache-key staleness and sensitivity cases.
 
-Also carries two changes to generic code that only Zarr can exercise:
+Also carries three changes to generic code that only Zarr can exercise:
 
 - `dimensions` becomes `tuple[str | None, ...]`, and `CFVariable.spans` and
   its three overrides match on `(name, size)` pairs with an anonymous
@@ -1604,9 +1725,28 @@ Also carries two changes to generic code that only Zarr can exercise:
   construction, and the tests say so on both backends.
 - `encoding` on `CFDataset` and `CFDatasetVariable` (§4.2), reporting what the
   opened store actually holds.
+- `format` on `CFDatasetVariable` (§4.2), naming the concrete Zarr version so
+  the version-aware masking split (§4.4) can tell `ZARR_V2` from `ZARR_V3`.
+  `CFDataset.format` arrived with PR 5, which merged first; this pull request
+  adds the variable's half and `ZarrDataset`'s answer to both it and
+  `supports_dtype` (§12.4).
+
+**UGRID meshes load too**, through
+`iris.fileformats.netcdf.ugrid_load`. Nothing in that module is netCDF-specific
+— it reads a `CFReader`, and `CFReader` over a `ZarrDataset` answers the same
+questions — so the Zarr loader calls into it rather than growing a second copy.
+The mesh block that was inline in `netcdf/loader.py` becomes
+`_prepare_mesh_coords` and `_attach_mesh_coords`, two functions because the
+MeshCoords have to be built *before* `_load_cube` and attached *after* it: built
+after, `helpers._add_unused_attributes` has already taken the data variable's
+`mesh` and `location` attributes and left them on the cube as ordinary
+attributes. One netCDF detail survives the move: the "mesh could not be found"
+message keeps being raised on the `iris.fileformats.netcdf` logger rather than
+`ugrid_load`'s own, which sits at `INFO` and would drop it.
 
 After this pull request, `iris.load("store.zarr")` and
-`iris.load("s3://bucket/store.zarr")` work for version 2 and version 3 stores.
+`iris.load("s3://bucket/store.zarr")` work for version 2 and version 3 stores,
+mesh data included.
 
 ### PR 5 — Relocate the CF saver
 
@@ -1714,6 +1854,14 @@ Every fragment credits `` :user:`claude` `` per `changelog/AGENTS.md`.
 **Documentation** is written in PRs 4 and 6, alongside the code it describes,
 and becomes visible to users only here. The merge-back checks it builds clean
 against `main` with `-W`, since the two branches can drift.
+
+**Issues to raise, not to act on.** One deliberately deferred follow-up,
+raised *here* rather than when it was found, so that nobody starts on it while
+the programme's pull requests are still in flight and depending on each other:
+
+| What | Why it waits |
+|---|---|
+| Unify the cube-building loops in `netcdf/loader.py` and `zarr/loader.py`, and with them the format dispatch `load_meshes` duplicates (§2.3) | Raised by @pp-mo reviewing PR 4. Since PR 4 gave the Zarr loader the same mesh handling, the two bodies differ only in how the dataset is opened. The duplicated dispatch is the same defect wearing a different hat, and is the only reason `netcdf/ugrid_load.py` names Zarr: the mesh code it shares with the Zarr loader names no format at all. A `TODO` in that function points here. The refactor is internal — neither `load_cubes` signature moves — so it is safe to do later and disruptive to do now |
 
 **Ordering rationale.** Refactor and feature alternate so that no feature pull
 request is large, and every relocation is a separate, skimmable diff. Tests
@@ -2059,8 +2207,8 @@ nothing else, and can land beside any of the others.
 | 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
 | 2.5 | Deprecate `CFVariable.__getattr__` | Merged | [#7333](https://github.com/SciTools/iris/pull/7333) |
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
-| 4 | Zarr loading | Not started | — |
-| 5 | Relocate the CF saver | In review | [#7338](https://github.com/SciTools/iris/pull/7338) |
+| 4 | Zarr loading | In review | [#7336](https://github.com/SciTools/iris/pull/7336) |
+| 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | Not started | — |
 | 7 | Real-world test data and benchmarks | Not started | — |
 | 8 | The terms-of-art sweep | Not started | — |
@@ -2072,9 +2220,11 @@ Companion work outside `SciTools/iris`:
 |---|---|---|---|
 | `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) and ESA EOPF (v2) fixtures for PR 7 | Not started | — |
 
-States are `Not started`, `Drafted`, `In review`, `Changes requested`,
-`Merged` or `Abandoned`. Record the pull request number and its state as soon
-as it is opened, not when it merges.
+States are `Not started`, `Drafted`, `Built, awaiting PR N` (work complete on
+a branch based on another pull request not yet merged, with no number of its
+own worth recording), `In review`, `Changes requested`, `Merged` or
+`Abandoned`. Record the pull request number and its state as soon as it is
+opened, not when it merges.
 
 There is deliberately no `Closes` column and no changelog-fragment column:
 both obligations belong to the merge-back, not to the feature-branch pull
@@ -2106,7 +2256,6 @@ closing keywords live (§5).
 | # | Question | Provisional answer | Tracked | Blocks |
 |---|---|---|---|---|
 | Q1 | How should the CF attribute model map onto JSON, on write and on read? | JSON-native both ways (§4.4, §4.5) | #7288, §10 | Nothing. Changing it touches only the attribute conversion in `zarr/_dataset.py` |
-| Q2 | Are `<U7`-style fixed-length unicode dtypes, which #6961 notes are not strictly Zarr-supported and which the EOPF store contains, readable as-is? | Unverified — read them before PR 4 | §7 | PR 4 |
 | Q9 | Should a user be able to tell the loader that two same-named, same-length dimensions in different Zarr arrays are *not* the same dimension? The version 3 specification permits it, since a name guarantees nothing across arrays | No control. Treating that pair as one dimension is what xarray, NCZarr and netCDF all do, so a store meaning otherwise is relying on something no reader implements. Add one if a real store turns up that needs it | §4.4 | Nothing |
 | Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
 | Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing |
@@ -2559,6 +2708,30 @@ owed a `bugfix` fragment for the `_NCZARR_SCALAR_DIMENSION` `spans` gap, which
 the 2026-09-24 entry above records as unreachable and characterised rather than
 fixed. The fragment is now the attribute-name collision that PR 2 did change.
 
+**2026-10-13 — during PR 4**
+
+- `CFDataset.format` lands in PR 4, not PR 5. `ZarrDataset` cannot answer
+  `ZARR_V2` versus `ZARR_V3` without it, and PR 4 merges first.
+  `supports_dtype` is a saver question and stays in PR 5. §5's PR 4 and PR 5
+  entries are amended to match.
+- The shared `CFDataset` contract is split into a read half and a write
+  half. PR 4 implements the Zarr read path only, so the write half is
+  unrunnable against it; one class with half of it skipped would hide an
+  incomplete implementation behind a skip, which is the opposite of what §6
+  asks a shared body to do. PR 6 adds the write half for Zarr.
+- **Closes Q2.** `<U7`-style fixed-length unicode arrays read as themselves
+  on both Zarr versions, verified against zarr-python 3.4.1. #6961's note
+  that they are "not strictly Zarr-supported" describes the specification
+  rather than zarr-python's behaviour, so no special handling is needed.
+- `iris.io.load_files` is a public wrapper over a private `_load_files`. The
+  load chain expands globs once, before partitioning files from stores;
+  expanding again inside `load_files` would collapse duplicate glob matches,
+  because the expansion is keyed by resolved path. The split keeps
+  `load_files`'s documented glob-accepting contract intact for external
+  callers, while the partition path in `iris.loading._generate_cubes` calls
+  the private form directly. §4.7.
+- `ZarrDataset.attributes` withholds `_NCProperties` alongside
+  `_ARRAY_DIMENSIONS`. §4.4.
 **2026-10-14 — review of #7316 by @stephenworsley, decision by @trexfeathers**
 
 - **The `getattr` anti-patterns leave `lib/iris/AGENTS.md`.** The rule never
@@ -2582,6 +2755,20 @@ fixed. The fragment is now the attribute-name collision that PR 2 did change.
   exists. The design is unchanged: §4.3 removes `__getattr__` because
   `.attributes` already does the whole job, which was never an argument from
   the rule.
+
+**2026-10-14 — actioning the Codex review of PR 4**
+
+All four findings reproduced and fixed; none disputed.
+
+- The `(name, size)` identity rule carries through to coordinate attachment,
+  not only to `spans`. It becomes a function rather than a method, used by
+  both. §4.4.
+- `missing_value` may be a vector, per CF section 2.5.1; `_FillValue` may
+  not. §4.4.
+- Chunks are sized on the decoded dtype, which is what a task holds, on
+  the `CHUNK_CONTROL.as_dask()` path as well as the default one. §4.4.
+- The `ZarrStore` file element answers `None` when a file handle is supplied,
+  so a file's basename is never resolved against the working directory. §4.7.
 
 **2026-10-14 — PR 5, the CF saver relocation**
 
@@ -2702,8 +2889,14 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-02 | #7303 merged; #7316 rebased onto `brownfield` so it carries only its own ten commits. |
 | 2026-10-12 | Actioned the #7292 review by @pp-mo. Dimension names made optional and the `(name, size)` contract written down; `format`, `encoding` and `supports_dtype` added to the interface with the rule that nothing above it tests the implementation type; `CFVariable.__getattr__` deprecated, adding PR 2.5; the Zarr saver's netCDF keyword translation dropped; `mode="a"` separated from append, and append declared out of scope; format detection split local from remote; `load_files` left alone in favour of `load_stores`; the cache key's assumption turned into a test. Q3 closed, Q9 opened, two issues raised. |
 | 2026-10-12 | PR 2.5 built, correcting §5's account of it. Four reads inside Iris still reached `__getattr__` after PR 2, not none; they are named, and so is the measurement that found them. The silent-load test records warnings rather than promoting them to errors, because `iris.load` captures a build exception into `LOAD_PROBLEMS` and an `error` filter degrades the load instead of failing the test. `IrisDeprecation`'s module corrected to `iris._deprecation`. |
+| 2026-10-13 | PR 4 built, on a branch based on PR 3. `format` moved to PR 4 (§5); the shared `CFDataset` contract split into read and write halves, so PR 4 runs only the read half; `load_files` split into a public glob-expanding wrapper over a private `_load_files` (§4.7); `_NCProperties` withheld from `ZarrDataset.attributes` alongside `_ARRAY_DIMENSIONS` (§4.4). Q2 closed. Four decisions logged. |
 | 2026-10-14 | The three `getattr` anti-patterns removed from `lib/iris/AGENTS.md`, and the passages in §3 and §4.3 that leaned on them rewritten to stand on their own. No design change. |
+| 2026-10-14 | Actioned the Codex review of PR 4. Four findings, all reproduced and fixed: the `(name, size)` rule extended through coordinate attachment (§4.4); vector `missing_value` decoded (§4.4); chunks sized on the decoded dtype, including under `CHUNK_CONTROL.as_dask()` (§4.4); the `ZarrStore` element ruled out when a file handle is supplied (§4.7). |
 | 2026-10-14 | PR 5 raised. §5 records the shape the saver relocation takes - `CFSaver` and the four hooks - and §12.3 records the `NETCDF3_64BIT` defect found while doing it. §12.4 records what the relocation leaves netCDF-specific inside `cf/saver.py`, and §12.1 corrected to Merged for #7316 and #7333. |
 | 2026-10-16 | The generic saver renamed `_CFSaver` and made private, following review of #7338 by @stephenworsley. §5 and §12.4 say why it is private where `CFDataset` is public, and what would have to be true for PR 6 to promote it. |
 | 2026-10-16 | #7337 fixed inside PR 5 rather than carried across it, following review of #7338 by @stephenworsley. Q10 closed into §12.4, and §12.1 now records the issue as closed by PR 5. |
 | 2026-10-16 | Added PR 8, the terms-of-art sweep: this document and the plans predate the rule in `.github/WRITING.md`, and a coinage that reaches `main` passes the test a later agent applies to decide whether a term is already in use. The programme goes from eight pull requests to nine. No design change. |
+| 2026-10-20 | Read-side chunk alignment removed (§4.4), reversing the 2026-09-22 entry that added it. The mechanism held up under measurement, but alignment only ever changed the answer where a stored chunk exceeds the dask target, and that is a trade the netCDF path has always accepted; correcting one backend would make two formats differ over shared physics. The warning it carried is kept and moved to `iris.fileformats.cf.loader`, where it covers both backends, and `CHUNK_CONTROL` is the answer for a caller who wants the other trade. Decided with @trexfeathers on #7336, following review by @pp-mo. |
+| 2026-10-20 | #7338 merged, and PR 4 merged `brownfield` back in. The three predicted collisions resolved as PR 5's plan said they would: one copy of `format` kept on each class, PR 4's `encoding` kept beside it, and `supports_dtype` implemented on `ZarrDataset` (§4.2). |
+| 2026-10-22 | UGRID meshes load from Zarr, closing a gap @pp-mo found reviewing #7336. §4.7 already said `load_meshes` would accept a store; it reached one and then rejected it, because the handler test named only `nc_loader.load_cubes`. Worse, `iris.load` on a UGRID store returned a cube that had silently dropped its mesh coordinates: `CFReader` classifies them as UGRID coords, and nothing then built the mesh. The fix is wiring, not machinery - `_meshes_from_cf` already built a correct `MeshXY` from a `ZarrDataset`. The inline mesh block in `netcdf/loader.py` became `_prepare_mesh_coords` and `_attach_mesh_coords`, shared by both loaders (§5). |
+| 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |

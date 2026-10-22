@@ -39,15 +39,14 @@ survives garbage collection of the reader. ``_own_file`` is set ``False``
 before anything that can raise, so the destructor is safe even if
 ``__init__`` fails part way.
 
-This module is coupled to :mod:`iris.fileformats.netcdf`: opening a file means
-building a :class:`~iris.fileformats.netcdf._dataset.NetCDFDataset`. The rest
-of the load path works against the format-agnostic
-:class:`~iris.fileformats.cf.dataset.CFDataset` /
-:class:`~iris.fileformats.cf.dataset.CFDatasetVariable` interface, so a Zarr
-store can be read by the same machinery once a
-:class:`~iris.fileformats.cf.dataset.CFDataset` implementation exists for it
--- see §4.2 of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+``CFReader`` takes one of three things. A path opens a netCDF file, because
+netCDF is the default a bare filename means. An open netCDF4 dataset, or an
+emulator of one such as ncdata passes, is wrapped. And a
+:class:`~iris.fileformats.cf.dataset.CFDataset` of any format is used as it
+stands, which is how a Zarr store reaches this machinery: its loader opens
+the store and hands it over, so nothing here has to know that Zarr exists.
+Only the first case mentions netCDF, and only because something has to be
+the default.
 
 """
 
@@ -78,6 +77,7 @@ from ._variables import (
     CFUGridMeshVariable,
     _CFFormulaTermsVariable,
 )
+from .dataset import CFDataset
 
 #: Supported dimensionless vertical coordinate reference surface/phemomenon
 #: formula terms. Ref: [CF] Appendix D.
@@ -133,7 +133,12 @@ class CFReader:
     def __init__(self, file_source, warn=False, monotonic=False):
         # Ensure safe operation for destructor, should init fail.
         self._own_file = False
-        if isinstance(file_source, str):
+        if isinstance(file_source, CFDataset):
+            # Already open, in whatever format: use it, don't own it. The
+            # caller that opened it is responsible for closing it.
+            self._dataset = file_source
+            self._filename = file_source.location
+        elif isinstance(file_source, str):
             # Create from filepath : open it + own it (=close when we die).
             if not urlparse(file_source).scheme:
                 self._filename = Path(file_source).expanduser()

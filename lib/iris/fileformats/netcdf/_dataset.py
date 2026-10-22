@@ -23,6 +23,7 @@ See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 """
 
 from collections.abc import Iterator, Mapping, MutableMapping
+from types import MappingProxyType
 from typing import Any
 import warnings
 
@@ -114,7 +115,9 @@ class _NetCDFAttributes(MutableMapping):
 class NetCDFDatasetVariable(CFDatasetVariable):
     """One variable of a netCDF file, presented through the CF interface."""
 
-    def __init__(self, variable, location: str, *, write_lock_factory=None):
+    def __init__(
+        self, variable, location: str, format: str, *, write_lock_factory=None
+    ):
         """Wrap ``variable``, a thread-safe netCDF variable wrapper.
 
         Parameters
@@ -126,6 +129,8 @@ class NetCDFDatasetVariable(CFDatasetVariable):
             file's own. This class reports whatever the wrapper reports.
         location : str
             The path or URL of the dataset this variable belongs to.
+        format : str
+            The netCDF format of the dataset this variable belongs to.
         write_lock_factory : callable, optional
             Returns the lock shared by every variable of one dataset. Called
             by :meth:`write_handle`. A callable rather than a lock, so that a
@@ -134,6 +139,7 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         """
         self._variable = variable
         self._location = location
+        self._format = format
         self._write_lock_factory = write_lock_factory
         self._attributes = _NetCDFAttributes(variable)
 
@@ -146,6 +152,11 @@ class NetCDFDatasetVariable(CFDatasetVariable):
     def location(self) -> str:
         """The path or URL of the dataset holding this variable."""
         return self._location
+
+    @property
+    def format(self) -> str:
+        """The netCDF format of the file holding this variable."""
+        return self._format
 
     @property
     def dimensions(self) -> tuple:
@@ -179,6 +190,18 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         if chunks is None or chunks == _CONTIGUOUS:
             return None
         return tuple(chunks)
+
+    @property
+    def storage_settings(self) -> Mapping:
+        """The netCDF storage settings this variable holds.
+
+        Read back off the file, so a variable created with `zlib=True` reports
+        the compression netCDF4 actually applied rather than the keyword it
+        was given.
+
+        """
+        filters = self._variable.filters() or {}
+        return MappingProxyType({**filters, "chunksizes": self.chunking})
 
     @property
     def attributes(self) -> MutableMapping:
@@ -552,6 +575,11 @@ class NetCDFDataset(CFDataset):
         return self._dataset.file_format
 
     @property
+    def storage_settings(self) -> Mapping:
+        """The store-wide netCDF settings. Only the format is one."""
+        return MappingProxyType({"format": self.format})
+
+    @property
     def closed(self) -> bool:
         """Whether the file has been released, by this object or by its owner.
 
@@ -575,6 +603,7 @@ class NetCDFDataset(CFDataset):
                 name: NetCDFDatasetVariable(
                     variable,
                     self._location,
+                    self._dataset.file_format,
                     write_lock_factory=self._write_lock_factory,
                 )
                 for name, variable in self._dataset.variables.items()
@@ -611,21 +640,24 @@ class NetCDFDataset(CFDataset):
         self._dataset.createDimension(name, size)
 
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
     ) -> NetCDFDatasetVariable:
         """Create and return a new variable.
 
-        ``**encoding`` reaches :meth:`netCDF4.Dataset.createVariable`
+        ``**storage_settings`` reaches :meth:`netCDF4.Dataset.createVariable`
         unaltered: ``compression``, ``zlib``, ``complevel``, ``shuffle``,
         ``chunksizes``, ``least_significant_digit`` and the rest.
 
         """
         assert self._dataset is not None
         variable = self._dataset.createVariable(
-            name, dtype, tuple(dimensions), fill_value=fill_value, **encoding
+            name, dtype, tuple(dimensions), fill_value=fill_value, **storage_settings
         )
         wrapped = NetCDFDatasetVariable(
-            variable, self._location, write_lock_factory=self._write_lock_factory
+            variable,
+            self._location,
+            self._dataset.file_format,
+            write_lock_factory=self._write_lock_factory,
         )
         # Register this wrapper, so that a later lookup by name returns it
         # rather than a second wrapper with its own attribute cache.

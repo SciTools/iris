@@ -22,7 +22,10 @@ from iris.tests.unit.fileformats.nc_load_rules.helpers import (
 def mock_engine(mocker):
     return mocker.Mock(
         cube=mocker.Mock(),
-        cf_var=mocker.Mock(dimensions=("foo", "bar")),
+        # A data variable has a shape as well as dimension names, because a
+        #  cell measure is attached to the dimensions it matches on
+        #  `(name, size)` - see `helpers._common_data_dims`.
+        cf_var=mocker.Mock(dimensions=("foo", "bar"), shape=(6, 2)),
         filename="DUMMY",
         cube_parts=dict(cell_measures=[]),
     )

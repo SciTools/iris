@@ -36,6 +36,7 @@ import iris.coords
 from iris.cube import Cube
 import iris.exceptions
 import iris.fileformats.cf as cf
+from iris.fileformats.cf._variables import _dimension_identities
 from iris.fileformats.cf.loader import _get_cf_var_data
 import iris.fileformats.netcdf
 from iris.loading import LOAD_PROBLEMS, LoadProblems
@@ -1471,6 +1472,35 @@ def _build_dimension_coordinate(
     return coord
 
 
+def _common_data_dims(
+    cf_var: cf.CFVariable, cf_data_var: cf.CFVariable
+) -> Optional[list[int]]:
+    """Return the dimensions of `cf_data_var` that `cf_var` shares with it.
+
+    Two variables share a dimension when they name it identically *and* it is
+    the same length in both - the ``(name, size)`` rule
+    :meth:`iris.fileformats.cf.CFVariable.spans` decides spanning by. The bare
+    name is not enough: a Zarr store may give one variable two dimensions of
+    the same name at two different lengths, and ``dimensions.index(name)``
+    would then answer with the first of them whichever one was meant. No
+    netCDF file can tell the difference, a netCDF dimension name being unique
+    within its group and carrying one size.
+
+    Returns ``None`` rather than an empty list when nothing is shared, because
+    that is what the ``Cube.add_*`` methods take for "no dimensions".
+    """
+    # `_dimension_identities` rather than a pairing written out here, so that
+    #  the rule deciding a variable spans the data variable and the rule
+    #  attaching it to its dimensions are one rule, not two that can drift.
+    data_identities = _dimension_identities(cf_data_var)
+    data_dims = [
+        data_identities.index(identity)
+        for identity in _dimension_identities(cf_var)
+        if identity in data_identities
+    ]
+    return data_dims or None
+
+
 def _add_dimension_coordinate(
     engine: Engine,
     cf_coord_var: cf.CFCoordinateVariable,
@@ -1480,15 +1510,9 @@ def _add_dimension_coordinate(
     assert engine.cube is not None
     assert engine.cube_parts is not None
 
-    # Determine the name of the dimension/s shared between the CF-netCDF
-    #  data variable and the coordinate being built.
-    common_dims = [
-        dim for dim in cf_coord_var.dimensions if dim in engine.cf_var.dimensions
-    ]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [int(engine.cf_var.dimensions.index(dim)) for dim in common_dims]
+    # Determine which dimension/s of the CF-netCDF data variable the
+    #  coordinate being built covers.
+    data_dims = _common_data_dims(cf_coord_var, engine.cf_var)
 
     if hasattr(coord, "circular") and data_dims is not None:
         # Appease MyPy. The check itself uses duck typing to avoid any
@@ -1639,15 +1663,9 @@ def _add_auxiliary_coordinate(
     assert engine.cube is not None
     assert engine.cube_parts is not None
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    # and the coordinate being built.
-    coord_dims = cf_coord_var.dimensions
-    datavar_dims = engine.cf_var.dimensions
-    common_dims = [dim for dim in coord_dims if dim in datavar_dims]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [engine.cf_var.dimensions.index(dim) for dim in common_dims]
+    # Determine which dimension/s of the CF-netCDF data variable the
+    #  coordinate being built covers.
+    data_dims = _common_data_dims(cf_coord_var, engine.cf_var)
 
     engine.cube.add_aux_coord(coord, data_dims)
 
@@ -1723,13 +1741,9 @@ def _add_cell_measure(
     cf_var = engine.cf_var
     cube = engine.cube
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data
-    #  variable and the coordinate being built.
-    common_dims = [dim for dim in cf_cm_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    # Determine which dimension/s of the CF-netCDF data variable the cell
+    #  measure being built covers.
+    data_dims = _common_data_dims(cf_cm_var, cf_var)
 
     # Add it to the cube
     cube.add_cell_measure(cell_measure, data_dims)
@@ -1795,13 +1809,9 @@ def _add_ancil_var(
     cf_var = engine.cf_var
     cube = engine.cube
 
-    # Determine the name of the dimension/s shared between the CF-netCDF data variable
-    #  and the AV being built.
-    common_dims = [dim for dim in cf_av_var.dimensions if dim in cf_var.dimensions]
-    data_dims = None
-    if common_dims:
-        # Calculate the offset of each common dimension.
-        data_dims = [cf_var.dimensions.index(dim) for dim in common_dims]
+    # Determine which dimension/s of the CF-netCDF data variable the ancillary
+    #  variable being built covers.
+    data_dims = _common_data_dims(cf_av_var, cf_var)
 
     # Add it to the cube
     cube.add_ancillary_variable(av, data_dims)

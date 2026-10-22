@@ -205,3 +205,26 @@ class TestAttributeTrackingAcrossReset:
         # This does not pin the reverse: that no attribute Iris *read* reaches
         # the cube. Every attribute read here is in saver.py's _CF_ATTRS, and
         # _add_unused_attributes drops those before tracking is consulted.
+
+
+def test_an_already_open_cf_dataset_is_used_as_is(tmp_path):
+    """A loader that has already opened a store hands it straight over.
+
+    The alternative - a path and a format keyword - would put the choice of
+    backend inside CFReader, which is the branch the dataset interface exists
+    to remove.
+    """
+    from iris.fileformats.netcdf._dataset import NetCDFDataset
+
+    path = str(tmp_path / "source.nc")
+    with NetCDFDataset(path, mode="w") as writer:
+        writer.create_dimension("x", 2)
+        writer.create_variable("v", np.dtype("f4"), ("x",))
+
+    dataset = NetCDFDataset(path, mode="r")
+    with CFReader(dataset) as reader:
+        assert reader.filename == dataset.location
+        assert "v" in reader.cf_group
+    # Borrowed, not owned: leaving the context must not close it.
+    assert dataset.closed is False
+    dataset.close()

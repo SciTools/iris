@@ -35,7 +35,10 @@ def encoded(sample_path):
 
 def wrap(dataset, name, location, write_lock_factory=None):
     return _dataset.NetCDFDatasetVariable(
-        dataset.variables[name], location, write_lock_factory=write_lock_factory
+        dataset.variables[name],
+        location,
+        dataset.file_format,
+        write_lock_factory=write_lock_factory,
     )
 
 
@@ -131,7 +134,7 @@ class TestAttributes:
         variable = mocker.Mock()
         variable.ncattrs.return_value = ["units"]
         variable.getncattr.return_value = "K"
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         _ = wrapped.attributes["units"]
         _ = wrapped.attributes["units"]
         assert variable.ncattrs.call_count == 1
@@ -156,7 +159,7 @@ class TestAttributes:
         variable.getncattr.side_effect = lambda name: (
             "m" if name == "units" else _raise(AttributeError(name))
         )
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         assert wrapped.attributes["broken"] == ""
 
 
@@ -183,7 +186,7 @@ class TestNetCDFOnlyMembers:
         # so the check has to compare against the one instance actually
         # passed in, not a second, independently fetched wrapper.
         variable = raw.variables["air_temperature"]
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         assert wrapped.variable is variable
 
     def test_not_variable_length(self, air):
@@ -209,7 +212,7 @@ class TestNetCDFOnlyMembers:
         # The emulation hook ncdata uses (issue #4994): an emulating variable
         # carries its own array instead of file storage.
         variable = _EmulatedVariable()
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         variable._data_array = np.zeros(3)
         assert wrapped.is_emulated is True
         np.testing.assert_array_equal(wrapped.emulated_data_array, np.zeros(3))
@@ -248,7 +251,7 @@ class TestReadData:
         mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         variable = _EmulatedVariable()
         variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         result = wrapped.read_data(_unreachable_policy)
         assert result is variable._data_array
 
@@ -259,7 +262,7 @@ class TestReadData:
         proxy_class = mocker.patch.object(_thread_safe_nc, "NetCDFDataProxy")
         variable = _EmulatedVariable()
         variable._data_array = np.arange(6, dtype="f4").reshape(2, 3)
-        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location)
+        wrapped = _dataset.NetCDFDatasetVariable(variable, sample_location, "NETCDF4")
         wrapped.read_data(_unreachable_policy)
         assert proxy_class.call_count == 0
 
