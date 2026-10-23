@@ -12,7 +12,7 @@ zarr = pytest.importorskip("zarr")
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
-from iris.fileformats.cf.saver import CFSaver
+from iris.fileformats.cf.saver import _CFSaver
 from iris.fileformats.zarr.saver import Saver
 
 
@@ -35,7 +35,7 @@ def cube():
 
 class TestTheClass:
     def test_it_is_a_cf_saver(self):
-        assert issubclass(Saver, CFSaver)
+        assert issubclass(Saver, _CFSaver)
 
     def test_it_opens_a_store(self, tmp_path, cube):
         with Saver(tmp_path / "out.zarr") as saver:

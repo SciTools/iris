@@ -303,18 +303,18 @@ def marshal_attributes(cubes, local_keys, format_name):
 
     A store holds one value of a global attribute, and a list of cubes may
     carry several. Settling that is cube logic, not storage logic, so every
-    :class:`CFSaver` subclass's own ``save`` function calls this and nothing
+    ``_CFSaver`` subclass's own ``save`` function calls this and nothing
     does it twice.
 
     Which half of this does the work depends on
     :attr:`iris.FUTURE.save_split_attrs`.
 
-    * **Enabled.** :meth:`CFSaver.write` writes no global attributes at all,
+    * **Enabled.** ``_CFSaver.write`` writes no global attributes at all,
       and the caller writes the returned `global_attributes` once, after the
       last cube. An attribute the cubes disagree about cannot be global, so
       it is demoted to a local attribute on each cube - on a *copy* of each
       cube, so that the caller's own cubes are untouched.
-    * **Legacy.** :meth:`CFSaver.write` writes each cube's global attributes
+    * **Legacy.** ``_CFSaver.write`` writes each cube's global attributes
       as it goes, so the returned `global_attributes` is empty and the work
       is to extend `local_keys` with every attribute the cubes do not all
       agree on. Without that, one store-wide value would silently become
@@ -338,7 +338,7 @@ def marshal_attributes(cubes, local_keys, format_name):
         The cubes to save, which are the ones passed in unless an attribute
         had to be demoted.
     local_keys : set of str
-        To pass to each :meth:`CFSaver.write` call.
+        To pass to each ``_CFSaver.write`` call.
     global_attributes : dict
         To write once, after the last cube. Empty in the legacy mode.
 

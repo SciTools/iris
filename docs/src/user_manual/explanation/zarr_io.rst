@@ -151,16 +151,10 @@ where Zarr is most used. Callers who need transactional writes want
 Meshes
 ^^^^^^
 
-.. todo:: revisit once the mesh reconstruction on load is implemented.
-
 A cube with an unstructured :class:`~iris.mesh.MeshXY` saves correctly: the
 store carries the full CF-UGRID structure, the same mesh, topology and
-connectivity variables a netCDF save would write.
-
-.. note::
-
-    Loading that store back does not yet rebuild the mesh -- the cube comes
-    back without one, however completely the store describes it.
+connectivity variables a netCDF save would write, and loading it back gives
+you the mesh again.
 
 A cube loaded from Zarr may carry an attribute netCDF cannot hold, which
 fails the save. See :ref:`zarr_io_attributes`.

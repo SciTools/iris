@@ -116,7 +116,7 @@ class TestTheVersionGuard:
 
     def test_a_version_3_store_is_what_a_write_produces(self, tmp_path):
         with ZarrDataset(tmp_path / "new.zarr", mode="w-") as dataset:
-            assert dataset.encoding["zarr_format"] == 3
+            assert dataset.storage_settings["zarr_format"] == 3
 
 
 @pytest.fixture
@@ -239,8 +239,8 @@ class TestCreateVariableEncoding:
         variable = writable.create_variable(
             "data", np.dtype("f4"), ["x"], chunks=(8,), shards=(64,)
         )
-        assert variable.encoding["chunks"] == (8,)
-        assert variable.encoding["shards"] == (64,)
+        assert variable.storage_settings["chunks"] == (8,)
+        assert variable.storage_settings["shards"] == (64,)
 
     def test_compressors_reach_the_array(self, writable):
         from zarr.codecs import GzipCodec
@@ -249,7 +249,7 @@ class TestCreateVariableEncoding:
         variable = writable.create_variable(
             "data", np.dtype("f4"), ["x"], compressors=[GzipCodec(level=5)]
         )
-        codecs = str(variable.encoding["codecs"])
+        codecs = str(variable.storage_settings["codecs"])
         assert "gzip" in codecs.lower()
 
     @pytest.mark.parametrize(

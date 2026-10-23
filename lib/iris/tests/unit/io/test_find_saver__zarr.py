@@ -56,8 +56,9 @@ class TestRegistrationIsLazy:
 
 class TestSavingACubeList:
     def test_the_whole_list_goes_into_one_store(self, tmp_path, cubes):
-        # Without the saver in _CUBELIST_SAVERS, iris.save loops over the
-        # cubes, and the second one meets a store that mode="w-" refuses.
+        # Were the saver not registered as a cubelist saver, iris.save
+        # would loop over the cubes, and the second one would meet a store
+        # that mode="w-" refuses.
         pytest.importorskip("zarr")
         import zarr
 
@@ -74,8 +75,9 @@ class TestSavingACubeList:
     def test_the_saver_passed_by_hand_takes_the_list_too(self, tmp_path, cubes):
         # `iris.save(cubes, target, saver=iris.fileformats.zarr.save)` reaches
         # the saver without passing the `_zarr_save` wrapper, so the saver
-        # needs naming in _CUBELIST_SAVERS in its own right. Without that it
-        # is looped over, and the second cube meets a store mode="w-" refuses.
+        # needs registering as a cubelist saver in its own right. Without
+        # that it is looped over, and the second cube meets a store that
+        # mode="w-" refuses.
         pytest.importorskip("zarr")
         import zarr
 

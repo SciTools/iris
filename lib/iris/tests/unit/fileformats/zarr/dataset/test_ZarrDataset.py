@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDataset`."""
 
+import numpy as np
 import pytest
 import zarr
 

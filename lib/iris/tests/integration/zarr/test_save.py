@@ -16,7 +16,7 @@ zarr = pytest.importorskip("zarr")
 
 import iris
 from iris.cube import CubeList
-from iris.fileformats.cf.saver import CFSaver
+from iris.fileformats.cf.saver import _CFSaver
 import iris.fileformats.zarr
 import iris.tests.stock as stock
 import iris.warnings
@@ -184,7 +184,7 @@ class TestAddingToAnExistingStore:
 
 
 class TestGlobalAttributes:
-    # `CFSaver.write` deliberately leaves the global attributes to its
+    # `_CFSaver.write` deliberately leaves the global attributes to its
     # caller under split-attribute saving, and computes `local_keys` for the
     # legacy mode. Both are format-agnostic cube logic, shared with the
     # netCDF saver - see §4.5 of the native Zarr I/O design.
@@ -325,7 +325,7 @@ class TestInputsTheDesignImplies:
         # Zarr saver is ordinary: the mesh variables go through the same
         # generic path as everything else, and nothing above has proved it.
         # This is the saver's own promise, independent of what a loader can
-        # rebuild from it - see the xfail below for that.
+        # rebuild from it - see the round trip below for that.
         path = tmp_path / "mesh.zarr"
         mesh_cube = stock.realistic_4d_w_everything(w_mesh=True)
         iris.save(mesh_cube, path)
@@ -348,13 +348,6 @@ class TestInputsTheDesignImplies:
         assert mesh_cube.mesh.face_dimension not in store.array_keys()
         assert mesh_cube.mesh.node_dimension not in store.array_keys()
 
-    @pytest.mark.xfail(
-        reason=(
-            "The Zarr loader does not build a MeshXY from a store, so a "
-            "cube it loads never carries one, however completely the "
-            "store describes it - see the passing test above for that."
-        )
-    )
     def test_a_mesh_cube_round_trips(self, tmp_path):
         path = tmp_path / "mesh.zarr"
         mesh_cube = stock.realistic_4d_w_everything(w_mesh=True)
@@ -463,7 +456,7 @@ class TestInputsTheDesignImplies:
 
 
 class TestDataless:
-    # `Cube` supports a dataless form, and `CFSaver` has a branch for it that
+    # `Cube` supports a dataless form, and `_CFSaver` has a branch for it that
     # chooses its own dtype and fill value and writes a marker attribute.
     # Nothing else here reaches that branch. The marker is a string the Zarr
     # attribute conversion has to carry intact, which is the half of this the
@@ -482,14 +475,14 @@ class TestDataless:
         path = tmp_path / "dataless.zarr"
         iris.save(dataless, path)
         # The marker belongs in the store, not on the caller's cube.
-        assert CFSaver._DATALESS_ATTRNAME not in dataless.attributes
+        assert _CFSaver._DATALESS_ATTRNAME not in dataless.attributes
         stored = zarr.open_group(store=path, mode="r")["testdata"]
-        assert stored.attrs[CFSaver._DATALESS_ATTRNAME] == "true"
-        assert stored.dtype == CFSaver._DATALESS_DTYPE
-        assert stored.fill_value == CFSaver._DATALESS_FILLVALUE
+        assert stored.attrs[_CFSaver._DATALESS_ATTRNAME] == "true"
+        assert stored.dtype == _CFSaver._DATALESS_DTYPE
+        assert stored.fill_value == _CFSaver._DATALESS_FILLVALUE
         # No chunk was ever written, so every point reads back as the fill.
         np.testing.assert_array_equal(
-            stored[...], np.full(dataless.shape, CFSaver._DATALESS_FILLVALUE)
+            stored[...], np.full(dataless.shape, _CFSaver._DATALESS_FILLVALUE)
         )
 
     def test_the_cube_comes_back_dataless(self, tmp_path, dataless):
@@ -502,7 +495,7 @@ class TestDataless:
         assert loaded.shape == dataless.shape
         # The marker is an implementation detail of the file, and the load
         # consumes it rather than handing it back as a cube attribute.
-        assert CFSaver._DATALESS_ATTRNAME not in loaded.attributes
+        assert _CFSaver._DATALESS_ATTRNAME not in loaded.attributes
 
     def test_a_dataless_cube_mixes_with_a_normal_one(self, tmp_path, dataless):
         path = tmp_path / "mixture.zarr"

@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Unit tests for :meth:`iris.fileformats.cf.saver.CFSaver._grid_mapping_writer`.
+"""Unit tests for :meth:`iris.fileformats.cf.saver._CFSaver._grid_mapping_writer`.
 
 The hook exists because netCDF4's own object is what has always received the
 CF grid-mapping parameters. Changing where they land would change what is in a

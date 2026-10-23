@@ -11,7 +11,7 @@
 
 Writes Zarr version 3 stores. The CF work - dimension names, coordinate,
 bounds, mesh and grid-mapping variables, attribute compliance - belongs to
-:class:`iris.fileformats.cf.saver.CFSaver`, which this builds on. What is here
+``iris.fileformats.cf.saver._CFSaver``, which this builds on. What is here
 is what a Zarr store does differently: it is created rather than opened, it
 holds text natively, and it finishes with a consolidated metadata document.
 
@@ -36,7 +36,7 @@ import iris
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris.cube import CubeList
 from iris.fileformats.cf import saver as cf_saver
-from iris.fileformats.cf.saver import CFSaver
+from iris.fileformats.cf.saver import _CFSaver
 import iris.io
 
 from . import _encode
@@ -122,7 +122,7 @@ def _complete(_written, dataset, consolidating) -> None:
         dataset.finalise()
 
 
-class Saver(CFSaver):
+class Saver(_CFSaver):
     """A manager for saving cubes to a Zarr store."""
 
     def __init__(
@@ -188,14 +188,14 @@ class Saver(CFSaver):
         #: sharing a name.
         self._pre_existing_names = frozenset(dataset.variables)
         # The dimensions the group already carries are dimensions this save
-        # has "seen", so that `CFSaver._get_dim_names` disambiguates against
+        # has "seen", so that `_CFSaver._get_dim_names` disambiguates against
         # them: an anonymous cube dimension is named "dim0" whatever cube it
         # came from, so a second save into one store routinely claims a name
         # the store already uses. Without this the generic layer declares
         # nothing - the name is already in `dataset.dimensions` - and
         # `create_variable` sizes the new array from the store's length
         # instead of the cube's, which zarr-python then truncates to in
-        # silence. Seeded here rather than in `CFSaver` because only a store
+        # silence. Seeded here rather than in `_CFSaver` because only a store
         # that can be added to has anything to seed; under "w-" and "w" the
         # group is new and this is empty. The disambiguation loops then
         # increment "dim0" to "dim0_0" for a conflicting length and reuse it
@@ -206,7 +206,7 @@ class Saver(CFSaver):
     def write(self, cube, *args, **kwargs):
         """Write a cube into the store.
 
-        Takes what :meth:`iris.fileformats.cf.saver.CFSaver.write` takes,
+        Takes what ``iris.fileformats.cf.saver._CFSaver.write`` takes,
         with Zarr's storage keywords in ``**encoding``. For a cube whose data
         is lazy, ``chunks`` defaults to the cube's own lazy chunking, so that
         the data is written in the shape it is held in, and so that the dask
@@ -360,7 +360,7 @@ class Saver(CFSaver):
         -------
         :class:`dask.delayed.Delayed`
             A real one. The inherited
-            :meth:`~iris.fileformats.cf.saver.CFSaver.delayed_completion`
+            ``_CFSaver.delayed_completion``
             returns a :class:`dask.array.core.Array` for one delayed write,
             or a tuple of them for several - never actually a
             :class:`~dask.delayed.Delayed`, despite its own annotation -
@@ -524,7 +524,7 @@ def save(
 
         conventions = cf_saver.CF_CONVENTIONS_VERSION
         if iris.FUTURE.save_split_attrs:
-            # Under split-attribute saving `CFSaver.write` writes no global
+            # Under split-attribute saving `_CFSaver.write` writes no global
             # attributes at all, so this one call is the whole of them. In
             # the legacy mode it has already written each cube's as it went,
             # and `global_attributes` is empty.

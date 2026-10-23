@@ -441,7 +441,7 @@ class ZarrDatasetVariable(CFDatasetVariable):
 
         """
         if self._array.ndim == 0 and keys == slice(None):
-            # `CFSaver._lazy_stream_data` writes a whole variable as
+            # `_CFSaver._lazy_stream_data` writes a whole variable as
             # `cf_var[:] = data`, which is `slice(None)` - one axis too many
             # for a 0-d array, which zarr indexes with `...` or `()` instead.
             # A scalar cube is ordinary, and this is otherwise the only
