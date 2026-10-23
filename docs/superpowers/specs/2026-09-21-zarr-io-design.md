@@ -383,11 +383,21 @@ dtype or a `datetime64` that 3.4 stores **[verified]**. That makes a few
 answers conservative, which is the safe direction: `create_variable` asks
 this before it creates anything, so a `False` is a refusal in Iris's words,
 while a `True` the store goes back on is the capability question with two
-answers that this whole rule exists to prevent. Byte order is deliberately
-not part of the answer, even though 3.0.8's table is little-endian only — a
-PP or GRIB load yields big-endian arrays, and a `False` would send a
-big-endian `int64` into the saver's narrowing path on every version,
-including the ones that would have stored it.
+answers that this whole rule exists to prevent.
+
+**Byte order is not part of the answer, because `create_variable` takes it
+out of the question.** A Zarr array is created in the platform's own byte
+order whatever order it was asked for, and NumPy converts on assignment, so
+the values stored are the caller's and only the layout is the store's. That
+is what lets `supports_dtype` answer `True` for `>i8` on every supported
+version: 3.0.8 has no data type for a big-endian dtype at all — `>i8` raises
+`KeyError` **[verified]** — while 3.4 stores one. Answering `False` instead
+was not an option worth having. A PP or GRIB load hands the saver big-endian
+arrays, so `False` would refuse ordinary Iris data outright for the floating
+dtypes, and quietly narrow it for `int64`, on versions that would have
+stored it. The netCDF saver already gives this data the same answer — a
+`>f4` cube is `float32` in the file it writes **[verified]** — so the Zarr
+path is matching it, not inventing a second rule.
 
 #### `format` and `storage_settings`
 
@@ -3093,7 +3103,21 @@ all in the write path's boundaries rather than its middle:
   of exclusions written against 3.4 answers `True` on 3.0.8 for a structured
   dtype and a `datetime64` that version has no data type for **[verified]**.
   §4.2 now says that, and says why the answer is conservative where the
-  versions differ and why byte order stays out of it.
+  versions differ.
+- Byte order was the third round of the same finding, and the first two
+  answers to it were both wrong. Answering `True` for `>i8` broke the
+  contract on 3.0.8, which has no data type for a big-endian dtype at all
+  **[verified]**, and was recorded as an acknowledged exception rather than
+  fixed. Answering `False` would have been worse: `supports_dtype` is
+  consulted for `int64` and unsigned, so big-endian `int64` would have been
+  narrowed, while `create_variable` - which now asks before creating - would
+  have refused big-endian floats outright, and a PP or GRIB load produces
+  both. `create_variable` instead creates in the platform's own byte order,
+  which removes the question: the values are the caller's, the layout is the
+  store's, and the netCDF saver has always answered this data the same way
+  **[verified]**. Checked by running every dtype the table answers `True`
+  for against zarr-python 3.0.8 and 3.4.1 in turn: every one creates
+  **[verified]**.
 - The write half of the shared `CFDataset` contract had no Zarr subclass,
   which §6 requires and which the module's own docstring said would arrive
   with the saver. Added, passing unchanged.
@@ -3163,3 +3187,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
 | 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
 | 2026-10-23 | Second round of the same review. `supports_dtype` restated in §4.2 as a table of what Zarr has rather than a list of what it lacks, after the first fix was found still answering `True` for two dtypes `create_variable` refuses — and after the zarr-python 3.0.8 data-type enum turned out to be much smaller than 3.4's registry, which makes any exclusion list wrong on the version floor Iris declares. The header table had gone stale against §12.1 for a second time; it now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
+| 2026-10-23 | Third round, on byte order, which the second round had documented as an exception to the capability contract instead of removing. `create_variable` now creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every supported version rather than only on the newest. §4.2 says why neither of the first two answers was tenable. The claim is no longer read from zarr-python's source but run against it: zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |

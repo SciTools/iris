@@ -679,10 +679,11 @@ _EXACT_FILL_KINDS = "biu"
 #: **[verified]**. Answering from the newest would be wrong on the oldest,
 #: which is the harder failure to notice.
 #:
-#: Byte order is deliberately not part of the answer, although 3.0.8's table
-#: is little-endian only: a PP or GRIB load yields big-endian arrays, and a
-#: False here would send a big-endian `int64` into the saver's narrowing path
-#: on every version, including the ones that would have stored it.
+#: Byte order is not part of the answer, and does not need to be:
+#: `create_variable` creates in the platform's own order whatever order it
+#: is handed, so a `True` for `>i8` is a `True` the store can keep. Without
+#: that, it could not be: 3.0.8 has no data type for a big-endian dtype at
+#: all **[verified]**.
 _STORABLE_ITEMSIZES_BY_KIND = {
     "b": frozenset({1}),
     "i": frozenset({1, 2, 4, 8}),
@@ -1167,7 +1168,19 @@ class ZarrDataset(CFDataset):
         check_encoding_keywords(encoding)
         assert self._group is not None
 
-        dtype = dtype if dtype is str else np.dtype(dtype)
+        if dtype is not str:
+            # Created in the platform's own byte order, whatever order the
+            # caller's dtype is in. zarr-python 3.0.8 has no data type for a
+            # big-endian dtype at all - `>i8` is a `KeyError` **[verified]** -
+            # and a PP or GRIB load hands the saver big-endian arrays, so
+            # taking the caller's order literally would refuse ordinary Iris
+            # data on the oldest zarr-python Iris accepts. NumPy converts on
+            # assignment, so the values written are the caller's; only the
+            # order the bytes are stored in is this store's. The netCDF saver
+            # has always done the same - a `>f4` cube is `float32` in the file
+            # it writes **[verified]** - so this is parity rather than a
+            # second rule to learn.
+            dtype = np.dtype(dtype).newbyteorder("=")
         dimensions = tuple(dimensions)
         shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
 
@@ -1251,6 +1264,10 @@ class ZarrDataset(CFDataset):
         it creates anything, so a False is a refusal in Iris's words, while a
         True this class then went back on would be a capability question with
         two answers.
+
+        Byte order does not change the answer, because it does not change
+        what :meth:`create_variable` can do: that creates in the platform's
+        own order whatever order it is given.
 
         Parameters
         ----------

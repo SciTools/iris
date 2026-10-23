@@ -320,6 +320,27 @@ class TestRefusals:
 
 
 class TestInputsTheDesignImplies:
+    def test_a_big_endian_cube_round_trips(self, tmp_path):
+        # A PP or GRIB load yields big-endian arrays, so this is an ordinary
+        # cube to save rather than a corner. zarr-python 3.0.8 has no data
+        # type for a big-endian dtype at all, so the store is written in the
+        # platform's own order and the values are the cube's - the same
+        # answer the netCDF saver has always given this data.
+        from iris.cube import Cube
+
+        cube = Cube(
+            np.array([1.5, -2.5, 3.5], dtype=">f4"),
+            long_name="air_temperature",
+            var_name="air",
+            units="K",
+        )
+        path = tmp_path / "big_endian.zarr"
+        iris.save(cube, path)
+
+        loaded = iris.load_cube(path)
+        assert loaded.dtype == np.dtype("f4")
+        np.testing.assert_array_equal(loaded.data, cube.data)
+
     def test_a_mesh_cube_writes_cf_ugrid_structure(self, tmp_path):
         # Iris supports unstructured meshes, and a mesh cube reaching the
         # Zarr saver is ordinary: the mesh variables go through the same

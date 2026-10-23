@@ -376,9 +376,11 @@ class TestSupportsDtype:
         writable.create_dimension("x", 2)
         if supported:
             # The half that can break: zarr-python has to accept what this
-            # store said it would.
+            # store said it would. Compared in the platform's own byte order,
+            # which is what the array is created in whatever it was asked
+            # for - see TestByteOrder.
             variable = writable.create_variable("data", dtype, ["x"])
-            assert variable.dtype == dtype
+            assert variable.dtype == dtype.newbyteorder("=")
         else:
             with pytest.raises(ValueError, match="no data type"):
                 writable.create_variable("data", dtype, ["x"])
@@ -395,6 +397,39 @@ class TestSupportsDtype:
         with pytest.raises(ValueError, match="no data type"):
             writable.create_variable("data", np.dtype([("x", "O")]), ["x"])
         assert list(writable.variables) == []
+
+
+class TestByteOrder:
+    """A big-endian dtype is stored in the platform's own order.
+
+    zarr-python 3.0.8 has no data type for a big-endian dtype -- `>i8` is a
+    `KeyError` -- while 3.4 stores one. A PP or GRIB load hands the saver
+    big-endian arrays, so taking the caller's order literally would refuse
+    ordinary Iris data on the oldest zarr-python Iris accepts, and
+    `supports_dtype` could not answer True for it on every version. Creating
+    in the native order is what lets it, and is what the netCDF saver has
+    always done with the same data.
+    """
+
+    @pytest.mark.parametrize("spelling", [">f4", ">f8", ">i8", ">i2", ">u4"])
+    def test_the_array_is_native(self, writable, spelling):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype(spelling), ["x"])
+        assert variable.dtype == np.dtype(spelling).newbyteorder("=")
+
+    def test_the_values_are_the_callers(self, writable):
+        # The point of the conversion: the bytes are laid out this store's
+        # way, and the numbers are the ones handed in.
+        source = np.array([1.5, -2.5], dtype=">f4")
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", source.dtype, ["x"])
+        variable[:] = source
+        np.testing.assert_array_equal(variable[:], source)
+
+    def test_a_native_dtype_is_untouched(self, writable):
+        writable.create_dimension("x", 2)
+        variable = writable.create_variable("data", np.dtype("<f4"), ["x"])
+        assert variable.dtype == np.dtype("<f4")
 
 
 class TestCreateVariableEncoding:
