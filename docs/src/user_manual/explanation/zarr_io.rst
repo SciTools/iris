@@ -136,7 +136,7 @@ truth.
 .. _zarr_io_interrupted_save:
 
 What an interrupted save leaves behind
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 An interrupted save leaves a partial store, and Iris offers no rollback. Zarr
 has no multi-object transaction: a store's metadata and its chunks are separate
