@@ -95,7 +95,7 @@ def version_2(tmp_path):
 class TestTheVersionGuard:
     @pytest.mark.parametrize("mode", ["w-", "w", "a", "r+"])
     def test_writing_version_2_is_refused(self, tmp_path, mode):
-        with pytest.raises(NotImplementedError, match="version 2"):
+        with pytest.raises(NotImplementedError, match="zarr_format=2"):
             ZarrDataset(tmp_path / "new.zarr", mode=mode, zarr_format=2)
 
     def test_the_refusal_names_the_versions_iris_writes(self, tmp_path):
