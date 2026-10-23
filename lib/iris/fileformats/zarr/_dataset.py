@@ -960,6 +960,15 @@ class ZarrDataset(CFDataset):
         is what lets a size conflict be caught here rather than becoming two
         arrays that disagree.
 
+        A name an array in this group already carries counts as taken, at
+        that array's length. ``mode="a"`` onto an existing store is the case
+        that needs it: the arrays already there cannot be resized, so a new
+        declaration that disagrees with one of them has no outcome that is
+        not a lie - the new array would be created at the new size while
+        :attr:`dimensions` reports one length for a name two arrays hold at
+        two. The saver avoids the collision by renaming its own dimension;
+        this is what makes the collision visible to it.
+
         Parameters
         ----------
         name : str
@@ -973,7 +982,7 @@ class ZarrDataset(CFDataset):
         NotImplementedError
             For ``size=None``.
         ValueError
-            If `name` is already declared at a different size, or if this
+            If `name` is already in use at a different size, or if this
             dataset was opened read-only.
 
         """
@@ -993,8 +1002,22 @@ class ZarrDataset(CFDataset):
                 f"already declared with size {declared}."
             )
             raise ValueError(message)
+        dimensions = dict(self.dimensions)
+        existing = dimensions.get(name)
+        if existing is not None and existing != size:
+            message = (
+                f"Cannot declare dimension {name!r} with size {size}: an array "
+                f"in the Zarr group {self._location!r} already uses that name "
+                f"with size {existing}, and an existing array is never resized."
+            )
+            raise ValueError(message)
         self._declared_dimensions[name] = size
-        self._dimensions = None
+        # Updated rather than dropped: the mapping was just read, and
+        # dropping it would reassemble it from every array in the group on
+        # the next call - once per declaration, over a store that may be
+        # remote.
+        dimensions[name] = size
+        self._dimensions = dimensions
 
     def _check_writable(self, action: str) -> None:
         """Raise unless this dataset was opened in a mode that writes."""

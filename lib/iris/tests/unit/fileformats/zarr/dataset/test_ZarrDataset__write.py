@@ -151,6 +151,30 @@ class TestCreateDimension:
             with pytest.raises(ValueError, match="mode='r'"):
                 dataset.create_dimension("time", 3)
 
+    def test_an_existing_arrays_size_conflicts_too(self, existing):
+        # The conflict a declaration made in this session would hit, met by
+        # an array that was already in the store: `mode="a"` is the case,
+        # and §4.5's create-once rule means that array is never resized, so
+        # the two sizes cannot both be true of the name.
+        with ZarrDataset(existing, mode="a") as dataset:
+            assert dict(dataset.dimensions) == {"x": 2}
+            with pytest.raises(ValueError, match="'x'.*3.*2"):
+                dataset.create_dimension("x", 3)
+
+    def test_the_conflict_names_the_group(self, existing):
+        with ZarrDataset(existing, mode="a") as dataset:
+            with pytest.raises(ValueError, match="'x'") as excinfo:
+                dataset.create_dimension("x", 3)
+            assert dataset.location in str(excinfo.value)
+
+    def test_an_existing_arrays_size_agreeing_is_harmless(self, existing):
+        # The ordinary case: a second cube on the same dimension reuses the
+        # name, which is the whole point of recording it.
+        with ZarrDataset(existing, mode="a") as dataset:
+            dataset.create_dimension("x", 2)
+            variable = dataset.create_variable("alongside", np.dtype("f4"), ["x"])
+            assert variable.shape == (2,)
+
 
 class TestCreateVariable:
     def test_an_array_is_created_with_its_dimension_names(self, writable):
