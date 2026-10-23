@@ -6,6 +6,9 @@
 
 import warnings
 
+import dask.array as da
+import dask.config
+import distributed
 import numpy as np
 import pytest
 
@@ -13,6 +16,7 @@ zarr = pytest.importorskip("zarr")
 
 import iris
 from iris.cube import CubeList
+from iris.fileformats.cf.saver import CFSaver
 import iris.fileformats.zarr
 import iris.tests.stock as stock
 import iris.warnings
@@ -49,6 +53,22 @@ class TestRoundTrip:
         saved_names = sorted(coord.name() for coord in cube.coords())
         loaded_names = sorted(coord.name() for coord in loaded.coords())
         assert loaded_names == saved_names
+
+    def test_a_derived_coordinate_is_still_derived(self, tmp_path, cube):
+        # `test_the_coordinates_come_back` cannot show this on its own:
+        # `Cube.coords()` lists derived coordinates alongside the rest, so a
+        # load that rebuilt "altitude" as an ordinary AuxCoord would give the
+        # same list of names and pass. The factory is the thing to assert.
+        path = tmp_path / "out.zarr"
+        iris.save(cube, path)
+        loaded = iris.load_cube(path, cube.name())
+        assert [factory.name() for factory in loaded.aux_factories] == [
+            factory.name() for factory in cube.aux_factories
+        ]
+        assert [coord.name() for coord in loaded.derived_coords] == ["altitude"]
+        np.testing.assert_allclose(
+            loaded.coord("altitude").points, cube.coord("altitude").points
+        )
 
     def test_the_bounds_come_back(self, tmp_path, cube):
         path = tmp_path / "out.zarr"
@@ -441,16 +461,112 @@ class TestInputsTheDesignImplies:
         stored = zarr.open_group(store=path, mode="r")["letters"]
         np.testing.assert_array_equal(stored[...], letters.data)
 
-    def test_a_dataless_cube_saves(self, tmp_path, cube):
-        # `Cube` supports a dataless form, and the saver has a branch for it
-        # that chooses its own dtype and fill value. Nothing above reaches it.
-        path = tmp_path / "dataless.zarr"
-        dataless = iris.cube.Cube(
+
+class TestDataless:
+    # `Cube` supports a dataless form, and `CFSaver` has a branch for it that
+    # chooses its own dtype and fill value and writes a marker attribute.
+    # Nothing else here reaches that branch. The marker is a string the Zarr
+    # attribute conversion has to carry intact, which is the half of this the
+    # netCDF saver does not share - compare
+    # `iris.tests.integration.netcdf.test_dataless`.
+    @pytest.fixture
+    def dataless(self):
+        return iris.cube.Cube(
             None,
-            shape=cube.shape,
-            standard_name=cube.standard_name,
-            units=cube.units,
-            var_name=cube.var_name,
+            shape=(3, 4),
+            long_name="testdata",
+            var_name="testdata",
         )
+
+    def test_the_store_holds_the_dataless_form(self, tmp_path, dataless):
+        path = tmp_path / "dataless.zarr"
         iris.save(dataless, path)
-        assert iris.load_cube(path).shape == cube.shape
+        # The marker belongs in the store, not on the caller's cube.
+        assert CFSaver._DATALESS_ATTRNAME not in dataless.attributes
+        stored = zarr.open_group(store=path, mode="r")["testdata"]
+        assert stored.attrs[CFSaver._DATALESS_ATTRNAME] == "true"
+        assert stored.dtype == CFSaver._DATALESS_DTYPE
+        assert stored.fill_value == CFSaver._DATALESS_FILLVALUE
+        # No chunk was ever written, so every point reads back as the fill.
+        np.testing.assert_array_equal(
+            stored[...], np.full(dataless.shape, CFSaver._DATALESS_FILLVALUE)
+        )
+
+    def test_the_cube_comes_back_dataless(self, tmp_path, dataless):
+        path = tmp_path / "dataless.zarr"
+        iris.save(dataless, path)
+        # `load_raw`, because dataless merging is not supported yet - the
+        # same reason `test_dataless` uses it for netCDF.
+        (loaded,) = iris.load_raw(path)
+        assert loaded.is_dataless()
+        assert loaded.shape == dataless.shape
+        # The marker is an implementation detail of the file, and the load
+        # consumes it rather than handing it back as a cube attribute.
+        assert CFSaver._DATALESS_ATTRNAME not in loaded.attributes
+
+    def test_a_dataless_cube_mixes_with_a_normal_one(self, tmp_path, dataless):
+        path = tmp_path / "mixture.zarr"
+        dataful = iris.cube.Cube(
+            np.ones(dataless.shape),
+            long_name="other",
+            units="1",
+            var_name="other",
+        )
+        iris.save(CubeList([dataless, dataful]), path)
+        loaded = iris.load_raw(path)
+        assert loaded.extract_cube("testdata").is_dataless()
+        assert not loaded.extract_cube("other").is_dataless()
+
+    def test_a_dataless_cube_takes_almost_no_space(self, tmp_path):
+        # A dataless array has no chunks to write, so the store is metadata
+        # and nothing else, however large the cube says it is.
+        path = tmp_path / "big.zarr"
+        shape = (10000, 10000)
+        iris.save(iris.cube.Cube(None, shape=shape, var_name="big"), path)
+        on_disk = sum(p.stat().st_size for p in path.rglob("*") if p.is_file())
+        # The dtype is one byte per point, so the array would be ~100 MB.
+        assert on_disk < 0.1 * np.prod(shape)
+
+
+class TestEveryScheduler:
+    # `Saver.write_handle` puts a `ZarrDatasetVariable` into the Dask graph
+    # rather than the `zarr.Array` itself, so whatever runs the graph has to
+    # revive one and write through it. `TestDeferredSaving` in the `Saver`
+    # unit tests pickles that graph and computes it in the same process; only
+    # a distributed client proves a worker in another process can finish the
+    # save. Modelled on `test_scheduler_types` in
+    # `iris.tests.integration.netcdf.test_delayed_save`.
+    @pytest.fixture(params=["threads", "single-threaded", "distributed"], scope="class")
+    def scheduler(self, request):
+        if request.param == "distributed":
+            client = distributed.Client()
+            with dask.config.set(scheduler="distributed"):
+                yield request.param
+            client.close()
+        else:
+            with dask.config.set(scheduler=request.param):
+                yield request.param
+
+    @pytest.fixture(params=[False, True], ids=["immediate", "delayed"])
+    def save_is_delayed(self, request):
+        return request.param
+
+    def test_the_data_lands_whatever_runs_the_graph(
+        self, tmp_path, scheduler, save_is_delayed
+    ):
+        assert dask.config.get("scheduler") == scheduler
+        path = tmp_path / "out.zarr"
+        expected = np.arange(24.0).reshape(4, 6)
+        cube = iris.cube.Cube(
+            da.from_array(expected, chunks=(2, 3)),
+            standard_name="air_temperature",
+            units="K",
+            var_name="air_temperature",
+        )
+        result = iris.save(cube, path, compute=not save_is_delayed)
+        assert save_is_delayed == (result is not None)
+        if save_is_delayed:
+            # Nothing is written until this runs - see
+            # `TestDeferredSaving.test_consolidation_follows_the_last_chunk`.
+            result.compute()
+        np.testing.assert_array_equal(iris.load_cube(path).data, expected)
