@@ -3094,30 +3094,28 @@ all in the write path's boundaries rather than its middle:
   ones `create_variable` then refused. It answers for what Zarr has a data
   type for, as §4.2 always said it did, and `create_variable` asks it rather
   than letting zarr-python raise — so the two cannot disagree again.
-- That fix was first written as a list of the dtypes to exclude, and the
-  reviewer found two more it had missed: a structured dtype with an object
-  field, and a zero-length void. Rewritten as a table of what Zarr *has*.
-  Chasing exclusions was the wrong shape of answer, and the version floor
-  proves it rather than merely suggesting it: zarr-python 3.1 replaced a
+- The answer is a table of what Zarr *has*, not a list of the dtypes to
+  exclude. A list of exclusions missed two: a structured dtype with an
+  object field, and a zero-length void, both of which answered `True` and
+  then failed in `create_variable`. The version floor shows why the shape
+  was wrong rather than merely incomplete: zarr-python 3.1 replaced a
   fixed enum of fifteen data types with an extensible registry, so any list
   of exclusions written against 3.4 answers `True` on 3.0.8 for a structured
   dtype and a `datetime64` that version has no data type for **[verified]**.
   §4.2 now says that, and says why the answer is conservative where the
   versions differ.
-- Byte order was the third round of the same finding, and the first two
-  answers to it were both wrong. Answering `True` for `>i8` broke the
-  contract on 3.0.8, which has no data type for a big-endian dtype at all
-  **[verified]**, and was recorded as an acknowledged exception rather than
-  fixed. Answering `False` would have been worse: `supports_dtype` is
-  consulted for `int64` and unsigned, so big-endian `int64` would have been
-  narrowed, while `create_variable` - which now asks before creating - would
-  have refused big-endian floats outright, and a PP or GRIB load produces
-  both. `create_variable` instead creates in the platform's own byte order,
-  which removes the question: the values are the caller's, the layout is the
-  store's, and the netCDF saver has always answered this data the same way
-  **[verified]**. Checked by running every dtype the table answers `True`
-  for against zarr-python 3.0.8 and 3.4.1 in turn: every one creates
-  **[verified]**.
+- Byte order is not in that table, and neither obvious answer to it was
+  tenable. Answering `True` for `>i8` breaks the contract on 3.0.8, which
+  has no data type for a big-endian dtype at all **[verified]**. Answering
+  `False` would be worse: `supports_dtype` is consulted for `int64` and
+  unsigned, so big-endian `int64` would be narrowed, while `create_variable`
+  asks it before creating and so would refuse big-endian floats outright. A
+  PP or GRIB load produces both. `create_variable` instead creates in the
+  platform's own byte order, which removes the question: the values are the
+  caller's, the layout is the store's, and the netCDF saver has always
+  answered this data the same way **[verified]**. Checked by running every
+  dtype the table answers `True` for against zarr-python 3.0.8 and 3.4.1 in
+  turn: every one creates **[verified]**.
 - The write half of the shared `CFDataset` contract had no Zarr subclass,
   which §6 requires and which the module's own docstring said would arrive
   with the saver. Added, passing unchanged.
@@ -3186,5 +3184,5 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
 | 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
-| 2026-10-23 | Second round of the same review. `supports_dtype` restated in §4.2 as a table of what Zarr has rather than a list of what it lacks, after the first fix was found still answering `True` for two dtypes `create_variable` refuses — and after the zarr-python 3.0.8 data-type enum turned out to be much smaller than 3.4's registry, which makes any exclusion list wrong on the version floor Iris declares. The header table had gone stale against §12.1 for a second time; it now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
-| 2026-10-23 | Third round, on byte order, which the second round had documented as an exception to the capability contract instead of removing. `create_variable` now creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every supported version rather than only on the newest. §4.2 says why neither of the first two answers was tenable. The claim is no longer read from zarr-python's source but run against it: zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
+| 2026-10-23 | `supports_dtype` restated in §4.2 as a table of the dtypes every accepted zarr-python version holds, rather than a list of the dtypes to exclude: the zarr-python 3.0.8 data-type enum is much smaller than 3.4's registry, so any exclusion list is wrong on the version floor Iris declares. The header table, which had gone stale against §12.1, now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
+| 2026-10-23 | Byte order removed from the capability question rather than documented as an exception to it: `create_variable` creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every accepted version. §4.2 says why neither obvious answer was tenable. The version claims are run rather than read — zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
