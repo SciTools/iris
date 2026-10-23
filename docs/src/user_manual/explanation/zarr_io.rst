@@ -44,6 +44,12 @@ A store holding UGRID mesh data loads as a mesh cube, the same as the
 equivalent netCDF file would. :func:`iris.mesh.load_meshes` reads a store
 too.
 
+.. note::
+
+    A Zarr attribute may be any JSON value, so a cube loaded from a store
+    may carry one that netCDF cannot hold. Saving that cube as netCDF fails.
+    See :ref:`zarr_io_attributes`.
+
 Saving
 ------
 
@@ -153,11 +159,7 @@ Meshes
 
 A cube with an unstructured :class:`~iris.mesh.MeshXY` saves correctly: the
 store carries the full CF-UGRID structure, the same mesh, topology and
-connectivity variables a netCDF save would write, and loading it back gives
-you the mesh again.
-
-A cube loaded from Zarr may carry an attribute netCDF cannot hold, which
-fails the save. See :ref:`zarr_io_attributes`.
+connectivity variables a netCDF save would write.
 
 Remote stores
 -------------

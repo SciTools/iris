@@ -9,7 +9,7 @@ import pytest
 
 zarr = pytest.importorskip("zarr")
 
-from iris.fileformats.zarr._dataset import ZarrDataset
+from iris.fileformats.zarr._dataset import _STORABLE_TEXT_KINDS, ZarrDataset
 
 
 @pytest.fixture
@@ -371,16 +371,28 @@ class TestSupportsDtype:
     ):
         dtype = self._dtype(spelling)
         writable.create_dimension("x", 2)
-        if supported:
-            # The half that can break: zarr-python has to accept what this
-            # store said it would. Compared in the platform's own byte order,
-            # which is what the array is created in whatever it was asked
-            # for - see TestByteOrder.
-            variable = writable.create_variable("data", dtype, ["x"])
-            assert variable.dtype == dtype.newbyteorder("=")
-        else:
+        if not supported:
             with pytest.raises(ValueError, match="no data type"):
                 writable.create_variable("data", dtype, ["x"])
+            return
+
+        # The half that can break: zarr-python has to accept what this store
+        # said it would.
+        variable = writable.create_variable("data", dtype, ["x"])
+        if dtype.kind in _STORABLE_TEXT_KINDS:
+            # What a text array reports back is zarr-python's own choice and
+            # differs by version: 3.0.8 answers `StringDType()` for `U5` and
+            # `object` for `S5`, 3.4 answers the fixed width it was given.
+            # Both hold the values, which is what the store promised.
+            variable[:] = np.array(["ab", "cd"], dtype=dtype)
+            np.testing.assert_array_equal(
+                variable[:], np.array(["ab", "cd"], dtype=dtype)
+            )
+        else:
+            # Compared in the platform's own byte order, which is what the
+            # array is created in whatever it was asked for - see
+            # TestByteOrder.
+            assert variable.dtype == dtype.newbyteorder("=")
 
     def test_the_refusal_names_the_array_and_the_dtype(self, writable):
         writable.create_dimension("x", 2)

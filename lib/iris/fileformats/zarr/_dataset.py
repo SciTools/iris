@@ -677,7 +677,7 @@ _DEFAULT_ZARR_FORMAT = 3
 #: The dtype kinds whose fill value must convert exactly, because they have
 #: no rounding to spend: `numpy.int16(1.5)` is `1`, and the `_FillValue`
 #: attribute would still say `1.5`.
-_EXACT_FILL_KINDS = "biu"
+_EXACT_FILL_KINDS = frozenset("biu")
 
 #: The dtypes every accepted zarr-python version holds, by NumPy kind and
 #: item size in bytes. Read by `supports_dtype`; see the module docstring for
@@ -692,8 +692,10 @@ _STORABLE_ITEMSIZES_BY_KIND = {
 }
 
 #: The text kinds, which Zarr holds as its `string` and `bytes` types. Their
-#: item size is the string length, so only zero is out.
-_STORABLE_TEXT_KINDS = "US"
+#: item size is the string length, so only zero is out. The same three kinds
+#: `iris.fileformats.zarr.saver` calls text, including NumPy's variable-width
+#: `StringDType`.
+_STORABLE_TEXT_KINDS = frozenset("TUS")
 
 #: The storage keywords `create_variable` passes to zarr-python, which are
 #: zarr-python's own. Iris does not invent names for them and does not
