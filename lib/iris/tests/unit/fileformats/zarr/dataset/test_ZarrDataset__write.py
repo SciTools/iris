@@ -303,10 +303,15 @@ class TestCreateVariableFillValue:
 
 #: Dtypes `supports_dtype` is asked about, and the answer expected.
 #:
-#: The affirmative cases are the ones Iris itself saves, plus the corners of
-#: what Zarr's data types cover; the negative ones are everything NumPy
-#: spells that Zarr has no data type for. `float128` is skipped where the
-#: platform has no such thing.
+#: The affirmative cases are everything an Iris saver can reach the store
+#: with, at every width. The negative ones are the shapes a list of
+#: exclusions keeps missing: an object array, an object hiding inside a
+#: structured dtype, a zero-length void, a zero-length string, and the
+#: extended precisions. `datetime64` and an ordinary structured dtype are
+#: False although zarr-python 3.4 stores them, because 3.0.8 has no data
+#: type for either and that is the version floor Iris declares.
+#:
+#: `float128` is skipped where the platform has no such thing.
 _DTYPE_ANSWERS = [
     ("f8", True),
     ("f4", True),
@@ -316,15 +321,26 @@ _DTYPE_ANSWERS = [
     ("i2", True),
     ("i1", True),
     ("u8", True),
+    ("u4", True),
+    ("u2", True),
     ("u1", True),
     ("bool", True),
+    ("c8", True),
     ("c16", True),
     ("U5", True),
     ("S5", True),
-    ("datetime64[s]", True),
-    ("timedelta64[s]", True),
+    (">f8", True),
+    (">i8", True),
     ("O", False),
     ("float128", False),
+    ("V0", False),
+    ("V8", False),
+    ("U0", False),
+    ("S0", False),
+    ("datetime64[s]", False),
+    ("timedelta64[s]", False),
+    ([("x", "O")], False),
+    ([("a", "i4"), ("b", "f8")], False),
 ]
 
 
@@ -334,6 +350,11 @@ class TestSupportsDtype:
     Spec §4.2: the generic saver asks the store whether it holds a dtype
     rather than asking what format it is, so an answer the store then goes
     back on is a capability question with two answers.
+
+    The binding direction is that a `True` creates. A `False` is a refusal
+    `create_variable` makes itself, so the two cannot disagree - which is why
+    the answer may be conservative where zarr-python versions differ, and may
+    not be optimistic.
     """
 
     @staticmethod
@@ -354,6 +375,8 @@ class TestSupportsDtype:
         dtype = self._dtype(spelling)
         writable.create_dimension("x", 2)
         if supported:
+            # The half that can break: zarr-python has to accept what this
+            # store said it would.
             variable = writable.create_variable("data", dtype, ["x"])
             assert variable.dtype == dtype
         else:
@@ -366,6 +389,12 @@ class TestSupportsDtype:
             writable.create_variable("data", np.dtype("O"), ["x"])
         assert "'data'" in str(excinfo.value)
         assert "object" in str(excinfo.value)
+
+    def test_a_refused_dtype_creates_nothing(self, writable):
+        writable.create_dimension("x", 2)
+        with pytest.raises(ValueError, match="no data type"):
+            writable.create_variable("data", np.dtype([("x", "O")]), ["x"])
+        assert list(writable.variables) == []
 
 
 class TestCreateVariableEncoding:

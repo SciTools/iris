@@ -662,17 +662,39 @@ _DEFAULT_ZARR_FORMAT = 3
 #: makes that case safe.
 _EXACT_FILL_KINDS = "biu"
 
-#: The one dtype kind Zarr has no data type for. An object array is an array
-#: of Python references, which no store can hold; everything else NumPy
-#: spells fixed-width - bool, the integers, the floats, complex,
-#: fixed-length text and bytes, datetimes, structured types - Zarr can
-#: store, in both versions.
-_UNSTORABLE_DTYPE_KIND = "O"
+#: The dtypes every zarr-python Iris supports can store, by NumPy kind and
+#: item size in bytes. Read by `supports_dtype`, which is the only thing that
+#: should.
+#:
+#: Stated as what Zarr *has*, not as what it lacks. A list of exclusions has
+#: to name every dtype NumPy can spell, including the ones it gains later and
+#: the ones that are only a container for another - a structured dtype with
+#: an object field, a zero-length void - and a list that misses one answers
+#: True for a dtype `create_variable` then refuses.
+#:
+#: It is also the intersection across versions rather than what the newest
+#: can hold. zarr-python 3.1 replaced a fixed enum of fifteen data types with
+#: an extensible registry, so 3.4 stores a structured dtype and a
+#: `datetime64` that 3.0.8 - the oldest Iris accepts - has no data type for
+#: **[verified]**. Answering from the newest would be wrong on the oldest,
+#: which is the harder failure to notice.
+#:
+#: Byte order is deliberately not part of the answer, although 3.0.8's table
+#: is little-endian only: a PP or GRIB load yields big-endian arrays, and a
+#: False here would send a big-endian `int64` into the saver's narrowing path
+#: on every version, including the ones that would have stored it.
+_STORABLE_ITEMSIZES_BY_KIND = {
+    "b": frozenset({1}),
+    "i": frozenset({1, 2, 4, 8}),
+    "u": frozenset({1, 2, 4, 8}),
+    "f": frozenset({2, 4, 8}),
+    "c": frozenset({8, 16}),
+}
 
-#: The largest a floating or complex dtype can be and still have a Zarr data
-#: type: `float64` and `complex128`, in bytes. NumPy's extended precisions
-#: above these are platform-dependent, and Zarr has no data type for them.
-_MAX_ITEMSIZE_BY_KIND = {"f": 8, "c": 16}
+#: The text kinds, which Zarr stores as its `string` and `bytes` types. Their
+#: item size is the string length, so there is no set of sizes to check -
+#: only that it is not zero, which is not a string Zarr can hold.
+_STORABLE_TEXT_KINDS = "US"
 
 #: The storage keywords `create_variable` passes to zarr-python, which are
 #: zarr-python's own. Iris does not invent names for them and does not
@@ -1212,21 +1234,23 @@ class ZarrDataset(CFDataset):
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.
 
-        True for every dtype Zarr has a data type for, which is the whole of
-        NumPy's fixed-width numeric range, in both versions: there is no
-        integer or float a saver must narrow to get it into a Zarr store.
-        Contrast
+        True for the whole of NumPy's fixed-width numeric range and its
+        fixed-length text, which is everything the Iris savers can reach here
+        with: there is no integer or float a saver must narrow to get it into
+        a Zarr store. Contrast
         :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
         which answers False for the integer types the netCDF 3 formats have no
         type for.
 
-        False for an object array, which holds Python references rather than
-        values, and for NumPy's extended-precision floats and complexes,
-        whose size is a property of the platform rather than of the data.
-        Neither is a dtype the Iris savers reach here with; both are refused
-        rather than answered True, because an affirmative answer this class
-        then declines in :meth:`create_variable` is a capability question
-        with two answers.
+        Read from `_STORABLE_ITEMSIZES_BY_KIND`, which is what Zarr has
+        rather than what it lacks, and is the intersection across the
+        zarr-python versions Iris accepts rather than what the newest can
+        hold. So it answers False for a few dtypes the installed zarr-python
+        might store - a structured dtype, a `datetime64` - and that is the
+        safe direction of inexact: :meth:`create_variable` asks this before
+        it creates anything, so a False is a refusal in Iris's words, while a
+        True this class then went back on would be a capability question with
+        two answers.
 
         Parameters
         ----------
@@ -1239,10 +1263,10 @@ class ZarrDataset(CFDataset):
 
         """
         dtype = np.dtype(dtype)
-        if dtype.kind == _UNSTORABLE_DTYPE_KIND:
-            return False
-        largest = _MAX_ITEMSIZE_BY_KIND.get(dtype.kind)
-        return largest is None or dtype.itemsize <= largest
+        if dtype.kind in _STORABLE_TEXT_KINDS:
+            return dtype.itemsize > 0
+        sizes = _STORABLE_ITEMSIZES_BY_KIND.get(dtype.kind)
+        return sizes is not None and dtype.itemsize in sizes
 
     def sync(self) -> None:
         """Do nothing: a Zarr write is not buffered."""
