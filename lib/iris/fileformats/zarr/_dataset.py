@@ -832,10 +832,9 @@ class ZarrDataset(CFDataset):
             zarr_format = _DEFAULT_ZARR_FORMAT
         elif zarr_format not in _WRITABLE_ZARR_FORMATS:
             message = (
-                f"Iris currently cannot write a Zarr version {zarr_format} "
-                "store. The "
-                f"versions it writes are {_WRITABLE_ZARR_FORMATS}. "
-                f"mode={mode!r} writes, so it needs one of those."
+                f"zarr_format={zarr_format} is not currently supported for "
+                "writing in Iris. Currently supported formats are: "
+                f"{_WRITABLE_ZARR_FORMATS}. "
             )
             raise NotImplementedError(message)
 
