@@ -52,7 +52,8 @@ A store is a directory, or a URL, so pass it where you would pass a file::
     iris.save(cubes, "/data/forecast.zarr")
 
 Iris writes Zarr **version 3** stores. A whole :class:`~iris.cube.CubeList`
-goes into one store, which is opened once.
+goes into one store, which is opened once. Saving through netCDF-c's NCZarr
+driver writes **version 2** instead, covered below in :ref:`zarr_io_nczarr`.
 
 Unlike the netCDF saver, this one does **not** overwrite. ``iris.save`` raises
 if the target already exists, because replacing a store means deleting many
@@ -94,19 +95,15 @@ The Zarr saver takes **zarr-python's** vocabulary, not netCDF's::
 ``chunks``, ``shards``, ``compressors``, ``filters`` and ``serializer`` are
 passed through as zarr-python defines them. A netCDF keyword such as
 ``zlib=True`` raises :class:`TypeError` naming the Zarr replacement where there
-is one, and saying there is none where there is not. The two compression models
-differ, and a keyword that let you say ``complevel=4`` while quietly giving you
-Blosc would be misleading rather than convenient. ``order`` raises too: it is
-zarr-python's own keyword, but it has no effect on a version 3 array, and a
-keyword Iris accepted and then discarded would be worse than one it refuses.
+is one, and saying there is none where there is not. ``order`` raises too: it
+is zarr-python's own keyword, but it has no effect on a version 3 array.
 
 For a cube holding **lazy** data, ``chunks`` defaults to the cube's own lazy
-chunking, so data is written in the shape it is held in. Real data has no
-chunking of its own to inherit, and gets zarr-python's automatic chunking
-instead. Pass ``chunks`` yourself to decide either case. The default is also
-dropped when you pass ``shards``: a shard holds a whole number of inner
-chunks, and the cube's own chunking has no reason to divide a shard you chose
-for storage, so zarr-python picks the inner chunk in that case.
+chunking. Real data has no chunking of its own to inherit, and gets
+zarr-python's automatic chunking instead. Passing ``chunks`` explicitly
+overrides either case. The default is also dropped when you pass ``shards``: a
+shard holds a whole number of inner chunks, and zarr-python picks the inner
+chunk in that case.
 
 Deferred saving
 ^^^^^^^^^^^^^^^
@@ -121,8 +118,8 @@ Consolidated metadata
 ^^^^^^^^^^^^^^^^^^^^^
 
 Iris writes a consolidated metadata document at the store's root when the save
-completes, because it is what makes a remote store usable: a reader fetches one
-object instead of one per array. Pass ``consolidate_metadata=False`` to decline.
+completes, which makes a remote store usable: a reader fetches one object
+instead of one per array. Pass ``consolidate_metadata=False`` to decline.
 
 When Iris adds to a store that already carries one, it rewrites it -- or, if
 you declined consolidation for that save, removes it. A consolidated document
@@ -133,24 +130,29 @@ truth.
 What an interrupted save leaves behind
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A partial store, and Iris offers no rollback. Zarr has no multi-object
-transaction: a store's metadata and its chunks are separate objects, so a save
-interrupted between them leaves the two disagreeing, and a missing chunk is not
-an error -- it reads back as the fill value, with no warning. The usual
-mitigation, writing to a temporary name and renaming on success, is not
-adopted: a directory rename is atomic on a local filesystem but object stores
-have no equivalent, so the guarantee would evaporate exactly where Zarr is most
-used. Callers who need transactional writes want `Icechunk
-<https://icechunk.io/>`_.
+.. warning::
+
+    A partial store, and Iris offers no rollback. Zarr has no multi-object
+    transaction: a store's metadata and its chunks are separate objects, so a
+    save interrupted between them leaves the two disagreeing, and a missing
+    chunk is not an error -- it reads back as the fill value, with no warning.
+    The usual mitigation, writing to a temporary name and renaming on success,
+    is not adopted: a directory rename is atomic on a local filesystem but
+    object stores have no equivalent, so the guarantee would evaporate exactly
+    where Zarr is most used. Callers who need transactional writes want
+    `Icechunk <https://icechunk.io/>`_.
 
 Meshes
 ^^^^^^
 
 A cube with an unstructured :class:`~iris.mesh.MeshXY` saves correctly: the
 store carries the full CF-UGRID structure, the same mesh, topology and
-connectivity variables a netCDF save would write. Loading it back does not
-yet rebuild the mesh -- the cube comes back without one, however completely
-the store describes it.
+connectivity variables a netCDF save would write.
+
+.. note::
+
+    Loading that store back does not yet rebuild the mesh -- the cube comes
+    back without one, however completely the store describes it.
 
 A cube loaded from Zarr may carry an attribute netCDF cannot hold, which
 fails the save. See :ref:`zarr_io_attributes`.
