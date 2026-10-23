@@ -73,6 +73,7 @@ exclude pixi.lock
 # SECTION: generic exclusions
 # (1) top-level directories to omit entirely
 prune .github
+prune .hooks
 prune .nox
 prune .tox
 prune .coverage

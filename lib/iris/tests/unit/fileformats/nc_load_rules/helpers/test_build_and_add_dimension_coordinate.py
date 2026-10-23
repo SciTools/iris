@@ -15,7 +15,11 @@ from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_dimension_coordinate
 from iris.loading import LOAD_PROBLEMS
-from iris.tests.unit.fileformats.nc_load_rules.helpers import MockerMixin
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableStandIn,
+    MockerMixin,
+    RealArrayCfData,
+)
 
 
 class RulesTestMixin(MockerMixin):
@@ -24,7 +28,7 @@ class RulesTestMixin(MockerMixin):
         # Create dummy pyke engine.
         self.engine = mocker.Mock(
             cube=mocker.Mock(),
-            cf_var=mocker.Mock(dimensions=("foo", "bar"), dtype=np.int32),
+            cf_var=mocker.Mock(dimensions=("foo", "bar"), shape=(6, 2), dtype=np.int32),
             filename="DUMMY",
             cube_parts=dict(coordinates=[]),
         )
@@ -55,26 +59,28 @@ class RulesTestMixin(MockerMixin):
             new=get_cf_bounds_var,
         )
 
+    def _set_data_var_length(self, length):
+        """Keep the mock data variable's "foo" dimension the coordinate's length.
+
+        A coordinate is attached to the dimensions it matches on
+        `(name, size)` - see `helpers._common_data_dims` - so a data variable
+        naming "foo" at some other length shares nothing with the coordinate
+        and the coordinate reaches the cube with no dimensions at all.
+        """
+        self.engine.cf_var.shape = (length, 2)
+
     def _make_bounds_var(self, bounds, dimensions, units):
         bounds = np.array(bounds)
-        cf_data = self.mocker.Mock(spec=[])
-        # we want to mock the absence of flag attributes to helpers.get_attr_units
-        # see https://docs.python.org/3/library/unittest.mock.html#deleting-attributes
-        del cf_data.flag_values
-        del cf_data.flag_masks
-        del cf_data.flag_meanings
-        result = self.mocker.Mock(
-            dimensions=dimensions,
-            cf_name="wibble_bnds",
-            cf_data=cf_data,
-            units=units,
-            calendar=None,
-            shape=bounds.shape,
-            size=np.prod(bounds.shape),
-            dtype=bounds.dtype,
-            __getitem__=lambda self, key: bounds[key],
-        )
-        delattr(result, "_data_array")
+        # No flag_values/flag_masks/flag_meanings: their absence from
+        # `.attributes` is what tells helpers.get_attr_units this is not a
+        # flag variable.
+        result = CFVariableStandIn(units=units, calendar=None)
+        result.dimensions = dimensions
+        result.cf_name = "wibble_bnds"
+        result.cf_data = RealArrayCfData(bounds)
+        result.shape = bounds.shape
+        result.size = np.prod(bounds.shape)
+        result.dtype = bounds.dtype
         return result
 
 
@@ -94,21 +100,20 @@ class TestCoordConstruction(RulesTestMixin, MockerMixin):
         self.monkeypatch = pytest.MonkeyPatch()
 
     def _set_cf_coord_var(self, points):
-        self.cf_coord_var = self.mocker.Mock(
-            dimensions=("foo",),
-            cf_name="wibble",
-            cf_data=self.mocker.Mock(spec=[]),
+        self.cf_coord_var = CFVariableStandIn(
             standard_name=None,
             long_name="wibble",
             units="days since 1970-01-01",
             calendar=None,
-            shape=points.shape,
-            size=np.prod(points.shape),
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
-            cf_attrs=lambda: [("foo", "a"), ("bar", "b")],
         )
-        delattr(self.cf_coord_var, "_data_array")
+        self.cf_coord_var.dimensions = ("foo",)
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.size = np.prod(points.shape)
+        self.cf_coord_var.dtype = points.dtype
+        self.cf_coord_var.filename = "DUMMY"
+        self._set_data_var_length(points.shape[0])
 
     def check_case_dim_coord_construction(self, climatology=False):
         # Test a generic dimension coordinate, with or without
@@ -346,17 +351,15 @@ class TestBoundsVertexDim(RulesTestMixin):
     def _setup(self, mocker):
         # Create test coordinate cf variable.
         points = np.arange(6)
-        self.cf_coord_var = mocker.Mock(
-            dimensions=("foo",),
-            cf_name="wibble",
-            standard_name=None,
-            long_name="wibble",
-            cf_data=mocker.Mock(spec=[]),
-            units="km",
-            shape=points.shape,
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
+        self.cf_coord_var = CFVariableStandIn(
+            standard_name=None, long_name="wibble", units="km"
         )
+        self.cf_coord_var.dimensions = ("foo",)
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.dtype = points.dtype
+        self._set_data_var_length(points.shape[0])
 
     def test_slowest_varying_vertex_dim__normalise_bounds(self):
         # Create the bounds cf variable.
@@ -442,17 +445,15 @@ class TestCircular(RulesTestMixin):
 
     def _make_vars(self, points, bounds=None, units="degrees"):
         points = np.array(points)
-        self.cf_coord_var = self.mocker.MagicMock(
-            dimensions=("foo",),
-            cf_name="wibble",
-            standard_name=None,
-            long_name="wibble",
-            cf_data=self.mocker.Mock(spec=[]),
-            units=units,
-            shape=points.shape,
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
+        self.cf_coord_var = CFVariableStandIn(
+            standard_name=None, long_name="wibble", units=units
         )
+        self.cf_coord_var.dimensions = ("foo",)
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.shape = points.shape
+        self.cf_coord_var.dtype = points.dtype
+        self._set_data_var_length(points.shape[0])
         if bounds:
             bounds = np.array(bounds).reshape(self.cf_coord_var.shape + (2,))
             dimensions = ("x", "nv")
@@ -535,17 +536,14 @@ class TestCircularScalar(RulesTestMixin):
         # the cf var is (), rather than (1,).
         points = np.array([0.0])
         units = "degrees"
-        self.cf_coord_var = self.mocker.Mock(
-            dimensions=(),
-            cf_name="wibble",
-            standard_name=None,
-            long_name="wibble",
-            units=units,
-            cf_data=self.mocker.Mock(spec=[]),
-            shape=(),
-            dtype=points.dtype,
-            __getitem__=lambda self, key: points[key],
+        self.cf_coord_var = CFVariableStandIn(
+            standard_name=None, long_name="wibble", units=units
         )
+        self.cf_coord_var.dimensions = ()
+        self.cf_coord_var.cf_name = "wibble"
+        self.cf_coord_var.cf_data = RealArrayCfData(points)
+        self.cf_coord_var.shape = ()
+        self.cf_coord_var.dtype = points.dtype
 
         bounds = np.array(bounds)
         dimensions = ("bnds",)

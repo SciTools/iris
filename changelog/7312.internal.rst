@@ -1,0 +1,5 @@
+:user:`trexfeathers` tightened the ``AGENTS.md`` agent instructions: comment
+and docstring rules are regrouped, lazy data has its own section, citations
+that decay silently - line numbers in other files, counts of call sites - are
+banned, and a new section covers a review comment that contradicts a written
+rule.

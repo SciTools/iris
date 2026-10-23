@@ -10,7 +10,8 @@ import pytest
 import iris
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube, CubeList
-from iris.fileformats.netcdf import CF_CONVENTIONS_VERSION, Saver, _thread_safe_nc, save
+from iris.fileformats.cf.saver import CF_CONVENTIONS_VERSION
+from iris.fileformats.netcdf import Saver, _thread_safe_nc, save
 from iris.tests import _shared_utils
 from iris.tests.stock import lat_lon_cube
 from iris.tests.stock.mesh import sample_mesh_cube

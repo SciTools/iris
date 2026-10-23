@@ -168,7 +168,7 @@ class TestLoadErrors:
 
     @_shared_utils.skip_data
     def test_non_nc(self, caplog):
-        log_regex = r"Ignoring non-NetCDF file:.*"
+        log_regex = r"Ignoring file of a format that holds no mesh:.*"
         with _shared_utils.assert_logs(
             caplog, logger, level="INFO", msg_regex=log_regex
         ):

@@ -37,6 +37,7 @@ dependencies:
   - python-stratify
   - rasterio
   - affine
+  - zarr >=3.0.8
 
 # Test dependencies.
   - asv_runner

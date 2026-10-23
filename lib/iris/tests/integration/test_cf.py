@@ -1,0 +1,496 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Integration tests for :mod:`iris.fileformats.cf`."""
+
+from typing import Iterable
+import warnings
+
+import pytest
+
+import iris
+from iris._deprecation import IrisDeprecation
+import iris.fileformats.cf as cf
+from iris.fileformats.cf.loader import _get_cf_var_data
+from iris.fileformats.netcdf import DECODE_TO_STRINGS_ON_READ, _thread_safe_nc
+from iris.loading import LOAD_PROBLEMS
+from iris.tests import _shared_utils
+import iris.tests.stock as stock
+from iris.tests.stock.mesh import sample_mesh_cube
+from iris.warnings import IrisLoadWarning
+
+
+def fetch_cfvar_data(var, indices=()):
+    """Fetch variable data, or part of it.
+
+    Optionally subindex it.  If lazy, .compute() it.
+    """
+    if not isinstance(indices, Iterable):
+        indices = (indices,)
+    data = _get_cf_var_data(var)[*indices]
+    if hasattr(data, "compute"):
+        data = data.compute()
+    return data
+
+
+@_shared_utils.skip_data
+class TestCFReader:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "rotated", "xyt", "small_rotPole_precipitation.nc")
+        )
+        self.cfr = cf.CFReader(filename)
+        with self.cfr:
+            yield
+
+    def test_ancillary_variables_pass_0(self):
+        assert self.cfr.cf_group.ancillary_variables == {}
+
+    def test_auxiliary_coordinates_pass_0(self):
+        assert sorted(self.cfr.cf_group.auxiliary_coordinates.keys()) == ["lat", "lon"]
+
+        lat = self.cfr.cf_group["lat"]
+        assert lat.shape == (190, 174)
+        assert lat.dimensions == ("rlat", "rlon")
+        assert lat.ndim == 2
+        assert lat.cf_attrs() == (
+            ("long_name", "latitude"),
+            ("standard_name", "latitude"),
+            ("units", "degrees_north"),
+        )
+
+        lon = self.cfr.cf_group["lon"]
+        assert lon.shape == (190, 174)
+        assert lon.dimensions == ("rlat", "rlon")
+        assert lon.ndim == 2
+        assert lon.cf_attrs() == (
+            ("long_name", "longitude"),
+            ("standard_name", "longitude"),
+            ("units", "degrees_east"),
+        )
+
+    def test_bounds_pass_0(self):
+        assert sorted(self.cfr.cf_group.bounds.keys()) == ["time_bnds"]
+
+        time_bnds = self.cfr.cf_group["time_bnds"]
+        assert time_bnds.shape == (4, 2)
+        assert time_bnds.dimensions == ("time", "time_bnds")
+        assert time_bnds.ndim == 2
+        assert time_bnds.cf_attrs() == ()
+
+    def test_coordinates_pass_0(self):
+        assert sorted(self.cfr.cf_group.coordinates.keys()) == ["rlat", "rlon", "time"]
+
+        rlat = self.cfr.cf_group["rlat"]
+        assert rlat.shape == (190,)
+        assert rlat.dimensions == ("rlat",)
+        assert rlat.ndim == 1
+        attr = []
+        attr.append(("axis", "Y"))
+        attr.append(("long_name", "rotated latitude"))
+        attr.append(("standard_name", "grid_latitude"))
+        attr.append(("units", "degrees"))
+        assert rlat.cf_attrs() == tuple(attr)
+
+        rlon = self.cfr.cf_group["rlon"]
+        assert rlon.shape == (174,)
+        assert rlon.dimensions == ("rlon",)
+        assert rlon.ndim == 1
+        attr = []
+        attr.append(("axis", "X"))
+        attr.append(("long_name", "rotated longitude"))
+        attr.append(("standard_name", "grid_longitude"))
+        attr.append(("units", "degrees"))
+        assert rlon.cf_attrs() == tuple(attr)
+
+        time = self.cfr.cf_group["time"]
+        assert time.shape == (4,)
+        assert time.dimensions == ("time",)
+        assert time.ndim == 1
+        attr = []
+        attr.append(("axis", "T"))
+        attr.append(("bounds", "time_bnds"))
+        attr.append(("calendar", "gregorian"))
+        attr.append(("long_name", "Julian Day"))
+        attr.append(("units", "days since 1950-01-01 00:00:00.0"))
+        assert time.cf_attrs() == tuple(attr)
+
+    def test_data_pass_0(self):
+        assert sorted(self.cfr.cf_group.data_variables.keys()) == ["pr"]
+
+        data = self.cfr.cf_group["pr"]
+        assert data.shape == (4, 190, 174)
+        assert data.dimensions == ("time", "rlat", "rlon")
+        assert data.ndim == 3
+        attr = []
+        attr.append(("_FillValue", 1e30))
+        attr.append(("cell_methods", "time: mean"))
+        attr.append(("coordinates", "lon lat"))
+        attr.append(("grid_mapping", "rotated_pole"))
+        attr.append(("long_name", "Precipitation"))
+        attr.append(("missing_value", 1e30))
+        attr.append(("standard_name", "precipitation_flux"))
+        attr.append(("units", "kg m-2 s-1"))
+        attr = tuple(attr)
+        assert data.cf_attrs()[0][0] == attr[0][0]
+        assert data.cf_attrs()[0][1] == pytest.approx(attr[0][1], abs=1.6e22)
+        assert data.cf_attrs()[1:5] == attr[1:5]
+        assert data.cf_attrs()[5][1] == pytest.approx(attr[5][1], abs=1.6e22)
+        assert data.cf_attrs()[6:] == attr[6:]
+
+    def test_formula_terms_pass_0(self):
+        assert self.cfr.cf_group.formula_terms == {}
+
+    def test_grid_mapping_pass_0(self):
+        assert sorted(self.cfr.cf_group.grid_mappings.keys()) == ["rotated_pole"]
+
+        rotated_pole = self.cfr.cf_group["rotated_pole"]
+        assert rotated_pole.shape == ()
+        assert rotated_pole.dimensions == ()
+        assert rotated_pole.ndim == 0
+        attr = []
+        attr.append(("grid_mapping_name", "rotated_latitude_longitude"))
+        attr.append(("grid_north_pole_latitude", 18.0))
+        attr.append(("grid_north_pole_longitude", -140.75))
+        assert rotated_pole.cf_attrs() == tuple(attr)
+
+    def test_cell_measures_pass_0(self):
+        assert self.cfr.cf_group.cell_measures == {}
+
+    def test_global_attributes_pass_0(self):
+        assert sorted(self.cfr.cf_group.global_attributes.keys()) == [
+            "Conventions",
+            "NCO",
+            "experiment",
+            "history",
+            "institution",
+            "source",
+        ]
+
+        assert self.cfr.cf_group.global_attributes["Conventions"] == "CF-1.0"
+        assert self.cfr.cf_group.global_attributes["experiment"] == "ER3"
+        assert self.cfr.cf_group.global_attributes["institution"] == "DMI"
+        assert self.cfr.cf_group.global_attributes["source"] == "HIRHAM"
+
+    def test_variable_cf_group_pass_0(self):
+        assert sorted(self.cfr.cf_group["time"].cf_group.keys()) == ["time_bnds"]
+        assert sorted(self.cfr.cf_group["pr"].cf_group.keys()) == [
+            "lat",
+            "lon",
+            "rlat",
+            "rlon",
+            "rotated_pole",
+            "time",
+        ]
+
+    def test_variable_attribute_touch_pass_0(self):
+        lat = self.cfr.cf_group["lat"]
+
+        assert lat.cf_attrs() == (
+            ("long_name", "latitude"),
+            ("standard_name", "latitude"),
+            ("units", "degrees_north"),
+        )
+        assert lat.cf_attrs_used() == ()
+        assert lat.cf_attrs_unused() == (
+            ("long_name", "latitude"),
+            ("standard_name", "latitude"),
+            ("units", "degrees_north"),
+        )
+
+        # touch some variable attributes.
+        lat.long_name
+        lat.units
+        assert lat.cf_attrs_used() == (
+            ("long_name", "latitude"),
+            ("units", "degrees_north"),
+        )
+        assert lat.cf_attrs_unused() == (("standard_name", "latitude"),)
+
+        # clear the attribute touch history.
+        lat.cf_attrs_reset()
+        assert lat.cf_attrs_used() == ()
+        assert lat.cf_attrs_unused() == (
+            ("long_name", "latitude"),
+            ("standard_name", "latitude"),
+            ("units", "degrees_north"),
+        )
+
+
+@_shared_utils.skip_data
+class TestLoad:
+    def test_attributes_empty(self):
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
+        )
+        cube = iris.load_cube(filename)
+        assert cube.coord("time").attributes == {}
+
+    def test_attributes_contain_positive(self):
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
+        )
+        cube = iris.load_cube(filename)
+        assert cube.coord("height").attributes["positive"] == "up"
+
+    def test_attributes_populated(self):
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
+        )
+        cube = iris.load_cube(filename, "air_temperature")
+        assert sorted(cube.coord("longitude").attributes.items()) == [
+            ("data_type", "float"),
+            ("modulo", 360),
+            ("topology", "circular"),
+            ("valid_max", 359.0),
+            ("valid_min", 0.0),
+        ]
+
+    def test_cell_methods(self):
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "global", "xyt", "SMALL_hires_wind_u_for_ipcc4.nc")
+        )
+        cube = iris.load_cube(filename)
+        assert cube.cell_methods == (
+            iris.coords.CellMethod(
+                method="mean",
+                coords=("time",),
+                intervals=("6 minutes",),
+                comments=(),
+            ),
+        )
+
+
+@_shared_utils.skip_data
+class TestClimatology:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        filename = _shared_utils.get_data_path(
+            (
+                "NetCDF",
+                "label_and_climate",
+                "A1B-99999a-river-sep-2070-2099.nc",
+            )
+        )
+        self.cfr = cf.CFReader(filename)
+        with self.cfr:
+            yield
+
+    def test_bounds(self):
+        time = self.cfr.cf_group["temp_dmax_tmean_abs"].cf_group.coordinates["time"]
+        climatology = time.cf_group.climatology
+        assert len(climatology) == 1
+        assert list(climatology.keys()) == ["climatology_bounds"]
+
+        climatology_var = climatology["climatology_bounds"]
+        assert climatology_var.ndim == 2
+        assert climatology_var.shape == (1, 2)
+
+
+@_shared_utils.skip_data
+class TestLabels:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        filename = _shared_utils.get_data_path(
+            (
+                "NetCDF",
+                "label_and_climate",
+                "A1B-99999a-river-sep-2070-2099.nc",
+            )
+        )
+        # NOTE: this one should now be read without byte-to-string translation,
+        # since we no longer support a non-final string dimension.
+        with DECODE_TO_STRINGS_ON_READ.context(perform_decoding=False):
+            self.cfr_start = cf.CFReader(filename)
+
+        filename = _shared_utils.get_data_path(
+            ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
+        )
+        self.cfr_end = cf.CFReader(filename)
+
+        with self.cfr_start:
+            with self.cfr_end:
+                yield
+
+    def test_label_dim_start(self):
+        cf_data_var = self.cfr_start.cf_group["temp_dmax_tmean_abs"]
+
+        region_group = self.cfr_start.cf_group.labels["region_name"]
+        assert sorted(self.cfr_start.cf_group.labels.keys()) == ["region_name"]
+        assert sorted(cf_data_var.cf_group.labels.keys()) == ["region_name"]
+
+        assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
+        # data was specifically read as bytes, owing to non-standard dimension order
+        sample_chars = fetch_cfvar_data(region_group, [slice(None), 0])  # first string
+
+        def chars2string(chararray_1d):
+            # Translating byte arrays is slightly awkward
+            bytes = b"".join(b for b in chararray_1d if b != "b\0")
+            string = bytes.decode("ascii")  # not testing encodings, expect only ascii
+            return string
+
+        sample_string = chars2string(sample_chars)
+        assert sample_string == "Anglian"
+
+        cf_data_var = self.cfr_start.cf_group["cdf_temp_dmax_tmean_abs"]
+
+        assert sorted(self.cfr_start.cf_group.labels.keys()) == ["region_name"]
+        assert sorted(cf_data_var.cf_group.labels.keys()) == ["region_name"]
+
+        assert region_group.cf_label_dimensions(cf_data_var) == ("georegion",)
+        sample_chars = fetch_cfvar_data(region_group, [slice(None), 0])
+        sample_string = chars2string(sample_chars)
+        assert sample_string == "Anglian"
+
+    def test_label_dim_end(self):
+        cf_data_var = self.cfr_end.cf_group["tas"]
+
+        assert sorted(self.cfr_end.cf_group.labels.keys()) == [
+            "experiment_id",
+            "institution",
+            "source",
+        ]
+        assert sorted(cf_data_var.cf_group.labels.keys()) == [
+            "experiment_id",
+            "institution",
+            "source",
+        ]
+
+        var = self.cfr_end.cf_group.labels["experiment_id"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = fetch_cfvar_data(var, 0)
+        expect = "2005".ljust(len(content))
+        assert content == expect
+
+        var = self.cfr_end.cf_group.labels["institution"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = fetch_cfvar_data(var, 0)
+        expect = "ECMWF"
+        expect = expect.ljust(len(str(content)))  # expand to full string width
+        assert content == expect
+
+        var = self.cfr_end.cf_group.labels["source"]
+        assert var.cf_label_dimensions(cf_data_var) == ("ensemble",)
+        content = fetch_cfvar_data(var, 0)
+        expect = "IFS33R1/HOPE-E, Sys 1, Met 1, ENSEMBLES"
+        expect = expect.ljust(len(str(content)))  # expand to full string width
+        assert content == expect
+
+
+class TestLoadingIsSilent:
+    """A normal load must not reach CFVariable.__getattr__.
+
+    Every CF attribute read inside Iris goes through CFVariable.attributes,
+    so the deprecation on __getattr__ fires only for code outside Iris.
+    Spec section 4.3.
+
+    The three cubes between them cover the four attributes that reached
+    __getattr__ when the deprecation was added: "bounds" and "climatology"
+    from the loading rules, "cf_role" and "start_index" from the UGRID
+    loader.
+    """
+
+    CUBES = {
+        "bounded": lambda: stock.simple_2d(with_bounds=True),
+        "mesh": sample_mesh_cube,
+        "climatology": lambda: stock.climatology_3d(),
+    }
+
+    @pytest.fixture(params=sorted(CUBES))
+    def saved_file(self, request, tmp_path):
+        path = tmp_path / f"{request.param}.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(self.CUBES[request.param](), path)
+        return path
+
+    def test_load_emits_no_deprecation(self, saved_file):
+        # Recorded rather than promoted to an error. iris.load captures an
+        # exception raised while building a cube into
+        # iris.loading.LOAD_PROBLEMS, so a filter of "error" drops the
+        # offending coordinate and lets the test pass while the warning is
+        # still being issued. The LOAD_PROBLEMS assertion below is what keeps
+        # a silent load from being a degraded one.
+        with warnings.catch_warnings(record=True) as record:
+            warnings.simplefilter("always")
+            cubes = iris.load(saved_file)
+
+        deprecations = [
+            str(warning.message)
+            for warning in record
+            if issubclass(warning.category, IrisDeprecation)
+        ]
+        assert deprecations == []
+        assert LOAD_PROBLEMS.problems_by_file.get(str(saved_file), []) == []
+        assert len(cubes) == 1
+
+    def test_a_cf_attribute_read_from_outside_iris_still_warns(self, saved_file):
+        # The other half of the deprecation: silence on a load must not mean
+        # the accessor has stopped working. All three cubes carry a long_name,
+        # and CFVariable declares no property of that name.
+        with cf.CFReader(str(saved_file)) as reader:
+            (data_var,) = reader.cf_group.data_variables.values()
+            expected = data_var.attributes.untracked["long_name"]
+            with pytest.warns(IrisDeprecation):
+                assert data_var.long_name == expected
+
+    @pytest.mark.parametrize(
+        ("cube_name", "coord_name"),
+        [("bounded", "foo"), ("climatology", "time")],
+    )
+    def test_a_cf_reserved_attribute_does_not_reach_the_coord(
+        self, tmp_path, cube_name, coord_name
+    ):
+        # Belt and braces, not a test of attribute tracking. "bounds" and
+        # "climatology" are both in iris.fileformats.cf.saver._CF_ATTRS,
+        # which _add_unused_attributes filters on whatever tracking recorded,
+        # so they stay off the coordinate either way. The connectivity test
+        # below is the one that pins tracking: "cf_role" and "start_index" are
+        # not in that list.
+        path = tmp_path / f"{cube_name}.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(self.CUBES[cube_name](), path)
+
+        cube = iris.load_cube(path)
+
+        assert cube.coord(coord_name).attributes == {}
+
+    def test_a_cf_reserved_attribute_does_not_reach_the_connectivity(self, tmp_path):
+        # "cf_role" and "start_index" are consumed by the UGRID loader and are
+        # not in cf.saver._CF_ATTRS, so attribute tracking is the only
+        # thing keeping them off the connectivity. Reading them through the
+        # mapping has to record them exactly as reading them as attributes did.
+        path = tmp_path / "mesh.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(sample_mesh_cube(), path)
+
+        cube = iris.load_cube(path)
+
+        assert cube.mesh.face_node_connectivity.attributes == {}
+
+    def test_a_connectivity_without_start_index_loses_its_mesh(self, tmp_path):
+        """A UGRID file omitting the optional "start_index" loads without a mesh.
+
+        CF-UGRID makes start_index optional with a default of 0, and
+        iris.mesh.Connectivity defaults it to 0, but the loader requires it.
+        The mesh build fails and is recorded in iris.loading.LOAD_PROBLEMS.
+        Pinned because the loader reads start_index through the attribute
+        mapping. Invert this when SciTools/iris#7332 is fixed.
+        """
+        path = tmp_path / "mesh.nc"
+        with iris.FUTURE.context(save_split_attrs=True):
+            iris.save(sample_mesh_cube(), path)
+
+        dataset = _thread_safe_nc.DatasetWrapper(str(path), "a")
+        try:
+            for variable in dataset.variables.values():
+                if "start_index" in variable.ncattrs():
+                    variable.delncattr("start_index")
+        finally:
+            dataset.close()
+
+        with pytest.warns(IrisLoadWarning):
+            cube = iris.load_cube(path)
+
+        assert cube.mesh is None

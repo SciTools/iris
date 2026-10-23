@@ -39,7 +39,7 @@ class TestLazySave:
             ("NetCDF", "label_and_climate", "small_FC_167_mon_19601101.nc")
         )
         # While loading, "turn off" loading small variables as real data.
-        mocker.patch("iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES", 0)
+        mocker.patch("iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES", 0)
         acube = iris.load_cube(fpath, "air_temperature")
         assert acube.has_lazy_data()
         # Also check a coord with lazy points + bounds.
