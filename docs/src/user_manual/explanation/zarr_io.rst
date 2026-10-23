@@ -55,6 +55,12 @@ Iris writes Zarr **version 3** stores. A whole :class:`~iris.cube.CubeList`
 goes into one store, which is opened once. Saving through netCDF-c's NCZarr
 driver writes **version 2** instead, covered below in :ref:`zarr_io_nczarr`.
 
+.. warning::
+
+    A save that is interrupted leaves a partial store behind, and Iris cannot
+    roll it back. The damage is quiet -- see
+    :ref:`zarr_io_interrupted_save`.
+
 Unlike the netCDF saver, this one does **not** overwrite. ``iris.save`` raises
 if the target already exists, because replacing a store means deleting many
 objects one at a time, and an interrupted replacement destroys what was there
@@ -127,20 +133,20 @@ that does not mention what was just written is what a default reader believes,
 so a stale one hides data; having none at all is slower to read but tells the
 truth.
 
+.. _zarr_io_interrupted_save:
+
 What an interrupted save leaves behind
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. warning::
-
-    A partial store, and Iris offers no rollback. Zarr has no multi-object
-    transaction: a store's metadata and its chunks are separate objects, so a
-    save interrupted between them leaves the two disagreeing, and a missing
-    chunk is not an error -- it reads back as the fill value, with no warning.
-    The usual mitigation, writing to a temporary name and renaming on success,
-    is not adopted: a directory rename is atomic on a local filesystem but
-    object stores have no equivalent, so the guarantee would evaporate exactly
-    where Zarr is most used. Callers who need transactional writes want
-    `Icechunk <https://icechunk.io/>`_.
+An interrupted save leaves a partial store, and Iris offers no rollback. Zarr
+has no multi-object transaction: a store's metadata and its chunks are separate
+objects, so a save interrupted between them leaves the two disagreeing, and a
+missing chunk is not an error -- it reads back as the fill value, with no
+warning. The usual mitigation, writing to a temporary name and renaming on
+success, is not adopted: a directory rename is atomic on a local filesystem but
+object stores have no equivalent, so the guarantee would evaporate exactly
+where Zarr is most used. Callers who need transactional writes want
+`Icechunk <https://icechunk.io/>`_.
 
 Meshes
 ^^^^^^
