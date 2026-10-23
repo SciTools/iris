@@ -699,3 +699,71 @@ class TestFinalise:
         with ZarrDataset(existing) as dataset:
             with pytest.raises(ValueError, match="mode='r'"):
                 dataset.finalise()
+
+
+@pytest.fixture
+def consolidated(existing):
+    """Return the path of an existing store carrying consolidated metadata."""
+    zarr.consolidate_metadata(zarr.open_group(store=existing, mode="r+").store)
+    return existing
+
+
+class TestDropConsolidatedMetadata:
+    def test_the_document_goes(self, consolidated):
+        with ZarrDataset(consolidated, mode="a") as dataset:
+            dataset.drop_consolidated_metadata()
+        reopened = zarr.open_group(store=consolidated, mode="r")
+        assert reopened.metadata.consolidated_metadata is None
+
+    def test_a_subgroup_save_drops_the_roots_document(self, consolidated):
+        # The case the root-level one hides: writing an array at the root
+        # happens to rewrite the root's metadata without the document, and
+        # writing into a subgroup never touches the root at all. Left there,
+        # the document is what a default reader believes, and it does not
+        # mention the group just written.
+        with ZarrDataset(consolidated, mode="a", group="sub") as dataset:
+            dataset.create_dimension("x", 2)
+            dataset.create_variable("data", np.dtype("f4"), ["x"])
+            dataset.drop_consolidated_metadata()
+        reopened = zarr.open_group(store=consolidated, mode="r")
+        assert reopened.metadata.consolidated_metadata is None
+        assert "sub" in list(reopened.group_keys())
+
+    def test_the_store_is_otherwise_untouched(self, consolidated):
+        root = zarr.open_group(store=consolidated, mode="r+")
+        root.attrs["title"] = "kept"
+        with ZarrDataset(consolidated, mode="a") as dataset:
+            dataset.drop_consolidated_metadata()
+        reopened = zarr.open_group(store=consolidated, mode="r")
+        assert dict(reopened.attrs) == {"title": "kept"}
+        assert list(reopened.array_keys()) == ["already_here"]
+        assert reopened["already_here"][:].tolist() == [1.0, 2.0]
+
+    def test_a_store_without_one_is_left_alone(self, existing):
+        with ZarrDataset(existing, mode="a") as dataset:
+            dataset.drop_consolidated_metadata()
+        reopened = zarr.open_group(store=existing, mode="r")
+        assert reopened.metadata.consolidated_metadata is None
+        assert list(reopened.array_keys()) == ["already_here"]
+
+    def test_a_store_with_no_root_group_is_left_alone(self, tmp_path):
+        # A store whose groups are all implicit is conforming Zarr: there is
+        # no root document to go stale, and this must not create one.
+        path = tmp_path / "subgroup_only.zarr"
+        with ZarrDataset(path, mode="w-", group="sub") as dataset:
+            dataset.create_dimension("x", 2)
+            dataset.create_variable("data", np.dtype("f4"), ["x"])
+        # zarr-python writes a root group of its own accord; removing it is
+        # what leaves the store in the shape this is about.
+        (path / "zarr.json").unlink()
+
+        with ZarrDataset(path, mode="a", group="sub") as dataset:
+            dataset.drop_consolidated_metadata()
+
+        assert not (path / "zarr.json").exists()
+        assert "data" in list(zarr.open_group(store=path, path="sub", mode="r"))
+
+    def test_a_read_only_dataset_refuses(self, consolidated):
+        with ZarrDataset(consolidated) as dataset:
+            with pytest.raises(ValueError, match="mode='r'"):
+                dataset.drop_consolidated_metadata()

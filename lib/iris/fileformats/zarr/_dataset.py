@@ -1291,6 +1291,68 @@ class ZarrDataset(CFDataset):
                 )
                 raise RuntimeError(message) from exception
 
+    def drop_consolidated_metadata(self) -> None:
+        """Remove the store's consolidated metadata document, if it has one.
+
+        The other half of :meth:`finalise`, for a save that declines
+        consolidation. A document an earlier save wrote does not mention what
+        this one has just written, and a default reader believes the
+        document: the data would be in the store and invisible to anything
+        that did not know to look past it. Reading an unconsolidated store is
+        slower; reading a stale document is wrong.
+
+        Works from the whole store's root, like :meth:`finalise`, because
+        that is where the document lives however deep the group written was.
+        Writing an array at the root happens to rewrite the root's own
+        metadata without the document, which is why this is only reachable
+        when the group written was not the root - but it is not conditional
+        on that, because relying on a side effect to keep a promise is how
+        the promise comes to be kept only sometimes.
+
+        Does nothing when the store has no document, including when it has no
+        root group at all: a store whose only group is the one just written
+        has nothing stale in it.
+
+        Raises
+        ------
+        ValueError
+            If this dataset was opened read-only.
+        RuntimeError
+            If the document cannot be removed, for the same reason
+            :meth:`finalise` raises: a store left carrying it hides the data
+            just written.
+
+        """
+        self._check_writable("drop consolidated metadata")
+        assert self._group is not None
+        store = self._group.store
+        try:
+            consolidated = zarr.open_group(store=store, mode="r+")
+        except (FileNotFoundError, KeyError):
+            # No root group - zarr-python's `GroupNotFoundError` is a
+            # `FileNotFoundError` - so there is no document at the root to go
+            # stale. A store whose groups are all implicit is conforming Zarr
+            # and must not acquire a root group here.
+            return
+        if consolidated.metadata.consolidated_metadata is None:
+            return
+
+        try:
+            # Reopened ignoring the document, so that the metadata written
+            # back is the group's own and carries no consolidated section.
+            # Rewriting the attributes is what writes it: zarr-python has no
+            # call that removes a consolidated document on its own.
+            root = zarr.open_group(store=store, mode="r+", use_consolidated=False)
+            root.update_attributes(dict(root.attrs))
+        except Exception as exception:
+            message = (
+                f"Could not remove the consolidated metadata of the Zarr store "
+                f"{self._location!r}. The data written is in the store, but the "
+                "store's consolidated metadata predates it, so a reader that "
+                "uses it may not see what was just written."
+            )
+            raise RuntimeError(message) from exception
+
     def close(self) -> None:
         """Record that this dataset is finished with.
 

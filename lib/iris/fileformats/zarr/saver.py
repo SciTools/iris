@@ -100,7 +100,7 @@ def _align_to_write_grid(data, cf_var):
 
 
 def _complete(_written, dataset, consolidating) -> None:
-    """Consolidate `dataset`'s metadata, once its delayed writes have run.
+    """Settle `dataset`'s metadata document, once its delayed writes have run.
 
     A module-level function, rather than a closure, so that the
     :class:`~dask.delayed.Delayed` built from it survives a plain
@@ -115,11 +115,16 @@ def _complete(_written, dataset, consolidating) -> None:
     dataset : :class:`~iris.fileformats.zarr._dataset.ZarrDataset`
         The store to consolidate.
     consolidating : bool
-        Whether to consolidate at all.
+        Whether to consolidate at all. Declining it is not the same as doing
+        nothing: a document an earlier save left behind does not mention what
+        this save just wrote, so it is removed rather than left to be
+        believed.
 
     """
     if consolidating:
         dataset.finalise()
+    else:
+        dataset.drop_consolidated_metadata()
 
 
 class Saver(_CFSaver):

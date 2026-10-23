@@ -63,16 +63,53 @@ class TestSave:
         assert group.metadata.consolidated_metadata is None
 
     def test_declining_it_drops_a_document_the_store_already_had(self, tmp_path, cubes):
-        # The store is opened without consulting its consolidated document,
-        # so adding an array rewrites the root metadata without one. That is
-        # the safe outcome - a default reader sees both arrays rather than
-        # believing a snapshot taken before the second - and the Zarr
-        # documentation page says so.
+        # A default reader believes the document, and a document written
+        # before this save does not mention it. Dropping it is the safe
+        # outcome - the reader sees both arrays rather than a snapshot taken
+        # before the second - and the Zarr documentation page says so.
         save(cubes[0], tmp_path / "out.zarr")
         save(cubes[1], tmp_path / "out.zarr", mode="a", consolidate_metadata=False)
         group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
         assert group.metadata.consolidated_metadata is None
         assert {"air_temperature", "air_pressure"} <= set(group.array_keys())
+
+    def test_declining_it_for_a_subgroup_drops_it_too(self, tmp_path, cubes):
+        # The case the test above cannot see. Adding an array at the root
+        # rewrites the root's own metadata, which drops the document as a
+        # side effect; a subgroup save writes nothing at the root, so a
+        # document left there would be what every default reader believes -
+        # and it does not mention the group just written. The data would be
+        # in the store and invisible.
+        save(cubes[0], tmp_path / "out.zarr")
+        save(
+            cubes[1],
+            tmp_path / "out.zarr",
+            group="sub",
+            consolidate_metadata=False,
+        )
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group.metadata.consolidated_metadata is None
+        assert "sub" in list(group.group_keys())
+        assert "air_pressure" in set(group["sub"].array_keys())
+
+    def test_declining_it_for_a_deferred_subgroup_save_drops_it_too(
+        self, tmp_path, cubes
+    ):
+        # Dropping the document is the store's last write, like
+        # consolidating it: under compute=False it must wait for the data,
+        # not happen when the saver's context exits.
+        save(cubes[0], tmp_path / "out.zarr")
+        result = save(
+            cubes[1].copy(cubes[1].lazy_data()),
+            tmp_path / "out.zarr",
+            group="sub",
+            consolidate_metadata=False,
+            compute=False,
+        )
+        result.compute()
+        group = zarr.open_group(store=tmp_path / "out.zarr", mode="r")
+        assert group.metadata.consolidated_metadata is None
+        assert "sub" in list(group.group_keys())
 
     def test_a_conflicting_anonymous_dimension_gets_its_own_name(self, tmp_path, cubes):
         # A cube dimension with no dim coord is named "dim0", "dim1", and so
