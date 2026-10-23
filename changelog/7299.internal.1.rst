@@ -1,0 +1,1 @@
+Fix 1d-plot adjustment for line directions, for cartopy >= 0.26.
