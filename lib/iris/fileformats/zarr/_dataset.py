@@ -810,7 +810,7 @@ class ZarrDataset(CFDataset):
         self._attributes: _ZarrAttributes | None = None
         self._dimensions: dict[str, int] | None = None
 
-        #: The sizes `create_dimension` has been given, by dimension name.
+        #: A record of dimension names and sizes.
         #: Zarr stores no dimension object of its own, so this is the only
         #: record of a declared size, and the only way to catch two arrays
         #: declaring one name at two sizes.
