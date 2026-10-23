@@ -221,8 +221,10 @@ def check_docstring(text: str, expected_type: str) -> list[str]:
 
     if docstring is None:
         return [
-            "Missing a module docstring, so the page generated from it has no "
-            "sphinx-needs item."
+            (
+                "Missing a module docstring, so the page generated from it has "
+                "no sphinx-needs item."
+            )
         ]
 
     return check_item(docstring, expected_type)

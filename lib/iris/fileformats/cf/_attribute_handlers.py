@@ -2,10 +2,10 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""NetCDF attribute translations for Iris attributes with special convenience types.
+"""Attribute translations for Iris attributes with special convenience types.
 
 These are things which are stored differently in an Iris cube attribute from how they
-are actually stored in a netcdf file.  E.G. a STASH code is stored as a special object,
+are actually stored in a file.  E.G. a STASH code is stored as a special object,
 but in a file it is just a string.
 
 These conversions are intended to be automatic and lossless, like a serialization.

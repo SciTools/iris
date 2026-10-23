@@ -549,7 +549,7 @@ def action_unmanaged_attribute(engine, attr_name, attr_value):
 
 def action_all_managed_attributes(engine):
     """Check for and convert all 'handled' attributes."""
-    from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+    from iris.fileformats.cf._attribute_handlers import ATTRIBUTE_HANDLERS
 
     var = engine.cf_var
     for handler in ATTRIBUTE_HANDLERS.values():

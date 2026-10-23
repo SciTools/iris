@@ -9,10 +9,10 @@
 
    API reference
 
-Reads Zarr version 2 and version 3 stores, local or remote. Not NCZarr: that
-is netCDF-c's own Zarr driver, reached through a URL fragment such as
-``file:///path/store.zarr#mode=nczarr,file``, and it stays where it is in
-:mod:`iris.fileformats.netcdf`.
+Reads Zarr version 2 and version 3 stores, local or remote, and writes version
+3 ones. Not NCZarr: that is netCDF-c's own Zarr driver, reached through a URL
+fragment such as ``file:///path/store.zarr#mode=nczarr,file``, and it stays
+where it is in :mod:`iris.fileformats.netcdf`.
 
 ``zarr`` is an optional dependency. Nothing in :mod:`iris.fileformats` imports
 this package until a Zarr target is actually loaded, so Iris installs and
@@ -28,11 +28,21 @@ See sections 4.1 and 4.4 of
 
 """
 
+import importlib
 import importlib.metadata
 
 from packaging.version import Version
 
-__all__ = ["load_cubes"]
+__all__ = ["Saver", "load_cubes", "save"]
+
+#: What `__getattr__` forwards, and the module it lives in. The import is
+#: deferred because `._dataset` imports `zarr` at module level, and this
+#: package promises that nothing does so until a Zarr target is used.
+_FORWARDED = {
+    "load_cubes": ".loader",
+    "save": ".saver",
+    "Saver": ".saver",
+}
 
 #: The version floor ``docs/src/user_manual/explanation/zarr_io.rst`` and
 #: ``requirements/py3*.yml`` both promise.
@@ -40,12 +50,12 @@ _MINIMUM_VERSION = "3.0.8"
 
 #: Raised whether ``zarr`` is missing entirely or present below
 #: :data:`_MINIMUM_VERSION`. Defined once here, not in
-#: :func:`iris.fileformats._load_zarr`, so that the two routes a caller can
-#: reach a Zarr load through - ``iris.load`` and calling
-#: :func:`load_cubes` directly - produce the same text rather than each
-#: carrying its own copy.
+#: :func:`iris.fileformats._load_zarr`, so that every route a caller can
+#: reach a Zarr store through - ``iris.load``, ``iris.save``, and calling
+#: :func:`load_cubes` directly - produces the same text rather than each
+#: carrying its own copy. "Use", not "load": ``iris.save`` raises this too.
 _MISSING_MESSAGE = (
-    "Unable to load a Zarr store - the 'zarr' package is not "
+    "Unable to use a Zarr store - the 'zarr' package is not "
     "installed. Install zarr >=3.0.8, for example with "
     "'conda install -c conda-forge zarr'."
 )
@@ -79,14 +89,15 @@ def _check_zarr_version() -> None:
 
 
 def __getattr__(name):
-    """Forward ``load_cubes`` to :mod:`iris.fileformats.zarr.loader`.
+    """Forward the public names to the modules that define them.
 
-    PEP 562, not a plain ``from .loader import load_cubes``: ``loader``
-    imports ``._dataset``, which imports ``zarr`` at module level, so an
-    eager import here would make the dependency load with the package rather
-    than with a Zarr load - breaking the promise this module's own docstring
-    makes, that nothing imports ``zarr`` until a Zarr target is actually
-    loaded. Resist "simplifying" this back to a plain import.
+    PEP 562, not a plain ``from .loader import load_cubes``: ``loader`` and
+    ``saver`` both import ``._dataset``, which imports ``zarr`` at module
+    level, so an eager import here would make the dependency load with the
+    package rather than with a Zarr load or save - breaking the promise this
+    module's own docstring makes, that nothing imports ``zarr`` until a Zarr
+    target is actually used. Resist "simplifying" this back to a plain
+    import.
 
     Parameters
     ----------
@@ -97,7 +108,7 @@ def __getattr__(name):
     Returns
     -------
     Any
-        ``load_cubes``, the only name this forwards.
+        The object of that name, from the module :data:`_FORWARDED` names.
 
     Raises
     ------
@@ -108,14 +119,15 @@ def __getattr__(name):
         :data:`_MINIMUM_VERSION`.
 
     """
-    if name != "load_cubes":
+    module_name = _FORWARDED.get(name)
+    if module_name is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
     _check_zarr_version()
 
     try:
-        from .loader import load_cubes
+        module = importlib.import_module(module_name, __name__)
     except ImportError as exception:
         raise ImportError(_MISSING_MESSAGE) from exception
 
-    return load_cubes
+    return getattr(module, name)

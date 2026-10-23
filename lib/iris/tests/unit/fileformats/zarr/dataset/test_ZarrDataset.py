@@ -147,24 +147,6 @@ class Test_groups:
             ZarrDataset(location, group="nope")
 
 
-class Test_the_write_surface:
-    def test_the_write_surface_refuses(self, tmp_path):
-        # Saving to Zarr is not implemented. The members exist because the
-        # interface declares them; refusing is the honest answer.
-        dataset = ZarrDataset(stores.make_store(tmp_path / "s.zarr"))
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.create_dimension("t", 3)
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.create_variable("v", np.dtype("f4"), ("t",))
-        with pytest.raises(NotImplementedError, match="Saving"):
-            dataset.finalise()
-
-    def test_a_write_mode_refuses(self, tmp_path):
-        stores.make_store(tmp_path / "s.zarr")
-        with pytest.raises(NotImplementedError, match="Saving"):
-            ZarrDataset(str(tmp_path / "s.zarr"), mode="w")
-
-
 class Test_supports_dtype:
     @pytest.mark.parametrize(
         "dtype", ["i1", "i2", "i4", "i8", "u1", "u2", "u4", "u8", "f4", "f8", "c8"]

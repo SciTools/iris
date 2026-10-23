@@ -466,9 +466,13 @@ class NetCDFDataset(CFDataset):
         location : str or :class:`pathlib.Path`
             The file's path or URL.
         mode : str, default="r"
-            The netCDF4 open mode.
+            One of ``"r"``, ``"w"``, ``"x"``, ``"a"`` or ``"r+"``, with
+            netCDF4's meanings. ``"x"`` creates and refuses an existing file;
+            ``"w"`` replaces one; ``"a"`` and ``"r+"`` both open one for
+            update, and both create the file if it is not there.
         netcdf_format : str, optional
-            The netCDF format to create, when writing.
+            The netCDF format to create, when writing. netCDF4's own default
+            when not given.
         warn_legacy_format : bool, default=False
             Whether to warn that a netCDF3 file would load faster if
             converted. Only loading asks for this; the loader is where the
