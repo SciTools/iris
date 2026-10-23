@@ -30,8 +30,9 @@ def square_polygon():
 
 @pytest.fixture
 def circle_polygon():
-    # Create a a circular polygon centred on (5,5) with radius (2,) using shapely
-    return Point(5, 5).buffer(2)
+    # Create a circular polygon centred on (5,5) with radius 2.1 using shapely
+    # - offset by 0.1 to avoid inclusion of some test points being 'marginal'
+    return Point(5, 5).buffer(2.1)
 
 
 @pytest.fixture
@@ -149,10 +150,10 @@ def test_all_touched_true_create_shape_mask(circle_polygon, wgs84_crs, mock_cube
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
             [1, 1, 1, 1, 0, 0, 1, 1, 1],
             [1, 1, 1, 0, 0, 0, 0, 1, 1],
+            [1, 1, 0, 0, 0, 0, 0, 0, 1],
+            [1, 1, 0, 0, 0, 0, 0, 0, 1],
             [1, 1, 1, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 0, 0, 0, 0, 1, 1],
-            [1, 1, 1, 1, 1, 1, 1, 1, 1],
+            [1, 1, 1, 1, 0, 0, 1, 1, 1],
             [1, 1, 1, 1, 1, 1, 1, 1, 1],
         ],
         dtype=bool,

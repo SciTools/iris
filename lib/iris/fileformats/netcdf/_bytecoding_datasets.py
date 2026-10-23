@@ -423,6 +423,17 @@ class EncodedVariable(Mixin_Block_AutoChartostring, VariableWrapper):
             dtype = np.dtype(f"U{encoding_spec.string_width}")
         return dtype
 
+    def chunking(self):
+        chunking = self._contained_instance.chunking()
+        is_chardata = np.issubdtype(self._contained_instance.dtype, np.bytes_)
+        if is_chardata and chunking != "contiguous":
+            # Translated char data appears without the final dimension
+            with contextlib.suppress(TypeError):
+                # TypeError to handle None and any other unexpected returns from
+                #  netCDF4-python.
+                chunking = chunking[:-1]  # remove final dimension
+        return chunking
+
     def __getitem__(self, keys):
         self._contained_instance.set_auto_chartostring(False)
         data = super().__getitem__(keys)
