@@ -832,7 +832,8 @@ class ZarrDataset(CFDataset):
             zarr_format = _DEFAULT_ZARR_FORMAT
         elif zarr_format not in _WRITABLE_ZARR_FORMATS:
             message = (
-                f"Iris cannot write a Zarr version {zarr_format} store. The "
+                f"Iris currently cannot write a Zarr version {zarr_format} "
+                "store. The "
                 f"versions it writes are {_WRITABLE_ZARR_FORMATS}. "
                 f"mode={mode!r} writes, so it needs one of those."
             )
