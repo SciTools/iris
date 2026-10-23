@@ -347,14 +347,11 @@ _DTYPE_ANSWERS = [
 class TestSupportsDtype:
     """`supports_dtype` answers for every dtype, and `create_variable` agrees.
 
-    Spec §4.2: the generic saver asks the store whether it holds a dtype
-    rather than asking what format it is, so an answer the store then goes
-    back on is a capability question with two answers.
+    Spec §4.2: the generic saver asks the store what it holds, so an answer
+    the store goes back on is a capability question with two answers.
 
-    The binding direction is that a `True` creates. A `False` is a refusal
-    `create_variable` makes itself, so the two cannot disagree - which is why
-    the answer may be conservative where zarr-python versions differ, and may
-    not be optimistic.
+    The binding direction is that a True creates. A False may be
+    conservative, since `create_variable` makes that refusal itself.
     """
 
     @staticmethod
@@ -402,13 +399,9 @@ class TestSupportsDtype:
 class TestByteOrder:
     """A big-endian dtype is stored in the platform's own order.
 
-    zarr-python 3.0.8 has no data type for a big-endian dtype -- `>i8` is a
-    `KeyError` -- while 3.4 stores one. A PP or GRIB load hands the saver
-    big-endian arrays, so taking the caller's order literally would refuse
-    ordinary Iris data on the oldest zarr-python Iris accepts, and
-    `supports_dtype` could not answer True for it on every version. Creating
-    in the native order is what lets it, and is what the netCDF saver has
-    always done with the same data.
+    zarr-python 3.0.8 has no data type for one at all: `>i8` is a `KeyError`.
+    A PP or GRIB load produces them, so taking the caller's order literally
+    would refuse ordinary Iris data on the oldest version Iris accepts.
     """
 
     @pytest.mark.parametrize("spelling", [">f4", ">f8", ">i8", ">i2", ">u4"])

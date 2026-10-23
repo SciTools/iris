@@ -30,6 +30,28 @@ sharding codec is indexed, so a reader fetches only the inner chunks it needs.
 :attr:`ZarrDatasetVariable.chunking` therefore returns ``Array.chunks``, never
 ``Array.shards``.
 
+**Which dtypes a store holds depends on the zarr-python version.** 3.1
+replaced a fixed enum of fifteen data types with an extensible registry, so
+3.4 holds a structured dtype, a ``datetime64`` and a big-endian dtype that
+3.0.8 - the oldest Iris accepts - has none of. Two consequences shape
+:meth:`ZarrDataset.supports_dtype` and :meth:`ZarrDataset.create_variable`,
+and both are easier to break than to notice, since the test suite runs
+against one version at a time.
+
+Its answer is a table of the dtypes every accepted version holds, rather
+than a list of the dtypes to exclude. A list of exclusions is open-ended -
+object arrays, an object inside a structured dtype, a zero-length void, the
+platform's extended precisions - and one missed entry is a ``True`` that
+:meth:`ZarrDataset.create_variable` then refuses, which is the contradiction
+``supports_dtype`` exists to prevent.
+
+Byte order is not in that answer, because creation takes it out of the
+question: an array is created in the platform's own order whatever order it
+was asked for, and NumPy converts on assignment. Answering ``False`` instead
+would refuse the big-endian arrays a PP or GRIB load produces. The netCDF
+saver gives that data the same answer, writing a ``>f4`` cube as
+``float32``.
+
 Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same way
 the netCDF path sizes it, and is not then adjusted to the store's own
 chunking. Iris warns when a stored chunk is larger than Dask's target, from
@@ -652,38 +674,15 @@ _WRITABLE_ZARR_FORMATS = (3,)
 #: about which member is the default.
 _DEFAULT_ZARR_FORMAT = 3
 
-#: The dtype kinds whose fill value must survive conversion unchanged.
-#: Integers and booleans have no rounding to spend: `numpy.int16(1.5)` is
-#: `1`, which would leave the array's own fill saying one number and its
-#: `_FillValue` attribute saying another. The floating kinds are left out
-#: because their conversion loses precision by definition - `float32` cannot
-#: hold the `float64` the caller wrote either way - and a reader narrows the
-#: declared sentinel to the stored dtype before comparing, which is what
-#: makes that case safe.
+#: The dtype kinds whose fill value must convert exactly, because they have
+#: no rounding to spend: `numpy.int16(1.5)` is `1`, and the `_FillValue`
+#: attribute would still say `1.5`.
 _EXACT_FILL_KINDS = "biu"
 
-#: The dtypes every zarr-python Iris supports can store, by NumPy kind and
-#: item size in bytes. Read by `supports_dtype`, which is the only thing that
-#: should.
-#:
-#: Stated as what Zarr *has*, not as what it lacks. A list of exclusions has
-#: to name every dtype NumPy can spell, including the ones it gains later and
-#: the ones that are only a container for another - a structured dtype with
-#: an object field, a zero-length void - and a list that misses one answers
-#: True for a dtype `create_variable` then refuses.
-#:
-#: It is also the intersection across versions rather than what the newest
-#: can hold. zarr-python 3.1 replaced a fixed enum of fifteen data types with
-#: an extensible registry, so 3.4 stores a structured dtype and a
-#: `datetime64` that 3.0.8 - the oldest Iris accepts - has no data type for
-#: **[verified]**. Answering from the newest would be wrong on the oldest,
-#: which is the harder failure to notice.
-#:
-#: Byte order is not part of the answer, and does not need to be:
-#: `create_variable` creates in the platform's own order whatever order it
-#: is handed, so a `True` for `>i8` is a `True` the store can keep. Without
-#: that, it could not be: 3.0.8 has no data type for a big-endian dtype at
-#: all **[verified]**.
+#: The dtypes every accepted zarr-python version holds, by NumPy kind and
+#: item size in bytes. Read by `supports_dtype`; see the module docstring for
+#: why the answer is a table of what Zarr holds rather than a list of
+#: exclusions.
 _STORABLE_ITEMSIZES_BY_KIND = {
     "b": frozenset({1}),
     "i": frozenset({1, 2, 4, 8}),
@@ -692,9 +691,8 @@ _STORABLE_ITEMSIZES_BY_KIND = {
     "c": frozenset({8, 16}),
 }
 
-#: The text kinds, which Zarr stores as its `string` and `bytes` types. Their
-#: item size is the string length, so there is no set of sizes to check -
-#: only that it is not zero, which is not a string Zarr can hold.
+#: The text kinds, which Zarr holds as its `string` and `bytes` types. Their
+#: item size is the string length, so only zero is out.
 _STORABLE_TEXT_KINDS = "US"
 
 #: The storage keywords `create_variable` passes to zarr-python, which are
@@ -795,16 +793,13 @@ def existing_name_message(name: str, location: str) -> str:
     )
 
 
-def _storage_fill_value(fill_value, dtype, name: str):
+def _storage_fill_value(fill_value, dtype, name: str) -> Any:
     """Return `fill_value` as a `dtype` scalar, or raise if it cannot be one.
 
     An array's own fill value and its ``_FillValue`` attribute must be the
-    same number. The attribute is what declares a value missing, the fill is
-    what unwritten storage reads back as, and a reader that trusts one and
-    meets the other masks the wrong points or none. Converting quietly is
-    what would make them differ: ``numpy.int16(1.5)`` is ``1``, while the
-    attribute would still say ``1.5``, so a reader comparing against the
-    attribute - xarray does - finds nothing to mask.
+    same number: the attribute declares a value missing, the fill says what
+    unwritten storage reads back as, and a reader that meets two numbers
+    masks the wrong points or none.
 
     Parameters
     ----------
@@ -818,7 +813,8 @@ def _storage_fill_value(fill_value, dtype, name: str):
 
     Returns
     -------
-    The sentinel as a scalar of `dtype`.
+    Any
+        The sentinel as a scalar of `dtype`.
 
     Raises
     ------
@@ -1057,13 +1053,10 @@ class ZarrDataset(CFDataset):
         arrays that disagree.
 
         A name an array in this group already carries counts as taken, at
-        that array's length. ``mode="a"`` onto an existing store is the case
-        that needs it: the arrays already there cannot be resized, so a new
-        declaration that disagrees with one of them has no outcome that is
-        not a lie - the new array would be created at the new size while
-        :attr:`dimensions` reports one length for a name two arrays hold at
-        two. The saver avoids the collision by renaming its own dimension;
-        this is what makes the collision visible to it.
+        that array's length. ``mode="a"`` is the case that needs it: an
+        existing array is never resized, so a declaration disagreeing with
+        one would leave :attr:`dimensions` reporting a single length for a
+        name two arrays hold at two.
 
         Parameters
         ----------
@@ -1108,10 +1101,8 @@ class ZarrDataset(CFDataset):
             )
             raise ValueError(message)
         self._declared_dimensions[name] = size
-        # Updated rather than dropped: the mapping was just read, and
-        # dropping it would reassemble it from every array in the group on
-        # the next call - once per declaration, over a store that may be
-        # remote.
+        # Updated rather than dropped: dropping it would reassemble it from
+        # every array in the group on the next call, over a remote store.
         dimensions[name] = size
         self._dimensions = dimensions
 
@@ -1169,26 +1160,15 @@ class ZarrDataset(CFDataset):
         assert self._group is not None
 
         if dtype is not str:
-            # Created in the platform's own byte order, whatever order the
-            # caller's dtype is in. zarr-python 3.0.8 has no data type for a
-            # big-endian dtype at all - `>i8` is a `KeyError` **[verified]** -
-            # and a PP or GRIB load hands the saver big-endian arrays, so
-            # taking the caller's order literally would refuse ordinary Iris
-            # data on the oldest zarr-python Iris accepts. NumPy converts on
-            # assignment, so the values written are the caller's; only the
-            # order the bytes are stored in is this store's. The netCDF saver
-            # has always done the same - a `>f4` cube is `float32` in the file
-            # it writes **[verified]** - so this is parity rather than a
-            # second rule to learn.
+            # Native byte order, whatever order was asked for: see the module
+            # docstring, and test_ZarrDataset__write.py's TestByteOrder.
             dtype = np.dtype(dtype).newbyteorder("=")
         dimensions = tuple(dimensions)
         shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
 
         if dtype is not str and not self.supports_dtype(dtype):
-            # Asked here so that the refusal and `supports_dtype` cannot
-            # disagree: a caller told the store holds a dtype must then be
-            # able to create it, and the one that answers False must say so
-            # in Iris's words rather than zarr-python's.
+            # Asked here so the two cannot disagree: a dtype the store said
+            # it holds must then create.
             message = (
                 f"Cannot create the Zarr array {name!r} with dtype {dtype}: "
                 "Zarr has no data type for it."
@@ -1248,26 +1228,17 @@ class ZarrDataset(CFDataset):
         """Whether this store can hold a variable of this dtype.
 
         True for the whole of NumPy's fixed-width numeric range and its
-        fixed-length text, which is everything the Iris savers can reach here
+        fixed-length text, which is everything the Iris savers reach here
         with: there is no integer or float a saver must narrow to get it into
         a Zarr store. Contrast
         :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
         which answers False for the integer types the netCDF 3 formats have no
         type for.
 
-        Read from `_STORABLE_ITEMSIZES_BY_KIND`, which is what Zarr has
-        rather than what it lacks, and is the intersection across the
-        zarr-python versions Iris accepts rather than what the newest can
-        hold. So it answers False for a few dtypes the installed zarr-python
-        might store - a structured dtype, a `datetime64` - and that is the
-        safe direction of inexact: :meth:`create_variable` asks this before
-        it creates anything, so a False is a refusal in Iris's words, while a
-        True this class then went back on would be a capability question with
-        two answers.
-
-        Byte order does not change the answer, because it does not change
-        what :meth:`create_variable` can do: that creates in the platform's
-        own order whatever order it is given.
+        Read from `_STORABLE_ITEMSIZES_BY_KIND`, which holds for every
+        zarr-python version Iris accepts. So this answers False for a few
+        dtypes the installed one might store, such as a structured dtype -
+        see the module docstring. Byte order does not change the answer.
 
         Parameters
         ----------
@@ -1338,21 +1309,11 @@ class ZarrDataset(CFDataset):
         The other half of :meth:`finalise`, for a save that declines
         consolidation. A document an earlier save wrote does not mention what
         this one has just written, and a default reader believes the
-        document: the data would be in the store and invisible to anything
-        that did not know to look past it. Reading an unconsolidated store is
-        slower; reading a stale document is wrong.
+        document, so the data would be in the store and invisible.
 
         Works from the whole store's root, like :meth:`finalise`, because
         that is where the document lives however deep the group written was.
-        Writing an array at the root happens to rewrite the root's own
-        metadata without the document, which is why this is only reachable
-        when the group written was not the root - but it is not conditional
-        on that, because relying on a side effect to keep a promise is how
-        the promise comes to be kept only sometimes.
-
-        Does nothing when the store has no document, including when it has no
-        root group at all: a store whose only group is the one just written
-        has nothing stale in it.
+        Does nothing when the store has no document, or no root group at all.
 
         Raises
         ------
@@ -1370,19 +1331,16 @@ class ZarrDataset(CFDataset):
         try:
             consolidated = zarr.open_group(store=store, mode="r+")
         except (FileNotFoundError, KeyError):
-            # No root group - zarr-python's `GroupNotFoundError` is a
-            # `FileNotFoundError` - so there is no document at the root to go
-            # stale. A store whose groups are all implicit is conforming Zarr
-            # and must not acquire a root group here.
+            # No root group, so nothing at the root to go stale.
+            # zarr-python's `GroupNotFoundError` is a `FileNotFoundError`.
             return
         if consolidated.metadata.consolidated_metadata is None:
             return
 
         try:
-            # Reopened ignoring the document, so that the metadata written
-            # back is the group's own and carries no consolidated section.
-            # Rewriting the attributes is what writes it: zarr-python has no
-            # call that removes a consolidated document on its own.
+            # Reopened ignoring the document, so the metadata written back
+            # carries no consolidated section. Rewriting the attributes is
+            # what writes it: zarr-python has no call that removes one.
             root = zarr.open_group(store=store, mode="r+", use_consolidated=False)
             root.update_attributes(dict(root.attrs))
         except Exception as exception:

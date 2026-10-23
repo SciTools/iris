@@ -115,10 +115,8 @@ def _complete(_written, dataset, consolidating) -> None:
     dataset : :class:`~iris.fileformats.zarr._dataset.ZarrDataset`
         The store to consolidate.
     consolidating : bool
-        Whether to consolidate at all. Declining it is not the same as doing
-        nothing: a document an earlier save left behind does not mention what
-        this save just wrote, so it is removed rather than left to be
-        believed.
+        Whether to consolidate at all. Declining removes any document the
+        store already carried, rather than leaving a stale one.
 
     """
     if consolidating:
