@@ -2893,6 +2893,11 @@ All four findings reproduced and fixed; none disputed.
   bypasses `__getattr__`; importing from the package makes it redundant.
 - `_CUBELIST_SAVERS` names savers, not their modules: `_zarr_save` shares
   `iris.io` with `_dot_save`, which must keep being handed one cube at a time.
+  Zarr is named twice, because a caller reaches the same save either through
+  the wrapper or by passing `iris.fileformats.zarr.save` as `saver=`. The
+  second route never worked: the entry it needed was the package,
+  `iris.fileformats.zarr`, while the saver's `__module__` is
+  `iris.fileformats.zarr.saver`. Review caught it; a test now covers it.
 - A cube with a mesh saves, carrying the full CF-UGRID structure, and cannot
   yet be loaded back: nothing in the Zarr loader rebuilds a mesh, and
   `iris.mesh.load_meshes` filters to the netCDF handler. The round trip is a

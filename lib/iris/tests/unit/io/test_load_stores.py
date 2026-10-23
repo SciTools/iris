@@ -141,6 +141,21 @@ class Test_saving:
         assert iris.io._zarr_save in iris.io._savers.cubelist_savers
         assert iris.io._dot_save not in iris.io._savers.cubelist_savers
 
+    def test_the_zarr_saver_is_recognised_when_passed_directly(self):
+        """A caller reaches the same save through the wrapper or the saver.
+
+        `iris.save(cubes, "out.zarr")` dispatches to `iris.io._zarr_save`,
+        while `saver=iris.fileformats.zarr.save` hands over the saver
+        itself. Both must be recognised, or one of them silently loops over
+        the cubes and every cube after the first meets a store that
+        `mode="w-"` refuses.
+        """
+        from iris.fileformats.zarr import save as zarr_save
+        import iris.io
+
+        iris.io._check_init_savers()
+        assert zarr_save in iris.io._savers.cubelist_savers
+
     def test_find_saver_tolerates_a_trailing_separator(self):
         from iris.io import find_saver
 

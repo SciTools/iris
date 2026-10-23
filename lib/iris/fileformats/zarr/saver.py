@@ -37,6 +37,7 @@ from iris._lazy_data import is_lazy_data, is_lazy_masked_data
 from iris.cube import CubeList
 from iris.fileformats.cf import saver as cf_saver
 from iris.fileformats.cf.saver import CFSaver
+import iris.io
 
 from . import _encode
 from ._dataset import ZarrDataset, check_encoding_keywords, existing_name_message
@@ -533,3 +534,12 @@ def save(
             saver.update_global_attributes(Conventions=conventions)
 
     return None if compute else saver.delayed_completion()
+
+
+# `iris.save` decides whether a saver takes a whole CubeList by identity, and
+# registers the savers it knows about in `iris.io._check_init_savers`, which
+# must not import `zarr`. The extension route reaches `iris.io._zarr_save`,
+# registered there; a caller passing `iris.fileformats.zarr.save` directly
+# hands over this function instead, so it registers itself here - by which
+# point zarr is imported anyway, this module having needed it.
+iris.io._savers.cubelist_savers.add(save)
