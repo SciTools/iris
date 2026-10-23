@@ -9,6 +9,12 @@ CF grid-mapping parameters. Changing where they land would change what is in a
 netCDF file, which Q8 of the design document rules out of this programme, so
 netCDF keeps writing onto that object and every other store writes into the
 ``attributes`` mapping.
+
+The base writer is exercised through the Zarr saver, the only other store
+there is, so that one test skips where Zarr is not installed. The skip is per
+test rather than per module: §6 of the design says an Iris without Zarr
+acquires no new test failures, and it would be no better if it quietly
+stopped running the netCDF half of this module instead.
 """
 
 import types
@@ -58,6 +64,7 @@ def fake_cf_var():
 
 class TestTheBaseWriter:
     def test_it_writes_into_the_attributes_mapping(self, tmp_path):
+        pytest.importorskip("zarr", minversion="3.0.8")
         from iris.fileformats.zarr.saver import Saver
 
         cf_var = fake_cf_var()
