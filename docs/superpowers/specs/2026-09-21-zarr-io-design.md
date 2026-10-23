@@ -2219,7 +2219,7 @@ nothing else, and can land beside any of the others.
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | In review | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
-| 6 | Zarr saving | Drafted | `zarr-io-pr-6` |
+| 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
 | 7 | Real-world test data and benchmarks | Not started | — |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
@@ -3039,3 +3039,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-20 | #7338 merged, and PR 4 merged `brownfield` back in. The three predicted collisions resolved as PR 5's plan said they would: one copy of `format` kept on each class, PR 4's `encoding` kept beside it, and `supports_dtype` implemented on `ZarrDataset` (§4.2). |
 | 2026-10-22 | UGRID meshes load from Zarr, closing a gap @pp-mo found reviewing #7336. §4.7 already said `load_meshes` would accept a store; it reached one and then rejected it, because the handler test named only `nc_loader.load_cubes`. Worse, `iris.load` on a UGRID store returned a cube that had silently dropped its mesh coordinates: `CFReader` classifies them as UGRID coords, and nothing then built the mesh. The fix is wiring, not machinery - `_meshes_from_cf` already built a correct `MeshXY` from a `ZarrDataset`. The inline mesh block in `netcdf/loader.py` became `_prepare_mesh_coords` and `_attach_mesh_coords`, shared by both loaders (§5). |
 | 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |
+| 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
