@@ -2,19 +2,21 @@
 
 > **This is a living document.** §12 is the single progress record for the
 > programme — pull request states, open questions and the decision log. Update
-> §12 as work lands; do not track status anywhere else.
+> §12 as work lands; do not track status anywhere else. The table below is a
+> summary of §12.1 and nothing more, so it moves when §12.1 moves: a reader
+> who stops at the header must not be told something §12 contradicts.
 
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1, 2, 2.5, 3 and 5 merged into `brownfield`; PR 4 in review ([#7336](https://github.com/SciTools/iris/pull/7336)); merge-back not started — see §12.1 |
-| **Next action** | PR 4's review, then PR 6 — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); merge-back not started — see §12.1 |
+| **Next action** | PR 6's review, then PRs 7 and 8 — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-20 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-23 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -367,6 +369,25 @@ this store hold this dtype?", so that is what the interface offers.
 `NetCDFDataset` answers it from `file_format`; `ZarrDataset` answers `True`
 for every dtype Zarr has a data type for. The error message that follows
 names `format`, so the user still reads `NETCDF3_CLASSIC`.
+
+**An answer binds the implementation that gave it, so it is stated as what
+the store has.** `ZarrDataset` answers from a table of kinds and item sizes,
+not from a list of the dtypes to exclude: the exclusions are open-ended —
+object arrays, an object inside a structured dtype, a zero-length void, the
+platform's extended precisions, whatever NumPy spells next — and one missed
+is a `True` that `create_variable` then refuses. The table is also the
+intersection across the zarr-python versions Iris accepts, not what the
+newest holds, because 3.1 replaced a fixed enum of fifteen data types with an
+extensible registry and 3.0.8 therefore has no data type for a structured
+dtype or a `datetime64` that 3.4 stores **[verified]**. That makes a few
+answers conservative, which is the safe direction: `create_variable` asks
+this before it creates anything, so a `False` is a refusal in Iris's words,
+while a `True` the store goes back on is the capability question with two
+answers that this whole rule exists to prevent. Byte order is deliberately
+not part of the answer, even though 3.0.8's table is little-endian only — a
+PP or GRIB load yields big-endian arrays, and a `False` would send a
+big-endian `int64` into the saver's narrowing path on every version,
+including the ones that would have stored it.
 
 #### `format` and `storage_settings`
 
@@ -3063,6 +3084,16 @@ all in the write path's boundaries rather than its middle:
   ones `create_variable` then refused. It answers for what Zarr has a data
   type for, as §4.2 always said it did, and `create_variable` asks it rather
   than letting zarr-python raise — so the two cannot disagree again.
+- That fix was first written as a list of the dtypes to exclude, and the
+  reviewer found two more it had missed: a structured dtype with an object
+  field, and a zero-length void. Rewritten as a table of what Zarr *has*.
+  Chasing exclusions was the wrong shape of answer, and the version floor
+  proves it rather than merely suggesting it: zarr-python 3.1 replaced a
+  fixed enum of fifteen data types with an extensible registry, so any list
+  of exclusions written against 3.4 answers `True` on 3.0.8 for a structured
+  dtype and a `datetime64` that version has no data type for **[verified]**.
+  §4.2 now says that, and says why the answer is conservative where the
+  versions differ and why byte order stays out of it.
 - The write half of the shared `CFDataset` contract had no Zarr subclass,
   which §6 requires and which the module's own docstring said would arrive
   with the saver. Added, passing unchanged.
@@ -3131,3 +3162,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
 | 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
+| 2026-10-23 | Second round of the same review. `supports_dtype` restated in §4.2 as a table of what Zarr has rather than a list of what it lacks, after the first fix was found still answering `True` for two dtypes `create_variable` refuses — and after the zarr-python 3.0.8 data-type enum turned out to be much smaller than 3.4's registry, which makes any exclusion list wrong on the version floor Iris declares. The header table had gone stale against §12.1 for a second time; it now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
