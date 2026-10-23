@@ -1733,8 +1733,8 @@ Also carries three changes to generic code that only Zarr can exercise:
   its three overrides match on `(name, size)` pairs with an anonymous
   dimension matching nothing (§4.4). netCDF behaviour is unchanged by
   construction, and the tests say so on both backends.
-- `encoding` on `CFDataset` and `CFDatasetVariable` (§4.2), reporting what the
-  opened store actually holds.
+- `storage_settings` on `CFDataset` and `CFDatasetVariable` (§4.2), reporting
+  what the opened store actually holds.
 - `format` on `CFDatasetVariable` (§4.2), naming the concrete Zarr version so
   the version-aware masking split (§4.4) can tell `ZARR_V2` from `ZARR_V3`.
   `CFDataset.format` arrived with PR 5, which merged first; this pull request
@@ -1891,15 +1891,25 @@ The `CFDataset` contract gets one shared test body run against both
 implementations, so a netCDF/Zarr divergence fails loudly. Stores are built
 in-memory or in `tmp_path`.
 
-That shared body is also where `format`, `encoding` and `supports_dtype` are
-pinned, since the point of each is that it works the same way whatever is
-underneath: `format` names the concrete format; `encoding` reports the
-settings an opened store actually holds, and round-trips what
-`create_variable` was given; and `supports_dtype` answers `False` for `int64`
-on `NETCDF3_CLASSIC` and `True` on `NETCDF4` and on Zarr. A separate check
-greps the `cf` package for `isinstance` against an implementation class and
-asserts there are none — the rule in §4.2 is only worth writing down if
-something notices when it is broken.
+That shared body is also where `format`, `storage_settings` and
+`supports_dtype` are pinned, since the point of each is that it works the
+same way whatever is underneath: `format` names the concrete format;
+`storage_settings` reports the settings an opened store actually holds, and
+round-trips what `create_variable` was given; and `supports_dtype` answers
+`False` for `int64` on `NETCDF3_CLASSIC` and `True` on `NETCDF4` and on Zarr.
+A separate check greps the `cf` package for `isinstance` against an
+implementation class and asserts there are none — the rule in §4.2 is only
+worth writing down if something notices when it is broken.
+
+**A capability answer binds the implementation that gave it.** A dtype
+`supports_dtype` answers `True` for must then survive `create_variable`, and
+one it answers `False` for must be refused in Iris's own words rather than in
+the storage library's. `ZarrDataset` is where that is swept, over every dtype
+kind NumPy spells: Zarr's data types cover nearly all of them, and the few
+they do not — object arrays, the extended-precision floats — are exactly what
+a bare `return True` had been lying about. A question the store goes back on
+at creation time is a question with two answers, and §4.2's rule leaves the
+generic saver nowhere else to ask it.
 
 **Integration.** `lib/iris/tests/integration/zarr/` covers round trips through
 `stock.realistic_4d_w_everything()`, following the shape of the existing
@@ -1907,17 +1917,26 @@ something notices when it is broken.
 
 **Chunking and decoding** are unit-testable without a store, which is the main
 practical dividend of dropping the proxy (§4.4). Each CF decode rule is a pure
-function of `(block, parameters)` and is tested on plain ndarrays. The
-alignment guard is tested on the `chunking` values alone:
+function of `(block, parameters)` and is tested on plain ndarrays. The sizing
+is tested on the `chunking` values alone:
 
 - a store chunk smaller than the dask target expands to a whole multiple;
-- a store chunk larger than the dask target is **not** subdivided, and warns;
-- an explicit `CHUNK_CONTROL` setting that subdivides is honoured, and warns;
-- the resulting dask chunks tile the store chunk grid exactly, in every case;
+- a store chunk larger than the dask target **is** subdivided, because Iris
+  sizes with `_optimum_chunksize` and does not then correct for the store's
+  own layout (§4.4, 2026-10-20) — and the load warns, naming the variable and
+  `CHUNK_CONTROL`;
+- an explicit `CHUNK_CONTROL` setting is honoured whether it subdivides or
+  not, and does **not** warn: a caller who has pinned a dimension has already
+  taken that trade, and `AS_DASK` hands the whole decision to Dask;
 - a **sharded** array chunks on `Array.chunks`, not `Array.shards`, and a
   partial read of one inner chunk does not fetch the whole shard — asserted on
   bytes fetched through an instrumented store, with the decode layer present,
   since that layer is what defeats slice pushdown (§4.4).
+
+There is no read-side alignment requirement to test: the guard that would
+have made the dask chunking tile the store grid in every case was removed on
+review of #7336 (§4.4), and the warning is what replaced it. Write-side
+alignment is a different invariant, still binding, and tested below.
 
 **Fill values and masking** (§4.4) get the cases that the earlier precedence
 got wrong, each on a store built in `tmp_path`:
@@ -1951,10 +1970,10 @@ because there is no append.
 
 **Encoding keywords** (§4.5) get one test each way: the Zarr-native names
 reach the array (`compressors`, `chunks`, `shards` are readable back off
-`Array.metadata`, and through `CFDatasetVariable.encoding`), and a netCDF name
-such as `zlib=True` raises `TypeError` whose message names the Zarr
-replacement. The second is the one that stops the translation layer growing
-back by accident.
+`Array.metadata`, and through `CFDatasetVariable.storage_settings`), and a
+netCDF name such as `zlib=True` raises `TypeError` whose message names the
+Zarr replacement. The second is the one that stops the translation layer
+growing back by accident.
 
 **Cross-reader conformance** (§4.5) is bidirectional and is the check that
 would have caught the `_FillValue` encoding error: xarray opens every store
@@ -2020,8 +2039,13 @@ reader and the NCZarr writer agree.
 store only. No test touches the network. The URL path is exercised by checking
 that the right store is constructed, not by fetching.
 
-**Skipping.** A single `pytest.importorskip("zarr")` fixture in the Zarr test
-package. Iris without zarr installed must show no new failures.
+**Skipping.** A `pytest.importorskip("zarr", minversion="3.0.8")` in each Zarr
+test package's `__init__.py`, which covers everything written under it. A test
+written *outside* those packages that reaches the Zarr backend carries its own
+`importorskip` in the test body, rather than at the top of its module: the
+module it is in also holds netCDF tests, and skipping those where Zarr is
+missing would trade a new failure for a silent gap. Iris without zarr
+installed must show no new failures and no quietly skipped netCDF test.
 
 ---
 
@@ -2217,7 +2241,7 @@ nothing else, and can land beside any of the others.
 | 2 | `CFDataset`, and the CF variable classes rewritten against it | Merged | [#7303](https://github.com/SciTools/iris/pull/7303) |
 | 2.5 | Deprecate `CFVariable.__getattr__` | Merged | [#7333](https://github.com/SciTools/iris/pull/7333) |
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
-| 4 | Zarr loading | In review | [#7336](https://github.com/SciTools/iris/pull/7336) |
+| 4 | Zarr loading | Merged | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
 | 7 | Real-world test data and benchmarks | Not started | — |
@@ -2267,12 +2291,10 @@ closing keywords live (§5).
 |---|---|---|---|---|
 | Q1 | How should the CF attribute model map onto JSON, on write and on read? | JSON-native both ways (§4.4, §4.5) | #7288, §10 | Nothing. Changing it touches only the attribute conversion in `zarr/_dataset.py` |
 | Q9 | Should a user be able to tell the loader that two same-named, same-length dimensions in different Zarr arrays are *not* the same dimension? The version 3 specification permits it, since a name guarantees nothing across arrays | No control. Treating that pair as one dimension is what xarray, NCZarr and netCDF all do, so a store meaning otherwise is relying on something no reader implements. Add one if a real store turns up that needs it | §4.4 | Nothing |
-| Q4 | The netCDF read path has the same sub-chunk re-read trap as Zarr, because `NetCDFDataProxy` reopens the `Dataset` on every `__getitem__` and so discards HDF5's chunk cache. Should it get the same alignment guard? | Out of scope here — the relocation pull requests must not change behaviour. Raise it separately once §4.4's Zarr guard has proven itself | §4.4 | Nothing |
 | Q5 | `iris.save(..., compute=False)` returns a tuple, not the documented `Delayed`, so `result.compute()` raises `AttributeError` **[verified]** | Caused by #6451 adapting to dask/dask#11844; the code is right and the docstrings were left behind. Not fixed here — PR 5 is behaviour-preserving. `zarr/saver.py` returns a real `Delayed` and tests it | [#7291](https://github.com/SciTools/iris/issues/7291) | Nothing. `zarr/saver.py` returns a real `Delayed` and tests `.compute()`; the netCDF path is unchanged |
 | Q6 | The `as_lazy_data` cache is process-wide and keyed on metadata, so it cannot detect a store whose chunk contents changed under identical metadata. Should it be scoped to a load session instead? | Metadata identity closes the cases that were reproduced (§4.4) and matches the netCDF key's existing strength, so it ships. Session scoping is the durable fix and would cover both formats | §4.4 | Nothing |
 | Q7 | Iris writes a floating `_FillValue` as base64 to stay readable by xarray, deviating from CF §2.5.1. Should the deviation be raised with the CF-Zarr conventions group rather than carried privately? | Carry it now, since the alternative is unreadable output; take it upstream to zarr-conventions/CF so the convention settles rather than each reader guessing | §4.4, §4.5 | Nothing |
 | Q8 | `_add_grid_mapping_to_dataset` sets its CF grid-mapping parameters by Python attribute assignment, bypassing the ASCII-to-bytes coercion every other saved attribute goes through — so `crs_wkt` is written as `NC_STRING` while `grid_mapping_name` is `NC_CHAR`. Should they be regularised? | Not in this programme. PR 2 kept them on a named netCDF4 handle (`grid_variable`) rather than change what lands in the file. Regularising is a one-line-per-parameter change with a real CDL diff, and belongs in its own pull request | §4.5 | Nothing. PR 6 added the `_grid_mapping_writer` hook, which hands back a function taking a parameter name and a value: netCDF's writes onto its own object and keeps its own encoding, every other store's writes into `.attributes`. Review asked for the function rather than an assignment proxy, so that the store-dependent step is visible at each call site; that also leaves the call sites in the shape regularisation needs, reducing it to deleting netCDF's override |
-| Q10 | Saving int64 data to `NETCDF3_64BIT` fails inside the C library, because netCDF4 reports that format as `NETCDF3_64BIT_OFFSET` and the saver's narrowing list does not have that string **[verified]** | Preserved, not fixed: PR 5 is a relocation and may not change behaviour. `NetCDFDataset.supports_dtype` answers from the same three strings the saver tested, with a test pinning the failure so it is not mistaken for a regression | [#7337](https://github.com/SciTools/iris/issues/7337) | Nothing |
 
 Close a question by moving it to §12.4 with the date and the answer. Do not
 delete it.
@@ -2992,6 +3014,72 @@ matters were not all swept. All reproduced; none disputed.
   format of the file that was opened, which is the honest answer and the same
   rule every other format follows.
 
+**2026-10-23 — Q4 closed, and §12.3 reconciled, at the Codex review of #7346**
+
+- Q4 asked whether the netCDF read path should get the same read-side
+  alignment guard as Zarr. There is no such guard on either path: it was
+  removed on 2026-10-20, leaving both backends sizing with
+  `_optimum_chunksize` and both warning when a stored chunk is larger than
+  the dask target. The asymmetry the question existed to resolve cannot
+  arise, so there is nothing to raise separately, and `CHUNK_CONTROL` is the
+  answer on either format for a caller who wants the other trade.
+- Q10's row was still standing in §12.3 saying the `NETCDF3_64BIT` defect was
+  preserved rather than fixed, a week after it was closed into this log on
+  2026-10-16. Removed. A question is closed by moving it, and half a move
+  leaves the table disagreeing with the log.
+- The `CFDataset` member renamed `storage_settings` on 2026-10-20 was renamed
+  in §4.2 only; §5 and §6 still called it `encoding`, which is not a member
+  of anything. Both corrected. §6's read-alignment bullets still described
+  the guard removed the same day, and its skipping rule still described one
+  `importorskip` per test package when a test outside those packages now
+  needs its own.
+
+**2026-10-23 — Actioned the Codex review of #7346**
+
+Five findings in this pull request's own work, all reproduced and fixed, and
+all in the write path's boundaries rather than its middle:
+
+- A save into a subgroup with `consolidate_metadata=False` left the root's
+  consolidated document in place, so a default reader saw no subgroup and the
+  data was in the store and invisible. The user guide already promised the
+  document was removed; nothing removed it. `ZarrDataset` gains
+  `drop_consolidated_metadata`, the other half of `finalise`, and the saver's
+  completion calls one or the other rather than one or nothing. The test that
+  passed throughout was a root-level save, where writing an array happens to
+  rewrite the root metadata without the document — a promise kept by side
+  effect is kept only where the side effect reaches.
+- `ZarrDataset.create_dimension` checked a new declaration against the
+  declarations made in that session and not against the arrays already in the
+  group, so `mode="a"` accepted a size that contradicted an array §4.5 says
+  is never resized. It now checks `dimensions`, which is both.
+- `create_variable` cast the storage fill to the array's dtype and wrote the
+  caller's original value as `_FillValue`, so an `int16` array asked for
+  `fill_value=1.5` stored `1` and declared `1.5`. Iris read it back correctly
+  by narrowing the sentinel, which is what hid it; xarray compares against
+  the attribute and would have masked nothing. A sentinel the dtype cannot
+  hold is now refused. The floating case is deliberately still allowed to
+  lose precision: every `float32` sentinel written as a Python float does.
+- `ZarrDataset.supports_dtype` answered `True` for every dtype, including
+  ones `create_variable` then refused. It answers for what Zarr has a data
+  type for, as §4.2 always said it did, and `create_variable` asks it rather
+  than letting zarr-python raise — so the two cannot disagree again.
+- The write half of the shared `CFDataset` contract had no Zarr subclass,
+  which §6 requires and which the module's own docstring said would arrive
+  with the saver. Added, passing unchanged.
+
+And one finding each side of this pull request:
+
+- The new `cf/saver/test_grid_mapping_writer.py` imported the Zarr saver
+  unguarded, so an Iris without zarr installed gained a test error — the one
+  thing §6 says adding Zarr must not do. The guard is per test rather than
+  per module, because the module's other tests are netCDF's.
+- `zarr.loader._check_has_data_variables` names only the immediate subgroups
+  of an empty root, where §4.6 promises the groups that contain data: for
+  data under `measurements/reflectance/r10m` it suggests `measurements`,
+  which has no data arrays either. Inherited from #7336, not introduced here,
+  and deferred by @trexfeathers to a whole-branch review of `brownfield` at
+  the end of the programme rather than fixed in passing.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
@@ -3042,3 +3130,4 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-22 | UGRID meshes load from Zarr, closing a gap @pp-mo found reviewing #7336. §4.7 already said `load_meshes` would accept a store; it reached one and then rejected it, because the handler test named only `nc_loader.load_cubes`. Worse, `iris.load` on a UGRID store returned a cube that had silently dropped its mesh coordinates: `CFReader` classifies them as UGRID coords, and nothing then built the mesh. The fix is wiring, not machinery - `_meshes_from_cf` already built a correct `MeshXY` from a `ZarrDataset`. The inline mesh block in `netcdf/loader.py` became `_prepare_mesh_coords` and `_attach_mesh_coords`, shared by both loaders (§5). |
 | 2026-10-22 | Unifying the two cube-building loops deferred to an issue raised at merge-back rather than acted on now (§5), per @trexfeathers: the refactor is internal and safe to do late, and raising the issue while the programme's pull requests are interdependent and in flight would invite someone to start on it. |
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
+| 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
