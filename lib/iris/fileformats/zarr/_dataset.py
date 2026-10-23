@@ -652,6 +652,28 @@ _WRITABLE_ZARR_FORMATS = (3,)
 #: about which member is the default.
 _DEFAULT_ZARR_FORMAT = 3
 
+#: The dtype kinds whose fill value must survive conversion unchanged.
+#: Integers and booleans have no rounding to spend: `numpy.int16(1.5)` is
+#: `1`, which would leave the array's own fill saying one number and its
+#: `_FillValue` attribute saying another. The floating kinds are left out
+#: because their conversion loses precision by definition - `float32` cannot
+#: hold the `float64` the caller wrote either way - and a reader narrows the
+#: declared sentinel to the stored dtype before comparing, which is what
+#: makes that case safe.
+_EXACT_FILL_KINDS = "biu"
+
+#: The one dtype kind Zarr has no data type for. An object array is an array
+#: of Python references, which no store can hold; everything else NumPy
+#: spells fixed-width - bool, the integers, the floats, complex,
+#: fixed-length text and bytes, datetimes, structured types - Zarr can
+#: store, in both versions.
+_UNSTORABLE_DTYPE_KIND = "O"
+
+#: The largest a floating or complex dtype can be and still have a Zarr data
+#: type: `float64` and `complex128`, in bytes. NumPy's extended precisions
+#: above these are platform-dependent, and Zarr has no data type for them.
+_MAX_ITEMSIZE_BY_KIND = {"f": 8, "c": 16}
+
 #: The storage keywords `create_variable` passes to zarr-python, which are
 #: zarr-python's own. Iris does not invent names for them and does not
 #: translate netCDF's: see `_KEYWORD_ADVICE` below, and §4.5 of the design.
@@ -748,6 +770,57 @@ def existing_name_message(name: str, location: str) -> str:
         "already holds something of that name, and Iris neither "
         "overwrites nor merges into one."
     )
+
+
+def _storage_fill_value(fill_value, dtype, name: str):
+    """Return `fill_value` as a `dtype` scalar, or raise if it cannot be one.
+
+    An array's own fill value and its ``_FillValue`` attribute must be the
+    same number. The attribute is what declares a value missing, the fill is
+    what unwritten storage reads back as, and a reader that trusts one and
+    meets the other masks the wrong points or none. Converting quietly is
+    what would make them differ: ``numpy.int16(1.5)`` is ``1``, while the
+    attribute would still say ``1.5``, so a reader comparing against the
+    attribute - xarray does - finds nothing to mask.
+
+    Parameters
+    ----------
+    fill_value :
+        The sentinel the caller gave.
+    dtype : numpy.dtype or type
+        The array's dtype. ``str`` itself is a variable-length string array,
+        whose sentinel is text and has nothing to round.
+    name : str
+        The array's name, for the message.
+
+    Returns
+    -------
+    The sentinel as a scalar of `dtype`.
+
+    Raises
+    ------
+    ValueError
+        If `dtype` cannot hold `fill_value`.
+
+    """
+    if dtype is str:
+        return np.dtype(str).type(fill_value)
+
+    dtype = np.dtype(dtype)
+    refusal = (
+        f"Cannot use fill_value={fill_value!r} for the Zarr array {name!r}: "
+        f"{dtype} cannot hold it, so the array's own fill value and its "
+        "'_FillValue' attribute would be two different numbers. Pass a "
+        "sentinel of the array's own type."
+    )
+    try:
+        with np.errstate(over="raise"):
+            stored = dtype.type(fill_value)
+    except (OverflowError, ValueError, TypeError, FloatingPointError) as exception:
+        raise ValueError(refusal) from exception
+    if dtype.kind in _EXACT_FILL_KINDS and stored != fill_value:
+        raise ValueError(refusal)
+    return stored
 
 
 class ZarrDataset(CFDataset):
@@ -1061,8 +1134,9 @@ class ZarrDataset(CFDataset):
         Raises
         ------
         ValueError
-            If the dataset is read-only, a dimension is undeclared, or `name`
-            already exists in this group.
+            If the dataset is read-only, a dimension is undeclared, `name`
+            already exists in this group, Zarr has no data type for `dtype`,
+            or `dtype` cannot hold `fill_value`.
         TypeError
             For a storage keyword this store does not have.
 
@@ -1074,6 +1148,17 @@ class ZarrDataset(CFDataset):
         dtype = dtype if dtype is str else np.dtype(dtype)
         dimensions = tuple(dimensions)
         shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
+
+        if dtype is not str and not self.supports_dtype(dtype):
+            # Asked here so that the refusal and `supports_dtype` cannot
+            # disagree: a caller told the store holds a dtype must then be
+            # able to create it, and the one that answers False must say so
+            # in Iris's words rather than zarr-python's.
+            message = (
+                f"Cannot create the Zarr array {name!r} with dtype {dtype}: "
+                "Zarr has no data type for it."
+            )
+            raise ValueError(message)
 
         if name in self._group:
             raise ValueError(existing_name_message(name, self._location))
@@ -1091,7 +1176,7 @@ class ZarrDataset(CFDataset):
                 None if dtype is str else _encode.default_fill_value(np.dtype(dtype))
             )
         else:
-            stored_fill = np.dtype(dtype).type(fill_value)
+            stored_fill = _storage_fill_value(fill_value, dtype, name)
 
         create_kwargs = dict(encoding)
         if stored_fill is not None:
@@ -1127,12 +1212,21 @@ class ZarrDataset(CFDataset):
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.
 
-        Always True. Zarr's data types cover the whole of NumPy's fixed-width
-        numeric range, in both versions, so there is no dtype a caller could
-        reach here with that the store would have to narrow. Contrast
+        True for every dtype Zarr has a data type for, which is the whole of
+        NumPy's fixed-width numeric range, in both versions: there is no
+        integer or float a saver must narrow to get it into a Zarr store.
+        Contrast
         :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
         which answers False for the integer types the netCDF 3 formats have no
         type for.
+
+        False for an object array, which holds Python references rather than
+        values, and for NumPy's extended-precision floats and complexes,
+        whose size is a property of the platform rather than of the data.
+        Neither is a dtype the Iris savers reach here with; both are refused
+        rather than answered True, because an affirmative answer this class
+        then declines in :meth:`create_variable` is a capability question
+        with two answers.
 
         Parameters
         ----------
@@ -1144,7 +1238,11 @@ class ZarrDataset(CFDataset):
         bool
 
         """
-        return True
+        dtype = np.dtype(dtype)
+        if dtype.kind == _UNSTORABLE_DTYPE_KIND:
+            return False
+        largest = _MAX_ITEMSIZE_BY_KIND.get(dtype.kind)
+        return largest is None or dtype.itemsize <= largest
 
     def sync(self) -> None:
         """Do nothing: a Zarr write is not buffered."""

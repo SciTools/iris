@@ -256,6 +256,117 @@ class TestCreateVariableFillValue:
         )
         assert variable.attributes["_FillValue"] == -9
 
+    def test_a_fill_the_dtype_cannot_hold_is_refused(self, writable):
+        # The array's fill would be numpy.int16(1.5), which is 1, while the
+        # attribute still said 1.5: xarray compares against the attribute
+        # and would mask nothing. Spec §4.5 wants one value in both places.
+        writable.create_dimension("x", 3)
+        with pytest.raises(ValueError, match="fill_value=1.5"):
+            writable.create_variable("data", np.dtype("i2"), ["x"], fill_value=1.5)
+
+    def test_the_refusal_names_the_array_and_the_dtype(self, writable):
+        writable.create_dimension("x", 3)
+        with pytest.raises(ValueError, match="fill_value") as excinfo:
+            writable.create_variable("data", np.dtype("i2"), ["x"], fill_value=1.5)
+        assert "'data'" in str(excinfo.value)
+        assert "int16" in str(excinfo.value)
+
+    def test_a_refused_fill_creates_nothing(self, writable):
+        writable.create_dimension("x", 3)
+        with pytest.raises(ValueError, match="fill_value"):
+            writable.create_variable("data", np.dtype("i2"), ["x"], fill_value=1.5)
+        assert list(writable.variables) == []
+
+    def test_a_fill_outside_the_dtypes_range_is_refused(self, writable):
+        writable.create_dimension("x", 3)
+        with pytest.raises(ValueError, match="int16 cannot hold it"):
+            writable.create_variable("data", np.dtype("i2"), ["x"], fill_value=70000)
+
+    def test_a_fill_that_overflows_a_float_is_refused(self, writable):
+        # The array's fill would be infinite while the attribute said 1e+300.
+        writable.create_dimension("x", 3)
+        with pytest.raises(ValueError, match="float32 cannot hold it"):
+            writable.create_variable("data", np.dtype("f4"), ["x"], fill_value=1e300)
+
+    def test_a_float_fill_may_still_lose_precision(self, writable):
+        # Not refused, and the one case that must not be: every float32
+        # sentinel a caller writes as a Python float is a float64 that
+        # float32 cannot hold exactly. A reader narrows the declared
+        # sentinel to the stored dtype before comparing, which is what makes
+        # this safe where the integer case is not.
+        writable.create_dimension("x", 3)
+        variable = writable.create_variable(
+            "data", np.dtype("f4"), ["x"], fill_value=0.1
+        )
+        assert variable.fill_value == np.float32(0.1)
+
+
+#: Dtypes `supports_dtype` is asked about, and the answer expected.
+#:
+#: The affirmative cases are the ones Iris itself saves, plus the corners of
+#: what Zarr's data types cover; the negative ones are everything NumPy
+#: spells that Zarr has no data type for. `float128` is skipped where the
+#: platform has no such thing.
+_DTYPE_ANSWERS = [
+    ("f8", True),
+    ("f4", True),
+    ("f2", True),
+    ("i8", True),
+    ("i4", True),
+    ("i2", True),
+    ("i1", True),
+    ("u8", True),
+    ("u1", True),
+    ("bool", True),
+    ("c16", True),
+    ("U5", True),
+    ("S5", True),
+    ("datetime64[s]", True),
+    ("timedelta64[s]", True),
+    ("O", False),
+    ("float128", False),
+]
+
+
+class TestSupportsDtype:
+    """`supports_dtype` answers for every dtype, and `create_variable` agrees.
+
+    Spec §4.2: the generic saver asks the store whether it holds a dtype
+    rather than asking what format it is, so an answer the store then goes
+    back on is a capability question with two answers.
+    """
+
+    @staticmethod
+    def _dtype(spelling):
+        try:
+            return np.dtype(spelling)
+        except TypeError:
+            pytest.skip(f"NumPy on this platform has no {spelling}")
+
+    @pytest.mark.parametrize(("spelling", "supported"), _DTYPE_ANSWERS)
+    def test_the_answer(self, writable, spelling, supported):
+        assert writable.supports_dtype(self._dtype(spelling)) is supported
+
+    @pytest.mark.parametrize(("spelling", "supported"), _DTYPE_ANSWERS)
+    def test_create_variable_agrees_with_the_answer(
+        self, writable, spelling, supported
+    ):
+        dtype = self._dtype(spelling)
+        writable.create_dimension("x", 2)
+        if supported:
+            variable = writable.create_variable("data", dtype, ["x"])
+            assert variable.dtype == dtype
+        else:
+            with pytest.raises(ValueError, match="no data type"):
+                writable.create_variable("data", dtype, ["x"])
+
+    def test_the_refusal_names_the_array_and_the_dtype(self, writable):
+        writable.create_dimension("x", 2)
+        with pytest.raises(ValueError, match="no data type") as excinfo:
+            writable.create_variable("data", np.dtype("O"), ["x"])
+        assert "'data'" in str(excinfo.value)
+        assert "object" in str(excinfo.value)
+
 
 class TestCreateVariableEncoding:
     def test_chunks_and_shards_reach_the_array(self, writable):
