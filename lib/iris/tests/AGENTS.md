@@ -99,8 +99,12 @@ does:
 | `nox -s doctest` | what CI runs: `make clean html`, then `make doctest` |
 | `cd docs/src && make doctest` | skips the gallery rebuild; faster, not identical to CI |
 
-Both take minutes, so run one once before finishing, and only if you touched
-a `>>>` example. Do not substitute `pytest --doctest-modules` or
+Both take minutes. Run one once before finishing, whether or not you edited a
+`>>>` — a doctest asserts real output, so a change anywhere in the library or
+the guide can break one, and nothing else in the suite would tell you. Only a
+change confined to `lib/iris/tests/` or to `changelog/` is exempt.
+
+Do not substitute `pytest --doctest-modules` or
 `python -m doctest`: 150 `testsetup::` / `testcode::` directives supply
 context only Sphinx applies, so plain doctest reports failures that are not
 real.
@@ -153,6 +157,9 @@ real.
 ## Pre-Finish Checklist
 
 - The changed tests pass locally.
+- **Doctests were run**, unless the change stayed inside `lib/iris/tests/` or
+  `changelog/`. The pytest suite does not cover them, so a `>>>` you never
+  looked at is the one that breaks. See [Doctests](#doctests) above.
 - No unrelated tests were modified.
 - Any required external data setup is documented in the change notes.
 - **Read the skip count, not just the failures.** Comparing failures before
