@@ -18,7 +18,7 @@ class LoadAndRealise:
     params = (
         [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
-        ["FF", "PP", "NetCDF"],
+        ["FF", "PP", "NetCDF", "Zarr"],
     )
     param_names = ["xyz", "compressed", "file_format"]
 
