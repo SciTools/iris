@@ -296,7 +296,7 @@ def pack(data, scale_factor, add_offset, dtype: np.dtype):
 
     def _round_and_narrow(block):
         """Round (if `dtype` is an integer type) and cast one block."""
-        if dtype.kind in "iu":
+        if dtype.kind in ("i", "u"):
             block = np.round(block)
         if np.ma.isMaskedArray(block):
             # Not `block.astype(dtype)`: a masked array carries its own

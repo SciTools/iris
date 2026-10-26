@@ -47,7 +47,7 @@ __all__ = ["Saver", "save"]
 #: The :attr:`numpy.dtype.kind` codes of a text array: ``T`` for the
 #: variable-length string type a Zarr store holds text in, ``U`` and ``S``
 #: for the fixed-width unicode and bytes a cube may arrive with.
-_TEXT_KINDS = frozenset("TUS")
+_TEXT_KINDS = frozenset(("T", "U", "S"))
 
 
 def _tiles_the_grid(chunks, grid) -> bool:
@@ -427,7 +427,7 @@ def _check_packing(packspecs) -> None:
                 message = "The argument to packing must contain the key 'dtype'."
                 raise ValueError(message)
             dtype = packspec["dtype"]
-        if np.dtype(dtype).kind not in "iu":
+        if np.dtype(dtype).kind not in ("i", "u"):
             message = "The packing datatype must be a numpy integer type."
             raise ValueError(message)
 
