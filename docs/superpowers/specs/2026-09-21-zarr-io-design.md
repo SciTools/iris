@@ -9,7 +9,7 @@
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch, awaiting it; merge-back not started — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
 | **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
@@ -2295,7 +2295,7 @@ nothing else, and can land beside any of the others.
 | 4 | Zarr loading | Merged | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
-| 7 | Real-world test data and benchmarks | Built, awaiting PR 6 | — |
+| 7 | Real-world test data and benchmarks | Built, awaiting PR 6. Previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101), targeting PR 6's branch so the diff can be read before PR 6 merges | — |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
