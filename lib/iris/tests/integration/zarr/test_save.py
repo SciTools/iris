@@ -322,10 +322,10 @@ class TestRefusals:
 class TestInputsTheDesignImplies:
     def test_a_big_endian_cube_round_trips(self, tmp_path):
         # A PP or GRIB load yields big-endian arrays, so this is an ordinary
-        # cube to save rather than a corner. zarr-python 3.0.8 has no data
-        # type for a big-endian dtype at all, so the store is written in the
-        # platform's own order and the values are the cube's - the same
-        # answer the netCDF saver has always given this data.
+        # cube to save rather than a corner. Zarr version 3 has no big-endian
+        # data type, so the store is written in the platform's own order and
+        # the values are the cube's - the same answer the netCDF saver has
+        # always given this data.
         from iris.cube import Cube
 
         cube = Cube(

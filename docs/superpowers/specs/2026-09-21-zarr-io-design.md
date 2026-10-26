@@ -370,34 +370,34 @@ this store hold this dtype?", so that is what the interface offers.
 for every dtype Zarr has a data type for. The error message that follows
 names `format`, so the user still reads `NETCDF3_CLASSIC`.
 
-**An answer binds the implementation that gave it, so it is stated as what
-the store has.** `ZarrDataset` answers from a table of kinds and item sizes,
-not from a list of the dtypes to exclude: the exclusions are open-ended —
-object arrays, an object inside a structured dtype, a zero-length void, the
-platform's extended precisions, whatever NumPy spells next — and one missed
-is a `True` that `create_variable` then refuses. The table is also the
-intersection across the zarr-python versions Iris accepts, not what the
-newest holds, because 3.1 replaced a fixed enum of fifteen data types with an
-extensible registry and 3.0.8 therefore has no data type for a structured
-dtype or a `datetime64` that 3.4 stores **[verified]**. That makes a few
-answers conservative, which is the safe direction: `create_variable` asks
-this before it creates anything, so a `False` is a refusal in Iris's words,
-while a `True` the store goes back on is the capability question with two
-answers that this whole rule exists to prevent.
+**The question is narrower than it looks, so `ZarrDataset` answers `True`
+and stops.** `_ensure_valid_dtype` is the only generic caller, and it asks
+only about `int64` and the unsigned integers — the types a netCDF 3 file has
+no room for. Zarr has a data type for every one of them, so nothing is ever
+narrowed for a Zarr store. A dtype Zarr genuinely cannot hold is refused by
+zarr-python inside `create_variable`, with a `ValueError` naming the dtype,
+and the group is left as it was **[verified]**.
 
-**Byte order is not part of the answer, because `create_variable` takes it
-out of the question.** A Zarr array is created in the platform's own byte
-order whatever order it was asked for, and NumPy converts on assignment, so
-the values stored are the caller's and only the layout is the store's. That
-is what lets `supports_dtype` answer `True` for `>i8` on every supported
-version: 3.0.8 has no data type for a big-endian dtype at all — `>i8` raises
-`KeyError` **[verified]** — while 3.4 stores one. Answering `False` instead
-was not an option worth having. A PP or GRIB load hands the saver big-endian
-arrays, so `False` would refuse ordinary Iris data outright for the floating
-dtypes, and quietly narrow it for `int64`, on versions that would have
-stored it. The netCDF saver already gives this data the same answer — a
-`>f4` cube is `float32` in the file it writes **[verified]** — so the Zarr
-path is matching it, not inventing a second rule.
+Answering the wider question here as well would mean Iris keeping a second
+table of what zarr-python can store. That was tried, and it was wrong in
+both directions: it refused `datetime64`, an ordinary structured dtype, a
+zero-length `U0` and an eight-byte void, all of which zarr-python stores
+**[verified]**, while no saver ever asked about any of them. A table like
+that also goes stale as zarr-python gains data types, and nothing checks it.
+
+**Byte order is taken out of the question by `create_variable`.** A Zarr
+array is created in the platform's own byte order whatever order it was
+asked for, and NumPy converts on assignment, so the values stored are the
+caller's and only the layout is the store's. Zarr version 3 has no
+big-endian data type: endianness lives in the `bytes` codec, which
+zarr-python leaves at `little`, so asking for `>f4` writes the same store as
+asking for `<f4` and only the returned `zarr.Array` object remembers the
+difference **[verified]**. Taking the caller's order literally would
+therefore leave `ZarrDatasetVariable.dtype` reporting an endianness the
+store does not have. The netCDF saver already gives this data the same
+answer — a `>f4` cube is `float32` in the file it writes **[verified]** — so
+the Zarr path is matching it, not inventing a second rule. A PP or GRIB load
+hands the saver big-endian arrays, so this is ordinary Iris data.
 
 #### `format` and `storage_settings`
 
@@ -1932,15 +1932,17 @@ A separate check greps the `cf` package for `isinstance` against an
 implementation class and asserts there are none — the rule in §4.2 is only
 worth writing down if something notices when it is broken.
 
-**A capability answer binds the implementation that gave it.** A dtype
-`supports_dtype` answers `True` for must then survive `create_variable`, and
-one it answers `False` for must be refused in Iris's own words rather than in
-the storage library's. `ZarrDataset` is where that is swept, over every dtype
-kind NumPy spells: Zarr's data types cover nearly all of them, and the few
-they do not — object arrays, the extended-precision floats — are exactly what
-a bare `return True` had been lying about. A question the store goes back on
-at creation time is a question with two answers, and §4.2's rule leaves the
-generic saver nowhere else to ask it.
+**A capability answer binds the implementation that gave it, over the
+dtypes a saver asks about.** Every dtype an Iris saver can reach
+`create_variable` with — each numeric width, fixed-length text, and the
+big-endian spellings a PP or GRIB load produces — is swept against
+`ZarrDataset`, asserting both that `supports_dtype` says `True` and that
+`create_variable` then creates it. The sweep does not extend to dtypes no
+saver produces: `supports_dtype` is the question asked before narrowing an
+integer (§4.2), not a general oracle, and a store that answers the wider
+question needs a table of the storage library's data types that nothing
+consults and nothing checks. What is pinned for those instead is that a
+dtype zarr-python refuses leaves the group as it was.
 
 **Integration.** `lib/iris/tests/integration/zarr/` covers round trips through
 `stock.realistic_4d_w_everything()`, following the shape of the existing
@@ -3091,31 +3093,15 @@ all in the write path's boundaries rather than its middle:
   hold is now refused. The floating case is deliberately still allowed to
   lose precision: every `float32` sentinel written as a Python float does.
 - `ZarrDataset.supports_dtype` answered `True` for every dtype, including
-  ones `create_variable` then refused. It answers for what Zarr has a data
-  type for, as §4.2 always said it did, and `create_variable` asks it rather
-  than letting zarr-python raise — so the two cannot disagree again.
-- The answer is a table of what Zarr *has*, not a list of the dtypes to
-  exclude. A list of exclusions missed two: a structured dtype with an
-  object field, and a zero-length void, both of which answered `True` and
-  then failed in `create_variable`. The version floor shows why the shape
-  was wrong rather than merely incomplete: zarr-python 3.1 replaced a
-  fixed enum of fifteen data types with an extensible registry, so any list
-  of exclusions written against 3.4 answers `True` on 3.0.8 for a structured
-  dtype and a `datetime64` that version has no data type for **[verified]**.
-  §4.2 now says that, and says why the answer is conservative where the
-  versions differ.
-- Byte order is not in that table, and neither obvious answer to it was
-  tenable. Answering `True` for `>i8` breaks the contract on 3.0.8, which
-  has no data type for a big-endian dtype at all **[verified]**. Answering
-  `False` would be worse: `supports_dtype` is consulted for `int64` and
-  unsigned, so big-endian `int64` would be narrowed, while `create_variable`
-  asks it before creating and so would refuse big-endian floats outright. A
-  PP or GRIB load produces both. `create_variable` instead creates in the
-  platform's own byte order, which removes the question: the values are the
-  caller's, the layout is the store's, and the netCDF saver has always
-  answered this data the same way **[verified]**. Checked by running every
-  dtype the table answers `True` for against zarr-python 3.0.8 and 3.4.1 in
-  turn: every one creates **[verified]**.
+  ones `create_variable` then refused. It was changed to answer from a table
+  of the dtypes every accepted zarr-python version holds, with
+  `create_variable` asking it rather than letting zarr-python raise. **That
+  change was reversed** when the version floor moved; see the end of this
+  log for why, and §4.2 for what the method does now.
+- Byte order was taken out of that question, and stays out. `create_variable`
+  creates in the platform's own byte order whatever order it was asked for:
+  the values are the caller's, the layout is the store's, and the netCDF
+  saver has always answered this data the same way **[verified]**.
 - The write half of the shared `CFDataset` contract had no Zarr subclass,
   which §6 requires and which the module's own docstring said would arrive
   with the saver. Added, passing unchanged.
@@ -3159,6 +3145,30 @@ the library. `CountingStore` subclasses `zarr.storage.WrapperStore`, which
 only grew `_with_store` and `with_read_only` in 3.1.6; the helper now
 supplies its own, so the floor is 3.1.0 rather than 3.1.6. The behaviour
 under test holds on 3.1.0 either way **[verified]**.
+
+**The `supports_dtype` table goes with it.** The table above was written to
+be the intersection across 3.0.8 and 3.4, and @stephenworsley objected in
+review that it reads as a change to backend behaviour nothing exercises.
+That is what it was. `_ensure_valid_dtype` is the only generic caller and it
+asks only about `int64` and the unsigned integers, every one of which Zarr
+holds on every version, so no Zarr save ever consults the rest of the table.
+Only the tests supplied `datetime64`, an object array or a `float128`.
+
+Removing it also removed four wrong answers. The table refused
+`datetime64`, an ordinary structured dtype, a zero-length `U0` and an
+eight-byte void; zarr-python stores all four, and `U0` it stores as a
+variable-width string **[verified]**. What is left is `return True`, with
+zarr-python refusing a dtype it has no data type for inside
+`create_variable` and the group left as it was.
+
+The byte-order coercion stays, for a reason that is not the one it was
+written for. 3.0.8 having no big-endian data type was the original
+justification; the lasting one is that Zarr version 3 has no big-endian data
+type either. Endianness lives in the `bytes` codec, zarr-python leaves it at
+`little`, and asking for `>f4` writes the same store as asking for `<f4`
+**[verified]**. Passing the caller's order through would change nothing on
+disk and leave `ZarrDatasetVariable.dtype` reporting an endianness the store
+does not have.
 
 ### 12.5 Artefacts
 

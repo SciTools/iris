@@ -9,7 +9,7 @@ import pytest
 
 zarr = pytest.importorskip("zarr")
 
-from iris.fileformats.zarr._dataset import _STORABLE_TEXT_KINDS, ZarrDataset
+from iris.fileformats.zarr._dataset import ZarrDataset
 
 
 @pytest.fixture
@@ -301,119 +301,102 @@ class TestCreateVariableFillValue:
         assert variable.fill_value == np.float32(0.1)
 
 
-#: Dtypes `supports_dtype` is asked about, and the answer expected.
-#:
-#: The affirmative cases are everything an Iris saver can reach the store
-#: with, at every width. The negative ones are the shapes a list of
-#: exclusions keeps missing: an object array, an object hiding inside a
-#: structured dtype, a zero-length void, a zero-length string, and the
-#: extended precisions. `datetime64` and an ordinary structured dtype are
-#: False although zarr-python 3.4 stores them, because 3.0.8 has no data
-#: type for either and that is the version floor Iris declares.
-#:
-#: `float128` is skipped where the platform has no such thing.
-_DTYPE_ANSWERS = [
-    ("f8", True),
-    ("f4", True),
-    ("f2", True),
-    ("i8", True),
-    ("i4", True),
-    ("i2", True),
-    ("i1", True),
-    ("u8", True),
-    ("u4", True),
-    ("u2", True),
-    ("u1", True),
-    ("bool", True),
-    ("c8", True),
-    ("c16", True),
-    ("U5", True),
-    ("S5", True),
-    (">f8", True),
-    (">i8", True),
-    ("O", False),
-    ("float128", False),
-    ("V0", False),
-    ("V8", False),
-    ("U0", False),
-    ("S0", False),
-    ("datetime64[s]", False),
-    ("timedelta64[s]", False),
-    ([("x", "O")], False),
-    ([("a", "i4"), ("b", "f8")], False),
+#: Every dtype an Iris saver can reach `create_variable` with, at every
+#: width, including the big-endian spellings a PP or GRIB load produces.
+_SAVER_DTYPES = [
+    "f8",
+    "f4",
+    "f2",
+    "i8",
+    "i4",
+    "i2",
+    "i1",
+    "u8",
+    "u4",
+    "u2",
+    "u1",
+    "bool",
+    "c8",
+    "c16",
+    "U5",
+    "S5",
+    ">f8",
+    ">i8",
 ]
 
 
 class TestSupportsDtype:
-    """`supports_dtype` answers for every dtype, and `create_variable` agrees.
+    """`supports_dtype` says yes, and `create_variable` then creates.
 
-    Spec §4.2: the generic saver asks the store what it holds, so an answer
-    the store goes back on is a capability question with two answers.
-
-    The binding direction is that a True creates. A False may be
-    conservative, since `create_variable` makes that refusal itself.
+    Spec §4.2: the generic saver asks the store what it holds rather than
+    testing the format. For Zarr the answer is always True, so what needs
+    pinning is the other half - that each of those dtypes really does create.
     """
 
-    @staticmethod
-    def _dtype(spelling):
-        try:
-            return np.dtype(spelling)
-        except TypeError:
-            pytest.skip(f"NumPy on this platform has no {spelling}")
+    def test_it_is_true_for_everything_a_saver_asks_about(self, writable):
+        # `_CFSaver._ensure_valid_dtype` only asks about int64 and the
+        # unsigned integers, but the answer is not qualified, so neither is
+        # this.
+        for spelling in _SAVER_DTYPES:
+            assert writable.supports_dtype(np.dtype(spelling)) is True
 
-    @pytest.mark.parametrize(("spelling", "supported"), _DTYPE_ANSWERS)
-    def test_the_answer(self, writable, spelling, supported):
-        assert writable.supports_dtype(self._dtype(spelling)) is supported
-
-    @pytest.mark.parametrize(("spelling", "supported"), _DTYPE_ANSWERS)
-    def test_create_variable_agrees_with_the_answer(
-        self, writable, spelling, supported
-    ):
-        dtype = self._dtype(spelling)
+    @pytest.mark.parametrize("spelling", _SAVER_DTYPES)
+    def test_create_variable_creates_it(self, writable, spelling):
+        dtype = np.dtype(spelling)
         writable.create_dimension("x", 2)
-        if not supported:
-            with pytest.raises(ValueError, match="no data type"):
-                writable.create_variable("data", dtype, ["x"])
-            return
-
-        # The half that can break: zarr-python has to accept what this store
-        # said it would.
         variable = writable.create_variable("data", dtype, ["x"])
-        if dtype.kind in _STORABLE_TEXT_KINDS:
-            # What a text array reports back is zarr-python's own choice and
-            # differs by version: 3.0.8 answers `StringDType()` for `U5` and
-            # `object` for `S5`, 3.4 answers the fixed width it was given.
-            # Both hold the values, which is what the store promised.
-            variable[:] = np.array(["ab", "cd"], dtype=dtype)
-            np.testing.assert_array_equal(
-                variable[:], np.array(["ab", "cd"], dtype=dtype)
-            )
-        else:
-            # Compared in the platform's own byte order, which is what the
-            # array is created in whatever it was asked for - see
-            # TestByteOrder.
-            assert variable.dtype == dtype.newbyteorder("=")
+        # Compared in the platform's own byte order, which is what the array
+        # is created in whatever it was asked for - see TestByteOrder.
+        assert variable.dtype == dtype.newbyteorder("=")
 
-    def test_the_refusal_names_the_array_and_the_dtype(self, writable):
+    @pytest.mark.parametrize(
+        ("spelling", "message"),
+        [
+            ("O", "resolution from object failed"),
+            ([("x", "O")], "resolution from object failed"),
+            ("V0", "length must be >= 1"),
+            ("S0", "length must be >= 1"),
+        ],
+        ids=str,
+    )
+    def test_a_dtype_zarr_cannot_hold_creates_nothing(
+        self, writable, spelling, message
+    ):
+        # The message is zarr-python's, not Iris's: Iris does not refuse these
+        # itself, because doing so would mean keeping its own table of what
+        # zarr-python can store. The fragments matched here are the stable
+        # part, unchanged from 3.1.0 to 3.4.1. What Iris owns is the outcome -
+        # a refused create leaves the group as it was.
         writable.create_dimension("x", 2)
-        with pytest.raises(ValueError, match="no data type") as excinfo:
-            writable.create_variable("data", np.dtype("O"), ["x"])
-        assert "'data'" in str(excinfo.value)
-        assert "object" in str(excinfo.value)
-
-    def test_a_refused_dtype_creates_nothing(self, writable):
-        writable.create_dimension("x", 2)
-        with pytest.raises(ValueError, match="no data type"):
-            writable.create_variable("data", np.dtype([("x", "O")]), ["x"])
+        with pytest.raises(ValueError, match=message):
+            writable.create_variable("data", np.dtype(spelling), ["x"])
         assert list(writable.variables) == []
+
+    @pytest.mark.parametrize(
+        "spelling", ["datetime64[s]", "V8", "U0", [("a", "i4"), ("b", "f8")]], ids=str
+    )
+    def test_a_dtype_no_saver_reaches_is_left_to_zarr(self, writable, spelling):
+        """Zarr stores these, so Iris does not refuse them on Zarr's behalf.
+
+        None of them arrives from an Iris saver, which is why the answer does
+        not matter much. It is pinned because the alternative - a table of
+        what Zarr holds - got all four of these wrong, refusing them on the
+        oldest zarr-python Iris then accepted.
+        """
+        writable.create_dimension("x", 2)
+        writable.create_variable("data", np.dtype(spelling), ["x"])
+        assert list(writable.variables) == ["data"]
 
 
 class TestByteOrder:
     """A big-endian dtype is stored in the platform's own order.
 
-    zarr-python 3.0.8 has no data type for one at all: `>i8` is a `KeyError`.
-    A PP or GRIB load produces them, so taking the caller's order literally
-    would refuse ordinary Iris data on the oldest version Iris accepts.
+    Zarr version 3 has no big-endian data type. Endianness lives in the
+    `bytes` codec, which zarr-python leaves at `little`, so asking for `>f4`
+    writes the same store as asking for `<f4`. Taking the caller's order
+    literally would leave the variable reporting an endianness the store does
+    not have. A PP or GRIB load produces big-endian arrays, so this is
+    ordinary Iris data rather than a corner.
     """
 
     @pytest.mark.parametrize("spelling", [">f4", ">f8", ">i8", ">i2", ">u4"])

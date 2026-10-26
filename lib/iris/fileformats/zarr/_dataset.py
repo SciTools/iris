@@ -30,27 +30,16 @@ sharding codec is indexed, so a reader fetches only the inner chunks it needs.
 :attr:`ZarrDatasetVariable.chunking` therefore returns ``Array.chunks``, never
 ``Array.shards``.
 
-**Which dtypes a store holds depends on the zarr-python version.** 3.1
-replaced a fixed enum of fifteen data types with an extensible registry, so
-3.4 holds a structured dtype, a ``datetime64`` and a big-endian dtype that
-3.0.8 - the oldest Iris accepts - has none of. Two consequences shape
-:meth:`ZarrDataset.supports_dtype` and :meth:`ZarrDataset.create_variable`,
-and both are easier to break than to notice, since the test suite runs
-against one version at a time.
-
-Its answer is a table of the dtypes every accepted version holds, rather
-than a list of the dtypes to exclude. A list of exclusions is open-ended -
-object arrays, an object inside a structured dtype, a zero-length void, the
-platform's extended precisions - and one missed entry is a ``True`` that
-:meth:`ZarrDataset.create_variable` then refuses, which is the contradiction
-``supports_dtype`` exists to prevent.
-
-Byte order is not in that answer, because creation takes it out of the
-question: an array is created in the platform's own order whatever order it
-was asked for, and NumPy converts on assignment. Answering ``False`` instead
-would refuse the big-endian arrays a PP or GRIB load produces. The netCDF
-saver gives that data the same answer, writing a ``>f4`` cube as
-``float32``.
+**An array is created in the platform's own byte order**, whatever order it
+was asked for, and NumPy converts the values on assignment. Zarr version 3
+has no big-endian data type: endianness lives in the ``bytes`` codec, which
+zarr-python leaves at ``little``, so asking for ``>f4`` writes the same store
+as asking for ``<f4`` and only the returned :class:`zarr.Array` object
+remembers the difference. Taking the caller's order literally would therefore
+make :attr:`ZarrDatasetVariable.dtype` report an endianness the store does
+not have. The netCDF saver gives this data the same answer, writing a ``>f4``
+cube as ``float32``, and a PP or GRIB load hands the saver big-endian arrays
+routinely.
 
 Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same way
 the netCDF path sizes it, and is not then adjusted to the store's own
@@ -679,24 +668,6 @@ _DEFAULT_ZARR_FORMAT = 3
 #: attribute would still say `1.5`.
 _EXACT_FILL_KINDS = frozenset(("b", "i", "u"))
 
-#: The dtypes every accepted zarr-python version holds, by NumPy kind and
-#: item size in bytes. Read by `supports_dtype`; see the module docstring for
-#: why the answer is a table of what Zarr holds rather than a list of
-#: exclusions.
-_STORABLE_ITEMSIZES_BY_KIND = {
-    "b": frozenset({1}),
-    "i": frozenset({1, 2, 4, 8}),
-    "u": frozenset({1, 2, 4, 8}),
-    "f": frozenset({2, 4, 8}),
-    "c": frozenset({8, 16}),
-}
-
-#: The text kinds, which Zarr holds as its `string` and `bytes` types. Their
-#: item size is the string length, so only zero is out. The same three kinds
-#: `iris.fileformats.zarr.saver` calls text, including NumPy's variable-width
-#: `StringDType`.
-_STORABLE_TEXT_KINDS = frozenset(("T", "U", "S"))
-
 #: zarr-python's own storage keywords. `create_variable` passes them through
 #: directly. Anything else raises, with advice from `_KEYWORD_ADVICE` below
 #: where there is any to give. See §4.5 of
@@ -1165,15 +1136,6 @@ class ZarrDataset(CFDataset):
         dimensions = tuple(dimensions)
         shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
 
-        if dtype is not str and not self.supports_dtype(dtype):
-            # Asked here so the two cannot disagree: a dtype the store said
-            # it holds must then create.
-            message = (
-                f"Cannot create the Zarr array {name!r} with dtype {dtype}: "
-                "Zarr has no data type for it."
-            )
-            raise ValueError(message)
-
         if name in self._group:
             raise ValueError(existing_name_message(name, self._location))
 
@@ -1226,18 +1188,22 @@ class ZarrDataset(CFDataset):
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.
 
-        True for the whole of NumPy's fixed-width numeric range and its
-        fixed-length text, which is everything the Iris savers reach here
-        with: there is no integer or float a saver must narrow to get it into
+        Always True. :class:`~iris.fileformats.cf.dataset.CFDataset` asks this
+        before narrowing an integer type, and the only dtypes the saver asks
+        it about are ``int64`` and the unsigned integers - see
+        :meth:`iris.fileformats.cf.saver._CFSaver._ensure_valid_dtype`. Zarr
+        has a data type for every one of them, so nothing is ever narrowed for
         a Zarr store. Contrast
         :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
         which answers False for the integer types the netCDF 3 formats have no
         type for.
 
-        Read from `_STORABLE_ITEMSIZES_BY_KIND`, which holds for every
-        zarr-python version Iris accepts. So this answers False for a few
-        dtypes the installed one might store, such as a structured dtype -
-        see the module docstring. Byte order does not change the answer.
+        A dtype Zarr genuinely cannot hold - an object array, a zero-length
+        void, one of the platform's extended precisions - is refused by
+        zarr-python in :meth:`create_variable`, with a ``ValueError`` naming
+        the dtype. Answering that question here as well would mean keeping a
+        second table of what zarr-python can store, which no saver consults
+        and which goes stale as zarr-python gains data types.
 
         Parameters
         ----------
@@ -1249,11 +1215,7 @@ class ZarrDataset(CFDataset):
         bool
 
         """
-        dtype = np.dtype(dtype)
-        if dtype.kind in _STORABLE_TEXT_KINDS:
-            return dtype.itemsize > 0
-        sizes = _STORABLE_ITEMSIZES_BY_KIND.get(dtype.kind)
-        return sizes is not None and dtype.itemsize in sizes
+        return True
 
     def sync(self) -> None:
         """Do nothing: a Zarr write is not buffered."""
