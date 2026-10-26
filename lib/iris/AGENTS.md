@@ -211,20 +211,13 @@ least able to judge how much of it belongs in the file. Assume too much.
 
 ## Module Docstrings Carry the Explanation
 
-Prose explaining a subsystem belongs in the module docstring. Inline comments
-scatter one argument over dozens of sites; a companion Markdown file is
-validated by nothing and rots unseen. Only the docstring is read every visit
-and reviewed in the diff.
+Prose explaining a subsystem belongs in the module docstring: it is the only
+prose read on every visit and reviewed in the diff. Anything aimed at a
+maintainer rather than a user goes in a `maintainer-notes` block at the end,
+which Sphinx drops, so it never reaches the API page.
 
-Anything aimed at a maintainer rather than a user goes in a `maintainer-notes`
-block at the end, which Sphinx drops: the prose stays in the file and never
-reaches the API page. Misspell the directive and the docs build fails, rather
-than publishing what you meant to hide.
-
-Be generous here and only here: sixty lines of orientation above a
-two-thousand-line module is cheap. Not a tutorial.
-
-Cover whichever apply:
+Be generous here and only here — sixty lines of orientation above a
+two-thousand-line module is cheap, and not a tutorial. Cover whichever apply:
 
 - what the module is for, and what it deliberately does not do;
 - the vocabulary — name the concepts the code assumes you already know;
@@ -232,9 +225,8 @@ Cover whichever apply:
 - why the design is as it is, including approaches tried and rejected;
 - known traps, and the modules this one is coupled to.
 
-Leave out anything a reader or Sphinx can already derive: API listings,
-signatures, call sequences, per-release history. Explanation scoped to a
-single class belongs in that class's docstring instead.
+Leave out what a reader or Sphinx can derive: API listings, signatures, call
+sequences, per-release history. Class-scoped explanation goes in that class.
 
 **Exemption to "do not document code you did not change":** if you had to work
 out how a subsystem behaves in order to edit it, write that understanding into
