@@ -2070,7 +2070,7 @@ reader and the NCZarr writer agree.
 store only. No test touches the network. The URL path is exercised by checking
 that the right store is constructed, not by fetching.
 
-**Skipping.** A `pytest.importorskip("zarr", minversion="3.0.8")` in each Zarr
+**Skipping.** A `pytest.importorskip("zarr", minversion="3.1.0")` in each Zarr
 test package's `__init__.py`, which covers everything written under it. A test
 written *outside* those packages that reaches the Zarr backend carries its own
 `importorskip` in the test body, rather than at the top of its module: the
@@ -2159,7 +2159,7 @@ preserved because that is what is being tested.
 | dynamical.org closes before the subset is pulled | Pull within days; the design does not otherwise depend on it |
 | PR 5 is a 3000-line diff | Pure `git mv` plus import edits, no behaviour change, full suite green |
 | CF-Zarr conventions are still a moving target | Iris writes plain unprefixed CF attributes, which is what the draft and xarray both do; no `zarr_conventions` block is written until the specification settles |
-| zarr-python uses Effective Effort Versioning, not semantic versioning | Pin `>=3.0.8`, which is above the known data-loss bug, and rely on CI to catch drift |
+| zarr-python uses Effective Effort Versioning, not semantic versioning | Pin `>=3.1.0`, the oldest release this code actually runs on, and rely on CI to catch drift. `>=3.0.8` was chosen for being above the known data-loss bug, but was never executed: 3.0.x returns a `DataType` enum from `Array.metadata.to_dict()`, which `cache_key` cannot serialise, so every lazy read fails **[verified]** |
 | Attribute dtype loss surprises someone | Documented; round-trip tests assert values not dtypes; xarray reads the output (§6); base64 remains available as a later opt-in |
 | Designing against one publisher's files produces brittle code | Every behaviour in §4 is justified from the Zarr and CF specifications first; a real file is cited only as evidence that a path will be exercised. Where a file is non-conforming it is labelled a malformation and handled with a warning, never by bending the reader (§4.4) |
 | Mistaking a de-facto convention for a publisher's mistake — the inverse risk, and the one that actually bit | Before calling a file non-conforming, check whether an independent reader *depends* on the form. The `_FillValue` encoding failed that check: it was xarray's, and the numeric alternative made Iris output unopenable (§4.4). The bidirectional cross-reader tests in §6 are the standing guard |
@@ -3132,6 +3132,33 @@ And one finding each side of this pull request:
   which has no data arrays either. Inherited from #7336, not introduced here,
   and deferred by @trexfeathers to a whole-branch review of `brownfield` at
   the end of the programme rather than fixed in passing.
+
+**The version floor moves to 3.1.0.** §8 pinned `>=3.0.8` for being above
+zarr-python's known data-loss bug, and nothing ever ran there: the code was
+written and executed against 3.4.1, and the audit above recorded actual
+3.0.8 compatibility as unverified. It was measured afterwards, by running
+the Zarr suite against every zarr-python release from 3.0.8 to 3.4.0.
+
+| zarr-python | Result |
+|---|---|
+| 3.0.8 | 43 failed |
+| 3.0.9, 3.0.10 | 42 failed |
+| 3.1.0 to 3.1.5 | 1 failed |
+| 3.1.6 and above | green, matching 3.4.1 |
+
+One defect accounts for every library failure. `cache_key` serialises
+`Array.metadata.to_dict()`, and on 3.0.x that mapping holds values `json`
+cannot encode: a `DataType` enum on a version 3 array, the codec object on a
+version 2 one, and a `numpy.float32` fill value. 3.1.0 replaced the fixed
+enum of data types with a registry and made `to_dict()` return plain JSON.
+`cache_key` is read on every lazy read and `_LAZYVAR_MIN_BYTES` is 5000, so
+every array worth loading failed on 3.0.x **[verified]**.
+
+The single remaining failure between 3.1.0 and 3.1.5 is a test helper, not
+the library. `CountingStore` subclasses `zarr.storage.WrapperStore`, which
+only grew `_with_store` and `with_read_only` in 3.1.6; the helper now
+supplies its own, so the floor is 3.1.0 rather than 3.1.6. The behaviour
+under test holds on 3.1.0 either way **[verified]**.
 
 ### 12.5 Artefacts
 

@@ -11,7 +11,7 @@ import iris
 from iris.io import _is_remote_store_uri, load_stores
 from iris.tests import _shared_utils
 
-zarr = pytest.importorskip("zarr", minversion="3.0.8")
+zarr = pytest.importorskip("zarr", minversion="3.1.0")
 
 from iris.tests.unit.fileformats.zarr import stores  # noqa: E402
 

@@ -64,7 +64,7 @@ def fake_cf_var():
 
 class TestTheBaseWriter:
     def test_it_writes_into_the_attributes_mapping(self, tmp_path):
-        pytest.importorskip("zarr", minversion="3.0.8")
+        pytest.importorskip("zarr", minversion="3.1.0")
         from iris.fileformats.zarr.saver import Saver
 
         cf_var = fake_cf_var()

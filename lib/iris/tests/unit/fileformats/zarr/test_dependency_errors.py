@@ -95,7 +95,7 @@ except ImportError as exception:
 class Test__MISSING_MESSAGE:
     def test_it_names_the_package_and_the_version_floor(self):
         assert "zarr" in _MISSING_MESSAGE
-        assert "3.0.8" in _MISSING_MESSAGE
+        assert "3.1.0" in _MISSING_MESSAGE
 
     def test_it_covers_saving_as_well_as_loading(self):
         # `iris.save` raises this one too, so it cannot be worded as a

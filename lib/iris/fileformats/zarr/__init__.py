@@ -46,7 +46,15 @@ _FORWARDED = {
 
 #: The version floor ``docs/src/user_manual/explanation/zarr_io.rst`` and
 #: ``requirements/py3*.yml`` both promise.
-_MINIMUM_VERSION = "3.0.8"
+#:
+#: 3.1.0 rather than the 3.0.8 that is merely above zarr-python's known
+#: data-loss bug: 3.1.0 replaced the fixed enum of data types with a
+#: registry, and with it made ``Array.metadata.to_dict()`` return plain JSON
+#: values. :attr:`~iris.fileformats.zarr._dataset.ZarrDatasetVariable.cache_key`
+#: serialises that mapping on every lazy read, so on 3.0.x every array large
+#: enough to read lazily fails with ``TypeError: Object of type DataType is
+#: not JSON serializable``.
+_MINIMUM_VERSION = "3.1.0"
 
 #: Raised whether ``zarr`` is missing entirely or present below
 #: :data:`_MINIMUM_VERSION`. Defined once here, not in
@@ -56,7 +64,7 @@ _MINIMUM_VERSION = "3.0.8"
 #: carrying its own copy. "Use", not "load": ``iris.save`` raises this too.
 _MISSING_MESSAGE = (
     "Unable to use a Zarr store - the 'zarr' package is not "
-    "installed. Install zarr >=3.0.8, for example with "
+    "installed. Install zarr >=3.1.0, for example with "
     "'conda install -c conda-forge zarr'."
 )
 

@@ -19,9 +19,9 @@ version 3 stores natively, through
 `zarr-python <https://zarr.readthedocs.io/>`_.
 
 ``zarr`` is an **optional dependency**, and Iris requires at least version
-3.0.8. Install it to load Zarr stores::
+3.1.0. Install it to load Zarr stores::
 
-    conda install -c conda-forge "zarr>=3.0.8"
+    conda install -c conda-forge "zarr>=3.1.0"
 
 Iris without it installs and runs normally, raising an ``ImportError`` that
 names the package and its minimum required version if you ask it to load a
