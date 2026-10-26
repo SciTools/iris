@@ -130,7 +130,7 @@ are evidence that a code path gets exercised, not authority for what it does.
 Three channels, three readers. A **docstring** states the contract for
 whoever calls the thing. A **comment** explains why, at the line that needs
 it, for whoever maintains it. A **module docstring** carries what is too big
-for either: the subsystem explanation a maintainer needs before touching it.
+for either, in a `maintainer-notes` block that is never published.
 
 A stale comment is worse than no comment — an agent treats it as evidence and
 a human treats it as documentation.
@@ -160,8 +160,8 @@ a human treats it as documentation.
   sentence, ask what breaks if it is gone; most rationale survives its own
   deletion. Then ask who each surviving sentence is for — a **user** calling
   the thing, a **maintainer** not breaking it, or a **reviewer** you are
-  answering. Only the first belongs here; the second goes to the module
-  docstring or a test, the third to the pull request.
+  answering. Only the first belongs here; the second goes to
+  `maintainer-notes` or a test, the third to the pull request.
 - Write notes, not an essay. Fragments are correct, articles are optional,
   shorthand is welcome. Say what holds; do not restate the signature, defend
   the design against an alternative nobody proposed, or narrate how you found
@@ -203,7 +203,7 @@ least able to judge how much of it belongs in the file. Assume too much.
   in its docstring, the source keeping one line that names it. This is the
   only home that fails loudly when it stops being true.
 - A surprise no test can pin — a library quirk, an invariant, a coupling —
-  goes in the module docstring's traps.
+  goes in the module docstring's `maintainer-notes`.
 - A surprise caused by an external bug keeps the URL, not a retelling.
 - Write the fact, not your side of the argument about it. The tells that you
   have written a reply are in [`WRITING.md`](../../.github/WRITING.md).
@@ -213,8 +213,13 @@ least able to judge how much of it belongs in the file. Assume too much.
 
 Prose explaining a subsystem belongs in the module docstring. Inline comments
 scatter one argument over dozens of sites; a companion Markdown file is
-validated by nothing and rots unseen. Only the docstring is read every visit,
-published, checked by numpydoc and reviewed in the diff.
+validated by nothing and rots unseen. Only the docstring is read every visit
+and reviewed in the diff.
+
+Anything aimed at a maintainer rather than a user goes in a `maintainer-notes`
+block at the end, which Sphinx drops: the prose stays in the file and never
+reaches the API page. Misspell the directive and the docs build fails, rather
+than publishing what you meant to hide.
 
 Be generous here and only here: sixty lines of orientation above a
 two-thousand-line module is cheap. Not a tutorial.
