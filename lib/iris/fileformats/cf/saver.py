@@ -51,6 +51,8 @@ https://github.com/SciTools/iris/issues/6980.
 
 See : `CF Conventions <https://cfconventions.org/>`_.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 import collections

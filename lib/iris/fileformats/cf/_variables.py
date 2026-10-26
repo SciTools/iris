@@ -42,6 +42,8 @@ coordinate is monotonic cannot be told from its metadata. That is the only
 path here that touches data, and it is reached only from
 ``CFReader(..., monotonic=True)``.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from abc import ABCMeta, abstractmethod

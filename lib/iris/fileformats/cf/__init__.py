@@ -30,6 +30,8 @@ References
     [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
     [NUG] NetCDF User's Guide, https://docs.unidata.ucar.edu/nug/current/
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from ._group import CFGroup

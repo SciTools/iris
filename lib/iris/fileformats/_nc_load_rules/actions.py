@@ -37,6 +37,8 @@ actions.  This mimics older behaviour, so is still useful while we are still
 comparing behaviour with the old Pyke rules (debugging).  But once that is no
 longer useful, this can be considerably simplified.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from functools import partial, wraps

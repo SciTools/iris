@@ -48,6 +48,8 @@ the store and hands it over, so nothing here has to know that Zarr exists.
 Only the first case mentions netCDF, and only because something has to be
 the default.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from collections.abc import Iterable

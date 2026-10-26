@@ -30,6 +30,8 @@ referenced but whose dimensions are not a subset of the referrer's is dropped
 from that referrer with a warning, then promoted so that it is not lost
 altogether. Promotion is how Iris avoids silently discarding either.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from collections.abc import MutableMapping

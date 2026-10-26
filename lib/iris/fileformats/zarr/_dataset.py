@@ -39,6 +39,8 @@ choice to ``CHUNK_CONTROL``.
 See sections 4.2, 4.4 and 4.6 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from collections.abc import Callable, Iterator, Mapping, MutableMapping

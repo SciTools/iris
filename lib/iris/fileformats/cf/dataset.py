@@ -32,6 +32,8 @@ onto the cube.
 See sections 4.2, 4.3 and 4.5 of
 ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from abc import ABC, abstractmethod

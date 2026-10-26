@@ -28,6 +28,8 @@ Opening files remains the format's own business: see
 
 Also : `CF Conventions <https://cfconventions.org/>`_.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from collections.abc import Iterable, Iterator, Mapping

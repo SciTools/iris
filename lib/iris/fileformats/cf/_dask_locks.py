@@ -35,6 +35,8 @@ which is uncommon: with an ordinary build, opening a file for writing that is
 already open for writing simply raises an access error. Iris does not support
 that mode at present.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 import threading

@@ -20,6 +20,8 @@ one, and always wraps for byte encoding.
 
 See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
+.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+
 """
 
 from collections.abc import Iterator, Mapping, MutableMapping
