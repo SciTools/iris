@@ -10,8 +10,8 @@
 |---|---|
 | **Phase** | In delivery |
 | **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
-| **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
-| **Blocked on** | Nothing |
+| **Next action** | Raise PR 7's companion pull request on `SciTools/iris-test-data`, then PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
+| **Blocked on** | PR 7's tests, which skip until the companion `iris-test-data` pull request merges and `IRIS_TEST_DATA_VERSION` is bumped — see §12.1 |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
@@ -2096,8 +2096,9 @@ installed must show no new failures and no quietly skipped netCDF test.
 
 ## 7. Real-world test data
 
-Two sources, both cut down before contribution to `SciTools/iris-test-data`
-(fork `bjlittle/iris-test-data`, default branch `master`).
+Two sources. Only the first is contributed to `SciTools/iris-test-data`, via
+the fork `trexfeathers/iris-test-data`, default branch `master`; §5 says why
+the second is cited here but not shipped.
 
 **NOAA GFS, dynamical.org** — the version 3 fixture. Confirmed by fetching
 `https://data.dynamical.org/noaa/gfs/forecast/latest.zarr/zarr.json`:
@@ -2112,10 +2113,16 @@ therefore already been cut, ahead of the rest of the programme; §12.5 holds its
 current location. It is 1.4 MB, 35 files, 12
 members, 2 forecast initialisations x 8 lead times x 120 x 120 points, for
 `temperature_2m`, `wind_u_10m`, `wind_v_10m` and `precipitation_surface`. It
-keeps the sharding codec, the scalar `spatial_ref` grid mapping, the
+keeps the sharding codec, the scalar `spatial_ref` variable, the
 two-dimensional `valid_time` auxiliary coordinate, all source attributes
 verbatim including the base64 `_FillValue`, and the `CC-BY-4.0` licence and
 attribution in the root group.
+
+`spatial_ref` is a CRS variable but **not** a grid mapping as CF defines one:
+the data variables name it in `coordinates` and declare no `grid_mapping`
+attribute, so Iris builds no coordinate system from it **[verified]**. §12.4
+records what follows for the fixture, and it is why the synthetic store in
+`integration/zarr/fixtures.py` is kept rather than replaced.
 
 Two of those are load-bearing rather than incidental. The **sharding codec**
 makes this the fixture that exercises the read-unit rule in §4.4 and the
@@ -2295,7 +2302,7 @@ nothing else, and can land beside any of the others.
 | 4 | Zarr loading | Merged | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
-| 7 | Real-world test data and benchmarks | Built, awaiting PR 6. Previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101), targeting PR 6's branch so the diff can be read before PR 6 merges | — |
+| 7 | Real-world test data and benchmarks | Built, awaiting PR 6 | [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101), a preview against PR 6's branch |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
@@ -3286,5 +3293,5 @@ raised as its own issue, not taken in a pull request that adds test data.
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
 | 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
 | 2026-10-23 | `supports_dtype` restated in §4.2 as a table of the dtypes every accepted zarr-python version holds, rather than a list of the dtypes to exclude: the zarr-python 3.0.8 data-type enum is much smaller than 3.4's registry, so any exclusion list is wrong on the version floor Iris declares. The header table, which had gone stale against §12.1, now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
-| 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |
 | 2026-10-23 | Byte order removed from the capability question rather than documented as an exception to it: `create_variable` creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every accepted version. §4.2 says why neither obvious answer was tenable. The version claims are run rather than read — zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
+| 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |

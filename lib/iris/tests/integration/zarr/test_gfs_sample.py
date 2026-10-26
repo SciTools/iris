@@ -13,13 +13,13 @@ The design document is ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``;
 section 7 says what the subset keeps and why.
 """
 
+from pathlib import Path
 import warnings
 
 import numpy as np
 import pytest
 
 zarr = pytest.importorskip("zarr")
-xr = pytest.importorskip("xarray")
 
 import iris
 from iris.loading import LOAD_PROBLEMS
@@ -30,10 +30,21 @@ from iris.warnings import IrisLoadWarning
 SOURCE_SHARDS = (1, 4, 120, 120)
 SOURCE_CHUNKS = (1, 2, 40, 40)
 
+SAMPLE = Path(_shared_utils.get_data_path(("Zarr", "gfs_forecast_sample.zarr")))
+
+# `skip_data` only asks whether iris-test-data is present at all, so without
+#  this every test here FAILS rather than skips on a checkout that predates
+#  the store. iris and iris-test-data are versioned separately, so there is
+#  always a window where one has the test and the other lacks the data.
+pytestmark = pytest.mark.skipif(
+    not SAMPLE.is_dir(),
+    reason=f"No {SAMPLE.name} in iris-test-data; see IRIS_TEST_DATA_VERSION.",
+)
+
 
 @pytest.fixture
 def sample():
-    return _shared_utils.get_data_path(("Zarr", "gfs_forecast_sample.zarr"))
+    return str(SAMPLE)
 
 
 @pytest.fixture(autouse=True)
@@ -187,6 +198,11 @@ def test_the_round_trip_does_not_keep_the_source_chunk_layout(tmp_path, sample):
 @_shared_utils.skip_data
 def test_xarray_opens_the_round_tripped_store(tmp_path, sample):
     """Asserted on the open, because a bad attribute fails the whole open."""
+    # Imported here, not at module scope: xarray is a test-only dependency
+    #  and only this test needs it, so an install without it should lose
+    #  this test rather than every test in the module.
+    xr = pytest.importorskip("xarray")
+
     cubes = iris.load(sample)
     with iris.FUTURE.context(save_split_attrs=True):
         iris.save(cubes, tmp_path / "rt.zarr")
