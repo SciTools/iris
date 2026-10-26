@@ -10,8 +10,8 @@
 |---|---|
 | **Phase** | In delivery |
 | **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
-| **Next action** | Raise PR 7's companion pull request on `SciTools/iris-test-data`, then PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
-| **Blocked on** | PR 7's tests, which skip until the companion `iris-test-data` pull request merges and `IRIS_TEST_DATA_VERSION` is bumped — see §12.1 |
+| **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
+| **Blocked on** | PR 7's tests, which skip until [SciTools/iris-test-data#98](https://github.com/SciTools/iris-test-data/pull/98) merges and `IRIS_TEST_DATA_VERSION` is bumped — see §12.1 |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
@@ -2310,7 +2310,8 @@ Companion work outside `SciTools/iris`:
 
 | Repository | Purpose | State | Link |
 |---|---|---|---|
-| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | Built, awaiting PR | — |
+| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | In review | [#98](https://github.com/SciTools/iris-test-data/pull/98) |
+| `SciTools/iris-test-data` | The repository-wide licence statement, which #98's data does not fit | Raised, not for this programme to settle | [#99](https://github.com/SciTools/iris-test-data/issues/99) |
 
 States are `Not started`, `Drafted`, `Built, awaiting PR N` (work complete on
 a branch based on another pull request not yet merged, with no number of its
@@ -3201,14 +3202,22 @@ does not have.
   Its data variables name `spatial_ref` in `coordinates` and carry no
   `grid_mapping` attribute at all, so `spatial_ref` arrives as a scalar
   auxiliary coordinate carrying `crs_wkt` and the cube's `latitude` has no
-  coordinate system **[verified]**. §7 says the subset keeps "the scalar
-  `spatial_ref` grid mapping", which is true of the variable and false of the
-  reference. This is CF behaving as specified — §5.6 asks for a
-  `grid_mapping` attribute and this publisher does not write one — so Iris is
-  unchanged and the behaviour is pinned by test instead. It is also why the
-  synthetic fixture in `integration/zarr/fixtures.py` is kept rather than
-  replaced: it gives its data variable a `grid_mapping` attribute, so it is
-  the more CF-conforming of the two and reaches code the real store does not.
+  coordinate system **[verified]**. §7 said the subset keeps "the scalar
+  `spatial_ref` grid mapping", which was true of the variable and false of
+  the reference; §7 now says so.
+
+  **Settled, and not an open question.** CF §5.6 makes `grid_mapping` the way
+  a data variable points at its grid mapping, so Iris is already right and
+  nothing changes. A fallback — reading `crs_wkt` off an unreferenced scalar
+  coordinate — was proposed and rejected by @trexfeathers: a library that
+  second-guesses every file it might meet has given up the specification as
+  the thing that decides, which is the rule §1 states and the one the
+  `_FillValue` episode in §12.4 was the single deliberate exception to. The
+  behaviour is pinned by test so that the absent coordinate system reads as
+  the data's doing rather than as a regression. It is also why the synthetic
+  fixture in `integration/zarr/fixtures.py` is kept rather than replaced: it
+  gives its data variable a `grid_mapping` attribute, so it is the more
+  CF-conforming of the two and reaches code the published store does not.
 - **The published store carries an attribute named `dtype`.** Three of its
   coordinates hold `dtype: "timedelta64[us]"` as producer bookkeeping. That
   is one of the six names this log records as having been silently shadowed
