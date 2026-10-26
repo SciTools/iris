@@ -697,24 +697,21 @@ _STORABLE_ITEMSIZES_BY_KIND = {
 #: `StringDType`.
 _STORABLE_TEXT_KINDS = frozenset(("T", "U", "S"))
 
-#: The storage keywords `create_variable` passes to zarr-python, which are
-#: zarr-python's own. Iris does not invent names for them and does not
-#: translate netCDF's: see `_KEYWORD_ADVICE` below, and §4.5 of the design.
+#: zarr-python's own storage keywords. `create_variable` passes them through
+#: directly. Anything else raises, with advice from `_KEYWORD_ADVICE` below
+#: where there is any to give. See §4.5 of
+#: docs/superpowers/specs/2026-09-21-zarr-io-design.md.
 #:
-#: `order` is **not** here, although zarr-python's own signature takes it:
-#: it has no effect on a version 3 array, which is all Iris writes, and
-#: zarr-python merely warns and ignores it. A keyword Iris accepts and
-#: silently discards is worse than one it refuses with a reason.
+#: `order` is **not** here, although zarr-python's signature takes it: it has
+#: no effect on a version 3 array, which is all Iris writes, and zarr-python
+#: warns and ignores it.
 _ZARR_ENCODING_KEYWORDS = frozenset(
     {"chunks", "shards", "compressors", "filters", "serializer"}
 )
 
-#: What to say about a keyword someone tried here that this store does not
-#: take. Mostly netCDF's, where the advice is the Zarr name if there is one
-#: and a plain "no equivalent" if there is not - a compression model that
-#: differs is worth saying out loud, and silently mapping `zlib=True` onto a
-#: Blosc codec would be a false equivalence. The rest are keywords that read
-#: as though they ought to work here, and are worth more than silence.
+#: Extra advice for the error message on certain refused keywords. Most are
+#: netCDF's, where the advice names a Zarr equivalent if one exists. The rest
+#: read as though they ought to work here, and are worth more than silence.
 _KEYWORD_ADVICE = {
     "zlib": "use compressors, e.g. compressors=[zarr.codecs.GzipCodec()]",
     "complevel": "use compressors, which carry their own level",
