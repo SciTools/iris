@@ -125,6 +125,40 @@ class Test_zarr_is_missing:
         assert _run(probe) == _MISSING_MESSAGE
 
 
+class Test_the_floor_itself:
+    """Where the floor sits, as distinct from what happens below it.
+
+    `Test_zarr_is_too_old` fakes a zarr 2 version, which every floor Iris has
+    ever declared rejects. These pin the boundary, so that moving
+    `_MINIMUM_VERSION` has to be deliberate.
+    """
+
+    @staticmethod
+    def _reporting(version):
+        def report(name):
+            return version
+
+        return report
+
+    @pytest.mark.parametrize("version", ["3.0.8", "3.0.10"])
+    def test_a_3_0_release_is_below_it(self, mocker, version):
+        # 3.0.x returns a `DataType` enum from `Array.metadata.to_dict()`,
+        # which `cache_key` cannot serialise, so every lazy read fails.
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", self._reporting(version)
+        )
+        with pytest.raises(ImportError) as excinfo:
+            zarr_package._check_zarr_version()
+        assert str(excinfo.value) == _MISSING_MESSAGE
+
+    @pytest.mark.parametrize("version", ["3.1.0", "3.1.6", "3.4.1"])
+    def test_a_3_1_or_later_release_is_at_or_above_it(self, mocker, version):
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", self._reporting(version)
+        )
+        zarr_package._check_zarr_version()
+
+
 class Test_zarr_is_too_old:
     def test_iris_load_reports_it(self, mocker, tmp_path):
         """Zarr 2.x imports fine, so only a version check catches it.
