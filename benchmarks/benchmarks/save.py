@@ -41,3 +41,36 @@ class NetcdfSave:
         # Don't need to copy the cube here since track_ benchmarks don't
         #  do repeats between self.setup() calls.
         self._save_data(self.cube, do_copy=False)
+
+
+class ZarrSave:
+    params = [[50, 600], [False, True]]
+    param_names = ["cubesphere-N", "is_unstructured"]
+
+    def setup(self, n_cubesphere, is_unstructured):
+        self.cube = make_cube_like_2d_cubesphere(
+            n_cube=n_cubesphere, with_mesh=is_unstructured
+        )
+
+    def _save_data(self, cube, do_copy=True):
+        if do_copy:
+            # Copy the cube, to avoid distorting the results by changing it
+            # Because we known that older Iris code realises lazy coords
+            cube = cube.copy()
+        # mode="w" because the Zarr saver defaults to mode="w-" and raises
+        #  FileExistsError on a target that exists - and ASV calls this many
+        #  times between setup() calls.
+        save(cube, "tmp.zarr", mode="w")
+
+    def time_zarr_save_cube(self, n_cubesphere, is_unstructured):
+        self._save_data(self.cube)
+
+    def tracemalloc_zarr_save(self, n_cubesphere, is_unstructured):
+        # Don't need to copy the cube here since track_ benchmarks don't
+        #  do repeats between self.setup() calls.
+        self._save_data(self.cube, do_copy=False)
+
+    # No mesh-only equivalent of NetcdfSave.time_netcdf_save_mesh:
+    #  iris.mesh.save_mesh is defined in iris.fileformats.netcdf.saver and
+    #  writes netCDF only. A cube that has a mesh does save its mesh here,
+    #  through is_unstructured=True.
