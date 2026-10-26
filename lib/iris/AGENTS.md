@@ -16,14 +16,13 @@ message here, as well as anything posted to GitHub — read
 
 ## Why This File Exists
 
-Iris is maintained by humans and agents together. Agents read through a
-narrow context window using text search and cannot run the code; humans read
-with intuition but limited patience. Both want explicit names, local
-reasoning and small units. This file records that shared style, plus the few
-places the two diverge and which way to resolve them. Models are trained to
-please diff reviewers rather than to produce code that is cheap to navigate
-later, and drift towards long functions, redundant comments and defensive
-wrapping; correct for that deliberately.
+Iris is maintained by humans and agents together. Agents search text through
+a narrow window and cannot run the code; humans read with intuition but
+limited patience. Both want explicit names, local reasoning and small units.
+This file records that shared style, and the few places the two diverge.
+Models are trained to please diff reviewers rather than to leave code cheap
+to navigate, and drift towards long functions, redundant comments and
+defensive wrapping; correct for that deliberately.
 
 
 ## Fast Rules
@@ -43,10 +42,9 @@ wrapping; correct for that deliberately.
 - Keep behaviour derivable from the function's own body, signature, type
   hints and docstring. Avoid designs that require opening three other files.
 - Prefer composition and explicit delegation over deep inheritance and mixin
-  stacks. Resolving an MRO across modules costs an agent many tool calls and
-  is opaque to a newcomer. Where Iris already uses mixins (e.g.
-  `iris.common.mixin`, metadata managers), follow the existing pattern rather
-  than inventing a parallel one.
+  stacks: resolving an MRO across modules costs many tool calls and is opaque
+  to a newcomer. Where Iris already uses mixins (`iris.common.mixin`,
+  metadata managers), follow that pattern rather than inventing a parallel.
 - Do not add indirection (registry, dispatch dict, plugin hook, base class)
   for a single caller. This governs implementation layers, not API surface;
   a package `__init__.py` that re-exports is not indirection, see below.
@@ -66,15 +64,16 @@ does not exist.
   a greppable literal and is the preferred idiom for optional CF attributes.
 - Give public names enough distinctiveness to search for. Local `data`,
   `cube`, `result` are fine; a public helper called `_process` is not.
-- Declare `__all__` in modules with a public surface. No `import *`.
-- **Re-export freely from a package `__init__.py`.** Surfacing objects at
-  the level users import from is a real convenience, and it keeps the file
-  layout free to change later. `iris.mesh` is the model: explicit
-  `from .components import MeshXY`, gathered into `__all__`. Re-export
-  verbatim — never rename on the way out, never wrap in `try`/conditional
-  imports, never put logic in `__init__.py`. Each object stays defined in
-  one module, so `class MeshXY` still finds it in a single grep.
-  (`iris.common` uses `import *`; that is legacy, not a pattern to copy.)
+- Declare `__all__` in modules with a public surface.
+- **Never `import *`.** (`iris.common` does; legacy, not a pattern to copy.)
+- **Re-export freely from a package `__init__.py`.** It surfaces objects
+  where users import them and leaves the file layout free to change later.
+  `iris.mesh` is the model: explicit `from .components import MeshXY`,
+  gathered into `__all__`. Re-export verbatim — never rename on the way out,
+  and otherwise keep `__init__.py` free of logic — so that each object stays
+  defined in one greppable place. The routine reason to do more is deferring
+  an optional dependency's import, as `iris_grib` and `iris.fileformats.zarr`
+  both do; say in the module docstring which dependency that protects.
 - Make error and warning messages distinctive and mostly static, so a
   traceback maps to exactly one line. Put interpolated values at the end:
   `f"Cannot collapse a coordinate with bounds: {coord.name()}"`.
@@ -109,6 +108,8 @@ Realising data is the caller's decision, never a library function's.
   and `has_lazy_data()` / `has_lazy_points()` answer which you have.
 - Build graphs whole-array with `iris._lazy_data` — `map_complete_blocks`,
   `lazy_elementwise`, `as_lazy_data`. Per-slice graph building is expensive.
+- Indexing does not shrink a graph. Under Dask's multi-level graphs a slice
+  still references every chunk of its source, and is culled only at compute.
 
 
 ## Conform to the Specification, Not to the Sample File
@@ -125,6 +126,11 @@ are evidence that a code path gets exercised, not authority for what it does.
 
 
 ## Comments and Docstrings
+
+Three channels, three readers. A **docstring** states the contract for
+whoever calls the thing. A **comment** explains why, at the line that needs
+it, for whoever maintains it. A **module docstring** carries what is too big
+for either: the subsystem explanation a maintainer needs before touching it.
 
 A stale comment is worse than no comment — an agent treats it as evidence and
 a human treats it as documentation.
@@ -206,13 +212,12 @@ least able to judge how much of it belongs in the file. Assume too much.
 ## Module Docstrings Carry the Explanation
 
 Prose explaining a subsystem belongs in the module docstring. Inline comments
-scatter one argument across dozens of sites; a companion Markdown file is
-validated by nothing and rots unseen. Only the docstring is read on every
-visit, published by Sphinx, checked by numpydoc, and reviewed in the diff.
+scatter one argument over dozens of sites; a companion Markdown file is
+validated by nothing and rots unseen. Only the docstring is read every visit,
+published, checked by numpydoc and reviewed in the diff.
 
-Be generous here, and only here: sixty lines of orientation above a
-two-thousand-line module is cheap, read once per visit rather than once per
-call site. Not a tutorial.
+Be generous here and only here: sixty lines of orientation above a
+two-thousand-line module is cheap. Not a tutorial.
 
 Cover whichever apply:
 
@@ -225,11 +230,6 @@ Cover whichever apply:
 Leave out anything a reader or Sphinx can already derive: API listings,
 signatures, call sequences, per-release history. Explanation scoped to a
 single class belongs in that class's docstring instead.
-
-A public module's docstring is also published as an API page, so it must open
-with a `z_reference` item — a title, `:tags:` carrying at least one `topic_*`,
-and a one-line summary — within its first 25 lines. Copy the form from a
-neighbouring module; `pre-commit run check-docs-page-metadata` checks it.
 
 **Exemption to "do not document code you did not change":** if you had to work
 out how a subsystem behaves in order to edit it, write that understanding into
@@ -247,9 +247,11 @@ code in a private sibling module instead.
 
 - New modules: aim under ~1000 lines, one coherent concept each.
 - Functions: aim to fit one screen (~50 lines).
-- Use guard clauses and early returns instead of nested conditionals.
-- Give a function one exit where it must still warn, record or close something
-  on the way out. A second exit added later silently skips that work.
+- **One exit.** Nearly every function here has a single `return`; match them.
+  A second exit added later silently skips whatever the first does on the way
+  out — the warning, the record, the close.
+- Flatten a deep conditional with a progress flag carried down a flat
+  sequence of `if`s, rather than with extra returns.
 - Nesting beyond three levels is a signal to extract a named helper.
 
 
@@ -280,10 +282,9 @@ code in a private sibling module instead.
   re-staged and the run repeated until clean.
 - New and changed public functions have type hints and NumPy docstrings.
 - No comment or docstring was left stale by the change.
-- If you debugged during this change, re-read the diff as someone who was not
-  there. Comments added after the first working version are where verbosity
-  collects — and where a comment turns into a reply to a conversation the
-  reader never had.
+- If you debugged here, re-read the diff as someone who was not there.
+  Comments added after the first working version are where verbosity collects,
+  and where a comment becomes a reply to a conversation the reader never had.
 - Laziness behaviour is preserved and documented.
 - Tests updated per [`tests/AGENTS.md`](tests/AGENTS.md); changelog fragment
   added per [`../../changelog/AGENTS.md`](../../changelog/AGENTS.md).
