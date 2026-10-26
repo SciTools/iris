@@ -136,6 +136,38 @@ def test_a_group_with_no_arrays_names_the_groups_that_have_them(tmp_path):
         list(load_cubes(str(tmp_path / "e.zarr")))
 
 
+@pytest.mark.parametrize("zarr_format", [2, 3])
+def test_a_fixed_length_unicode_variable_loads(tmp_path, zarr_format):
+    """`<U` dtypes are not strictly Zarr-supported, and real stores hold them.
+
+    :issue:`6961` raises the dtype question. The ESA EOPF Sentinel-2 products
+    carry `<U7` and `<U3` arrays under `conditions/geometry`, so the reader
+    needs a defined answer rather than an accident. Every other `<U` test in
+    this package is on the write side.
+    """
+    path = tmp_path / f"u{zarr_format}.zarr"
+    root = zarr.open_group(store=path, mode="w", zarr_format=zarr_format)
+
+    band = stores.make_array(
+        root, "band", (3,), "<U3", zarr_format, dimensions=("band",)
+    )
+    band[:] = np.array(["b02", "b03", "b04"], dtype="<U3")
+
+    reflectance = stores.make_array(
+        root,
+        "reflectance",
+        (3,),
+        "f4",
+        zarr_format,
+        dimensions=("band",),
+        attributes={"units": "1", "coordinates": "band", "_FillValue": -1.0},
+    )
+    reflectance[:] = [0.1, 0.2, 0.3]
+
+    (cube,) = list(load_cubes(str(path)))
+    assert cube.coord("band").points.tolist() == ["b02", "b03", "b04"]
+
+
 def test_the_message_says_so_when_there_are_no_groups_either(tmp_path):
     zarr.open_group(store=tmp_path / "empty.zarr", mode="w", zarr_format=3)
     with pytest.raises(TranslationError, match="no data variables"):
