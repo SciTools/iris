@@ -100,8 +100,8 @@ def test_the_crs_variable_arrives_as_a_coordinate_not_a_coordinate_system(sample
     So there is nothing for Iris to build a coordinate system from, and the
     CRS arrives as a scalar coordinate carrying ``crs_wkt``. CF section 5.6
     asks for a ``grid_mapping`` attribute; this publisher does not write one.
-    Whether Iris should fall back to reading ``crs_wkt`` off a coordinate is
-    :issue:`7352`.
+    Pinned so that the absent coordinate system reads as the data's doing
+    rather than as a regression.
     """
     cube = iris.load_cube(sample, "air_temperature")
     assert cube.coord("latitude").coord_system is None

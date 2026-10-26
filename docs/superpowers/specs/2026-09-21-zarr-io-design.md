@@ -9,14 +9,14 @@
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); merge-back not started — see §12.1 |
-| **Next action** | PR 6's review, then PRs 7 and 8 — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch, awaiting it; merge-back not started — see §12.1 |
+| **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-23 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-26 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -1844,10 +1844,22 @@ After this pull request, `iris.save(cubes, "out.zarr")` works.
 
 ### PR 7 — Real-world test data and benchmarks
 
-Integration tests against the cut-down NOAA GFS and ESA EOPF samples, plus ASV
-coverage: `ZarrSave` beside `NetcdfSave` in `benchmarks/benchmarks/save.py`,
-and Zarr variants of `LoadAndRealise` in `benchmarks/benchmarks/load/`.
-Depends on a companion pull request to `SciTools/iris-test-data`.
+Integration tests against the cut-down NOAA GFS sample, plus ASV coverage:
+`ZarrSave` beside `NetcdfSave` in `benchmarks/benchmarks/save.py`, and a
+`"Zarr"` file format in `LoadAndRealise` in `benchmarks/benchmarks/load/`.
+Depends on a companion pull request to `SciTools/iris-test-data`, which
+carries the store and teaches that repository's index generator to treat a
+store as one item rather than descending into its chunks.
+
+**The ESA EOPF sample is not shipped**, though §7 still describes it. Its
+licence is a bespoke Copernicus instrument rather than a standard one, and
+having it read by someone who handles Copernicus terms did not fit the
+schedule it was needed on. What it would have covered is covered without it:
+the raise when a root group holds no data variables, the version 2 fill-value
+split and nested JSON attributes are each pinned by stores built in
+`tmp_path`, and the one gap — reading a fixed-length unicode variable — is a
+unit test this pull request adds. §7 keeps the store as cited evidence,
+because the rules it motivated are unaffected by whether Iris ships a copy.
 
 ### PR 8 — The terms-of-art sweep
 
@@ -2113,7 +2125,13 @@ synthetic tests. The **base64 `_FillValue`** is retained as the cross-reader con
 case — it is xarray's version 3 encoding, not a producer defect (§4.4).
 
 **ESA EOPF Sentinel samples** — the version 2 and deep-group-hierarchy
-fixture, exercising the `group=` keyword and the `_ARRAY_DIMENSIONS` path.
+store, exercising the `group=` keyword and the `_ARRAY_DIMENSIONS` path.
+
+**Cited as evidence, not shipped as a fixture.** PR 7 dropped it on licence
+grounds (§5), so nothing below is a claim about a file in
+`SciTools/iris-test-data`. It is all still a claim about a store that exists
+and that a reader will meet, which is what §1 cites a real store for. Every
+property named here was re-confirmed against the live service on 2026-10-26.
 
 **Confirmed version 2 by reading the store** **[verified]**. For a Sentinel-2
 L2A product under
@@ -2277,7 +2295,7 @@ nothing else, and can land beside any of the others.
 | 4 | Zarr loading | Merged | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
-| 7 | Real-world test data and benchmarks | Not started | — |
+| 7 | Real-world test data and benchmarks | Built, awaiting PR 6 | — |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
@@ -2285,7 +2303,7 @@ Companion work outside `SciTools/iris`:
 
 | Repository | Purpose | State | Link |
 |---|---|---|---|
-| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) and ESA EOPF (v2) fixtures for PR 7 | Not started | — |
+| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | Built, awaiting PR | — |
 
 States are `Not started`, `Drafted`, `Built, awaiting PR N` (work complete on
 a branch based on another pull request not yet merged, with no number of its
@@ -3170,15 +3188,61 @@ type either. Endianness lives in the `bytes` codec, zarr-python leaves it at
 disk and leave `ZarrDatasetVariable.dtype` reporting an endianness the store
 does not have.
 
+**2026-10-26 — PR 7, and what the published store showed**
+
+- **The published NOAA GFS store does not exercise the grid-mapping path.**
+  Its data variables name `spatial_ref` in `coordinates` and carry no
+  `grid_mapping` attribute at all, so `spatial_ref` arrives as a scalar
+  auxiliary coordinate carrying `crs_wkt` and the cube's `latitude` has no
+  coordinate system **[verified]**. §7 says the subset keeps "the scalar
+  `spatial_ref` grid mapping", which is true of the variable and false of the
+  reference. This is CF behaving as specified — §5.6 asks for a
+  `grid_mapping` attribute and this publisher does not write one — so Iris is
+  unchanged and the behaviour is pinned by test instead. It is also why the
+  synthetic fixture in `integration/zarr/fixtures.py` is kept rather than
+  replaced: it gives its data variable a `grid_mapping` attribute, so it is
+  the more CF-conforming of the two and reaches code the real store does not.
+- **The published store carries an attribute named `dtype`.** Three of its
+  coordinates hold `dtype: "timedelta64[us]"` as producer bookkeeping. That
+  is one of the six names this log records as having been silently shadowed
+  on load, so the fix for it now meets a store that contains one: the
+  attribute reads back as `"timedelta64[us]"` while the coordinate's own
+  dtype is float64 **[verified]**.
+- **A round trip does not preserve a store's chunk layout.** The published
+  arrays are sharded `(1, 4, 120, 120)` over inner chunks `(1, 2, 40, 40)`;
+  saved back they are `chunks=(2, 8, 120, 120)` with no shards
+  **[verified]**. Iris sizes chunks itself and neither §4.4 nor §4.5 promises
+  otherwise, so this is pinned rather than changed. Nothing warns about it.
+- **`mode="w"` had no test.** §4.5 offers three modes; `test_save.py` pinned
+  what `"w-"` refuses and what `"a"` adds, and nothing pinned that `"w"`
+  replaces. A benchmark found it the hard way: ASV re-runs a timing function
+  many times between `setup()` calls, so a Zarr save benchmark written like
+  the netCDF one raises `FileExistsError` on its second call.
+- **Reading a fixed-length unicode variable had no test either.** Every `<U`
+  test in the Zarr package was on the write side. A `<U3` array loads as a
+  string auxiliary coordinate on both versions **[verified]**, which is the
+  one thing the dropped EOPF fixture would have covered that stores built in
+  `tmp_path` did not.
+- **The EOPF subset was dropped on licence grounds, not technical ones.** The
+  store is still live and still version 2 **[verified]**, and cutting it was
+  shown to be practical. §5 and §7 record the decision and what replaced it.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
 |---|---|---|
-| Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `~/projects/iris-zarr-testdata/gfs_forecast_sample.zarr` | Cut, not yet contributed to `iris-test-data` |
-| Cut-down ESA EOPF fixture, Zarr v2 | — | Not started |
+| Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `~/iris-zarr-testdata/gfs_forecast_sample.zarr` | Contributed to `iris-test-data` by PR 7's companion, as `test_data/Zarr/gfs_forecast_sample.zarr` |
+| Cut-down ESA EOPF fixture, Zarr v2 | — | Not pursued. §5 and §7 say why |
 
 The GFS subset was cut ahead of the rest of the programme because its source
 endpoint is documented as closing on **30 September 2026** (§8).
+
+Contributing it meant giving `iris-test-data` its first per-directory licence
+record, in `test_data/Zarr/README.md`. That repository's `README.rst` offers
+everything in it under the Open Government Licence as British Crown copyright,
+which has not been true since a CC BY-SA 4.0 CMIP6 file landed there in 2019.
+Correcting a repository-wide licence statement is a SciTools decision and is
+raised as its own issue, not taken in a pull request that adds test data.
 
 ### 12.6 Document history
 
@@ -3222,4 +3286,5 @@ endpoint is documented as closing on **30 September 2026** (§8).
 | 2026-10-23 | PR 6 rebased onto `brownfield` now that #7336 and #7338 have merged, and raised as #7346. The rebase met three things that landed while it was being built: the generic saver renamed `_CFSaver`, cubelist savers registered by identity rather than by module name, and UGRID mesh loading, which turned the mesh round trip from a strict `xfail` into a passing test. |
 | 2026-10-23 | Actioned the Codex review of #7346. Five findings in PR 6's own work, all reproduced and fixed, and one unguarded Zarr import in a netCDF test module. §12.3 and §12.4 record them. The same review found this document contradicting itself in four places, each one a change made in §4.2 or in the decision log and not carried through to §5, §6 or §12.3: the `storage_settings` rename, the removal of read-side alignment, the skipping rule, and Q10's closure. Reconciled, and Q4 closed, its premise having been the alignment guard that was removed. No design change. |
 | 2026-10-23 | `supports_dtype` restated in §4.2 as a table of the dtypes every accepted zarr-python version holds, rather than a list of the dtypes to exclude: the zarr-python 3.0.8 data-type enum is much smaller than 3.4's registry, so any exclusion list is wrong on the version floor Iris declares. The header table, which had gone stale against §12.1, now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
+| 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |
 | 2026-10-23 | Byte order removed from the capability question rather than documented as an exception to it: `create_variable` creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every accepted version. §4.2 says why neither obvious answer was tenable. The version claims are run rather than read — zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
