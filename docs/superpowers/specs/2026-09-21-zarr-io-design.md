@@ -11,7 +11,7 @@
 | **Phase** | In delivery |
 | **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
 | **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
-| **Blocked on** | Nothing |
+| **Blocked on** | PR 7, whose unicode tests fail until [SciTools/iris-test-data#100](https://github.com/SciTools/iris-test-data/pull/100) merges and releases — deliberately committed red so the new test can be reviewed beside its fixtures |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
@@ -3287,6 +3287,14 @@ does not have.
   `fixed_length_utf32` with `length_bytes: 28` on version 3 **[verified]**,
   and a test asserts those strings so that regenerating the fixtures — which
   would destroy their only value — fails rather than passing quietly.
+- **That test is committed red**, against the usual rule that a branch stays
+  green. A reviewer cannot review a file that is not there, and the preview
+  pull request exists to be reviewed; the alternative was holding the test
+  back until the fixtures released, which would have put the new file in
+  front of nobody. Decided by @trexfeathers. The four failures are
+  `FileNotFoundError` on `Zarr/unicode_coords_v2.zarr` and go away with the
+  `IRIS_TEST_DATA_VERSION` bump — against a checkout that has the fixtures
+  the Zarr integration package is 86 passed **[verified]**.
 
 ### 12.5 Artefacts
 
