@@ -9,8 +9,8 @@
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1, 2, 2.5, 3, 4, 5 and 6 merged into `brownfield`; PR 7 rebased onto `brownfield` and in review ([#7349](https://github.com/SciTools/iris/pull/7349)); merge-back not started — see §12.1 |
-| **Next action** | PR 7's review, then PR 8 — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3, 4, 5 and 6 merged into `brownfield`; PRs 7 ([#7349](https://github.com/SciTools/iris/pull/7349)) and 8 ([#7350](https://github.com/SciTools/iris/pull/7350)) in review; merge-back not started — see §12.1 |
+| **Next action** | The reviews of PRs 7 and 8, then the merge-back — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
@@ -2315,7 +2315,7 @@ nothing else, and can land beside any of the others.
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
 | 6 | Zarr saving | Merged | [#7346](https://github.com/SciTools/iris/pull/7346) |
 | 7 | Real-world test data and benchmarks | In review | [#7349](https://github.com/SciTools/iris/pull/7349); the preview at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101) is closed, and its review threads stay there |
-| 8 | The terms-of-art sweep | Not started | — |
+| 8 | The terms-of-art sweep | In review | [#7350](https://github.com/SciTools/iris/pull/7350) |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
 Companion work outside `SciTools/iris`:
@@ -3363,3 +3363,4 @@ raised as its own issue, not taken in a pull request that adds test data.
 | 2026-10-27 | Actioned @pp-mo's review of PR 7. The custom skip guard removed in favour of the standard `skip_data`, which also honours `IRIS_TEST_NO_DATA`; the save benchmarks collapsed into one class parametrised over `file_format`; `TimeConstraint` given Zarr. His sharpest point was that a test writing a `<U` array and reading it back cannot pin that Iris reads one already written, so stored fixtures were added to `iris-test-data` ([#100](https://github.com/SciTools/iris-test-data/pull/100)) and §6 now states the rule. |
 | 2026-10-27 | #7346 merged, so PR 7 rebased onto `brownfield` with `git rebase --onto upstream/brownfield zarr-io-pr-6 zarr-io-pr-7` and raised as [#7349](https://github.com/SciTools/iris/pull/7349). The rebase met nothing: `brownfield` after the squash is the same tree as PR 6's branch, so the only conflict was this document's own decision log, where both sides had appended. The preview is closed rather than retargeted, because a pull request cannot change repositories. One claim in its body had gone stale against the review above and is corrected in #7349's: parametrising the save benchmarks renames the netCDF ones, so their ASV history does not carry across, and a reviewer should see that said rather than inferred. |
 | 2026-10-27 | [SciTools/iris-test-data#100](https://github.com/SciTools/iris-test-data/pull/100) merged and released as v2.32, so `IRIS_TEST_DATA_VERSION` is bumped in both workflow files and the stored unicode stores are read rather than missing. The Zarr integration package is 86 passed and the whole suite is green **[verified]**, which ends the deliberate red recorded above. Nothing else changed, as that entry promised. |
+| 2026-10-27 | PR 8 built and raised as [#7350](https://github.com/SciTools/iris/pull/7350). The sweep found that almost every coinage was one of a handful used many times rather than the single use `.github/WRITING.md` names: "load-bearing" nineteen times, reaching the Zarr user documentation and a library docstring, and "trade" thirteen, where `cf/__init__.py` already said "trade-off". Two findings were not about terms of art at all. One route was spelled "one-cycle" in `cf/_variables.py` and "one-release" in `cf/dataset.py`, in the same docstring sentence; and five comments in `test___init__.py` cited "Review Focus N" and a plan section, which `.github/WRITING.md` and `lib/iris/tests/AGENTS.md` both forbid in shipped code. The write grid, the create-once invariant and greppability are kept, each being defined where it is introduced. |
