@@ -11,4 +11,4 @@ there raises during collection and is reported as an **error**, not a skip.
 
 import pytest
 
-pytest.importorskip("zarr", minversion="3.0.8")
+pytest.importorskip("zarr", minversion="3.1.0")

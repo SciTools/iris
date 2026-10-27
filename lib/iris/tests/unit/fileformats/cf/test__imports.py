@@ -12,6 +12,12 @@ One import covers every module in both packages. Python runs
 ``iris.fileformats.__init__`` before any submodule body, and that imports the
 netCDF package, which draws in the whole cascade.
 
+``_attribute_handlers`` imports :mod:`iris.fileformats.pp`, so the CF package
+now reaches the PP package while the ``iris.fileformats`` package is itself
+part-way through importing. That was already true of the netCDF package, which
+is where this module used to live and which ``iris.fileformats.__init__``
+imports before ``pp``.
+
 The subprocess is what makes it a cold start. Inside the test process the
 modules are already in ``sys.modules``, so an import there is a dictionary
 lookup.

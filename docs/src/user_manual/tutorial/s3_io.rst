@@ -2,7 +2,8 @@
    :tags: topic_load_save
 
    A lesson on using s3-fuse with Iris to load/save netCDF, PP and GRIB
-   data from/to S3 buckets, and on reading a Zarr store from S3 directly.
+   data from/to S3 buckets, and on loading from and saving to a Zarr store
+   on S3 directly.
 
 .. _s3_io:
 
@@ -32,6 +33,15 @@ the objects it needs over the network::
 
 That needs ``s3fs`` installed and configured, and no mount. If your data is in
 Zarr, prefer this to the FUSE approach described below.
+
+Saving works the same way::
+
+    iris.save(cubes, "s3://bucket/forecast.zarr")
+
+The same store library and credentials apply, and the same defaults: an
+existing store is not overwritten unless you pass ``mode="w"``, and the
+metadata is consolidated when the save completes, which is what makes the store
+cheap to open again over the network.
 
 Other filetypes via a virtual file system
 -----------------------------------------

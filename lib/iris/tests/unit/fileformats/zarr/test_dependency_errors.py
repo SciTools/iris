@@ -2,22 +2,25 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Both Zarr load routes report a clear error when ``zarr`` cannot be used.
+"""Every Zarr route reports a clear error when ``zarr`` cannot be used.
 
 ``iris.load`` reaches :mod:`iris.fileformats.zarr` through
 :func:`iris.fileformats._load_zarr`; the Zarr page of the user manual also
 tells a reader to call :func:`iris.fileformats.zarr.load_cubes` directly, for
-the ``group=`` keyword. Both must raise the same ``ImportError``, naming the
-package and the version floor, whether ``zarr`` is missing entirely or merely
-too old.
+the ``group=`` keyword; and ``iris.save`` reaches it through the
+:func:`iris.io._zarr_save` wrapper. All three must raise the same
+``ImportError``, naming the package and the version floor, whether ``zarr``
+is missing entirely or merely too old.
 """
 
 import subprocess
 import sys
 
+import numpy as np
 import pytest
 
 import iris
+from iris.cube import Cube
 import iris.fileformats.zarr as zarr_package
 from iris.fileformats.zarr import _MISSING_MESSAGE
 
@@ -76,10 +79,29 @@ except ImportError as exception:
 """
 
 
+_SAVE_PROBE = """
+import numpy as np
+import iris
+from iris.cube import Cube
+
+cube = Cube(np.arange(4, dtype=np.float32), var_name="a")
+try:
+    iris.save(cube, {location!r})
+except ImportError as exception:
+    print(exception)
+"""
+
+
 class Test__MISSING_MESSAGE:
     def test_it_names_the_package_and_the_version_floor(self):
         assert "zarr" in _MISSING_MESSAGE
-        assert "3.0.8" in _MISSING_MESSAGE
+        assert "3.1.0" in _MISSING_MESSAGE
+
+    def test_it_covers_saving_as_well_as_loading(self):
+        # `iris.save` raises this one too, so it cannot be worded as a
+        # loading failure: a user who was saving would be told about the
+        # wrong half of the package.
+        assert "load" not in _MISSING_MESSAGE
 
 
 class Test_zarr_is_missing:
@@ -97,6 +119,44 @@ class Test_zarr_is_missing:
 
         probe = _BLOCK_ZARR + _LOAD_CUBES_PROBE.format(location=str(store))
         assert _run(probe) == _MISSING_MESSAGE
+
+    def test_iris_save_reports_it(self, tmp_path):
+        probe = _BLOCK_ZARR + _SAVE_PROBE.format(location=str(tmp_path / "out.zarr"))
+        assert _run(probe) == _MISSING_MESSAGE
+
+
+class Test_the_floor_itself:
+    """Where the floor sits, as distinct from what happens below it.
+
+    `Test_zarr_is_too_old` fakes a zarr 2 version, which every floor Iris has
+    ever declared rejects. These pin the boundary, so that moving
+    `_MINIMUM_VERSION` has to be deliberate.
+    """
+
+    @staticmethod
+    def _reporting(version):
+        def report(name):
+            return version
+
+        return report
+
+    @pytest.mark.parametrize("version", ["3.0.8", "3.0.10"])
+    def test_a_3_0_release_is_below_it(self, mocker, version):
+        # 3.0.x returns a `DataType` enum from `Array.metadata.to_dict()`,
+        # which `cache_key` cannot serialise, so every lazy read fails.
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", self._reporting(version)
+        )
+        with pytest.raises(ImportError) as excinfo:
+            zarr_package._check_zarr_version()
+        assert str(excinfo.value) == _MISSING_MESSAGE
+
+    @pytest.mark.parametrize("version", ["3.1.0", "3.1.6", "3.4.1"])
+    def test_a_3_1_or_later_release_is_at_or_above_it(self, mocker, version):
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", self._reporting(version)
+        )
+        zarr_package._check_zarr_version()
 
 
 class Test_zarr_is_too_old:
@@ -126,4 +186,23 @@ class Test_zarr_is_too_old:
 
         with pytest.raises(ImportError) as excinfo:
             zarr_package.load_cubes("irrelevant")
+        assert str(excinfo.value) == _MISSING_MESSAGE
+
+    def test_iris_save_reports_it(self, mocker, tmp_path):
+        """The save path must use the same version gate as the load path.
+
+        :func:`iris.io._zarr_save` gets there with ``from
+        iris.fileformats.zarr import save``, which runs this package's
+        ``__getattr__`` and so the version check inside it. Importing from
+        ``.saver`` instead would reach the saver directly, and an
+        installation with too old a zarr would write a complete store rather
+        than raising.
+        """
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", _report_old_zarr
+        )
+        cube = Cube(np.arange(4, dtype=np.float32), var_name="a")
+
+        with pytest.raises(ImportError) as excinfo:
+            iris.save(cube, tmp_path / "out.zarr")
         assert str(excinfo.value) == _MISSING_MESSAGE

@@ -442,6 +442,18 @@ def _dot_save_png(cube, target, **kwargs):
     return save_png(cube, target, **kwargs)
 
 
+def _zarr_save(cube, target, **kwargs):
+    # A simple wrapper for `iris.fileformats.zarr.save` which allows the
+    # saver to be registered without triggering the import of `zarr`, an
+    # optional dependency. Importing the name from the package rather than
+    # from `iris.fileformats.zarr.saver` runs the package's `__getattr__`,
+    # which is what checks the installed zarr version and reports a missing
+    # or too-old one.
+    from iris.fileformats.zarr import save
+
+    return save(cube, target, **kwargs)
+
+
 def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for the grib save routine, which allows the saver to be
     # registered without having the grib implementation installed.
@@ -463,6 +475,7 @@ def _check_init_savers():
             {
                 "pp": pp.save,
                 "nc": netcdf.save,
+                "zarr": _zarr_save,
                 "dot": _dot_save,
                 "dotpng": _dot_save_png,
                 "grib2": _grib_save,
@@ -470,6 +483,7 @@ def _check_init_savers():
         )
         # One line per format that takes a CubeList whole.
         _savers.cubelist_savers.add(netcdf.save)
+        _savers.cubelist_savers.add(_zarr_save)
 
 
 def add_saver(file_extension, new_saver):
@@ -529,7 +543,7 @@ def find_saver(filespec):
 def save(source, target, saver=None, **kwargs):
     """Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports four file formats for saving. Three are
+    Iris currently supports five file formats for saving. Four are
     recognised by filename extension:
 
     * **netCDF** - the Unidata network Common Data Format,
@@ -538,8 +552,11 @@ def save(source, target, saver=None, **kwargs):
       see :func:`iris_grib.save_grib2`.
     * **PP** - the Met Office UM Post Processing Format,
       see :func:`iris.fileformats.pp.save`
+    * **Zarr** - a native Zarr version 3 store, written through zarr-python,
+      see :func:`iris.fileformats.zarr.saver.save`. See
+      :doc:`/user_manual/explanation/zarr_io` for more.
 
-    The fourth format is recognised differently:
+    The fifth format is recognised differently:
 
     * **Zarr (via NcZarr)** - "The open foundation for chunked, compressed,
       N-dimensional

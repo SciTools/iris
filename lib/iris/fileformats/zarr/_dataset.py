@@ -30,6 +30,17 @@ sharding codec is indexed, so a reader fetches only the inner chunks it needs.
 :attr:`ZarrDatasetVariable.chunking` therefore returns ``Array.chunks``, never
 ``Array.shards``.
 
+**An array is created in the platform's own byte order**, whatever order it
+was asked for, and NumPy converts the values on assignment. Zarr version 3
+has no big-endian data type: endianness lives in the ``bytes`` codec, which
+zarr-python leaves at ``little``, so asking for ``>f4`` writes the same store
+as asking for ``<f4`` and only the returned :class:`zarr.Array` object
+remembers the difference. Taking the caller's order literally would therefore
+make :attr:`ZarrDatasetVariable.dtype` report an endianness the store does
+not have. The netCDF saver gives this data the same answer, writing a ``>f4``
+cube as ``float32``, and a PP or GRIB load hands the saver big-endian arrays
+routinely.
+
 Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same way
 the netCDF path sizes it, and is not then adjusted to the store's own
 chunking. Iris warns when a stored chunk is larger than Dask's target, from
@@ -64,7 +75,7 @@ from iris.fileformats.cf import loader as cf_loader
 from iris.fileformats.cf.dataset import CFDataset, CFDatasetVariable
 import iris.warnings
 
-from . import _decode
+from . import _decode, _encode
 
 #: What :attr:`CFDataset.format` answers, by the store's Zarr version.
 _FORMAT_BY_ZARR_VERSION = {2: "ZARR_V2", 3: "ZARR_V3"}
@@ -145,6 +156,44 @@ def _dimension_names(array) -> tuple:
     return tuple(names)
 
 
+def _selection_shape(shape: tuple, keys) -> tuple | None:
+    """Return the shape `keys` selects out of an array of `shape`.
+
+    Measured with numpy's own indexing rules, which are the rules
+    zarr-python implements for a basic selection, against a zero-strided
+    dummy so that measuring allocates nothing.
+
+    Parameters
+    ----------
+    shape : tuple of int
+        The array's full shape.
+    keys : Any
+        The selection, as it reached ``__setitem__``.
+
+    Returns
+    -------
+    tuple of int or None
+        ``None`` for anything but a basic selection - a boolean mask or an
+        index array, which zarr accepts and Iris never writes, and which
+        would make a copy to measure. A caller treats that as "nothing to
+        check".
+
+    """
+    parts = keys if isinstance(keys, tuple) else (keys,)
+    if not all(
+        isinstance(part, (slice, int, np.integer)) or part is Ellipsis or part is None
+        for part in parts
+    ):
+        return None
+    dummy = np.broadcast_to(np.empty((), dtype=np.int8), shape)
+    try:
+        return dummy[keys].shape
+    except IndexError:
+        # Too many indices for the rank, say. zarr-python raises for these
+        # too, with its own message, so there is nothing to add here.
+        return None
+
+
 def _assemble_dimensions(variables) -> dict:
     """Return the dimension sizes the store's arrays agree on.
 
@@ -204,13 +253,28 @@ class _ZarrAttributes(MutableMapping):
         node: "zarr.Group | zarr.Array",
         *,
         withhold: frozenset = frozenset(),
+        dtype=None,
     ):
         """Materialise the attributes of `node`, a zarr array or group.
 
         Writing through this mapping writes to `node`, which is the store.
+
+        Parameters
+        ----------
+        node : zarr.Array or zarr.Group
+            Whose attributes these are.
+        withhold : frozenset, optional
+            Names that are storage rather than CF, hidden here and refused
+            on assignment.
+        dtype : numpy.dtype, optional
+            The array's dtype, when `node` is an array. What decides the
+            encoding of ``_FillValue``; a group has neither.
+
+
         """
         self._node = node
         self._withhold = frozenset(withhold)
+        self._dtype = dtype
         self._values = {
             key: value for key, value in node.attrs.items() if key not in self._withhold
         }
@@ -220,12 +284,29 @@ class _ZarrAttributes(MutableMapping):
         return self._values[key]
 
     def __setitem__(self, key: str, value: Any) -> None:
-        """Set `key`'s value, here and in the store."""
+        """Set `key`'s value, here and in the store.
+
+        The value is converted to something JSON can hold *before* zarr sees
+        it. A value zarr's encoder rejects raises **and stays in the
+        mapping**, so converting on failure would mean converting a store
+        that is already wrong.
+
+        """
         if key in self._withhold:
             msg = f"Cannot set a storage attribute through `attributes`: {key}"
             raise KeyError(msg)
-        self._node.attrs[key] = value
-        self._values[key] = value
+        encoded = self._encode(key, value)
+        self._node.attrs[key] = encoded
+        self._values[key] = encoded
+
+    def _encode(self, key: str, value: Any) -> Any:
+        """Return `value` in the form this attribute is stored in."""
+        if self._dtype is not None:
+            if key == "_FillValue":
+                return _encode.encode_fill_value(value, self._dtype)
+            if key == "missing_value":
+                return _encode.encode_missing_values(value, self._dtype)
+        return _encode.json_native(value, name=key)
 
     def __delitem__(self, key: str) -> None:
         """Remove `key`, here and from the store."""
@@ -266,7 +347,7 @@ class ZarrDatasetVariable(CFDatasetVariable):
         self._format = format
         self._dimensions = _dimension_names(array)
         self._attributes = _ZarrAttributes(
-            array, withhold=frozenset({_ARRAY_DIMENSIONS})
+            array, withhold=frozenset({_ARRAY_DIMENSIONS}), dtype=array.dtype
         )
 
     @property
@@ -344,8 +425,60 @@ class ZarrDatasetVariable(CFDatasetVariable):
         return self._array[keys]
 
     def __setitem__(self, keys, values) -> None:
-        """Write `values` into the indexed portion of the array."""
-        self._array[keys] = values
+        """Write `values` into the indexed portion of the array.
+
+        Packed first, filled second. `values` arrives in physical units;
+        :func:`~iris.fileformats.zarr._encode.pack` applies this array's own
+        ``scale_factor``/``add_offset`` attributes, the transform
+        netCDF4-python would otherwise have applied automatically on
+        assignment, which a Zarr array has no equivalent of. Masked values are
+        filled with the array's own fill value afterwards, not before: the
+        fill lives in *stored* (packed) space, so filling first would send an
+        already-filled sentinel through the same transform as real data and
+        lose it. A Zarr array has no mask of its own either way - spec §4.5
+        settles that the fill goes in the data - and handing numpy.ma
+        straight to zarr raises inside the bytes codec, naming neither the
+        variable nor the mask.
+
+        A value whose shape does not match the selection is refused first.
+        zarr-python truncates an oversized assignment without a word, so a
+        caller that sized the array wrongly loses data in silence; too few
+        values raise, but from inside numpy, naming neither this variable
+        nor the array it belongs to.
+
+        Raises
+        ------
+        ValueError
+            If `values` neither matches the selection's shape nor is a
+            scalar to broadcast over it.
+
+        """
+        if self._array.ndim == 0 and keys == slice(None):
+            # `_CFSaver._lazy_stream_data` writes a whole variable as
+            # `cf_var[:] = data`, which is `slice(None)` - one axis too many
+            # for a 0-d array, which zarr indexes with `...` or `()` instead.
+            # A scalar cube is ordinary, and this is otherwise the only
+            # store that cannot hold one.
+            keys = Ellipsis
+
+        selected = _selection_shape(self.shape, keys)
+        given = np.shape(values)
+        if selected is not None and given not in ((), selected):
+            message = (
+                f"Cannot write values of shape {given} into {self.name!r}, "
+                f"whose selected region has shape {selected}. Zarr neither "
+                "resizes an array nor reports an oversized write, so this "
+                "would otherwise lose values in silence."
+            )
+            raise ValueError(message)
+
+        packed = _encode.pack(
+            values,
+            self._attributes.get("scale_factor"),
+            self._attributes.get("add_offset"),
+            self._array.dtype,
+        )
+        self._array[keys] = _encode.filled(packed, self._array.fill_value)
 
     def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
         """Return this array's data, lazily where a lazy array is worth it.
@@ -479,6 +612,20 @@ class ZarrDatasetVariable(CFDatasetVariable):
         return self._array.metadata.zarr_format
 
     @property
+    def write_grid(self) -> tuple:
+        """The unit a concurrent writer must own whole cells of.
+
+        The shards when the array is sharded, the chunks when it is not. A
+        shard is one stored object holding many inner chunks, so two tasks
+        writing different chunks of one shard read-modify-write the same
+        object and one update is lost. Stating the invariant over the chunk
+        grid alone is what xarray's ``safe_chunks`` had to be corrected to;
+        see pydata/xarray#10831.
+
+        """
+        return tuple(self._array.shards or self._array.chunks)
+
+    @property
     def cache_key(self) -> str:
         """An identity for this array that goes stale when the array does.
 
@@ -496,17 +643,188 @@ class ZarrDatasetVariable(CFDatasetVariable):
         )
 
 
-#: What `mode` a dataset may be opened in. Writing is not implemented.
+#: The modes that only read.
 _READ_MODES = ("r",)
 
-#: The one message every unimplemented write member raises.
-_NO_SAVING = "Saving to Zarr is not supported."
+#: The modes that may write. ``"r+"`` opens an existing store for update and
+#: creates nothing, which is what the region write of a future multi-process
+#: saver needs. See §4.5 of docs/superpowers/specs/2026-09-21-zarr-io-design.md.
+_WRITE_MODES = ("w-", "w", "a", "r+")
+
+#: Every mode, in the order the error message lists them.
+_MODES = _READ_MODES + _WRITE_MODES
+
+#: The Zarr versions Iris can write. This constrains writing only; reading
+#: handles either version. Adding version 2 here also means implementing the
+#: three version-specific points of §4.5 of
+#: docs/superpowers/specs/2026-09-21-zarr-io-design.md.
+_WRITABLE_ZARR_FORMATS = (3,)
+
+#: The version a write creates when the caller names none. Separate from
+#: `_WRITABLE_ZARR_FORMATS` because the order of that tuple says nothing
+#: about which member is the default.
+_DEFAULT_ZARR_FORMAT = 3
+
+#: The dtype kinds whose fill value must convert exactly, because they have
+#: no rounding to spend: `numpy.int16(1.5)` is `1`, and the `_FillValue`
+#: attribute would still say `1.5`.
+_EXACT_FILL_KINDS = frozenset(("b", "i", "u"))
+
+#: zarr-python's own storage keywords. `create_variable` passes them through
+#: directly. Anything else raises, with advice from `_KEYWORD_ADVICE` below
+#: where there is any to give. See §4.5 of
+#: docs/superpowers/specs/2026-09-21-zarr-io-design.md.
+#:
+#: `order` is **not** here, although zarr-python's signature takes it: it has
+#: no effect on a version 3 array, which is all Iris writes, and zarr-python
+#: warns and ignores it.
+_ZARR_ENCODING_KEYWORDS = frozenset(
+    {"chunks", "shards", "compressors", "filters", "serializer"}
+)
+
+#: Extra advice for the error message on certain refused keywords. Most are
+#: netCDF's, where the advice names a Zarr equivalent if one exists. The rest
+#: read as though they ought to work here, and are worth more than silence.
+_KEYWORD_ADVICE = {
+    "zlib": "use compressors, e.g. compressors=[zarr.codecs.GzipCodec()]",
+    "complevel": "use compressors, which carry their own level",
+    "shuffle": "use compressors, e.g. the shuffle option of BloscCodec",
+    "fletcher32": "no equivalent; Zarr checksums with a Crc32c codec",
+    "contiguous": "no equivalent; a Zarr array is always chunked",
+    "chunksizes": "use chunks",
+    "endian": "no equivalent; a Zarr codec decides byte order",
+    "least_significant_digit": "no equivalent",
+    "unlimited_dimensions": "no equivalent; a Zarr array has a fixed shape",
+    "order": (
+        "zarr-python takes order for a Zarr version 2 array, and Iris writes "
+        "version 3, where it has no effect"
+    ),
+    "append": (
+        "there is no append; use mode='a' to add new arrays to a store that "
+        "already exists"
+    ),
+}
+
+
+def check_encoding_keywords(encoding) -> None:
+    """Raise for any storage keyword a Zarr store does not have.
+
+    Parameters
+    ----------
+    encoding : dict
+        The storage keywords a caller passed.
+
+    Raises
+    ------
+    TypeError
+        Naming each unusable keyword, and what to do instead where there is
+        something to say.
+
+    """
+    unknown = set(encoding) - _ZARR_ENCODING_KEYWORDS
+    if not unknown:
+        return
+    lines = []
+    for keyword in sorted(unknown):
+        advice = _KEYWORD_ADVICE.get(keyword)
+        if advice is None:
+            lines.append(f"  {keyword}: not a Zarr storage keyword")
+        else:
+            lines.append(f"  {keyword}: {advice}")
+    message = (
+        "Unusable Zarr storage keyword(s). A Zarr store takes zarr-python's "
+        "own keywords, and Iris does not translate netCDF's onto them:\n"
+        + "\n".join(lines)
+    )
+    raise TypeError(message)
+
+
+def existing_name_message(name: str, location: str) -> str:
+    """Return the message for a name a Zarr group already holds.
+
+    One sentence, shared by :meth:`ZarrDataset.create_variable` and
+    :class:`iris.fileformats.zarr.saver.Saver`'s own earlier check of the
+    same fact, so the two call sites cannot drift into saying it two ways.
+
+    Parameters
+    ----------
+    name : str
+        The array name that already exists.
+    location : str
+        The group's path or URL, as :attr:`ZarrDataset.location` reports it.
+
+    Returns
+    -------
+    str
+
+    """
+    return (
+        f"Cannot create {name!r} in the Zarr group {location!r}: it "
+        "already holds something of that name, and Iris neither "
+        "overwrites nor merges into one."
+    )
+
+
+def _storage_fill_value(fill_value, dtype, name: str) -> Any:
+    """Return `fill_value` as a `dtype` scalar, or raise if it cannot be one.
+
+    An array's own fill value and its ``_FillValue`` attribute must be the
+    same number: the attribute declares a value missing, the fill says what
+    unwritten storage reads back as, and a reader that meets two numbers
+    masks the wrong points or none.
+
+    Parameters
+    ----------
+    fill_value :
+        The sentinel the caller gave.
+    dtype : numpy.dtype or type
+        The array's dtype. ``str`` itself is a variable-length string array,
+        whose sentinel is text and has nothing to round.
+    name : str
+        The array's name, for the message.
+
+    Returns
+    -------
+    Any
+        The sentinel as a scalar of `dtype`.
+
+    Raises
+    ------
+    ValueError
+        If `dtype` cannot hold `fill_value`.
+
+    """
+    if dtype is str:
+        return np.dtype(str).type(fill_value)
+
+    dtype = np.dtype(dtype)
+    refusal = (
+        f"Cannot use fill_value={fill_value!r} for the Zarr array {name!r}: "
+        f"{dtype} cannot hold it, so the array's own fill value and its "
+        "'_FillValue' attribute would be two different numbers. Pass a "
+        "sentinel of the array's own type."
+    )
+    try:
+        with np.errstate(over="raise"):
+            stored = dtype.type(fill_value)
+    except (OverflowError, ValueError, TypeError, FloatingPointError) as exception:
+        raise ValueError(refusal) from exception
+    if dtype.kind in _EXACT_FILL_KINDS and stored != fill_value:
+        raise ValueError(refusal)
+    return stored
 
 
 class ZarrDataset(CFDataset):
     """A Zarr store, or one group of one, presented through the CF interface."""
 
-    def __init__(self, location, mode: str = "r", *, group: str | None = None):
+    def __init__(
+        self,
+        location,
+        mode: str = "r",
+        *,
+        group: str | None = None,
+        zarr_format: int | None = None,
+    ):
         """Open a Zarr store.
 
         Parameters
@@ -520,18 +838,31 @@ class ZarrDataset(CFDataset):
             `location` then becomes zarr-python's own rendering of it, the
             best name available for a store with no address.
         mode : str, default="r"
-            Only ``"r"`` is supported.
+            One of ``"r"``, ``"r+"``, ``"a"``, ``"w"`` or ``"w-"``, with
+            zarr-python's meanings. ``"w-"`` creates and refuses an existing
+            target; ``"w"`` replaces one; ``"a"`` adds to one; ``"r+"`` adds
+            to one and refuses to create it.
         group : str, optional
             A ``/``-separated path to a group within the store. The root group
             by default. Iris reads one group per call and does not walk
             nested groups.
+        zarr_format : int, optional
+            The version to create, when writing. Version 3 when not given,
+            and version 3 is the only one Iris writes. Reading handles either
+            version and ignores this: zarr-python reads the version from the
+            store, and a version named here that the store disagrees with
+            would be reported as a missing group.
 
         Raises
         ------
+        ValueError
+            For an unknown `mode`.
         NotImplementedError
-            For any `mode` other than ``"r"``.
+            For a write `mode` with a `zarr_format` Iris does not write.
+        FileExistsError
+            For ``mode="w-"`` onto a target that already exists.
         FileNotFoundError
-            If `location` does not exist.
+            If `location` does not exist and `mode` does not create it.
         zarr.errors.GroupNotFoundError
             If `location` is not a Zarr store, or holds no such `group`.
 
@@ -543,8 +874,33 @@ class ZarrDataset(CFDataset):
         self._attributes: _ZarrAttributes | None = None
         self._dimensions: dict[str, int] | None = None
 
-        if mode not in _READ_MODES:
-            raise NotImplementedError(f"{_NO_SAVING} Cannot open with mode={mode!r}.")
+        #: A record of dimension names and sizes.
+        #: Zarr stores no dimension object of its own, so this is the only
+        #: record of a declared size, and the only way to catch two arrays
+        #: declaring one name at two sizes.
+        self._declared_dimensions: dict[str, int] = {}
+
+        if mode not in _MODES:
+            message = (
+                f"Unknown mode {mode!r} for a Zarr store. Expected one of {_MODES}."
+            )
+            raise ValueError(message)
+
+        writing = mode in _WRITE_MODES
+        if not writing:
+            # Reading detects the version from the store. Naming one here
+            # would constrain that detection, and a store of the other
+            # version would then be reported as a missing group.
+            zarr_format = None
+        elif zarr_format is None:
+            zarr_format = _DEFAULT_ZARR_FORMAT
+        elif zarr_format not in _WRITABLE_ZARR_FORMATS:
+            message = (
+                f"zarr_format={zarr_format} is not currently supported for "
+                "writing in Iris. Currently supported formats are: "
+                f"{_WRITABLE_ZARR_FORMATS}. "
+            )
+            raise NotImplementedError(message)
 
         self._mode = mode
         target = str(location)
@@ -553,7 +909,27 @@ class ZarrDataset(CFDataset):
         # `location` itself, not its stringified `target`, is handed to
         # zarr-python: stringifying a store object such as a `MemoryStore`
         # loses the store, leaving only a name zarr-python cannot reopen.
-        self._group = zarr.open_group(store=location, mode=mode, path=group)
+        try:
+            self._group = zarr.open_group(
+                store=location,
+                mode=mode,
+                path=group,
+                zarr_format=zarr_format,
+                # A write mode must see what the store actually holds, not a
+                # frozen consolidated snapshot: `mode="a"` onto a store this
+                # saver already consolidated would otherwise list only the
+                # arrays present at the last consolidation, and never the one
+                # this call is about to add. A read mode keeps the
+                # consolidated fast path, which is what it is for.
+                use_consolidated=False if writing else None,
+            )
+        except FileExistsError as exception:
+            message = (
+                f"Cannot create the Zarr store {self._location!r}: it already "
+                f"exists, and mode={mode!r} will not overwrite it. Pass "
+                "mode='w' to replace it, or mode='a' to add to it."
+            )
+            raise FileExistsError(message) from exception
         self._format = _FORMAT_BY_ZARR_VERSION[self._group.metadata.zarr_format]
 
         # Assembled here rather than on first access, because assembling is
@@ -602,11 +978,19 @@ class ZarrDataset(CFDataset):
 
     @property
     def dimensions(self) -> Mapping:
-        """The dimension sizes this group's arrays agree on.
+        """The dimension sizes this group's arrays agree on, and any declared.
 
-        Assembled when the store is opened, not on first access here.
+        Assembled when the store is opened, and again after a write has
+        changed what the answer would be. A dimension declared by
+        :meth:`create_dimension` appears here before any array carries it,
+        because that is what a caller choosing a new name needs to see.
+
         """
-        assert self._dimensions is not None
+        if self._dimensions is None:
+            self._dimensions = {
+                **_assemble_dimensions(self.variables),
+                **self._declared_dimensions,
+            }
         return self._dimensions
 
     @property
@@ -632,24 +1016,196 @@ class ZarrDataset(CFDataset):
         return self._attributes
 
     def create_dimension(self, name: str, size: int | None) -> None:
-        """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError(_NO_SAVING)
+        """Declare a dimension of the given length.
+
+        Zarr has no dimension object: a dimension is a name an array carries
+        in its own metadata. So this records the name and size, and
+        :meth:`create_variable` writes the names onto each array. The record
+        is what lets a size conflict be caught here rather than becoming two
+        arrays that disagree.
+
+        A name an array in this group already carries counts as taken, at
+        that array's length. ``mode="a"`` is the case that needs it: an
+        existing array is never resized, so a declaration disagreeing with
+        one would leave :attr:`dimensions` reporting a single length for a
+        name two arrays hold at two.
+
+        Parameters
+        ----------
+        name : str
+            The dimension's name.
+        size : int or None
+            Its length. ``None`` requests an unlimited dimension, which Zarr
+            has no form for.
+
+        Raises
+        ------
+        NotImplementedError
+            For ``size=None``.
+        ValueError
+            If `name` is already in use at a different size, or if this
+            dataset was opened read-only.
+
+        """
+        self._check_writable("create_dimension")
+        if size is None:
+            message = (
+                f"Cannot create the unlimited dimension {name!r}: a Zarr array "
+                "has a fixed shape, so there is no unlimited dimension to "
+                "create."
+            )
+            raise NotImplementedError(message)
+
+        declared = self._declared_dimensions.get(name)
+        if declared is not None and declared != size:
+            message = (
+                f"Cannot declare dimension {name!r} with size {size}: it is "
+                f"already declared with size {declared}."
+            )
+            raise ValueError(message)
+        dimensions = dict(self.dimensions)
+        existing = dimensions.get(name)
+        if existing is not None and existing != size:
+            message = (
+                f"Cannot declare dimension {name!r} with size {size}: an array "
+                f"in the Zarr group {self._location!r} already uses that name "
+                f"with size {existing}, and an existing array is never resized."
+            )
+            raise ValueError(message)
+        self._declared_dimensions[name] = size
+        # Updated rather than dropped: dropping it would reassemble it from
+        # every array in the group on the next call, over a remote store.
+        dimensions[name] = size
+        self._dimensions = dimensions
+
+    def _check_writable(self, action: str) -> None:
+        """Raise unless this dataset was opened in a mode that writes."""
+        if self._mode not in _WRITE_MODES:
+            message = (
+                f"Cannot {action} on a Zarr store opened with mode={self._mode!r}. "
+                f"Open it with one of {_WRITE_MODES} to write."
+            )
+            raise ValueError(message)
 
     def create_variable(
-        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
-    ):
-        """Raise: saving to Zarr is not supported."""
-        raise NotImplementedError(_NO_SAVING)
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **encoding
+    ) -> "ZarrDatasetVariable":
+        """Create and return a new array.
+
+        Parameters
+        ----------
+        name : str
+            The array's name within this group.
+        dtype : numpy.dtype or str or type
+            The array's dtype. ``str`` itself asks for a variable-length
+            string array, which is how this store holds text.
+        dimensions : iterable of str, optional
+            The names of its dimensions, each already declared by
+            :meth:`create_dimension`. Empty for a scalar.
+        fill_value : optional
+            The CF missing-value sentinel. When given it is written as a
+            ``_FillValue`` attribute as well as the array's own fill, because
+            on version 3 the attribute is the masking declaration and the
+            storage fill is not. When not given, the array takes the netCDF
+            default fill for its dtype, and declares nothing: the saver
+            declares one if it finds the data is masked.
+        **encoding
+            Zarr's own storage keywords: ``chunks``, ``shards``,
+            ``compressors``, ``filters``, ``serializer``.
+
+        Returns
+        -------
+        :class:`ZarrDatasetVariable`
+
+        Raises
+        ------
+        ValueError
+            If the dataset is read-only, a dimension is undeclared, `name`
+            already exists in this group, Zarr has no data type for `dtype`,
+            or `dtype` cannot hold `fill_value`.
+        TypeError
+            For a storage keyword this store does not have.
+
+        """
+        self._check_writable("create_variable")
+        check_encoding_keywords(encoding)
+        assert self._group is not None
+
+        if dtype is not str:
+            # Native byte order, whatever order was asked for: see the module
+            # docstring, and test_ZarrDataset__write.py's TestByteOrder.
+            dtype = np.dtype(dtype).newbyteorder("=")
+        dimensions = tuple(dimensions)
+        shape = tuple(self._dimension_size(dimension) for dimension in dimensions)
+
+        if name in self._group:
+            raise ValueError(existing_name_message(name, self._location))
+
+        if fill_value is None:
+            # None here means zarr-python's own default for the dtype
+            # applies, and the array declares no sentinel of its own. That
+            # covers a variable-length string array, which the netCDF
+            # default-fill table has no entry for, and every other dtype it
+            # has no entry for either - a Zarr store holds plenty netCDF
+            # does not. Whether a *missing-value* sentinel is needed is a
+            # question about the data, settled by the saver, which is the
+            # only thing that sees it.
+            stored_fill = (
+                None if dtype is str else _encode.default_fill_value(np.dtype(dtype))
+            )
+        else:
+            stored_fill = _storage_fill_value(fill_value, dtype, name)
+
+        create_kwargs = dict(encoding)
+        if stored_fill is not None:
+            create_kwargs["fill_value"] = stored_fill
+
+        array = self._group.create_array(
+            name,
+            shape=shape,
+            dtype=dtype,
+            dimension_names=dimensions or None,
+            **create_kwargs,
+        )
+        variable = ZarrDatasetVariable(array, self._location, self._format)
+        if fill_value is not None:
+            variable.attributes["_FillValue"] = fill_value
+
+        # Both caches describe a group that has just changed.
+        self._variables = None
+        self._dimensions = None
+        return variable
+
+    def _dimension_size(self, name: str) -> int:
+        """Return a declared dimension's size, or raise naming it."""
+        size = self.dimensions.get(name)
+        if size is None:
+            message = (
+                f"Cannot create an array over dimension {name!r}: no dimension "
+                "of that name has been declared in this group."
+            )
+            raise ValueError(message)
+        return size
 
     def supports_dtype(self, dtype) -> bool:
         """Whether this store can hold a variable of this dtype.
 
-        Always True. Zarr's data types cover the whole of NumPy's fixed-width
-        numeric range, in both versions, so there is no dtype a caller could
-        reach here with that the store would have to narrow. Contrast
+        Always True. :class:`~iris.fileformats.cf.dataset.CFDataset` asks this
+        before narrowing an integer type, and the only dtypes the saver asks
+        it about are ``int64`` and the unsigned integers - see
+        :meth:`iris.fileformats.cf.saver._CFSaver._ensure_valid_dtype`. Zarr
+        has a data type for every one of them, so nothing is ever narrowed for
+        a Zarr store. Contrast
         :meth:`~iris.fileformats.netcdf._dataset.NetCDFDataset.supports_dtype`,
         which answers False for the integer types the netCDF 3 formats have no
         type for.
+
+        A dtype Zarr genuinely cannot hold - an object array, a zero-length
+        void, one of the platform's extended precisions - is refused by
+        zarr-python in :meth:`create_variable`, with a ``ValueError`` naming
+        the dtype. Answering that question here as well would mean keeping a
+        second table of what zarr-python can store, which no saver consults
+        and which goes stale as zarr-python gains data types.
 
         Parameters
         ----------
@@ -667,13 +1223,97 @@ class ZarrDataset(CFDataset):
         """Do nothing: a Zarr write is not buffered."""
 
     def finalise(self) -> None:
-        """Raise: saving to Zarr is not supported.
+        """Write consolidated metadata for the whole store.
 
-        A Zarr store's completion step is consolidating its metadata, which
-        only a writer performs.
+        One document at the root listing every array and group, which is what
+        makes a remote store usable: a reader fetches one object instead of
+        one per node. Separate from :meth:`close` because it is a write, and
+        a one-shot one - a worker that fills part of a store must not do it,
+        since several writers of one metadata object race.
+
+        Always consolidates from the root, even when this dataset is one
+        group of the store. A consolidated document that does not mention the
+        group just written is what a default reader would believe.
+
+        Raises
+        ------
+        ValueError
+            If this dataset was opened read-only.
+        RuntimeError
+            If the store cannot be consolidated. Raised rather than returned
+            quietly: a store left with stale consolidated metadata hides the
+            data just written from every default reader.
 
         """
-        raise NotImplementedError(_NO_SAVING)
+        self._check_writable("finalise")
+        assert self._group is not None
+        with warnings.catch_warnings():
+            # zarr-python warns that consolidated metadata is not part of the
+            # version 3 specification. Iris asks for it deliberately, and the
+            # user cannot act on it.
+            warnings.filterwarnings(
+                "ignore",
+                message="Consolidated metadata is currently not part",
+                category=UserWarning,
+            )
+            try:
+                zarr.consolidate_metadata(self._group.store)
+            except Exception as exception:
+                message = (
+                    f"Could not consolidate the metadata of the Zarr store "
+                    f"{self._location!r}. The data written is in the store, but "
+                    "a reader that uses consolidated metadata may not see it."
+                )
+                raise RuntimeError(message) from exception
+
+    def drop_consolidated_metadata(self) -> None:
+        """Remove the store's consolidated metadata document, if it has one.
+
+        The other half of :meth:`finalise`, for a save that declines
+        consolidation. A document an earlier save wrote does not mention what
+        this one has just written, and a default reader believes the
+        document, so the data would be in the store and invisible.
+
+        Works from the whole store's root, like :meth:`finalise`, because
+        that is where the document lives however deep the group written was.
+        Does nothing when the store has no document, or no root group at all.
+
+        Raises
+        ------
+        ValueError
+            If this dataset was opened read-only.
+        RuntimeError
+            If the document cannot be removed, for the same reason
+            :meth:`finalise` raises: a store left carrying it hides the data
+            just written.
+
+        """
+        self._check_writable("drop consolidated metadata")
+        assert self._group is not None
+        store = self._group.store
+        try:
+            consolidated = zarr.open_group(store=store, mode="r+")
+        except (FileNotFoundError, KeyError):
+            # No root group, so nothing at the root to go stale.
+            # zarr-python's `GroupNotFoundError` is a `FileNotFoundError`.
+            return
+        if consolidated.metadata.consolidated_metadata is None:
+            return
+
+        try:
+            # Reopened ignoring the document, so the metadata written back
+            # carries no consolidated section. Rewriting the attributes is
+            # what writes it: zarr-python has no call that removes one.
+            root = zarr.open_group(store=store, mode="r+", use_consolidated=False)
+            root.update_attributes(dict(root.attrs))
+        except Exception as exception:
+            message = (
+                f"Could not remove the consolidated metadata of the Zarr store "
+                f"{self._location!r}. The data written is in the store, but the "
+                "store's consolidated metadata predates it, so a reader that "
+                "uses it may not see what was just written."
+            )
+            raise RuntimeError(message) from exception
 
     def close(self) -> None:
         """Record that this dataset is finished with.

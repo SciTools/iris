@@ -9,4 +9,4 @@ Skipped when zarr-python is absent, which is also how the unit tests do it.
 
 import pytest
 
-pytest.importorskip("zarr", minversion="3.0.8")
+pytest.importorskip("zarr", minversion="3.1.0")

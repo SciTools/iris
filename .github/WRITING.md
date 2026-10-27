@@ -80,7 +80,8 @@ never fixed at all.
 - **Never cite what decays silently**: a line number in another file, a count
   of call sites, a time relative to writing ("currently", "this PR", "the new
   behaviour"). Nothing checks any of them, and your "now" is never the
-  reader's.
+  reader's. However, user-facing messages such as warnings/errors remain 
+  appropriate places for phrases such as "currently" or "in future".
 - **Never cite an artefact of how the work was done**: a review finding, a
   task or plan number, a phase, a checklist item. These resolve to nothing for
   a later reader. Cite an issue, a pull request, a design document, or a
