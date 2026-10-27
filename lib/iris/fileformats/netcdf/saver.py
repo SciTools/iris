@@ -45,7 +45,6 @@ from iris.fileformats.cf.saver import SaverFillValueWarning, _CFSaver
 from iris.fileformats.netcdf import _bytecoding_datasets as bytecoding_datasets
 from iris.fileformats.netcdf._bytecoding_datasets import VariableEncoder
 from iris.fileformats.netcdf._dataset import NetCDFDataset, NetCDFDatasetVariable
-import iris.util
 import iris.warnings
 
 # Get the logger : shared logger for all in 'iris.fileformats.netcdf'.
@@ -414,6 +413,34 @@ class Saver(_CFSaver):
         # 'variable.name = value': it defines no __setattr__.
         cf_patch(profile, self._dataset.dataset, cf_var_cube.variable)
 
+    def _grid_mapping_writer(self, cf_var):
+        """Return a function writing onto the netCDF4 variable, as has always happened.
+
+        Setting an attribute on a netCDF4 variable bypasses the ASCII-to-bytes
+        coercion that ``.attributes`` applies, so ``crs_wkt`` is written as
+        ``NC_STRING`` while ``grid_mapping_name`` is ``NC_CHAR``. Regularising
+        that is Q8 in §12.3 of the native Zarr I/O design,
+        ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``; until then,
+        this writes each parameter exactly where netCDF has always written it,
+        so the file is unchanged.
+
+        Parameters
+        ----------
+        cf_var : :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+            The grid-mapping variable.
+
+        Returns
+        -------
+        callable
+            Called with a parameter name and a value.
+
+        """
+
+        def write_parameter(name, value):
+            setattr(cf_var.variable, name, value)
+
+        return write_parameter
+
     def _create_string_variable(
         self, cube_or_mesh, cf_name, element, element_dims, data
     ):
@@ -722,123 +749,12 @@ def save(
     else:
         cubes = cube
 
-    # Decide which cube attributes will be saved as "global" attributes
-    # NOTE: in 'legacy' mode, when iris.FUTURE.save_split_attrs == False, this code
-    # section derives a common value for 'local_keys', which is passed to 'Saver.write'
-    # when saving each input cube.  The global attributes are then created by a call
-    # to "Saver.update_global_attributes" within each 'Saver.write' call (which is
-    # obviously a bit redundant!), plus an extra one to add 'Conventions'.
-    # HOWEVER, in `split_attrs` mode (iris.FUTURE.save_split_attrs == False), this code
-    # instead constructs a 'global_attributes' dictionary, and outputs that just once,
-    # after writing all the input cubes.
-    if iris.FUTURE.save_split_attrs:
-        # We don't actually use 'local_keys' in this case.
-        # TODO: can remove this when the iris.FUTURE.save_split_attrs is removed.
-        local_keys = set()
-
-        # Find any collisions in the cube global attributes and "demote" all those to
-        # local attributes (where possible, else warn they are lost).
-        # N.B. "collision" includes when not all cubes *have* that attribute.
-        global_names = set()
-        for cube in cubes:
-            global_names |= set(cube.attributes.globals.keys())
-
-        # Fnd any global attributes which are not the same on *all* cubes.
-        def attr_values_equal(val1, val2):
-            # An equality test which also works when some values are numpy arrays (!)
-            return iris.util._attribute_equal(val1, val2)
-
-        cube0 = cubes[0]
-        invalid_globals = set(
-            [
-                attrname
-                for attrname in global_names
-                if not all(
-                    attr_values_equal(
-                        cube.attributes.globals.get(attrname),
-                        cube0.attributes.globals.get(attrname),
-                    )
-                    for cube in cubes[1:]
-                )
-            ]
-        )
-
-        # Establish all the global attributes which we will write to the file (at end).
-        global_attributes = {
-            attr: cube0.attributes.globals.get(attr)
-            for attr in global_names - invalid_globals
-        }
-        if invalid_globals:
-            # Some cubes have different global attributes: modify cubes as required.
-            warnings.warn(
-                f"Saving the cube global attributes {sorted(invalid_globals)} as local "
-                "(i.e. data-variable) attributes, where possible, since they are not "
-                "the same on all input cubes.",
-                category=iris.warnings.IrisSaveWarning,
-            )
-            cubes = cubes.copy()  # avoiding modifying the actual input arg.
-            for i_cube in range(len(cubes)):
-                # We iterate over cube *index*, so we can replace the list entries with
-                # with cube *copies* -- just to avoid changing our call args.
-                cube = cubes[i_cube]
-                demote_attrs = set(cube.attributes.globals) & invalid_globals
-                if any(demote_attrs):
-                    # Catch any demoted attrs where there is already a local version
-                    blocked_attrs = demote_attrs & set(cube.attributes.locals)
-                    if blocked_attrs:
-                        warnings.warn(
-                            f"Global cube attributes {sorted(blocked_attrs)} "
-                            f'of cube "{cube.name()}" were not saved, overlaid '
-                            "by existing local attributes with the same names.",
-                            category=iris.warnings.IrisSaveWarning,
-                        )
-                    demote_attrs -= blocked_attrs
-                    if demote_attrs:
-                        # This cube contains some 'demoted' global attributes.
-                        # Replace input cube with a copy, so we can modify attributes.
-                        cube = cube.copy()
-                        cubes[i_cube] = cube
-                        for attr in demote_attrs:
-                            # move global to local
-                            value = cube.attributes.globals.pop(attr)
-                            cube.attributes.locals[attr] = value
-
-    else:
-        # Legacy mode: calculate "local_keys" to control which attributes are local
-        # and which global.
-        # TODO: when iris.FUTURE.save_split_attrs is removed, this section can also be
-        # removed
-        message = (
-            "Saving to netcdf with legacy-style attribute handling for backwards "
-            "compatibility.\n"
-            "This mode is deprecated since Iris 3.8, and will eventually be removed.\n"
-            "Please consider enabling the new split-attributes handling mode, by "
-            "setting 'iris.FUTURE.save_split_attrs = True'."
-        )
-        warn_deprecated(message)
-
-        if local_keys is None:
-            local_keys = set()
-        else:
-            local_keys = set(local_keys)
-
-        # Determine the attribute keys that are common across all cubes and
-        # thereby extend the collection of local_keys for attributes
-        # that should be attributes on data variables.
-        attributes = cubes[0].attributes
-        common_keys = set(attributes)
-        for cube in cubes[1:]:
-            keys = set(cube.attributes)
-            local_keys.update(keys.symmetric_difference(common_keys))
-            common_keys.intersection_update(keys)
-            different_value_keys = []
-            for key in common_keys:
-                if not iris.util._attribute_equal(
-                    attributes[key], cube.attributes[key]
-                ):
-                    different_value_keys.append(key)
-            common_keys.difference_update(different_value_keys)
-            local_keys.update(different_value_keys)
+    # Decide which cube attributes will be saved as "global" attributes.  This is
+    # cube logic rather than netCDF logic, so it lives in 'cf.saver' and every
+    # format's 'save' calls it; see its docstring for what each mode does.
+    cubes, local_keys, global_attributes = cf_saver.marshal_attributes(
+        cubes, local_keys, "netcdf"
+    )
 
     def is_valid_packspec(p):
         """Only checks that the datatype is valid."""

@@ -1,7 +1,7 @@
 .. explanation:: Zarr I/O Handling in Iris
    :tags: topic_load_save
 
-   Read about how Iris loads Zarr stores.
+   Read about how Iris loads and saves Zarr stores.
 
 .. include:: ../../common_links.inc
 
@@ -19,9 +19,9 @@ version 3 stores natively, through
 `zarr-python <https://zarr.readthedocs.io/>`_.
 
 ``zarr`` is an **optional dependency**, and Iris requires at least version
-3.0.8. Install it to load Zarr stores::
+3.1.0. Install it to load Zarr stores::
 
-    conda install -c conda-forge "zarr>=3.0.8"
+    conda install -c conda-forge "zarr>=3.1.0"
 
 Iris without it installs and runs normally, raising an ``ImportError`` that
 names the package and its minimum required version if you ask it to load a
@@ -44,16 +44,122 @@ A store holding UGRID mesh data loads as a mesh cube, the same as the
 equivalent netCDF file would. :func:`iris.mesh.load_meshes` reads a store
 too.
 
+.. note::
+
+    A Zarr attribute may be any JSON value, so a cube loaded from a store
+    may carry one that netCDF cannot hold. Saving that cube as netCDF fails.
+    See :ref:`zarr_io_attributes`.
+
 Saving
 ------
 
-Iris does not save to a native Zarr store. ``iris.save(cube, "out.zarr")``
-raises ``ValueError: Cannot save; no saver``, naming neither Zarr nor an
-alternative. Save to netCDF instead, or write Zarr through netCDF-c's NCZarr
-driver, covered below in :ref:`zarr_io_nczarr`.
+A store is a directory, or a URL, so pass it where you would pass a file::
 
-A cube loaded from Zarr may carry an attribute netCDF cannot hold, which
-fails the save. See :ref:`zarr_io_attributes`.
+    iris.save(cubes, "/data/forecast.zarr")
+
+Iris writes Zarr **version 3** stores. A whole :class:`~iris.cube.CubeList`
+goes into one store, which is opened once. Saving through netCDF-c's NCZarr
+driver writes **version 2** instead, covered below in :ref:`zarr_io_nczarr`.
+
+.. warning::
+
+    A save that is interrupted leaves a partial store behind, and Iris cannot
+    roll it back. The damage is quiet -- see
+    :ref:`zarr_io_interrupted_save`.
+
+Unlike the netCDF saver, this one does **not** overwrite. ``iris.save`` raises
+if the target already exists, because replacing a store means deleting many
+objects one at a time, and an interrupted replacement destroys what was there
+without completing what replaces it. Say so explicitly to opt in::
+
+    iris.save(cubes, "/data/forecast.zarr", mode="w")       # replace
+    iris.save(more_cubes, "/data/forecast.zarr", mode="a")  # add what is not there
+
+``mode="a"`` adds a *new* array or group to a store that already holds others.
+It never extends, rewrites, resizes or re-chunks an array that is already
+there. Saving a cube whose own data variable already exists in the target
+group is an error rather than an overwrite, so saving the same cube twice with
+``mode="a"`` raises rather than duplicating it. Appending to data is not
+supported, for Zarr or for netCDF: deciding whether incoming data is
+compatible with what a store already holds is a data-model problem, and the
+storage format does not solve it.
+
+Everything else a cube carries -- its coordinates, bounds and cell measures --
+is not matched against what the store already holds. Adding a cube to a store
+that already carries a ``latitude`` array writes a second one, named
+``latitude_0``, rather than reusing the first. Deciding whether two
+coordinates are "the same" across unequal values, differing units and
+different calendars is its own piece of work, so Iris does not attempt it.
+
+Storage keywords
+^^^^^^^^^^^^^^^^
+
+The Zarr saver takes **zarr-python's** vocabulary, not netCDF's::
+
+    iris.save(
+        cube,
+        "out.zarr",
+        chunks=(1, 50, 50),
+        shards=(4, 100, 100),
+        compressors=[zarr.codecs.BloscCodec(cname="zstd")],
+    )
+
+``chunks``, ``shards``, ``compressors``, ``filters`` and ``serializer`` are
+passed through as zarr-python defines them. A netCDF keyword such as
+``zlib=True`` raises :class:`TypeError` naming the Zarr replacement where there
+is one, and saying there is none where there is not. ``order`` raises too: it
+is zarr-python's own keyword, but it has no effect on a version 3 array.
+
+For a cube holding **lazy** data, ``chunks`` defaults to the cube's own lazy
+chunking. Real data has no chunking of its own to inherit, and gets
+zarr-python's automatic chunking instead. Passing ``chunks`` explicitly
+overrides either case. The default is also dropped when you pass ``shards``: a
+shard holds a whole number of inner chunks, and zarr-python picks the inner
+chunk in that case.
+
+Deferred saving
+^^^^^^^^^^^^^^^
+
+``compute=False`` returns a :class:`dask.delayed.Delayed` that writes the lazy
+data when computed, and consolidates the store's metadata after the last chunk::
+
+    result = iris.save(cubes, "deferred.zarr", compute=False)
+    result.compute()
+
+Consolidated metadata
+^^^^^^^^^^^^^^^^^^^^^
+
+Iris writes a consolidated metadata document at the store's root when the save
+completes, which makes a remote store usable: a reader fetches one object
+instead of one per array. Pass ``consolidate_metadata=False`` to decline.
+
+When Iris adds to a store that already carries one, it rewrites it -- or, if
+you declined consolidation for that save, removes it. A consolidated document
+that does not mention what was just written is what a default reader believes,
+so a stale one hides data; having none at all is slower to read but tells the
+truth.
+
+.. _zarr_io_interrupted_save:
+
+What an interrupted save leaves behind
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+An interrupted save leaves a partial store, and Iris offers no rollback. Zarr
+has no multi-object transaction: a store's metadata and its chunks are separate
+objects, so a save interrupted between them leaves the two disagreeing, and a
+missing chunk is not an error -- it reads back as the fill value, with no
+warning. The usual mitigation, writing to a temporary name and renaming on
+success, is not adopted: a directory rename is atomic on a local filesystem but
+object stores have no equivalent, so the guarantee would evaporate exactly
+where Zarr is most used. Callers who need transactional writes want
+`Icechunk <https://icechunk.io/>`_.
+
+Meshes
+^^^^^^
+
+A cube with an unstructured :class:`~iris.mesh.MeshXY` saves correctly: the
+store carries the full CF-UGRID structure, the same mesh, topology and
+connectivity variables a netCDF save would write.
 
 Remote stores
 -------------
@@ -86,6 +192,16 @@ To read another group, call the Zarr loader directly::
             "/data/sentinel.zarr", group="measurements/reflectance/r10m"
         )
     )
+
+Saving takes a group more directly: ``iris.save`` itself takes a ``group=``
+keyword, naming a ``/``-separated path within the store::
+
+    iris.save(cubes, "/data/sentinel.zarr", group="measurements/reflectance/r10m")
+
+Passing ``group=`` implies ``mode="a"``, because writing a group into a store
+means the store may already hold others. ``iris.load`` and ``iris.load_cube``
+have no equivalent keyword: reading a group other than the root means calling
+the Zarr loader directly, as above.
 
 Dimension names
 ---------------
@@ -128,6 +244,20 @@ version 2 store whose array declares no CF attribute -- which is what version
 That one case can mask a genuine zero, so Iris warns when it happens, naming
 the variable. Setting a ``_FillValue`` attribute on the array prevents both
 the masking and the warning.
+
+On save, Iris writes the missing-value declaration as well as the storage fill:
+a masked cube gets a ``_FillValue`` attribute even when it carried none of its
+own, because on version 3 the attribute is what declares missing data and the
+storage ``fill_value`` is not. Without it, every masked point would read back
+unmasked. Pass ``fill_value=`` to choose the sentinel; the default is the same
+one netCDF uses for that dtype.
+
+A floating ``_FillValue`` is written as the base64 of a little-endian
+``float64``, which is what xarray and the wider Zarr ecosystem read. This
+deviates from CF section 2.5.1, which asks for a value of the variable's own
+type. The deviation is deliberate and load-bearing: a plain JSON number there
+makes the whole store unreadable by default xarray, which is a worse outcome
+than a convention deviation that every reader understands.
 
 Chunking
 --------

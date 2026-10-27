@@ -11,7 +11,7 @@ import iris
 from iris.io import _is_remote_store_uri, load_stores
 from iris.tests import _shared_utils
 
-zarr = pytest.importorskip("zarr", minversion="3.0.8")
+zarr = pytest.importorskip("zarr", minversion="3.1.0")
 
 from iris.tests.unit.fileformats.zarr import stores  # noqa: E402
 
@@ -125,6 +125,37 @@ class Test_load_files:
 
 
 class Test_saving:
+    def test_the_zarr_saver_takes_a_cubelist_whole(self):
+        """A Zarr store is opened once and holds many arrays.
+
+        Registered by identity, beside the netCDF saver: were it missing,
+        `iris.save` would call it once per cube, and every cube after the
+        first would meet a store that the default `mode="w-"` refuses.
+        `_zarr_save` shares `iris.io` with `_dot_save`, which must keep
+        being handed one cube at a time, so the registry naming functions
+        rather than modules is what keeps the two apart.
+        """
+        import iris.io
+
+        iris.io._check_init_savers()
+        assert iris.io._zarr_save in iris.io._savers.cubelist_savers
+        assert iris.io._dot_save not in iris.io._savers.cubelist_savers
+
+    def test_the_zarr_saver_is_recognised_when_passed_directly(self):
+        """A caller reaches the same save through the wrapper or the saver.
+
+        `iris.save(cubes, "out.zarr")` dispatches to `iris.io._zarr_save`,
+        while `saver=iris.fileformats.zarr.save` hands over the saver
+        itself. Both must be recognised, or one of them silently loops over
+        the cubes and every cube after the first meets a store that
+        `mode="w-"` refuses.
+        """
+        from iris.fileformats.zarr import save as zarr_save
+        import iris.io
+
+        iris.io._check_init_savers()
+        assert zarr_save in iris.io._savers.cubelist_savers
+
     def test_find_saver_tolerates_a_trailing_separator(self):
         from iris.io import find_saver
 

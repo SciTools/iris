@@ -43,6 +43,10 @@ class CountingStore(zarr.storage.WrapperStore):
     zarr-python copies a store when it opens it read-only, through
     `with_read_only` and `_with_store`, so a tally kept on the instance is
     never the one the live store writes to, and the test passes vacuously.
+
+    Both of those are supplied here rather than inherited. `WrapperStore`
+    only grew them in zarr-python 3.1.6, and Iris accepts 3.1.0, where
+    opening a wrapped store read-only raises instead.
     """
 
     def __init__(self, store, tally):
@@ -51,6 +55,9 @@ class CountingStore(zarr.storage.WrapperStore):
 
     def _with_store(self, store):
         return type(self)(store, self.tally)
+
+    def with_read_only(self, read_only=False):
+        return self._with_store(self._store.with_read_only(read_only))
 
     async def get(self, key, prototype, byte_range=None):
         buffer = await self._store.get(key, prototype, byte_range)
