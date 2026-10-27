@@ -138,7 +138,7 @@ def test_a_group_with_no_arrays_names_the_groups_that_have_them(tmp_path):
 
 @pytest.mark.parametrize("zarr_format", [2, 3])
 def test_a_fixed_length_unicode_variable_loads(tmp_path, zarr_format):
-    """`<U` dtypes are not strictly Zarr-supported, and real stores hold them.
+    """`<U` dtypes are not strictly Zarr-supported, but some datasets are known to use them.
 
     :issue:`6961` raises the dtype question. The ESA EOPF Sentinel-2 products
     carry `<U7` and `<U3` arrays under `conditions/geometry`, so the reader

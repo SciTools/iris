@@ -13,7 +13,6 @@ The design document is ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``;
 section 7 says what the subset keeps and why.
 """
 
-from pathlib import Path
 import warnings
 
 import numpy as np
@@ -30,21 +29,10 @@ from iris.warnings import IrisLoadWarning
 SOURCE_SHARDS = (1, 4, 120, 120)
 SOURCE_CHUNKS = (1, 2, 40, 40)
 
-SAMPLE = Path(_shared_utils.get_data_path(("Zarr", "gfs_forecast_sample.zarr")))
-
-# `skip_data` only asks whether iris-test-data is present at all, so without
-#  this every test here FAILS rather than skips on a checkout that predates
-#  the store. iris and iris-test-data are versioned separately, so there is
-#  always a window where one has the test and the other lacks the data.
-pytestmark = pytest.mark.skipif(
-    not SAMPLE.is_dir(),
-    reason=f"No {SAMPLE.name} in iris-test-data; see IRIS_TEST_DATA_VERSION.",
-)
-
 
 @pytest.fixture
 def sample():
-    return str(SAMPLE)
+    return _shared_utils.get_data_path(("Zarr", "gfs_forecast_sample.zarr"))
 
 
 @pytest.fixture(autouse=True)
