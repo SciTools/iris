@@ -4,49 +4,53 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Read a netCDF dataset and interpret it as CF-netCDF variables and groups.
 
-:class:`CFReader` is the entry point to the CF layer: give it a file path or
-an already-open dataset and it returns an object whose ``cf_group`` is a fully
-populated :class:`~iris.fileformats.cf.CFGroup`. All of the work happens in
-:meth:`CFReader.__init__`, in two passes over the dataset's variables.
+:class:`CFReader` is the entry point to the CF layer. Give it a file path, an
+open netCDF4 dataset, or a :class:`~iris.fileformats.cf.dataset.CFDataset` of
+any format, and it returns an object whose ``cf_group`` is a fully populated
+:class:`~iris.fileformats.cf.CFGroup`.
 
-The first pass, ``_translate``, is classification. It asks each class in
-``_variable_types`` to ``identify`` itself among the netCDF variables, then
-handles the three special cases that tuple deliberately excludes:
-:class:`~iris.fileformats.cf.CFCoordinateVariable` (identified by the netCDF
-dimension/variable name coincidence rather than by an attribute),
-``_CFFormulaTermsVariable`` (whose members are also something else) and
-:class:`~iris.fileformats.cf.CFDataVariable` (what is left over once every
-other classification has had its say). It also caches the parse of every
-``grid_mapping`` attribute in ``_coord_system_mappings``, mapping a variable
-name to the coordinate-system-to-coordinates relationships it declares, so
-that the loading rules do not re-parse the same attribute once per coordinate.
+.. maintainer-notes::
 
-The second pass, ``_build_cf_groups``, is association: for each variable it
-builds the sub-:class:`~iris.fileformats.cf.CFGroup` of the variables that
-variable references, and checks that a referenced variable's dimensions span
-the referrer's. One that does not is not an error -- it is dropped from the
-referrer's group with a warning and, if nothing else claims it, *promoted* to
-a :class:`~iris.fileformats.cf.CFDataVariable` of its own. A final
-``_reset`` clears the attribute touch history that classification dirtied, so
-that the loading rules start from a clean record of which netCDF attributes
-have been consumed.
+   Only the path case mentions netCDF, and only because something has to be
+   the default that a bare filename means. An open netCDF4 dataset, or an
+   emulator of one such as ncdata passes, is wrapped. A ``CFDataset`` is used
+   as it stands, which is how a Zarr store reaches this machinery: its loader
+   opens the store and hands it over, so nothing here has to know that Zarr
+   exists.
 
-``CFReader`` may or may not own the file it reads, and ``_own_file`` records
-which. Constructed from a path, it opens the dataset and owns it; constructed
-from an open dataset, it borrows it. ``_close`` -- reached from ``__exit__``
-and from ``__del__`` -- only closes what it owns, so a borrowed dataset
-survives garbage collection of the reader. ``_own_file`` is set ``False``
-before anything that can raise, so the destructor is safe even if
-``__init__`` fails part way.
+   All of the work happens in :meth:`CFReader.__init__`, in two passes over
+   the dataset's variables.
 
-``CFReader`` takes one of three things. A path opens a netCDF file, because
-netCDF is the default a bare filename means. An open netCDF4 dataset, or an
-emulator of one such as ncdata passes, is wrapped. And a
-:class:`~iris.fileformats.cf.dataset.CFDataset` of any format is used as it
-stands, which is how a Zarr store reaches this machinery: its loader opens
-the store and hands it over, so nothing here has to know that Zarr exists.
-Only the first case mentions netCDF, and only because something has to be
-the default.
+   The first pass, ``_translate``, is classification. It asks each class in
+   ``_variable_types`` to ``identify`` itself among the netCDF variables, then
+   handles the three special cases that tuple deliberately excludes:
+   :class:`~iris.fileformats.cf.CFCoordinateVariable` (identified by the
+   netCDF dimension/variable name coincidence rather than by an attribute),
+   ``_CFFormulaTermsVariable`` (whose members are also something else) and
+   :class:`~iris.fileformats.cf.CFDataVariable` (what is left over once every
+   other classification has had its say). It also caches the parse of every
+   ``grid_mapping`` attribute in ``_coord_system_mappings``, mapping a
+   variable name to the coordinate-system-to-coordinates relationships it
+   declares, so that the loading rules do not re-parse the same attribute once
+   per coordinate.
+
+   The second pass, ``_build_cf_groups``, is association: for each variable it
+   builds the sub-:class:`~iris.fileformats.cf.CFGroup` of the variables that
+   variable references, and checks that a referenced variable's dimensions
+   span the referrer's. One that does not is not an error -- it is dropped
+   from the referrer's group with a warning and, if nothing else claims it,
+   *promoted* to a :class:`~iris.fileformats.cf.CFDataVariable` of its own. A
+   final ``_reset`` clears the attribute touch history that classification
+   dirtied, so that the loading rules start from a clean record of which
+   netCDF attributes have been consumed.
+
+   ``CFReader`` may or may not own the file it reads, and ``_own_file``
+   records which. Constructed from a path, it opens the dataset and owns it;
+   constructed from an open dataset, it borrows it. ``_close`` -- reached from
+   ``__exit__`` and from ``__del__`` -- only closes what it owns, so a
+   borrowed dataset survives garbage collection of the reader. ``_own_file``
+   is set ``False`` before anything that can raise, so the destructor is safe
+   even if ``__init__`` fails part way.
 
 """
 

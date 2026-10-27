@@ -15,14 +15,16 @@
 
    API reference
 
-What is left here is what is genuinely netCDF's: opening the file sources, and
-the proxy class that reads from them. Interpreting what is inside is
-:mod:`iris.fileformats.cf.loader`'s job.
-
 See : `NetCDF User's Guide <https://docs.unidata.ucar.edu/nug/current/>`_
 and `netCDF4 python module <https://github.com/Unidata/netcdf4-python>`_.
 
 Also : `CF Conventions <https://cfconventions.org/>`_.
+
+.. maintainer-notes::
+
+   What is left here is what is genuinely netCDF's: opening the file sources,
+   and the proxy class that reads from them. Interpreting what is inside is
+   :mod:`iris.fileformats.cf.loader`'s job.
 
 """
 

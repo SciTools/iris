@@ -4,34 +4,39 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Value conversions a Zarr store needs on the way in.
 
-The mirror of :mod:`iris.fileformats.zarr._decode`: pure functions of their
-arguments, with no zarr-python call and no Iris object between them, so that
-every rule can be tested on a plain value.
+The mirror of :mod:`iris.fileformats.zarr._decode`.
 
-**Attribute values are converted before zarr sees them, never after.** A value
-zarr's JSON encoder rejects raises, *and stays in the attributes mapping*, so a
-caller that converts on failure has already corrupted the store's metadata.
+.. maintainer-notes::
 
-**``_FillValue`` and ``missing_value`` are encoded differently, and the
-difference is not Iris's.** On a floating array, released xarray reads
-``_FillValue`` through zarr's own fill-value parser, which wants the base64 of
-a little-endian ``float64`` and fails the *whole dataset open* on a plain JSON
-number. It reads ``missing_value`` as an ordinary attribute, where base64 is a
-string that masks nothing. So the first is packed and the second is not. See
-§4.5 of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+   Every rule here is a pure function of its arguments, with no zarr-python
+   call and no Iris object between them, so that it can be tested on a plain
+   value.
 
-**Packing is applied here, not assumed from the backend.** netCDF4-python
-applies ``scale_factor``/``add_offset`` packing itself, on assignment, once
-those attributes are set on the variable - which is why the generic CF saver
-only ever writes the attributes and streams the unpacked values through
-unchanged. Zarr has no such behaviour, so :func:`pack` does the arithmetic
-that would otherwise silently not happen. It is the mirror of
-:func:`iris.fileformats.zarr._decode.unpack`, called from
-:meth:`iris.fileformats.zarr._dataset.ZarrDatasetVariable.__setitem__` before
-the fill described above, because the fill value lives in *packed* space and
-the data arrives in *unpacked* space - packing an already-filled sentinel
-would put it through the same transform as real data and lose it.
+   **Attribute values are converted before zarr sees them, never after.** A
+   value zarr's JSON encoder rejects raises, *and stays in the attributes
+   mapping*, so a caller that converts on failure has already corrupted the
+   store's metadata.
+
+   **``_FillValue`` and ``missing_value`` are encoded differently, and the
+   difference is not Iris's.** On a floating array, released xarray reads
+   ``_FillValue`` through zarr's own fill-value parser, which wants the base64
+   of a little-endian ``float64`` and fails the *whole dataset open* on a plain
+   JSON number. It reads ``missing_value`` as an ordinary attribute, where
+   base64 is a string that masks nothing. So the first is packed and the second
+   is not. See §4.5 of the native Zarr I/O design,
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
+   **Packing is applied here, not assumed from the backend.** netCDF4-python
+   applies ``scale_factor``/``add_offset`` packing itself, on assignment, once
+   those attributes are set on the variable - which is why the generic CF saver
+   only ever writes the attributes and streams the unpacked values through
+   unchanged. Zarr has no such behaviour, so :func:`pack` does the arithmetic
+   that would otherwise silently not happen. It is the mirror of
+   :func:`iris.fileformats.zarr._decode.unpack`, called from
+   :meth:`iris.fileformats.zarr._dataset.ZarrDatasetVariable.__setitem__`
+   before the fill described above, because the fill value lives in *packed*
+   space and the data arrives in *unpacked* space - packing an already-filled
+   sentinel would put it through the same transform as real data and lose it.
 
 """
 

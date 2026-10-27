@@ -12,23 +12,28 @@ variable in a file exactly once, whatever its type.
 
 On top of that mapping sit one read-only property per variable type --
 :attr:`CFGroup.bounds`, :attr:`CFGroup.grid_mappings` and so on -- each of
-which filters the mapping by ``isinstance``. They are computed on every access
-rather than cached, so a group stays correct when
-:class:`~iris.fileformats.cf.CFReader` mutates it during its second pass. A
-variable therefore appears in every property whose type it satisfies, and
-:attr:`CFGroup.formula_terms` is the one exception to the ``isinstance``
-rule: it filters on ``has_formula_terms()`` instead, because participating in
-a formula term is a property of the variable rather than of its class.
+which filters the mapping by ``isinstance``.
 
-Two attributes sit alongside the variables and are populated by the reader,
-not by this module. ``global_attributes`` holds the file's netCDF global
-attributes. ``promoted`` records the variables that the reader re-classified
-as :class:`~iris.fileformats.cf.CFDataVariable`, which it does for two
-distinct reasons: a formula term that names a reference surface is a data
-pay-load in its own right, per [CF] Appendix D; and a variable that was
-referenced but whose dimensions are not a subset of the referrer's is dropped
-from that referrer with a warning, then promoted so that it is not lost
-altogether. Promotion is how Iris avoids silently discarding either.
+.. maintainer-notes::
+
+   Those properties are computed on every access rather than cached, so a
+   group stays correct when :class:`~iris.fileformats.cf.CFReader` mutates it
+   during its second pass. A variable therefore appears in every property
+   whose type it satisfies, and :attr:`CFGroup.formula_terms` is the one
+   exception to the ``isinstance`` rule: it filters on ``has_formula_terms()``
+   instead, because participating in a formula term is a property of the
+   variable rather than of its class.
+
+   Two attributes sit alongside the variables and are populated by the reader,
+   not by this module. ``global_attributes`` holds the file's netCDF global
+   attributes. ``promoted`` records the variables that the reader
+   re-classified as :class:`~iris.fileformats.cf.CFDataVariable`, which it
+   does for two distinct reasons: a formula term that names a reference
+   surface is a data pay-load in its own right, per [CF] Appendix D; and a
+   variable that was referenced but whose dimensions are not a subset of the
+   referrer's is dropped from that referrer with a warning, then promoted so
+   that it is not lost altogether. Promotion is how Iris avoids silently
+   discarding either.
 
 """
 

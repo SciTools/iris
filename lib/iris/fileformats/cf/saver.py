@@ -11,44 +11,50 @@
 
 Everything about writing a cube that does not depend on what it is written
 into. The CF data model is here - dimension naming, coordinate and bounds
-variables, cell methods, grid mappings, meshes, attribute compliance. Every
-storage call goes through :class:`~iris.fileformats.cf.dataset.CFDataset`,
-except where a store's own ``_grid_mapping_writer`` writes somewhere that is
-not part of it; netCDF's override does that, and every other store's does not.
+variables, cell methods, grid mappings, meshes, attribute compliance.
 
-A format supplies a subclass of ``_CFSaver`` holding its own vocabulary of
-storage keywords, and whatever of the five hooks it needs:
-``_create_string_variable``, ``_backend_write``, ``_flush_before_close``,
-``_patch_dataset`` and ``_grid_mapping_writer``.
-:class:`iris.fileformats.netcdf.saver.Saver` is one such subclass, and is where
-a user of the netCDF format meets all of this.
-
-``_CFSaver`` is private. What a format must supply is the five hooks, which
-are private too, and one subclass is not enough evidence to promise their
-shape; everything public on the class is the caller's API, inherited
-unchanged by each format's own public saver. Contrast
-:class:`~iris.fileformats.cf.dataset.CFDataset`, which is public because every
-member of it is something a format must implement, and because a user can
-reach one through :attr:`iris.fileformats.cf.CFVariable.cf_data`.
-
-Nothing here is netCDF-specific any longer: the last thing that was is now a
-hook like the rest.
-
-``_add_grid_mapping_to_dataset`` writes each CF grid-mapping parameter through
-the function ``_grid_mapping_writer`` hands back, so that where a parameter
-lands is visible at the point it is written. netCDF's function writes onto its
-own variable, because what that does to the type of each attribute in the file
-is long-standing behaviour and not this module's to change -- see Q8 in §12.3
-of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store
-writes into the ``attributes`` mapping.
-
-``ATTRIBUTE_HANDLERS`` lives beside this module, in
-:mod:`iris.fileformats.cf._attribute_handlers`. The handlers serialise the
-Iris-only attribute types that every CF store needs - STASH, GRIB_PARAM,
-ukmo__process_flags - and the netCDF load rules read them from there too.
+Each storage format supplies its own public saver on top:
+:class:`iris.fileformats.netcdf.saver.Saver`, for example, is where a user of
+the netCDF format meets all of this.
 
 See : `CF Conventions <https://cfconventions.org/>`_.
+
+.. maintainer-notes::
+
+   Every storage call goes through
+   :class:`~iris.fileformats.cf.dataset.CFDataset`, except where a store's own
+   ``_grid_mapping_writer`` writes somewhere that is not part of it; netCDF's
+   override does that, and every other store's does not.
+
+   A format supplies a subclass of ``_CFSaver`` holding its own vocabulary of
+   storage keywords, and whatever of the five hooks it needs:
+   ``_create_string_variable``, ``_backend_write``, ``_flush_before_close``,
+   ``_patch_dataset`` and ``_grid_mapping_writer``.
+
+   ``_CFSaver`` is private. What a format must supply is the five hooks, which
+   are private too, and one subclass is not enough evidence to promise their
+   shape; everything public on the class is the caller's API, inherited
+   unchanged by each format's own public saver. Contrast
+   :class:`~iris.fileformats.cf.dataset.CFDataset`, which is public because
+   every member of it is something a format must implement, and because a user
+   can reach one through :attr:`iris.fileformats.cf.CFVariable.cf_data`.
+
+   Nothing here is netCDF-specific any longer: the last thing that was is now
+   a hook like the rest.
+
+   ``_add_grid_mapping_to_dataset`` writes each CF grid-mapping parameter
+   through the function ``_grid_mapping_writer`` hands back, so that where a
+   parameter lands is visible at the point it is written. netCDF's function
+   writes onto its own variable, because what that does to the type of each
+   attribute in the file is long-standing behaviour and not this module's to
+   change -- see Q8 in §12.3 of the native Zarr I/O design,
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``. Every other store
+   writes into the ``attributes`` mapping.
+
+   ``ATTRIBUTE_HANDLERS`` lives beside this module, in
+   :mod:`iris.fileformats.cf._attribute_handlers`. The handlers serialise the
+   Iris-only attribute types that every CF store needs - STASH, GRIB_PARAM,
+   ukmo__process_flags - and the netCDF load rules read them from there too.
 
 """
 

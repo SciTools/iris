@@ -12,23 +12,27 @@
 Provides the capability to load netCDF files and interpret them
 according to the 'NetCDF Climate and Forecast (CF) Metadata Conventions'.
 
-This package is a re-export surface and holds no logic of its own. Every
-public name below is defined in exactly one private module and imported here
-verbatim, so ``class CFReader`` still finds its definition in a single grep.
 Import from :mod:`iris.fileformats.cf`, not from the private modules: the file
 layout is deliberately free to change, and it will, as the format-agnostic CF
 machinery grows a dataset abstraction, a loader and a saver.
-
-The re-exported classes keep the ``__module__`` their defining module gives
-them, so ``repr(CFReader)`` names ``iris.fileformats.cf._reader`` rather than
-this package. That is the same trade-off :mod:`iris.mesh` already makes, and
-it is the one that keeps ``inspect.getsource`` and the documentation's
-``[source]`` links working. See the plan, section 8.4.
 
 References
 ----------
     [CF]  NetCDF Climate and Forecast (CF) Metadata conventions.
     [NUG] NetCDF User's Guide, https://docs.unidata.ucar.edu/nug/current/
+
+.. maintainer-notes::
+
+   This package is a re-export surface and holds no logic of its own. Every
+   public name below is defined in exactly one private module and imported
+   here verbatim, so ``class CFReader`` still finds its definition in a single
+   grep.
+
+   The re-exported classes keep the ``__module__`` their defining module gives
+   them, so ``repr(CFReader)`` names ``iris.fileformats.cf._reader`` rather
+   than this package. That is the same trade-off :mod:`iris.mesh` already
+   makes, and it is the one that keeps ``inspect.getsource`` and the
+   documentation's ``[source]`` links working.
 
 """
 

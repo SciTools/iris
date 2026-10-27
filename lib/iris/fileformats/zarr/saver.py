@@ -17,14 +17,18 @@ holds text natively, and it finishes with a consolidated metadata document.
 
 **The storage keywords are zarr-python's own**: ``chunks``, ``shards``,
 ``compressors``, ``filters``, ``serializer``. A netCDF keyword raises and names
-the Zarr replacement. Translating ``zlib=True`` onto a Blosc codec would sell a
-false equivalence, and would hand this new API the shape the netCDF saver is
-stuck with. See §4.5 of the native Zarr I/O design,
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+the Zarr replacement.
 
 **The default mode is ``"w-"``**, which refuses an existing target, where the
 netCDF saver clobbers one. A Zarr clobber is many non-atomic deletes, so an
 interrupted one destroys the old store without completing the new.
+
+.. maintainer-notes::
+
+   Translating ``zlib=True`` onto a Blosc codec would sell a false
+   equivalence, and would hand this new API the shape the netCDF saver is
+   stuck with. See §4.5 of the native Zarr I/O design,
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

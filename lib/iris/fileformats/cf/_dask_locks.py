@@ -9,31 +9,34 @@ must not write over each other. What that takes depends on the dask scheduler,
 so this module works out which scheduler is in play and returns a lock to
 match. The scheduler must therefore be configured before a lock is asked for.
 
-A dataset implementation asks for one lock per target, identified by its path
-or URL, and gives it to every write handle it builds. The netCDF write handle
-reopens the file, acquires the lock, writes its chunk, closes the file and
-releases the lock, which is the mirror image of what the read path does for a
-lazy chunk. A store whose chunks are separate objects needs no such
-coordination, and asks for no lock.
+The "processes" scheduler is refused by :func:`get_worker_lock`, and writing
+to one target from genuinely separate processes is not supported.
 
-For a threaded scheduler the lock is a plain :class:`threading.Lock`. The
-workers are threads sharing one address space, so they all hold the same
-object, and the identity string is never used.
+.. maintainer-notes::
 
-For a distributed scheduler the lock is a ``distributed.Lock`` named for the
-target. It reaches the workers by being serialised along with the task, and
-every copy carries the same name, so the scheduler can make them exclude one
-another. A worker behaves like a process, and may run on another machine.
+   A dataset implementation asks for one lock per target, identified by its
+   path or URL, and gives it to every write handle it builds. The netCDF write
+   handle reopens the file, acquires the lock, writes its chunk, closes the
+   file and releases the lock, which is the mirror image of what the read path
+   does for a lazy chunk. A store whose chunks are separate objects needs no
+   such coordination, and asks for no lock.
 
-The "processes" scheduler is refused by :func:`get_worker_lock`. Supporting it
-would need a serialisable shared lock that does not require a distributed
-scheduler to function.
+   For a threaded scheduler the lock is a plain :class:`threading.Lock`. The
+   workers are threads sharing one address space, so they all hold the same
+   object, and the identity string is never used.
 
-Writing to one target from genuinely separate processes is a further step
-again. For netCDF it needs libnetcdf built with the parallel access option,
-which is uncommon: with an ordinary build, opening a file for writing that is
-already open for writing simply raises an access error. Iris does not support
-that mode at present.
+   For a distributed scheduler the lock is a ``distributed.Lock`` named for
+   the target. It reaches the workers by being serialised along with the task,
+   and every copy carries the same name, so the scheduler can make them
+   exclude one another. A worker behaves like a process, and may run on
+   another machine.
+
+   Supporting the "processes" scheduler would need a serialisable shared lock
+   that does not require a distributed scheduler to function. Writing from
+   genuinely separate processes is a further step again: for netCDF it needs
+   libnetcdf built with the parallel access option, which is uncommon, since
+   with an ordinary build opening a file for writing that is already open for
+   writing simply raises an access error.
 
 """
 

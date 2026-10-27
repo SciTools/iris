@@ -8,44 +8,49 @@ netCDF4 applies ``_FillValue``/``missing_value`` masking,
 ``valid_min``/``valid_max``/``valid_range`` masking and
 ``scale_factor``/``add_offset`` unpacking on every read. Zarr returns a plain
 ``numpy.ndarray`` and applies none of it, so these rules are implemented here.
-They live on the Zarr side rather than in the shared CF layer because the
-netCDF path gets the behaviour from the C library and has nothing to reuse.
 
-Everything here is a pure function of values, with no store and no Dask in
-sight. :func:`mask_and_scale` is what the loader lays over a raw array as a
-``map_blocks`` layer - visible in the graph, fusable with its neighbours, and
-testable on a plain ndarray.
+.. maintainer-notes::
 
-Three names are this module's surface: :func:`decode_parameters`,
-:func:`decoding_required` and :func:`mask_and_scale`. Everything else is a
-step of one of those, and carries a leading underscore to say so - the module
-being private already does not make the distinction worthless, since
-``_dataset.py`` should not be reaching for a decode step on its own.
+   The rules live on the Zarr side rather than in the shared CF layer because
+   the netCDF path gets the behaviour from the C library and has nothing to
+   reuse.
 
-Two traps, both from the Zarr specification rather than from CF.
+   Everything here is a pure function of values, with no store and no Dask in
+   sight. :func:`mask_and_scale` is what the loader lays over a raw array as a
+   ``map_blocks`` layer - visible in the graph, fusable with its neighbours,
+   and testable on a plain ndarray.
 
-**A floating ``_FillValue`` is base64 on version 3.** Released xarray encodes
-it as base64 of a little-endian ``float64`` for *every* floating dtype,
-including ``float32``, and its reader requires that form. It is the de-facto
-encoding, not a producer's mistake, so Iris reads both it and a plain JSON
-number. CF section 2.5.1 asks for "the scalar attribute with the name
-``_FillValue`` and of the same type as its variable"; this is a deliberate,
-narrow deviation, taken because interoperability with the other Zarr readers
-is the reason for native Zarr support.
+   Three names are this module's surface: :func:`decode_parameters`,
+   :func:`decoding_required` and :func:`mask_and_scale`. Everything else is a
+   step of one of those, and carries a leading underscore to say so - the
+   module being private already does not make the distinction worthless,
+   since ``_dataset.py`` should not be reaching for a decode step on its own.
 
-**``Array.fill_value`` is not a missing-value declaration.** It says what
-unwritten storage reads back as, and zarr-python defaults it to zero. On
-version 3 it is never a mask source: an ``int16`` array of ``[0, 1, 2]`` with
-no CF attributes would otherwise load with its valid zero masked. On version 2
-it is one, but only when no CF attribute is present, because version 2 stores
-predate the convention - which is what released xarray's
-``use_zarr_fill_value_as_mask`` does. zarr-python 3 defaults the field to zero
-for a version 2 store too, so a store written today can lose a genuine zero
-this way; :func:`decode_parameters` warns for exactly that case - the storage
-fill value is zero - and not for a non-zero one, which is the writer's own
-deliberate, pre-convention sentinel and not something to warn about.
+   Two traps, both from the Zarr specification rather than from CF.
 
-See section 4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+   **A floating ``_FillValue`` is base64 on version 3.** Released xarray
+   encodes it as base64 of a little-endian ``float64`` for *every* floating
+   dtype, including ``float32``, and its reader requires that form. It is the
+   de-facto encoding, not a producer's mistake, so Iris reads both it and a
+   plain JSON number. CF section 2.5.1 asks for "the scalar attribute with the
+   name ``_FillValue`` and of the same type as its variable"; this is a
+   deliberate, narrow deviation, taken because interoperability with the other
+   Zarr readers is the reason for native Zarr support.
+
+   **``Array.fill_value`` is not a missing-value declaration.** It says what
+   unwritten storage reads back as, and zarr-python defaults it to zero. On
+   version 3 it is never a mask source: an ``int16`` array of ``[0, 1, 2]``
+   with no CF attributes would otherwise load with its valid zero masked. On
+   version 2 it is one, but only when no CF attribute is present, because
+   version 2 stores predate the convention - which is what released xarray's
+   ``use_zarr_fill_value_as_mask`` does. zarr-python 3 defaults the field to
+   zero for a version 2 store too, so a store written today can lose a genuine
+   zero this way; :func:`decode_parameters` warns for exactly that case - the
+   storage fill value is zero - and not for a non-zero one, which is the
+   writer's own deliberate, pre-convention sentinel and not something to warn
+   about.
+
+   See section 4.4 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

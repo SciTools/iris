@@ -9,46 +9,50 @@ API. Everything Zarr-specific the CF layer could want - where dimension names
 are recorded, what a chunk is, what the store's own fill value is - either has
 a named member on the interface or lives here as a Zarr-only member.
 
-Three things about Zarr shape this module, and each is a trap if forgotten.
+.. maintainer-notes::
 
-**A dimension name guarantees less than a netCDF one.** The version 3 core
-specification makes ``dimension_names`` optional, allows a null entry, only
-*recommends* that names are distinct within an array, and places no
-restriction at all on reusing a name across arrays. All of that is conforming
-Zarr, so none of it may raise. A dimension with no name is **anonymous**, which
-Iris has always had: a cube dimension carrying no coordinate.
+   Four things about Zarr shape this module, and each is a trap if forgotten.
 
-**``Array.fill_value`` is not ``_FillValue``.** It says what unwritten storage
-reads back as; it does not say the value is missing. zarr-python defaults it to
-zero, so reading it as a missing-value sentinel masks every valid zero in an
-array that never declared one. :attr:`ZarrDatasetVariable.fill_value` reports
-it as the storage fact it is, and the masking decision is made in
-:mod:`iris.fileformats.zarr._decode` from the CF attributes.
+   **A dimension name guarantees less than a netCDF one.** The version 3 core
+   specification makes ``dimension_names`` optional, allows a null entry, only
+   *recommends* that names are distinct within an array, and places no
+   restriction at all on reusing a name across arrays. All of that is
+   conforming Zarr, so none of it may raise. A dimension with no name is
+   **anonymous**, which Iris has always had: a cube dimension carrying no
+   coordinate.
 
-**The read unit is the inner chunk, even when the array is sharded.** Zarr's
-sharding codec is indexed, so a reader fetches only the inner chunks it needs.
-:attr:`ZarrDatasetVariable.chunking` therefore returns ``Array.chunks``, never
-``Array.shards``.
+   **``Array.fill_value`` is not ``_FillValue``.** It says what unwritten
+   storage reads back as; it does not say the value is missing. zarr-python
+   defaults it to zero, so reading it as a missing-value sentinel masks every
+   valid zero in an array that never declared one.
+   :attr:`ZarrDatasetVariable.fill_value` reports it as the storage fact it
+   is, and the masking decision is made in
+   :mod:`iris.fileformats.zarr._decode` from the CF attributes.
 
-**An array is created in the platform's own byte order**, whatever order it
-was asked for, and NumPy converts the values on assignment. Zarr version 3
-has no big-endian data type: endianness lives in the ``bytes`` codec, which
-zarr-python leaves at ``little``, so asking for ``>f4`` writes the same store
-as asking for ``<f4`` and only the returned :class:`zarr.Array` object
-remembers the difference. Taking the caller's order literally would therefore
-make :attr:`ZarrDatasetVariable.dtype` report an endianness the store does
-not have. The netCDF saver gives this data the same answer, writing a ``>f4``
-cube as ``float32``, and a PP or GRIB load hands the saver big-endian arrays
-routinely.
+   **The read unit is the inner chunk, even when the array is sharded.**
+   Zarr's sharding codec is indexed, so a reader fetches only the inner chunks
+   it needs. :attr:`ZarrDatasetVariable.chunking` therefore returns
+   ``Array.chunks``, never ``Array.shards``.
 
-Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same way
-the netCDF path sizes it, and is not then adjusted to the store's own
-chunking. Iris warns when a stored chunk is larger than Dask's target, from
-:func:`iris.fileformats.cf.loader._chunks_from_chunk_control`, and leaves the
-choice to ``CHUNK_CONTROL``.
+   **An array is created in the platform's own byte order**, whatever order it
+   was asked for, and NumPy converts the values on assignment. Zarr version 3
+   has no big-endian data type: endianness lives in the ``bytes`` codec, which
+   zarr-python leaves at ``little``, so asking for ``>f4`` writes the same
+   store as asking for ``<f4`` and only the returned :class:`zarr.Array`
+   object remembers the difference. Taking the caller's order literally would
+   therefore make :attr:`ZarrDatasetVariable.dtype` report an endianness the
+   store does not have. The netCDF saver gives this data the same answer,
+   writing a ``>f4`` cube as ``float32``, and a PP or GRIB load hands the
+   saver big-endian arrays routinely.
 
-See sections 4.2, 4.4 and 4.6 of
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+   Chunking is sized by :func:`iris._lazy_data._optimum_chunksize`, the same
+   way the netCDF path sizes it, and is not then adjusted to the store's own
+   chunking. Iris warns when a stored chunk is larger than Dask's target, from
+   :func:`iris.fileformats.cf.loader._chunks_from_chunk_control`, and leaves
+   the choice to ``CHUNK_CONTROL``.
+
+   See sections 4.2, 4.4 and 4.6 of
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

@@ -4,38 +4,41 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Replacement code for the Pyke rules.
 
-For now, we are still emulating various aspects of how our original Pyke-based
-code used the Pyke 'engine' to hold translation data, both Pyke-specific and
-not :
+.. maintainer-notes::
 
-1) basic details from the iris.fileformats.cf analysis of the file are
-   recorded before translating each output cube, using
-   "engine.assert_case_specific_fact(name, args)".
+   For now, we are still emulating various aspects of how our original
+   Pyke-based code used the Pyke 'engine' to hold translation data, both
+   Pyke-specific and not :
 
-2) this is also used to store intermediate info passed between rules, which
-   used to be done with a "facts_cf.provides" statement in rule actions.
+   1) basic details from the iris.fileformats.cf analysis of the file are
+      recorded before translating each output cube, using
+      "engine.assert_case_specific_fact(name, args)".
 
-3) Iris-specific info is (still) stored in additional properties created on
-   the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
+   2) this is also used to store intermediate info passed between rules, which
+      used to be done with a "facts_cf.provides" statement in rule actions.
 
-Our "rules" are just action routines.
-The top-level 'run_actions' routine decides which actions to call, based on the
-info recorded when processing each cube output.  It does this in a simple
-explicit way, which doesn't use any clever chaining, "trigger conditions" or
-other rule-type logic.
+   3) Iris-specific info is (still) stored in additional properties created on
+      the engine object :
+          engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered,
+          .filename
 
-Each 'action' function can replace several similar 'rules'.
-E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid_mapping_<X>'.
-To aid debug, each returns a 'rule_name' string, indicating which original rule
-this particular action call is emulating :  In some cases, this may include a
-textual note that this rule 'failed', aka "did not trigger", which would not be
-recorded in the original implementation.
+   Our "rules" are just action routines. The top-level 'run_actions' routine
+   decides which actions to call, based on the info recorded when processing
+   each cube output.  It does this in a simple explicit way, which doesn't use
+   any clever chaining, "trigger conditions" or other rule-type logic.
 
-TODO: remove the use of intermediate "facts" to carry information between
-actions.  This mimics older behaviour, so is still useful while we are still
-comparing behaviour with the old Pyke rules (debugging).  But once that is no
-longer useful, this can be considerably simplified.
+   Each 'action' function can replace several similar 'rules'. E.G.
+   'action_provides_grid_mapping' replaces all
+   'fc_provides_grid_mapping_<X>'. To aid debug, each returns a 'rule_name'
+   string, indicating which original rule this particular action call is
+   emulating :  In some cases, this may include a textual note that this rule
+   'failed', aka "did not trigger", which would not be recorded in the
+   original implementation.
+
+   TODO: remove the use of intermediate "facts" to carry information between
+   actions.  This mimics older behaviour, so is still useful while we are
+   still comparing behaviour with the old Pyke rules (debugging).  But once
+   that is no longer useful, this can be considerably simplified.
 
 """
 

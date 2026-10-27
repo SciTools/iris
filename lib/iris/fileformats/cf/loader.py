@@ -9,24 +9,28 @@
 
    API reference
 
-This module is the CF half of what used to be
-``iris.fileformats.netcdf.loader``. It takes the
-:class:`~iris.fileformats.cf.CFVariable` objects a
+Takes the :class:`~iris.fileformats.cf.CFVariable` objects a
 :class:`~iris.fileformats.cf.CFReader` produced, runs the loading rules over
-them and returns :class:`~iris.cube.Cube` objects. None of that is specific to
-netCDF, and nothing here imports netCDF4 - though one deferred import still
-reaches back into :mod:`iris.fileformats.netcdf` for ``loader.DEBUG``, which
-never moves (see below). It is commented at its own call site with why.
-
-Where a storage format *does* show through - reading a variable's array - the
-work is delegated to :meth:`~iris.fileformats.cf.dataset.CFDatasetVariable.read_data`,
-and this module supplies only the chunking policy to apply if the result comes
-back lazy.
+them and returns :class:`~iris.cube.Cube` objects.
 
 Opening files remains the format's own business: see
 :func:`iris.fileformats.netcdf.load_cubes`.
 
 Also : `CF Conventions <https://cfconventions.org/>`_.
+
+.. maintainer-notes::
+
+   This module is the CF half of what used to be
+   ``iris.fileformats.netcdf.loader``. None of what it does is specific to
+   netCDF, and nothing here imports netCDF4 - though one deferred import still
+   reaches back into :mod:`iris.fileformats.netcdf` for ``loader.DEBUG``,
+   which never moves. It is commented at its own call site with why.
+
+   Where a storage format *does* show through - reading a variable's array -
+   the work is delegated to
+   :meth:`~iris.fileformats.cf.dataset.CFDatasetVariable.read_data`, and this
+   module supplies only the chunking policy to apply if the result comes back
+   lazy.
 
 """
 

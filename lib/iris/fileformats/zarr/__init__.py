@@ -18,13 +18,15 @@ where it is in :mod:`iris.fileformats.netcdf`.
 this package until a Zarr target is actually loaded, so Iris installs and
 imports without it.
 
-This package shadows the third-party ``zarr`` distribution by name. Python 3
-resolves ``import zarr`` absolutely, so inside these modules it still finds the
-third-party package; xarray's ``xarray.backends.zarr`` has the same
-arrangement.
+.. maintainer-notes::
 
-See sections 4.1 and 4.4 of
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+   This package shadows the third-party ``zarr`` distribution by name. Python
+   3 resolves ``import zarr`` absolutely, so inside these modules it still
+   finds the third-party package; xarray's ``xarray.backends.zarr`` has the
+   same arrangement.
+
+   See sections 4.1 and 4.4 of
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 
