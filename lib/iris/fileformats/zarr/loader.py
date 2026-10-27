@@ -9,29 +9,30 @@
 
    API reference
 
-A thin loop: open the store as a
-:class:`~iris.fileformats.zarr._dataset.ZarrDataset`, hand it to
-:class:`~iris.fileformats.cf.CFReader`, and build one cube per CF data
-variable with :mod:`iris.fileformats.cf.loader` - the same machinery the
-netCDF loader runs. Everything Zarr-specific happens below this module, in
-:mod:`iris.fileformats.zarr._dataset`.
-
 Iris loads **one** group per call. A Zarr store can legitimately hold
 unrelated datasets, and merging them into one ``CubeList`` would be wrong, so
 nested groups are not walked and ``group=`` selects which one to read.
 
 UGRID meshes load from a Zarr store exactly as they do from a netCDF file.
-Nothing in the mesh machinery is netCDF-specific - it reads a
-:class:`~iris.fileformats.cf.CFReader`, and a `CFReader` over a `ZarrDataset`
-answers the same questions - so this module calls into
-:mod:`iris.fileformats.netcdf.ugrid_load` rather than growing a second copy.
-That module's name is the historical home of the code, not a statement about
-what it can read.
 
-See sections 4.6 and 4.7 of
-``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+.. maintainer-notes::
 
-.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+   A thin loop: open the store as a
+   :class:`~iris.fileformats.zarr._dataset.ZarrDataset`, hand it to
+   :class:`~iris.fileformats.cf.CFReader`, and build one cube per CF data
+   variable with :mod:`iris.fileformats.cf.loader` - the same machinery the
+   netCDF loader runs. Everything Zarr-specific happens below this module, in
+   :mod:`iris.fileformats.zarr._dataset`.
+
+   Nothing in the mesh machinery is netCDF-specific - it reads a
+   :class:`~iris.fileformats.cf.CFReader`, and a ``CFReader`` over a
+   ``ZarrDataset`` answers the same questions - so this module calls into
+   :mod:`iris.fileformats.netcdf.ugrid_load` rather than growing a second
+   copy. That module's name is the historical home of the code, not a
+   statement about what it can read.
+
+   See sections 4.6 and 4.7 of
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

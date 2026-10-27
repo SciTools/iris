@@ -44,8 +44,6 @@ specification, then the file can be handled::
 The calling sequence of handler is dependent on the function given in the
 original specification and can be customised to your project's needs.
 
-.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
-
 """
 
 from collections.abc import Callable

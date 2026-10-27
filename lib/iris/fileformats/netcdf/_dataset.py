@@ -11,16 +11,16 @@ Everything netCDF-specific that the CF layer used to reach through a
 ``createDimension``, ``filepath()``, ``isopen()`` - either has a named member
 on the interface or lives here as a netCDF-only member.
 
-Reading and writing share one class, and the read path must not touch
-:attr:`NetCDFDataset.write_lock`: making the lock raises for Dask schedulers
-that only the saver cares about, so it is made on first use rather than at
-construction. :meth:`NetCDFDataset.from_existing` serves both paths and
-cannot tell them apart, so it stipulates an open mode rather than observing
-one, and always wraps for byte encoding.
+.. maintainer-notes::
 
-See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+   Reading and writing share one class, and the read path must not touch
+   :attr:`NetCDFDataset.write_lock`: making the lock raises for Dask
+   schedulers that only the saver cares about, so it is made on first use
+   rather than at construction. :meth:`NetCDFDataset.from_existing` serves
+   both paths and cannot tell them apart, so it stipulates an open mode rather
+   than observing one, and always wraps for byte encoding.
 
-.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+   See section 4.5 of ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
 
 """
 

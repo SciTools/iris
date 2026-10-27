@@ -10,39 +10,40 @@ structure by having variables name each other in their attributes. A
 names a coordinate system variable, and so on. This module is where those
 attributes are read and each variable is given a class that says what it is.
 
-:class:`CFVariable` is the abstract base and defines the contract. A subclass
-declares which netCDF attribute names it -- ``cf_identity``, a single
-attribute name, or ``cf_identities``, a list of them for the classes that
-answer to several -- and implements ``identify``. ``identify`` is a
-classmethod, not an instance method: it is called on the class, is handed the
-whole ``{name: CFDatasetVariable}`` mapping of the file, and returns the
-subset of it that belongs to that class, as a ``{name: CFVariable instance}``
-mapping. ``ignore`` and ``target`` narrow what it looks at; ``warn`` gates
-whether it complains.
+.. maintainer-notes::
 
-Classification is deliberately forgiving. A variable that names a variable
-which is not in the file, or names one whose dimensions make no sense for the
-role, produces a warning -- :class:`~iris.warnings.IrisCfMissingVarWarning`
-and friends -- and is skipped. It does not raise. Iris is expected to load
-what it can from a file that is only mostly conformant, and a hard failure
-here would make a single bad attribute cost the user the whole file.
+   :class:`CFVariable` is the abstract base and defines the contract. A
+   subclass declares which netCDF attribute names it -- ``cf_identity``, a
+   single attribute name, or ``cf_identities``, a list of them for the classes
+   that answer to several -- and implements ``identify``. ``identify`` is a
+   classmethod, not an instance method: it is called on the class, is handed
+   the whole ``{name: CFDatasetVariable}`` mapping of the file, and returns
+   the subset of it that belongs to that class, as a
+   ``{name: CFVariable instance}`` mapping. ``ignore`` and ``target`` narrow
+   what it looks at; ``warn`` gates whether it complains.
 
-The CF-UGRID classes for unstructured meshes live here rather than in
-:mod:`iris.mesh` because they are classifiers, not data: they answer the same
-``identify`` contract as every other class in this module and are driven by
-the same pass in :class:`~iris.fileformats.cf.CFReader`. What they identify is
-handed to :mod:`iris.mesh` to build the mesh proper.
+   Classification is deliberately forgiving. A variable that names a variable
+   which is not in the file, or names one whose dimensions make no sense for
+   the role, produces a warning --
+   :class:`~iris.warnings.IrisCfMissingVarWarning` and friends -- and is
+   skipped. It does not raise. Iris is expected to load what it can from a
+   file that is only mostly conformant, and a hard failure here would make a
+   single bad attribute cost the user the whole file.
 
-This module opens no files. It is given netCDF variables and returns
-classifications; :mod:`iris.fileformats.cf._group` collects them and
-:mod:`iris.fileformats.cf._reader` drives the whole thing. It does read array
-data in exactly one place: ``CFCoordinateVariable.identify`` fetches a
-candidate's values when called with ``monotonic=True``, because whether a
-coordinate is monotonic cannot be told from its metadata. That is the only
-path here that touches data, and it is reached only from
-``CFReader(..., monotonic=True)``.
+   The CF-UGRID classes for unstructured meshes live here rather than in
+   :mod:`iris.mesh` because they are classifiers, not data: they answer the
+   same ``identify`` contract as every other class in this module and are
+   driven by the same pass in :class:`~iris.fileformats.cf.CFReader`. What
+   they identify is handed to :mod:`iris.mesh` to build the mesh proper.
 
-.. todo:: Move the maintainer prose above into a ``maintainer-notes`` block.
+   This module opens no files. It is given netCDF variables and returns
+   classifications; :mod:`iris.fileformats.cf._group` collects them and
+   :mod:`iris.fileformats.cf._reader` drives the whole thing. It does read
+   array data in exactly one place: ``CFCoordinateVariable.identify`` fetches
+   a candidate's values when called with ``monotonic=True``, because whether a
+   coordinate is monotonic cannot be told from its metadata. That is the only
+   path here that touches data, and it is reached only from
+   ``CFReader(..., monotonic=True)``.
 
 """
 
