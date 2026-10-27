@@ -411,7 +411,7 @@ class Test_chunking:
 
         Iris used to round back up to whole store chunks here. Dividing one costs
         a re-read per division, because a chunk is fetched and decompressed
-        whole - but netCDF has always made the same trade, and which side of it a
+        whole - but netCDF has always made the same trade-off, and which side of it a
         caller wants depends on their case. `CHUNK_CONTROL` is how they say, and
         `iris.fileformats.cf.loader` warns so that they know to.
         """

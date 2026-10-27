@@ -28,7 +28,7 @@ storage property is a named, typed member.
    ``attributes`` holds an open-ended set of data keys read from a file, with
    no schema to enumerate, which is why :class:`TrackedAttributes` exists and
    why :meth:`~iris.fileformats.cf.CFVariable.__getattr__` forwards to it.
-   Tracking is the load-bearing part: Iris decides which file attributes
+   Tracking is the part that matters: Iris decides which file attributes
    survive onto a loaded cube by asking which ones the loading rules did *not*
    read, so a read that goes unrecorded silently leaks a CF-reserved attribute
    onto the cube.
@@ -377,7 +377,7 @@ class CFDataset(ABC):
         """Perform the store's one-shot completion step, after every write.
 
         Deliberately **not** part of :meth:`close`: a worker that writes one
-        slab of a store must close its handle without performing a completion
+        region of a store must close its handle without performing a completion
         step that only one process may perform.
 
         """

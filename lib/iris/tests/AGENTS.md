@@ -143,7 +143,7 @@ real.
   and nothing checks them. Name the function, class, constant or pull request
   number instead — a test outlives the branch that added it.
 - Do not weaken existing checks just to make tests pass — but a test can pin
-  a *bug*, and correcting one is strengthening. Show by archaeology that the
+  a *bug*, and correcting one is strengthening. Show from the history that the
   expectation was wrong, invert rather than delete, and comment why.
 
 ## Graphics and Integration Notes

@@ -667,8 +667,8 @@ _WRITABLE_ZARR_FORMATS = (3,)
 #: about which member is the default.
 _DEFAULT_ZARR_FORMAT = 3
 
-#: The dtype kinds whose fill value must convert exactly, because they have
-#: no rounding to spend: `numpy.int16(1.5)` is `1`, and the `_FillValue`
+#: The dtype kinds whose fill value must convert exactly, because they
+#: cannot hold a fraction: `numpy.int16(1.5)` is `1`, and the `_FillValue`
 #: attribute would still say `1.5`.
 _EXACT_FILL_KINDS = frozenset(("b", "i", "u"))
 

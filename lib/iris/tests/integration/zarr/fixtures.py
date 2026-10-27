@@ -17,9 +17,9 @@ more CF-conforming of the pair, because it gives its data variable a
 `grid_mapping` attribute, which the published store does not have.
 
 Bounds on `latitude` are not part of that real store, but earn their place
-anyway: `CFBoundaryVariable.spans` is one of the overrides this pull request
-rewrote against the dimension contract, so a bounded coordinate exercises
-code this branch actually changed.
+anyway: `CFBoundaryVariable.spans` is one of the overrides that matches on
+`(name, size)` pairs, so a bounded coordinate exercises the dimension
+contract rather than only the plain case.
 """
 
 import base64

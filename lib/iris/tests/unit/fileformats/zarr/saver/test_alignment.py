@@ -9,7 +9,7 @@ source's dask chunking tiles exactly, where the write grid is the shards when
 the array is sharded and the chunks otherwise. Each concurrent task owns at
 least one whole cell; no cell is touched by two.
 
-The invariant is what licenses ``lock=False``. Stated over the chunk grid
+The invariant is what permits ``lock=False``. Stated over the chunk grid
 alone it is insufficient, and the gap is not theoretical: eight inner chunks
 sharing one shard means eight tasks read-modify-writing one stored object,
 which lost 72-96 of 128 values in 12 of 12 trials.

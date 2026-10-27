@@ -32,7 +32,7 @@ file covers how the sentence is built, not where it lives.
 
 Search for the repository's own term before coining one. A word invented for a
 single sentence reads as foreign even when it is accurate, and a reader who
-meets three of them stops trusting the register.
+meets three of them stops trusting the whole piece.
 
 - Grep first. If Iris calls it a *cell measure*, do not call it a *per-cell
   weight*.

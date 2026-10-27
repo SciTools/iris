@@ -25,7 +25,7 @@ interrupted one destroys the old store without completing the new.
 
 .. maintainer-notes::
 
-   Translating ``zlib=True`` onto a Blosc codec would sell a false
+   Translating ``zlib=True`` onto a Blosc codec would imply a false
    equivalence, and would hand this new API the shape the netCDF saver is
    stuck with. See §4.5 of the native Zarr I/O design,
    ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
