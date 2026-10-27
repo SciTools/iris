@@ -100,9 +100,9 @@ does:
 | `cd docs/src && make doctest` | skips the gallery rebuild; faster, not identical to CI |
 
 Both take minutes. Run one once before finishing, whether or not you edited a
-`>>>` — a doctest asserts real output, so a change anywhere in the library or
-the guide can break one, and nothing else in the suite would tell you. Only a
-change confined to `lib/iris/tests/` or to `changelog/` is exempt.
+`>>>`: a change anywhere can break one, and nothing else in the suite would
+tell you. Only a change confined to `lib/iris/tests/` or `changelog/` is
+exempt.
 
 Do not substitute `pytest --doctest-modules` or
 `python -m doctest`: 150 `testsetup::` / `testcode::` directives supply
@@ -158,8 +158,8 @@ real.
 
 - The changed tests pass locally.
 - **Doctests were run**, unless the change stayed inside `lib/iris/tests/` or
-  `changelog/`. The pytest suite does not cover them, so a `>>>` you never
-  looked at is the one that breaks. See [Doctests](#doctests) above.
+  `changelog/`. Nothing in the pytest suite covers them. See
+  [Doctests](#doctests) above.
 - No unrelated tests were modified.
 - Any required external data setup is documented in the change notes.
 - **Read the skip count, not just the failures.** Comparing failures before
