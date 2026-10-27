@@ -14,8 +14,8 @@ into. The CF data model is here - dimension naming, coordinate and bounds
 variables, cell methods, grid mappings, meshes, attribute compliance.
 
 Each storage format supplies its own public saver on top:
-:class:`iris.fileformats.netcdf.saver.Saver` is where a user of the netCDF
-format meets all of this.
+:class:`iris.fileformats.netcdf.saver.Saver`, for example, is where a user of
+the netCDF format meets all of this.
 
 See : `CF Conventions <https://cfconventions.org/>`_.
 

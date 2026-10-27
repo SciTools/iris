@@ -20,7 +20,8 @@ holds text natively, and it finishes with a consolidated metadata document.
 the Zarr replacement.
 
 **The default mode is ``"w-"``**, which refuses an existing target, where the
-netCDF saver clobbers one.
+netCDF saver clobbers one. A Zarr clobber is many non-atomic deletes, so an
+interrupted one destroys the old store without completing the new.
 
 .. maintainer-notes::
 
@@ -28,9 +29,6 @@ netCDF saver clobbers one.
    equivalence, and would hand this new API the shape the netCDF saver is
    stuck with. See §4.5 of the native Zarr I/O design,
    ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
-
-   ``"w-"`` is the default because a Zarr clobber is many non-atomic deletes,
-   so an interrupted one destroys the old store without completing the new.
 
 """
 
