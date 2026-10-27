@@ -11,12 +11,12 @@
 | **Phase** | In delivery |
 | **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
 | **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
-| **Blocked on** | PR 7's tests, which skip until [SciTools/iris-test-data#98](https://github.com/SciTools/iris-test-data/pull/98) merges and `IRIS_TEST_DATA_VERSION` is bumped — see §12.1 |
+| **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-26 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-27 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -2310,7 +2310,7 @@ Companion work outside `SciTools/iris`:
 
 | Repository | Purpose | State | Link |
 |---|---|---|---|
-| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | In review | [#98](https://github.com/SciTools/iris-test-data/pull/98) |
+| `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | Merged, released as v2.31 | [#98](https://github.com/SciTools/iris-test-data/pull/98) |
 | `SciTools/iris-test-data` | The repository-wide licence statement, which #98's data does not fit | Raised, not for this programme to settle | [#99](https://github.com/SciTools/iris-test-data/issues/99) |
 
 States are `Not started`, `Drafted`, `Built, awaiting PR N` (work complete on
@@ -3247,7 +3247,7 @@ does not have.
 
 | Artefact | Location | State |
 |---|---|---|
-| Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `~/iris-zarr-testdata/gfs_forecast_sample.zarr` | Contributed to `iris-test-data` by PR 7's companion, as `test_data/Zarr/gfs_forecast_sample.zarr` |
+| Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `iris-test-data` v2.31, as `test_data/Zarr/gfs_forecast_sample.zarr` | Released. The cut it was made from is at `~/iris-zarr-testdata/gfs_forecast_sample.zarr` |
 | Cut-down ESA EOPF fixture, Zarr v2 | — | Not pursued. §5 and §7 say why |
 
 The GFS subset was cut ahead of the rest of the programme because its source
@@ -3304,3 +3304,4 @@ raised as its own issue, not taken in a pull request that adds test data.
 | 2026-10-23 | `supports_dtype` restated in §4.2 as a table of the dtypes every accepted zarr-python version holds, rather than a list of the dtypes to exclude: the zarr-python 3.0.8 data-type enum is much smaller than 3.4's registry, so any exclusion list is wrong on the version floor Iris declares. The header table, which had gone stale against §12.1, now carries the rule that it is a summary of §12.1 and moves when §12.1 moves. |
 | 2026-10-23 | Byte order removed from the capability question rather than documented as an exception to it: `create_variable` creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every accepted version. §4.2 says why neither obvious answer was tenable. The version claims are run rather than read — zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
 | 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |
+| 2026-10-27 | [SciTools/iris-test-data#98](https://github.com/SciTools/iris-test-data/pull/98) merged and released as v2.31, so `IRIS_TEST_DATA_VERSION` is bumped in both workflow files and PR 7's integration tests run rather than skip. The indexer's store handling was rewritten on review by @pp-mo, from filtering a full walk to recursive descent; that also removed a bug where a checkout under any directory named `*.zarr` suppressed the whole index. |
