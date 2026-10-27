@@ -78,7 +78,7 @@ class STASHConstraint:
 
 
 class TimeConstraint:
-    params = ([3, 20], ["FF", "PP", "NetCDF"])
+    params = ([3, 20], ["FF", "PP", "NetCDF", "Zarr"])
     param_names = ["time_dim_len", "file_format"]
 
     def setup_cache(self) -> dict:
