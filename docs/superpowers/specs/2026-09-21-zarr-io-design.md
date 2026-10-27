@@ -9,8 +9,8 @@
 | | |
 |---|---|
 | **Phase** | In delivery |
-| **Progress** | PRs 1, 2, 2.5, 3, 4 and 5 merged into `brownfield`; PR 6 in review ([#7346](https://github.com/SciTools/iris/pull/7346)); PR 7 built on PR 6's branch and previewed at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101); merge-back not started — see §12.1 |
-| **Next action** | PR 6's review, then PR 7's rebase onto `brownfield`, then PR 8 — see §12.1 |
+| **Progress** | PRs 1, 2, 2.5, 3, 4, 5 and 6 merged into `brownfield`; PR 7 rebased onto `brownfield` and in review ([#7349](https://github.com/SciTools/iris/pull/7349)); merge-back not started — see §12.1 |
+| **Next action** | PR 7's review, then PR 8 — see §12.1 |
 | **Blocked on** | PR 7, whose unicode tests fail until [SciTools/iris-test-data#100](https://github.com/SciTools/iris-test-data/pull/100) merges and releases — deliberately committed red so the new test can be reviewed beside its fixtures |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
@@ -2313,8 +2313,8 @@ nothing else, and can land beside any of the others.
 | 3 | Relocate the CF loader | Merged | [#7316](https://github.com/SciTools/iris/pull/7316) |
 | 4 | Zarr loading | Merged | [#7336](https://github.com/SciTools/iris/pull/7336) |
 | 5 | Relocate the CF saver | Merged | [#7338](https://github.com/SciTools/iris/pull/7338) |
-| 6 | Zarr saving | In review | [#7346](https://github.com/SciTools/iris/pull/7346) |
-| 7 | Real-world test data and benchmarks | Built, awaiting PR 6 | [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101), a preview against PR 6's branch |
+| 6 | Zarr saving | Merged | [#7346](https://github.com/SciTools/iris/pull/7346) |
+| 7 | Real-world test data and benchmarks | In review | [#7349](https://github.com/SciTools/iris/pull/7349); the preview at [trexfeathers/iris#101](https://github.com/trexfeathers/iris/pull/101) is closed, and its review threads stay there |
 | 8 | The terms-of-art sweep | Not started | — |
 | — | **Merge back** `brownfield` → `main`: closing keywords, changelog fragments, docs | Not started | — |
 
@@ -3288,8 +3288,8 @@ does not have.
   and a test asserts those strings so that regenerating the fixtures — which
   would destroy their only value — fails rather than passing quietly.
 - **That test is committed red**, against the usual rule that a branch stays
-  green. A reviewer cannot review a file that is not there, and the preview
-  pull request exists to be reviewed; the alternative was holding the test
+  green. A reviewer cannot review a file that is not there, and a pull
+  request exists to be reviewed; the alternative was holding the test
   back until the fixtures released, which would have put the new file in
   front of nobody. Decided by @trexfeathers. The four failures are
   `FileNotFoundError` on `Zarr/unicode_coords_v2.zarr` and go away with the
@@ -3360,3 +3360,4 @@ raised as its own issue, not taken in a pull request that adds test data.
 | 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |
 | 2026-10-27 | [SciTools/iris-test-data#98](https://github.com/SciTools/iris-test-data/pull/98) merged and released as v2.31, so `IRIS_TEST_DATA_VERSION` is bumped in both workflow files and PR 7's integration tests run rather than skip. The indexer's store handling was rewritten on review by @pp-mo, from filtering a full walk to recursive descent; that also removed a bug where a checkout under any directory named `*.zarr` suppressed the whole index. |
 | 2026-10-27 | Actioned @pp-mo's review of PR 7. The custom skip guard removed in favour of the standard `skip_data`, which also honours `IRIS_TEST_NO_DATA`; the save benchmarks collapsed into one class parametrised over `file_format`; `TimeConstraint` given Zarr. His sharpest point was that a test writing a `<U` array and reading it back cannot pin that Iris reads one already written, so stored fixtures were added to `iris-test-data` ([#100](https://github.com/SciTools/iris-test-data/pull/100)) and §6 now states the rule. |
+| 2026-10-27 | #7346 merged, so PR 7 rebased onto `brownfield` with `git rebase --onto upstream/brownfield zarr-io-pr-6 zarr-io-pr-7` and raised as [#7349](https://github.com/SciTools/iris/pull/7349). The rebase met nothing: `brownfield` after the squash is the same tree as PR 6's branch, so the only conflict was this document's own decision log, where both sides had appended. The preview is closed rather than retargeted, because a pull request cannot change repositories. One claim in its body had gone stale against the review above and is corrected in #7349's: parametrising the save benchmarks renames the netCDF ones, so their ASV history does not carry across, and a reviewer should see that said rather than inferred. |
