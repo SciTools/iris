@@ -8,7 +8,13 @@ Modelled on the NOAA GFS archive at dynamical.org, whose properties the Zarr
 I/O design names as the ones worth exercising: version 3 `dimension_names`, a
 sharded codec, a scalar grid-mapping variable, a two-dimensional auxiliary
 coordinate, and the base64 `_FillValue` that released xarray writes for every
-floating dtype. A cut-down copy of the real store replaces this.
+floating dtype.
+
+A cut-down copy of that real store sits beside this one, and `test_gfs_sample.py`
+is where it is loaded. The two are not redundant. This one needs no external
+data, so the tests here run wherever `iris-test-data` does not; and it is the
+more CF-conforming of the pair, because it gives its data variable a
+`grid_mapping` attribute, which the published store does not have.
 
 Bounds on `latitude` are not part of that real store, but earn their place
 anyway: `CFBoundaryVariable.spans` is one of the overrides this pull request

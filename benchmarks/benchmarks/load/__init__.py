@@ -18,7 +18,7 @@ class LoadAndRealise:
     params = (
         [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
-        ["FF", "PP", "NetCDF"],
+        ["FF", "PP", "NetCDF", "Zarr"],
     )
     param_names = ["xyz", "compressed", "file_format"]
 
@@ -78,7 +78,7 @@ class STASHConstraint:
 
 
 class TimeConstraint:
-    params = ([3, 20], ["FF", "PP", "NetCDF"])
+    params = ([3, 20], ["FF", "PP", "NetCDF", "Zarr"])
     param_names = ["time_dim_len", "file_format"]
 
     def setup_cache(self) -> dict:
