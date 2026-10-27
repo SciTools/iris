@@ -1956,6 +1956,18 @@ question needs a table of the storage library's data types that nothing
 consults and nothing checks. What is pinned for those instead is that a
 dtype zarr-python refuses leaves the group as it was.
 
+**A store a test writes cannot pin how a store was written.** A test that
+writes an array with zarr-python and reads it back with Iris moves when
+zarr-python moves: change the encoding and both halves change together, so
+the test still passes while a file written years earlier stops loading. That
+is fine for the reader-against-writer question, which is most of them, and
+useless for the interoperability question — *this* encoding, which a
+published file already contains, must still load. The second needs bytes
+that do not move, which means a committed fixture in `iris-test-data` and a
+test under `integration/`. Both are worth having, and neither replaces the
+other. Fixed-length unicode is the case where it bites, because `<U` is the
+dtype whose Zarr encoding is least settled (§12.4, 2026-10-27).
+
 **Integration.** `lib/iris/tests/integration/zarr/` covers round trips through
 `stock.realistic_4d_w_everything()`, following the shape of the existing
 `integration/netcdf/test_nczarr.py`.
@@ -2312,6 +2324,7 @@ Companion work outside `SciTools/iris`:
 |---|---|---|---|
 | `SciTools/iris-test-data` | Cut-down NOAA GFS (v3) fixture for PR 7, and a `.zarr` directory indexed as one item | Merged, released as v2.31 | [#98](https://github.com/SciTools/iris-test-data/pull/98) |
 | `SciTools/iris-test-data` | The repository-wide licence statement, which #98's data does not fit | Raised, not for this programme to settle | [#99](https://github.com/SciTools/iris-test-data/issues/99) |
+| `SciTools/iris-test-data` | Stored `<U3` and `<U7` fixtures in Zarr v2 and v3, so that reading them is pinned against bytes that do not move | In review | [#100](https://github.com/SciTools/iris-test-data/pull/100) |
 
 States are `Not started`, `Drafted`, `Built, awaiting PR N` (work complete on
 a branch based on another pull request not yet merged, with no number of its
@@ -3243,12 +3256,45 @@ does not have.
   store is still live and still version 2 **[verified]**, and cutting it was
   shown to be practical. §5 and §7 record the decision and what replaced it.
 
+**2026-10-27 — actioning @pp-mo's review of PR 7**
+
+- **The custom skip guard is gone, and `skip_data` stays.** The GFS module
+  carried both a `skipif` on the store's own existence and the standard
+  decorator. Two reviewers objected from opposite sides — @pp-mo that the
+  decorators were redundant, @trexfeathers that the custom guard made these
+  the only tests in the suite not using the standard one, with no
+  backwards-compatibility contract for older `iris-test-data` to justify it.
+  `skip_data` is the one to keep, because it also honours `IRIS_TEST_NO_DATA`
+  and the custom guard did not: keeping only the custom guard would have run
+  these tests for someone who had asked the suite not to touch external data
+  **[verified]**. The guard existed only because the data was unreleased.
+- **The save benchmarks are one class parametrised over `file_format`**, as
+  `LoadAndRealise` and `TimeConstraint` already were, rather than a
+  near-duplicate `ZarrSave` beside `NetcdfSave`. `time_save_mesh` is guarded
+  on the format rather than skipped: ASV's skip facility raises out of
+  `setup()`, which applies to every benchmark in the class, so it cannot skip
+  one method for one parameter value. This renames the netCDF benchmarks, so
+  their ASV history does not carry across — accepted deliberately.
+- **`TimeConstraint` gained Zarr too.** Its omission was scope, not a
+  technical reason. `STASHConstraint` is left alone: it omits netCDF as well,
+  so adding formats there changes existing coverage rather than doing Zarr
+  work.
+- **A generated `<U` test cannot pin what it claims**, which is the review
+  finding behind the §6 rule above and behind `iris-test-data` #100. The
+  stored fixtures are synthetic and ours, following the EOPF
+  `conditions/geometry` shapes and dtypes with invented values, so they raise
+  no licence question. They record `"dtype": "<U7"` on version 2 and
+  `fixed_length_utf32` with `length_bytes: 28` on version 3 **[verified]**,
+  and a test asserts those strings so that regenerating the fixtures — which
+  would destroy their only value — fails rather than passing quietly.
+
 ### 12.5 Artefacts
 
 | Artefact | Location | State |
 |---|---|---|
 | Cut-down NOAA GFS fixture, 1.4 MB, 12 members, Zarr v3 | `iris-test-data` v2.31, as `test_data/Zarr/gfs_forecast_sample.zarr` | Released. The cut it was made from is at `~/iris-zarr-testdata/gfs_forecast_sample.zarr` |
 | Cut-down ESA EOPF fixture, Zarr v2 | — | Not pursued. §5 and §7 say why |
+| Fixed-length unicode fixtures, 80 KB and 84 KB, Zarr v2 and v3 | `test_data/Zarr/unicode_coords_v{2,3}.zarr`, in [#100](https://github.com/SciTools/iris-test-data/pull/100) | In review. Synthetic and ours, so no third-party licence; `make_unicode_coords.py` beside them is provenance, not a build step |
 
 The GFS subset was cut ahead of the rest of the programme because its source
 endpoint is documented as closing on **30 September 2026** (§8).
@@ -3305,3 +3351,4 @@ raised as its own issue, not taken in a pull request that adds test data.
 | 2026-10-23 | Byte order removed from the capability question rather than documented as an exception to it: `create_variable` creates in the platform's own byte order, so `supports_dtype` can answer `True` for a big-endian dtype on every accepted version. §4.2 says why neither obvious answer was tenable. The version claims are run rather than read — zarr-python 3.0.8 installed in a throwaway environment, every dtype in the table created in turn, on 3.0.8 and 3.4.1 both. |
 | 2026-10-26 | PR 7 built: the NOAA GFS subset contributed to `iris-test-data`, eleven integration tests over it, a read-side test for a fixed-length unicode variable, `ZarrSave` and a `"Zarr"` file format in `LoadAndRealise`. The ESA EOPF fixture dropped on licence grounds and §5 and §7 amended to say so; §7 keeps the store as cited evidence. Six findings logged, four of them things the published store does that no synthetic fixture did. |
 | 2026-10-27 | [SciTools/iris-test-data#98](https://github.com/SciTools/iris-test-data/pull/98) merged and released as v2.31, so `IRIS_TEST_DATA_VERSION` is bumped in both workflow files and PR 7's integration tests run rather than skip. The indexer's store handling was rewritten on review by @pp-mo, from filtering a full walk to recursive descent; that also removed a bug where a checkout under any directory named `*.zarr` suppressed the whole index. |
+| 2026-10-27 | Actioned @pp-mo's review of PR 7. The custom skip guard removed in favour of the standard `skip_data`, which also honours `IRIS_TEST_NO_DATA`; the save benchmarks collapsed into one class parametrised over `file_format`; `TimeConstraint` given Zarr. His sharpest point was that a test writing a `<U` array and reading it back cannot pin that Iris reads one already written, so stored fixtures were added to `iris-test-data` ([#100](https://github.com/SciTools/iris-test-data/pull/100)) and §6 now states the rule. |
