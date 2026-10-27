@@ -47,8 +47,7 @@ _FORWARDED = {
 #: The version floor ``docs/src/user_manual/explanation/zarr_io.rst`` and
 #: ``requirements/py3*.yml`` both promise.
 #:
-#: 3.1.0 rather than the 3.0.8 that is merely above zarr-python's known
-#: data-loss bug: 3.1.0 replaced the fixed enum of data types with a
+#: 3.1.0 is where zarr-python replaced the fixed enum of data types with a
 #: registry, and with it made ``Array.metadata.to_dict()`` return plain JSON
 #: values. :attr:`~iris.fileformats.zarr._dataset.ZarrDatasetVariable.cache_key`
 #: serialises that mapping on every lazy read, so on 3.0.x every array large

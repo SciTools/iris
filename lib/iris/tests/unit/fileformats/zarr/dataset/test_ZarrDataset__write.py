@@ -365,8 +365,8 @@ class TestSupportsDtype:
         # The message is zarr-python's, not Iris's: Iris does not refuse these
         # itself, because doing so would mean keeping its own table of what
         # zarr-python can store. The fragments matched here are the stable
-        # part, unchanged from 3.1.0 to 3.4.1. What Iris owns is the outcome -
-        # a refused create leaves the group as it was.
+        # part, unchanged from 3.1.0 to at least 3.4.1. What Iris owns is the
+        # outcome - a refused create leaves the group as it was.
         writable.create_dimension("x", 2)
         with pytest.raises(ValueError, match=message):
             writable.create_variable("data", np.dtype(spelling), ["x"])
