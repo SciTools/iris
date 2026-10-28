@@ -214,8 +214,14 @@ even the same length. Both are permitted by the specification.
 So Iris treats two arrays as sharing a dimension only when they name it
 identically **and** it is the same length in both. Anything else loads as an
 **anonymous** dimension, which is an ordinary Iris cube dimension with no
-coordinate on it. That covers both a dimension the store never named, and a
-name the store used at two different lengths.
+coordinate on it -- a dimension the store never named, for instance.
+
+The pair is matched array by array, so one name used at two lengths does not
+spoil both. Given a store whose ``t`` is 4 long in one data array and 5 in
+another, a coordinate array named ``t`` and 4 long attaches to the first and
+not to the second: the first cube gets its coordinate, and only the second
+gets an anonymous dimension. The load also warns, naming the dimension and
+the sizes found, because nothing else would explain the difference.
 
 A coordinate left with nothing to attach to is not discarded. It goes to
 :data:`iris.loading.LOAD_PROBLEMS`, and the load warns that not every object
@@ -304,6 +310,40 @@ attribute model should map onto JSON.
         del cube.attributes["stac_discovery"]
 
     See :issue:`7329`.
+
+Saving attributes converts them
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Zarr stores its attributes as JSON, which has one number type and no concept
+of a NumPy dtype. So saving converts: a NumPy scalar becomes the Python
+number it holds, a NumPy array becomes a list, ``bytes`` become text through
+ASCII, and a list or tuple is converted element by element.
+
+The conversion is not reversible, and a round trip through a store does not
+return the dtype you wrote::
+
+    cube.attributes["sensor_count"] = np.int32(3)
+    iris.save(cube, "out.zarr")
+    loaded = iris.load_cube("out.zarr")
+    type(loaded.attributes["sensor_count"])  # <class 'int'>
+
+The *value* survives; its width does not. Compare attribute values rather
+than their types when checking a round trip, and do not rely on an attribute
+to carry a dtype -- the data's own dtype is unaffected by any of this, and
+round-trips exactly.
+
+An attribute Iris cannot convert is **refused**, by name::
+
+    TypeError: Cannot save attribute 'probe': a value of type object has no
+    JSON form. Convert it to a number, a string, or a list of either.
+
+It is not silently stringified: an attribute that cannot be read back as
+what you wrote is worse than a save that stops and tells you which attribute
+is the problem. The refusal happens as the attribute is written, so the
+rejected value never reaches the store -- but the save as a whole has
+started, and what it has already written stays there. See
+:ref:`what an interrupted save leaves behind <zarr_io_interrupted_save>`;
+a retry needs ``mode="w"``, because the default refuses an existing store.
 
 .. _zarr_io_nczarr:
 
