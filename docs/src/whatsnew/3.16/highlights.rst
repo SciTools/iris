@@ -14,6 +14,7 @@ This document explains the changes made to Iris for this release
    * Improved NetCDF character-array handling so Iris now supports string data in cube data arrays.
    * Added support for loading and saving of Zarr files formatted in Zarr Storage Spec Version 2 via the `NetCDF NCZarr <https://docs.unidata.ucar.edu/nug/current/nczarr_head.html>`_ implementation.
    * Improved the speed of field iteration when reading PP files. Up to 3x speed up has been seen, depending on the circumstances.
+   * A change in behaviour in string cube loading means that string arrays no longer have padding stripped.
 
    * Special shoutout to :user:`pt331` for their work on the release while deployed into the core development team.
    * We also want to thank :user:`gaoflow`, :user:`2319bli`, :user:`GitRylee`, :user:`king56180468-droid`, :user:`SgtVarmint` for their contributions that have gone into this release.

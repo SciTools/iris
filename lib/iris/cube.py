@@ -121,7 +121,7 @@ class CubeList(list):
     @staticmethod
     def _assert_is_cube(obj):
         if not hasattr(obj, "add_aux_coord"):
-            msg = r"Object {obj} cannot be put in a cubelist, as it is not a Cube."
+            msg = f"Object {obj!r} cannot be put in a cubelist, as it is not a Cube."
             raise ValueError(msg)
 
     def _repr_html_(self):
