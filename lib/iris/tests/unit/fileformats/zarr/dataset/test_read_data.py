@@ -206,6 +206,7 @@ class Test_cache_key:
             {"dtype": "f8"},
             {"fill_value": -7},
             {"dimension_names": ("other",)},
+            {"compressors": zarr.codecs.GzipCodec()},
         ],
     )
     def test_the_key_is_sensitive_to_every_metadata_field(self, tmp_path, change):
@@ -238,6 +239,83 @@ class Test_cache_key:
         before = key_of(location)
         array.attrs["units"] = "K"
         assert key_of(location) != before
+
+    def test_a_rewritten_fill_value_is_read_again_rather_than_cached(
+        self, tmp_path, mocker
+    ):
+        """A metadata-only rewrite, which only `cache_key` can catch.
+
+        The array is rewritten with a different storage fill value and its
+        chunk left unwritten, so a stale cache never shows the new value.
+        """
+        mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+        cache = _lazy_data.LRUCache(100)
+        mocker.patch.object(_lazy_data, "CACHE", cache)
+        location = str(tmp_path / "k.zarr")
+        group = zarr.open_group(store=location, mode="w", zarr_format=3)
+        group.create_array(
+            "v",
+            shape=(4,),
+            dtype="i4",
+            chunks=(4,),
+            dimension_names=("t",),
+            fill_value=-1,
+        )
+        first = ZarrDataset(location).variables["v"].read_data(policy)
+        assert first.compute().tolist() == [-1, -1, -1, -1]
+
+        group = zarr.open_group(store=location, mode="a", zarr_format=3)
+        group.create_array(
+            "v",
+            shape=(4,),
+            dtype="i4",
+            chunks=(4,),
+            dimension_names=("t",),
+            fill_value=-2,
+            overwrite=True,
+        )
+
+        second = ZarrDataset(location).variables["v"].read_data(policy)
+        assert second.compute().tolist() == [-2, -2, -2, -2]
+
+    def test_a_rewritten_shape_is_read_again_rather_than_cached(self, tmp_path, mocker):
+        """A shape rewrite under a chunking the caller fixed.
+
+        `as_lazy_data` keys on `(cache_key, chunks, asarray, meta.dtype,
+        type(meta))`. Default sizing moves the chunks with the shape, so only
+        a fixed chunking leaves `cache_key` as the one thing that can notice.
+        """
+        mocker.patch.object(cf_loader, "_LAZYVAR_MIN_BYTES", 1)
+        cache = _lazy_data.LRUCache(100)
+        mocker.patch.object(_lazy_data, "CACHE", cache)
+
+        def fixed_policy():
+            """What CHUNK_CONTROL supplies for a pinned chunking."""
+            return (4,), (True,)
+
+        location = str(tmp_path / "k.zarr")
+        group = zarr.open_group(store=location, mode="w", zarr_format=3)
+        array = stores.make_array(
+            group, "v", (4,), "i4", 3, dimensions=("t",), chunks=(4,)
+        )
+        array[:] = [0, 1, 2, 3]
+        first = ZarrDataset(location).variables["v"].read_data(fixed_policy)
+        assert first.shape == (4,)
+
+        group = zarr.open_group(store=location, mode="a", zarr_format=3)
+        rewritten = group.create_array(
+            "v",
+            shape=(8,),
+            dtype="i4",
+            chunks=(4,),
+            dimension_names=("t",),
+            overwrite=True,
+        )
+        rewritten[:] = np.arange(8, dtype="i4")
+
+        second = ZarrDataset(location).variables["v"].read_data(fixed_policy)
+        assert second.shape == (8,)
+        assert second.compute().tolist() == [0, 1, 2, 3, 4, 5, 6, 7]
 
     def test_two_cubes_sharing_an_array_share_one_dask_array(self, tmp_path, mocker):
         """What the cache is for: many cubes in one store sharing a coordinate.

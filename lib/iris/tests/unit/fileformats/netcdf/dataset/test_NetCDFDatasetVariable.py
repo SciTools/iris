@@ -320,9 +320,61 @@ class TestDeprecatedNetcdfMember:
             with pytest.raises(AttributeError):
                 air.deprecated_netcdf_member("no_such_netcdf_member")
 
-    def test_the_message_names_the_replacement(self, air):
+    @pytest.mark.parametrize(
+        ("member", "replacement"),
+        [
+            ("ncattrs", "cf_var.attributes"),
+            ("getncattr", "cf_var.attributes["),
+            ("setncattr", "cf_var.cf_data.attributes["),
+            ("chunking", "cf_var.cf_data.chunking"),
+            ("filters", "cf_var.cf_data.storage_settings"),
+            ("datatype", "cf_var.cf_data.dtype"),
+        ],
+    )
+    def test_the_message_names_the_member_that_replaces_this_one(
+        self, air, member, replacement
+    ):
+        """The warning names the member, not just the interface."""
+        with pytest.warns(IrisDeprecation) as warnings_raised:
+            air.deprecated_netcdf_member(member)
+        assert replacement in str(warnings_raised[0].message)
+
+    @pytest.mark.parametrize("member", ["setncattr", "delncattr"])
+    def test_the_advice_for_a_mutator_reaches_the_store(self, air, member):
+        """Mutators are sent to the storage-backed mapping.
+
+        `CFVariable.attributes` is a snapshot, so advising it in place of
+        `setncattr` would turn a write into a silent no-op.
+        """
+        with pytest.warns(IrisDeprecation) as warnings_raised:
+            air.deprecated_netcdf_member(member)
+        assert "cf_var.cf_data.attributes" in str(warnings_raised[0].message)
+
+    def test_the_advised_expression_writes_through_where_the_snapshot_does_not(
+        self, tmp_path
+    ):
+        """The advised expression reaches the file; the snapshot does not."""
+        from iris.fileformats.cf import CFDataVariable
+
+        dataset = _dataset.NetCDFDataset(str(tmp_path / "w.nc"), mode="w")
+        dataset.create_dimension("x", 2)
+        variable = dataset.create_variable("v", np.dtype("f4"), ("x",))
+        variable.attributes["units"] = "m"
+        cf_var = CFDataVariable("v", variable)
+
+        cf_var.attributes["units"] = "cm"
+        assert variable.attributes["units"] == "m", "the snapshot reached the file"
+
+        cf_var.cf_data.attributes["units"] = "mm"
+        assert variable.attributes["units"] == "mm"
+        del cf_var.cf_data.attributes["units"]
+        assert "units" not in variable.attributes
+        dataset.close()
+
+    def test_an_unmapped_member_still_points_at_the_interface(self, air):
+        """The table covers what has a replacement, not every netCDF member."""
         with pytest.warns(IrisDeprecation, match=r"cf_data\.variable"):
-            air.deprecated_netcdf_member("ncattrs")
+            air.deprecated_netcdf_member("set_auto_maskandscale")
 
 
 class TestCharacterData:

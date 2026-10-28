@@ -436,8 +436,8 @@ class TestCreateVariableEncoding:
         variable = writable.create_variable(
             "data", np.dtype("f4"), ["x"], compressors=[GzipCodec(level=5)]
         )
-        codecs = str(variable.storage_settings["codecs"])
-        assert "gzip" in codecs.lower()
+        compressors = str(variable.storage_settings["compressors"])
+        assert "gzip" in compressors.lower()
 
     @pytest.mark.parametrize(
         ("keyword", "expected"),
@@ -747,6 +747,21 @@ class TestFinalise:
         assert reopened.metadata.consolidated_metadata is not None
         assert "sub" in list(reopened.group_keys())
 
+    def test_the_dataset_then_reports_the_consolidation(self, writable):
+        """`storage_settings` must describe the store, not the open group.
+
+        A writable dataset opens with `use_consolidated=False`, so its own
+        group metadata never carries a document however many times this has
+        been called. Reporting from it leaves a caller told `False` by the
+        dataset that just wrote the document, and `True` by the same store
+        reopened.
+        """
+        writable.create_dimension("x", 3)
+        writable.create_variable("data", np.dtype("f4"), ["x"])
+        assert writable.storage_settings["consolidated"] is False
+        writable.finalise()
+        assert writable.storage_settings["consolidated"] is True
+
     def test_a_read_only_dataset_refuses(self, existing):
         with ZarrDataset(existing) as dataset:
             with pytest.raises(ValueError, match="mode='r'"):
@@ -790,6 +805,12 @@ class TestDropConsolidatedMetadata:
         assert dict(reopened.attrs) == {"title": "kept"}
         assert list(reopened.array_keys()) == ["already_here"]
         assert reopened["already_here"][:].tolist() == [1.0, 2.0]
+
+    def test_the_dataset_reports_the_document_and_then_its_removal(self, consolidated):
+        with ZarrDataset(consolidated, mode="a") as dataset:
+            assert dataset.storage_settings["consolidated"] is True
+            dataset.drop_consolidated_metadata()
+            assert dataset.storage_settings["consolidated"] is False
 
     def test_a_store_without_one_is_left_alone(self, existing):
         with ZarrDataset(existing, mode="a") as dataset:

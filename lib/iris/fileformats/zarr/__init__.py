@@ -60,9 +60,10 @@ _MINIMUM_VERSION = "3.1.0"
 #: Raised whether ``zarr`` is missing entirely or present below
 #: :data:`_MINIMUM_VERSION`. Defined once here, not in
 #: :func:`iris.fileformats._load_zarr`, so that every route a caller can
-#: reach a Zarr store through - ``iris.load``, ``iris.save``, and calling
-#: :func:`load_cubes` directly - produces the same text rather than each
-#: carrying its own copy. "Use", not "load": ``iris.save`` raises this too.
+#: reach a Zarr store through - ``iris.load``, ``iris.save``,
+#: :func:`iris.mesh.load_meshes`, and calling :func:`load_cubes` directly -
+#: produces the same text rather than each carrying its own copy. "Use", not
+#: "load": ``iris.save`` raises this too.
 _MISSING_MESSAGE = (
     "Unable to use a Zarr store - the 'zarr' package is not "
     "installed. Install zarr >=3.1.0, for example with "
@@ -95,6 +96,28 @@ def _check_zarr_version() -> None:
 
     if Version(installed) < Version(_MINIMUM_VERSION):
         raise ImportError(_MISSING_MESSAGE)
+
+
+def _gated_import(module_name: str):
+    """Import one of this package's modules, behind the dependency gate.
+
+    Both halves of the gate: the version check, and turning a missing
+    ``zarr`` into :data:`_MISSING_MESSAGE` rather than a
+    ``ModuleNotFoundError``. Public names arrive through :func:`__getattr__`;
+    this is for a caller needing a private one.
+
+    Raises
+    ------
+    ImportError
+        If ``zarr`` is missing, or installed below :data:`_MINIMUM_VERSION`.
+
+    """
+    _check_zarr_version()
+
+    try:
+        return importlib.import_module(module_name, __name__)
+    except ImportError as exception:
+        raise ImportError(_MISSING_MESSAGE) from exception
 
 
 def __getattr__(name):
@@ -132,11 +155,4 @@ def __getattr__(name):
     if module_name is None:
         raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
-    _check_zarr_version()
-
-    try:
-        module = importlib.import_module(module_name, __name__)
-    except ImportError as exception:
-        raise ImportError(_MISSING_MESSAGE) from exception
-
-    return getattr(module, name)
+    return getattr(_gated_import(module_name), name)

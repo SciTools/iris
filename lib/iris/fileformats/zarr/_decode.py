@@ -241,8 +241,13 @@ def decode_parameters(
             _decode_missing_values(attributes["missing_value"], dtype, variable_name)
         )
 
+    # Presence, not usability: a malformed declaration is still a declaration,
+    # and the version 2 fallback below is for stores predating the convention.
+    declared = "_FillValue" in attributes or "missing_value" in attributes
+
     if (
         not sentinels
+        and not declared
         and zarr_format < _FILL_VALUE_IS_A_MASK_BEFORE
         and storage_fill_value is not None
     ):

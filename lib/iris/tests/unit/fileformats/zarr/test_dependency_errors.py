@@ -7,10 +7,11 @@
 ``iris.load`` reaches :mod:`iris.fileformats.zarr` through
 :func:`iris.fileformats._load_zarr`; the Zarr page of the user manual also
 tells a reader to call :func:`iris.fileformats.zarr.load_cubes` directly, for
-the ``group=`` keyword; and ``iris.save`` reaches it through the
-:func:`iris.io._zarr_save` wrapper. All three must raise the same
-``ImportError``, naming the package and the version floor, whether ``zarr``
-is missing entirely or merely too old.
+the ``group=`` keyword; ``iris.save`` reaches it through the
+:func:`iris.io._zarr_save` wrapper; and :func:`iris.mesh.load_meshes` reaches
+it from :mod:`iris.fileformats.netcdf.ugrid_load`. All four must raise the
+same ``ImportError``, naming the package and the version floor, whether
+``zarr`` is missing entirely or merely too old.
 """
 
 import subprocess
@@ -23,6 +24,7 @@ import iris
 from iris.cube import Cube
 import iris.fileformats.zarr as zarr_package
 from iris.fileformats.zarr import _MISSING_MESSAGE
+import iris.mesh
 
 #: Blocks `import zarr` in the interpreter this is run in, without touching
 #: the installed distribution's metadata - the only way to simulate "not
@@ -79,6 +81,14 @@ except ImportError as exception:
 """
 
 
+_LOAD_MESHES_PROBE = """
+import iris.mesh
+try:
+    iris.mesh.load_meshes({location!r})
+except ImportError as exception:
+    print(exception)
+"""
+
 _SAVE_PROBE = """
 import numpy as np
 import iris
@@ -122,6 +132,20 @@ class Test_zarr_is_missing:
 
     def test_iris_save_reports_it(self, tmp_path):
         probe = _BLOCK_ZARR + _SAVE_PROBE.format(location=str(tmp_path / "out.zarr"))
+        assert _run(probe) == _MISSING_MESSAGE
+
+    def test_load_meshes_reports_it(self, tmp_path):
+        """Mesh loading gets the same text as every other route.
+
+        It reaches Zarr from :mod:`iris.fileformats.netcdf.ugrid_load`, not
+        through this package's public names, so it can miss the gate and
+        leave the user a bare ``ModuleNotFoundError``.
+        """
+        store = tmp_path / "s.zarr"
+        store.mkdir()
+        (store / "zarr.json").write_text("{}")
+
+        probe = _BLOCK_ZARR + _LOAD_MESHES_PROBE.format(location=str(store))
         assert _run(probe) == _MISSING_MESSAGE
 
 
@@ -186,6 +210,24 @@ class Test_zarr_is_too_old:
 
         with pytest.raises(ImportError) as excinfo:
             zarr_package.load_cubes("irrelevant")
+        assert str(excinfo.value) == _MISSING_MESSAGE
+
+    def test_load_meshes_reports_it(self, mocker, tmp_path):
+        """An unchecked mesh route reads the store instead of refusing it.
+
+        Zarr 2.x imports, so without the gate `load_meshes` opens the store
+        with a zarr 2 `Group`, finds no mesh in what it can read of it, and
+        returns ``{}`` - a wrong answer rather than an error.
+        """
+        mocker.patch.object(
+            zarr_package.importlib.metadata, "version", _report_old_zarr
+        )
+        store = tmp_path / "s.zarr"
+        store.mkdir()
+        (store / "zarr.json").write_text("{}")
+
+        with pytest.raises(ImportError) as excinfo:
+            iris.mesh.load_meshes(str(store))
         assert str(excinfo.value) == _MISSING_MESSAGE
 
     def test_iris_save_reports_it(self, mocker, tmp_path):

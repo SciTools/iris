@@ -1,0 +1,9 @@
+:user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+:user:`bjlittle`, and OpenAI's Codex
+added native Zarr support. Iris reads Zarr version 2 and
+version 3 stores and writes version 3, through the same
+:func:`iris.load` and :func:`iris.save` calls as any other format, with
+``zarr`` an optional dependency. :func:`iris.fileformats.zarr.load_cubes`
+and :func:`iris.fileformats.zarr.save` take a ``group`` keyword for a store
+that holds more than one dataset. (:issue:`6977`, :issue:`6979`,
+:issue:`6980`)

@@ -122,8 +122,17 @@ def load_realised():
     arrays.
     """
     from iris.fileformats._nc_load_rules import helpers
-    from iris.fileformats.cf import loader as cf_loader
-    from iris.fileformats.cf.loader import _get_cf_var_data as pre_patched
+
+    try:
+        from iris.fileformats.cf import loader as cf_loader
+    except ImportError:
+        # The CF loader relocated out of iris.fileformats.netcdf in #7316.
+        #  A benchmark run spans commits either side of that, so both
+        #  spellings have to work - see "Benchmarks outlive the code they
+        #  import" in ../../README.md.
+        from iris.fileformats.netcdf import loader as cf_loader
+
+    pre_patched = cf_loader._get_cf_var_data
 
     def patched(*args, **kwargs):
         return as_concrete_data(pre_patched(*args, **kwargs))

@@ -120,14 +120,47 @@ class Test_groups:
         assert list(dataset.variables) == ["b02"]
         assert dataset.location.endswith("measurements/r10m")
 
-    def test_subgroup_names_lists_only_the_groups(self, tmp_path):
+    def test_groups_holding_arrays_lists_the_groups_with_arrays(self, tmp_path):
         root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
-        root.create_group("conditions")
-        root.create_group("measurements")
+        stores.make_array(root.create_group("conditions"), "c", (2,), "f8", 3)
+        stores.make_array(root.create_group("measurements"), "m", (2,), "f8", 3)
         stores.make_array(root, "v", (2,), "f8", 3)
 
         dataset = ZarrDataset(str(tmp_path / "n.zarr"))
-        assert sorted(dataset.subgroup_names) == ["conditions", "measurements"]
+        assert sorted(dataset.groups_holding_arrays) == ["conditions", "measurements"]
+
+    def test_groups_holding_arrays_descends_to_where_the_data_is(self, tmp_path):
+        """A group holding only groups is no more loadable than the root.
+
+        The ESA EOPF Sentinel products keep their arrays three levels down.
+        """
+        root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+        deep = root.create_group("measurements").create_group("reflectance")
+        stores.make_array(deep.create_group("r10m"), "b02", (2,), "f8", 3)
+
+        dataset = ZarrDataset(str(tmp_path / "n.zarr"))
+        assert dataset.groups_holding_arrays == ("measurements/reflectance/r10m",)
+
+    def test_the_whole_hierarchy_is_reported_shallowest_first(self, tmp_path):
+        """Holding arrays is a candidate, not an answer.
+
+        Whether a group yields cubes is CF's question, so every candidate is
+        reported, shallowest first, for the loader to filter.
+        """
+        root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+        measurements = root.create_group("measurements")
+        stores.make_array(measurements, "m", (2,), "f8", 3)
+        stores.make_array(measurements.create_group("r10m"), "b02", (2,), "f8", 3)
+
+        dataset = ZarrDataset(str(tmp_path / "n.zarr"))
+        assert dataset.groups_holding_arrays == ("measurements", "measurements/r10m")
+
+    def test_groups_holding_no_arrays_anywhere_are_not_listed(self, tmp_path):
+        root = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+        root.create_group("conditions").create_group("quality")
+
+        dataset = ZarrDataset(str(tmp_path / "n.zarr"))
+        assert dataset.groups_holding_arrays == ()
 
     def test_nested_groups_are_not_walked(self, tmp_path):
         """Iris loads one group per call, like xarray.

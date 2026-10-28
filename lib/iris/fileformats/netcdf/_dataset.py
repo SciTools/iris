@@ -46,6 +46,22 @@ _CONTIGUOUS = "contiguous"
 #: The member an ncdata emulating variable carries instead of file storage.
 _EMULATED_DATA_ARRAY = "_data_array"
 
+#: What the deprecation warning names in place of each netCDF4 variable
+#: member. A member with no CF equivalent is absent, and gets the general
+#: message.
+_CF_REPLACEMENTS = {
+    "ncattrs": "cf_var.attributes",
+    "getncattr": "cf_var.attributes[name]",
+    # Mutators name the storage-backed mapping: `CFVariable.attributes` is a
+    # snapshot, so a write there never reaches the file.
+    "setncattr": "cf_var.cf_data.attributes[name] = value",
+    "delncattr": "del cf_var.cf_data.attributes[name]",
+    "chunking": "cf_var.cf_data.chunking",
+    "filters": "cf_var.cf_data.storage_settings",
+    "datatype": "cf_var.cf_data.dtype",
+    "name": "cf_var.cf_name",
+}
+
 # A stab in the dark at the mean length of the "ragged dimension" for netCDF
 # "variable length arrays" (`NetCDF.VLType` type). Total array size is unknown
 # until the variable is read in. Making this number bigger makes it more likely
@@ -281,11 +297,19 @@ class NetCDFDatasetVariable(CFDatasetVariable):
         # Fetch before warning: if getattr raises, no warning is issued. A
         # failed hasattr() probe has not used the deprecated member.
         value = getattr(self._variable, name)
+        replacement = _CF_REPLACEMENTS.get(name)
+        advice = (
+            f"Use {replacement} instead."
+            if replacement is not None
+            else (
+                "Use the CF dataset interface instead - "
+                "iris.fileformats.cf.dataset - or, for a netCDF-only need, "
+                "cf_var.cf_data.variable."
+            )
+        )
         warn_deprecated(
             f"Reaching netCDF variable member {name!r} through a CFVariable is "
-            "deprecated and will be removed in a future release. Use the CF "
-            "dataset interface instead - iris.fileformats.cf.dataset - or, for "
-            "a netCDF-only need, cf_var.cf_data.variable."
+            f"deprecated and will be removed in a future release. {advice}"
         )
         return value
 

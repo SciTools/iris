@@ -19,12 +19,8 @@ import pytest
 
 from iris.fileformats.cf import CFDataVariable
 from iris.fileformats.cf.loader import CHUNK_CONTROL, _chunks_from_chunk_control
+from iris.fileformats.netcdf._dataset import NetCDFDataset
 from iris.warnings import IrisLoadWarning
-
-zarr = pytest.importorskip("zarr")
-
-from iris.fileformats.netcdf._dataset import NetCDFDataset  # noqa: E402
-from iris.fileformats.zarr._dataset import ZarrDataset  # noqa: E402
 
 SHAPE = (64,)
 #: Stored chunk of 32 float64 values, which is 256 bytes.
@@ -45,6 +41,10 @@ def build_netcdf(path, chunks):
 
 
 def build_zarr(path, chunks):
+    # Per test, not per module: these tests run against netCDF too.
+    zarr = pytest.importorskip("zarr", minversion="3.1.0")
+    from iris.fileformats.zarr._dataset import ZarrDataset
+
     group = zarr.open_group(store=path, mode="w", zarr_format=3)
     group.create_array(
         "v", shape=SHAPE, dtype="f8", chunks=chunks, dimension_names=("t",)

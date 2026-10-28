@@ -11,23 +11,32 @@ import iris
 from iris.io import _is_remote_store_uri, load_stores
 from iris.tests import _shared_utils
 
-zarr = pytest.importorskip("zarr", minversion="3.1.0")
 
-from iris.tests.unit.fileformats.zarr import stores  # noqa: E402
+@pytest.fixture
+def stores():
+    """The Zarr store builders, skipping the test when ``zarr`` is absent.
+
+    Per test, not per module: the general load and save cases below need no
+    Zarr.
+    """
+    pytest.importorskip("zarr", minversion="3.1.0")
+    from iris.tests.unit.fileformats.zarr import stores
+
+    return stores
 
 
 class Test_load_stores:
-    def test_a_local_store_loads(self, tmp_path):
+    def test_a_local_store_loads(self, stores, tmp_path):
         location = stores.make_store(tmp_path / "s.zarr")
         cubes = list(load_stores([location], None))
         assert [cube.var_name for cube in cubes] == ["air_temperature"]
 
-    def test_several_stores_in_one_call(self, tmp_path):
+    def test_several_stores_in_one_call(self, stores, tmp_path):
         first = stores.make_store(tmp_path / "a.zarr")
         second = stores.make_store(tmp_path / "b.zarr")
         assert len(list(load_stores([first, second], None))) == 2
 
-    def test_constraints_reach_the_handler(self, tmp_path):
+    def test_constraints_reach_the_handler(self, stores, tmp_path):
         """A constraint the handler can pre-filter on rules out a data variable.
 
         `load_stores` forwards `constraints` to a constraint-aware handler
@@ -59,7 +68,7 @@ class Test__is_remote_store_uri:
 
 
 class Test_iris_load:
-    def test_accepts_a_local_store(self, tmp_path):
+    def test_accepts_a_local_store(self, stores, tmp_path):
         location = stores.make_store(tmp_path / "s.zarr")
         cubes = iris.load(location)
         assert len(cubes) == 1
@@ -78,7 +87,7 @@ class Test_iris_load:
         mock_load_stores.assert_called_once_with(["s3://bucket/data.zarr"], None, None)
 
     @_shared_utils.skip_data
-    def test_a_glob_matching_both_files_and_stores(self, tmp_path):
+    def test_a_glob_matching_both_files_and_stores(self, stores, tmp_path):
         """`iris.load("data/*")` must accept a mix.
 
         The file-or-store decision happens after glob expansion and before
@@ -150,6 +159,7 @@ class Test_saving:
         the cubes and every cube after the first meets a store that
         `mode="w-"` refuses.
         """
+        pytest.importorskip("zarr", minversion="3.1.0")
         from iris.fileformats.zarr import save as zarr_save
         import iris.io
 
@@ -173,7 +183,7 @@ class Test_saving:
 
 
 class Test_load_meshes:
-    def test_a_store_holding_no_mesh_yields_no_meshes(self, tmp_path):
+    def test_a_store_holding_no_mesh_yields_no_meshes(self, stores, tmp_path):
         """Reaching a Zarr store is what was new here.
 
         What must not happen is the `ValueError` the scheme dispatch raised
