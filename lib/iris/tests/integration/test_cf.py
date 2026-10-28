@@ -442,7 +442,7 @@ class TestLoadingIsSilent:
     def test_a_cf_reserved_attribute_does_not_reach_the_coord(
         self, tmp_path, cube_name, coord_name
     ):
-        # Belt and braces, not a test of attribute tracking. "bounds" and
+        # A second check, not a test of attribute tracking. "bounds" and
         # "climatology" are both in iris.fileformats.cf.saver._CF_ATTRS,
         # which _add_unused_attributes filters on whatever tracking recorded,
         # so they stay off the coordinate either way. The connectivity test
