@@ -407,12 +407,20 @@ class ZarrDatasetVariable(CFDatasetVariable):
 
     @property
     def storage_settings(self) -> Mapping:
-        """The Zarr storage settings this array holds."""
+        """The Zarr storage settings this array holds.
+
+        Compression comes from zarr-python's ``Array`` properties, which
+        answer for either store version; the metadata fields do not.
+        ``serializer`` is ``None`` on version 2.
+
+        """
         return MappingProxyType(
             {
                 "chunks": self._array.chunks,
                 "shards": self._array.shards,
-                "codecs": self._array.metadata.to_dict().get("codecs"),
+                "compressors": self._array.compressors,
+                "filters": self._array.filters,
+                "serializer": self._array.serializer,
                 "zarr_format": self._array.metadata.zarr_format,
             }
         )
@@ -999,13 +1007,29 @@ class ZarrDataset(CFDataset):
     def storage_settings(self) -> Mapping:
         """The store-wide Zarr settings."""
         assert self._group is not None
-        consolidated = self._group.metadata.consolidated_metadata
         return MappingProxyType(
             {
                 "zarr_format": self._group.metadata.zarr_format,
-                "consolidated": consolidated is not None,
+                "consolidated": self._has_consolidated_metadata(),
             }
         )
+
+    def _has_consolidated_metadata(self) -> bool:
+        """Whether the store's root holds a consolidated metadata document.
+
+        Read from the store rather than ``self._group``: a writable dataset
+        opens with ``use_consolidated=False``, so its own metadata never
+        carries one.
+
+        """
+        assert self._group is not None
+        try:
+            root = zarr.open_group(store=self._group.store, mode="r")
+        except (FileNotFoundError, KeyError):
+            # No root group, so no document. zarr-python's
+            # `GroupNotFoundError` is a `FileNotFoundError`.
+            return False
+        return root.metadata.consolidated_metadata is not None
 
     @property
     def attributes(self) -> MutableMapping:

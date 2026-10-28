@@ -199,7 +199,8 @@ class CFDatasetVariable(ABC):
         """The storage settings this variable holds, in the backend's spelling.
 
         ``zlib``, ``complevel``, ``chunksizes`` for netCDF; ``chunks``,
-        ``shards``, ``codecs``, ``zarr_format`` for Zarr. Readable, never
+        ``shards``, ``compressors``, ``filters``, ``serializer``,
+        ``zarr_format`` for Zarr. Readable, never
         interpreted: no generic code may branch on a key. The typed,
         guaranteed-present member is :attr:`chunking`.
 

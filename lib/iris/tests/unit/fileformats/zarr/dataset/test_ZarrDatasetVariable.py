@@ -7,6 +7,7 @@
 import json
 from types import SimpleNamespace
 
+import numcodecs
 import numpy as np
 import pytest
 import zarr
@@ -183,6 +184,44 @@ def test_storage_settings_reports_the_store(tmp_path, zarr_format):
     storage_settings = wrap(array, location).storage_settings
     assert storage_settings["chunks"] == array.chunks
     assert storage_settings["zarr_format"] == zarr_format
+
+
+def test_storage_settings_reports_the_compression_on_both_versions(
+    tmp_path, zarr_format
+):
+    """The two versions record compression in different metadata fields.
+
+    A version 3 array carries `codecs`; a version 2 array carries
+    `compressor` and `filters` and has no `codecs` field at all. Read from
+    the raw metadata, a compressed version 2 array therefore reports nothing
+    about how it is compressed. zarr-python's own `Array` properties answer
+    for both, so a caller asking how an array is stored need not first
+    establish which version wrote it.
+    """
+    group = zarr.open_group(
+        store=tmp_path / "z.zarr", mode="w", zarr_format=zarr_format
+    )
+    compressors = numcodecs.GZip() if zarr_format == 2 else zarr.codecs.GzipCodec()
+    array = group.create_array("v", shape=(4,), dtype="i2", compressors=compressors)
+
+    storage_settings = wrap(array).storage_settings
+    assert "gzip" in str(storage_settings["compressors"]).lower()
+    assert storage_settings["filters"] == ()
+    assert "codecs" not in storage_settings
+
+
+def test_storage_settings_reports_the_serializer(tmp_path, zarr_format):
+    """Version 3 names the bytes codec; version 2 has no such concept."""
+    group = zarr.open_group(
+        store=tmp_path / "z.zarr", mode="w", zarr_format=zarr_format
+    )
+    array = group.create_array("v", shape=(4,), dtype="i2")
+
+    serializer = wrap(array).storage_settings["serializer"]
+    if zarr_format == 2:
+        assert serializer is None
+    else:
+        assert "bytes" in str(serializer).lower()
 
 
 def test_array_dimensions_is_not_a_cf_attribute(tmp_path):
