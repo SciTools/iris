@@ -1,0 +1,3 @@
+:user:`syahra712` fixed the error raised when adding a non-cube to a
+:class:`~iris.cube.CubeList`, which showed a literal ``{obj}`` placeholder
+instead of the rejected object. (:pull:`7348`)
