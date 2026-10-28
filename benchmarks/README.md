@@ -111,6 +111,21 @@ except ImportError:
 Name the pull request that moved it, so that a later reader can tell when the
 fallback is safe to delete: once no benchmarked commit predates the move.
 
+The same applies to a capability that did not always exist. A benchmark
+parametrised over something only newer commits support - a file format, say -
+has nothing to time on the older ones, and attempting it reports a failure
+where there is simply no measurement to make. Detect the capability and raise
+`NotImplementedError` in `setup()`, which is how ASV is told to skip:
+
+```python
+def setup(self, ..., file_format):
+    if file_format == "Zarr" and not ZARR_SUPPORTED:
+        raise NotImplementedError
+```
+
+Leave the parameter in `params` either way. Removing it would change the
+benchmark names between commits, and ASV matches results by name.
+
 ### ASV re-run behaviour
 
 Note that ASV re-runs a benchmark multiple times between its `setup()` routine.

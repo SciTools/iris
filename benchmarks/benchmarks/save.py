@@ -7,6 +7,7 @@
 from iris import save
 from iris.mesh import save_mesh
 
+from . import zarr_supported
 from .generate_data.ugrid import make_cube_like_2d_cubesphere
 
 #: Target name and save keywords per format. Zarr needs mode="w" because its
@@ -23,6 +24,9 @@ class Save:
     param_names = ["cubesphere-N", "is_unstructured", "file_format"]
 
     def setup(self, n_cubesphere, is_unstructured, file_format):
+        if file_format == "Zarr" and not zarr_supported():
+            # Nothing to time: this commit predates native Zarr support.
+            raise NotImplementedError
         self.cube = make_cube_like_2d_cubesphere(
             n_cube=n_cubesphere, with_mesh=is_unstructured
         )
