@@ -1358,12 +1358,34 @@ class ZarrDataset(CFDataset):
     # Zarr-only members below.
 
     @property
-    def subgroup_names(self) -> tuple:
-        """The names of this group's subgroups.
+    def groups_holding_arrays(self) -> tuple:
+        """The whole hierarchy's groups that hold arrays, shallowest first.
 
-        What the loader names when a group holds no data variables but the
-        store plainly holds data elsewhere.
+        Paths are ``/``-separated and relative to the store, which is what
+        the ``group`` keyword of
+        :func:`iris.fileformats.zarr.loader.load_cubes` takes.
+
+        Candidates for that keyword, not groups that will load: arrays may
+        all be coordinate variables, which make no cubes.
+        :func:`iris.fileformats.zarr.loader._groups_yielding_cubes` decides
+        that.
+
+        Costs one listing per group descended into, and nothing on a store
+        with consolidated metadata.
 
         """
         assert self._group is not None
-        return tuple(self._group.group_keys())
+
+        def descend(group, prefix):
+            found = []
+            deeper = []
+            for name, child in group.groups():
+                path = f"{prefix}{name}"
+                if any(True for _ in child.array_keys()):
+                    found.append(path)
+                deeper.extend(descend(child, f"{path}/"))
+            return found + deeper
+
+        # `Group.path` is empty at the root.
+        base = f"{self._group.path}/" if self._group.path else ""
+        return tuple(descend(self._group, base))

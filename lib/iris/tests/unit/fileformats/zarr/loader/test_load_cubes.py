@@ -168,6 +168,102 @@ def test_a_fixed_length_unicode_variable_loads(tmp_path, zarr_format):
     assert cube.coord("band").points.tolist() == ["b02", "b03", "b04"]
 
 
+def test_the_message_names_a_group_that_holds_data(tmp_path):
+    """A suggested group has to load.
+
+    Data under `measurements/reflectance/r10m` leaves every group above it
+    without data variables, so naming one repeats this error a level down.
+    """
+    root = zarr.open_group(store=tmp_path / "deep.zarr", mode="w", zarr_format=3)
+    deep = root.create_group("measurements").create_group("reflectance")
+    stores.make_array(
+        deep.create_group("r10m"), "b02", (2,), "f8", 3, dimensions=("x",)
+    )
+
+    with pytest.raises(TranslationError, match="measurements/reflectance/r10m"):
+        list(load_cubes(str(tmp_path / "deep.zarr")))
+
+
+def test_a_group_holding_only_coordinates_is_not_suggested(tmp_path):
+    """Holding arrays is not the same as yielding cubes.
+
+    An array named after its own dimension is a CF coordinate variable, so a
+    group holding nothing else produces no cubes. Suggested, it raises the
+    same error the message was explaining.
+    """
+    root = zarr.open_group(store=tmp_path / "coords.zarr", mode="w", zarr_format=3)
+    measurements = root.create_group("measurements")
+    x = stores.make_array(
+        measurements,
+        "x",
+        (2,),
+        "f8",
+        3,
+        dimensions=("x",),
+        attributes={"standard_name": "projection_x_coordinate", "units": "m"},
+    )
+    x[:] = [0.0, 1.0]
+    stores.make_array(
+        measurements.create_group("r10m"),
+        "b02",
+        (2,),
+        "f8",
+        3,
+        dimensions=("x",),
+        attributes={"units": "1"},
+    )
+
+    with pytest.raises(TranslationError) as excinfo:
+        list(load_cubes(str(tmp_path / "coords.zarr")))
+    suggested = str(excinfo.value).rsplit(": ", 1)[1]
+
+    assert suggested == "measurements/r10m"
+    assert len(list(load_cubes(str(tmp_path / "coords.zarr"), group=suggested))) == 1
+
+
+def test_the_suggestion_is_relative_to_the_store_not_the_selected_group(tmp_path):
+    """`group=` is store-relative, so a suggestion has to be too.
+
+    Asked for `measurements` and told `reflectance/r10m`, a user passing that
+    back with the same store gets a `GroupNotFoundError`: the path was
+    relative to the group they had already selected.
+    """
+    root = zarr.open_group(store=tmp_path / "deep.zarr", mode="w", zarr_format=3)
+    deep = root.create_group("measurements").create_group("reflectance")
+    stores.make_array(
+        deep.create_group("r10m"), "b02", (2,), "f8", 3, dimensions=("x",)
+    )
+
+    with pytest.raises(TranslationError) as excinfo:
+        list(load_cubes(str(tmp_path / "deep.zarr"), group="measurements"))
+    suggested = str(excinfo.value).rsplit(": ", 1)[1]
+
+    assert suggested == "measurements/reflectance/r10m"
+    assert len(list(load_cubes(str(tmp_path / "deep.zarr"), group=suggested))) == 1
+
+
+def test_the_suggested_group_loads(tmp_path):
+    root = zarr.open_group(store=tmp_path / "deep.zarr", mode="w", zarr_format=3)
+    deep = root.create_group("measurements").create_group("reflectance")
+    array = stores.make_array(
+        deep.create_group("r10m"),
+        "b02",
+        (2,),
+        "f8",
+        3,
+        dimensions=("x",),
+        attributes={"units": "1"},
+    )
+    array[:] = [1.0, 2.0]
+
+    with pytest.raises(TranslationError) as excinfo:
+        list(load_cubes(str(tmp_path / "deep.zarr")))
+    suggested = str(excinfo.value).rsplit(": ", 1)[1]
+
+    (cube,) = list(load_cubes(str(tmp_path / "deep.zarr"), group=suggested))
+    assert cube.var_name == "b02"
+
+
 def test_the_message_says_so_when_there_are_no_groups_either(tmp_path):
     zarr.open_group(store=tmp_path / "empty.zarr", mode="w", zarr_format=3)
     with pytest.raises(TranslationError, match="no data variables"):

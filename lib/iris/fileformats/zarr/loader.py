@@ -52,7 +52,34 @@ import iris.warnings
 from ._dataset import ZarrDataset
 
 
-def _check_has_data_variables(reader, dataset) -> None:
+def _groups_yielding_cubes(file_source, dataset) -> tuple:
+    """Return the store's groups that would load as cubes, shallowest first.
+
+    Candidates come from
+    :attr:`~iris.fileformats.zarr._dataset.ZarrDataset.groups_holding_arrays`,
+    and each is classified as a load of it would be. A group holding only
+    coordinate variables makes no cubes, so suggesting it would raise the
+    error being explained.
+
+    Descendants of a group that loads are not examined. Costs each
+    candidate's metadata.
+    """
+    found: list[str] = []
+    for path in dataset.groups_holding_arrays:
+        if any(path.startswith(f"{loadable}/") for loadable in found):
+            continue
+        with warnings.catch_warnings():
+            # A pass over groups the user did not ask for; they will hear
+            # anything that matters when they load one.
+            warnings.simplefilter("ignore")
+            with ZarrDataset(file_source, group=path) as candidate:
+                with CFReader(candidate) as reader:
+                    if reader.cf_group.data_variables or reader.cf_group.promoted:
+                        found.append(path)
+    return tuple(found)
+
+
+def _check_has_data_variables(reader, dataset, file_source) -> None:
     """Raise if this group holds nothing to make a cube from.
 
     Returning an empty ``CubeList`` from a store that plainly holds data
@@ -63,12 +90,12 @@ def _check_has_data_variables(reader, dataset) -> None:
     if reader.cf_group.data_variables or reader.cf_group.promoted:
         return
 
-    subgroups = dataset.subgroup_names
+    subgroups = _groups_yielding_cubes(file_source, dataset)
     if subgroups:
         message = (
             f"Zarr group {dataset.location!r} has no data variables. Load "
             "one of its groups instead, with the 'group' keyword: "
-            f"{', '.join(sorted(subgroups))}"
+            f"{', '.join(subgroups)}"
         )
     else:
         message = f"Zarr store {dataset.location!r} has no data variables."
@@ -124,7 +151,7 @@ def load_cubes(file_sources, callback=None, constraints=None, group=None):
     for file_source in file_sources:
         with ZarrDataset(file_source, group=group) as dataset:
             with CFReader(dataset) as cf:
-                _check_has_data_variables(cf, dataset)
+                _check_has_data_variables(cf, dataset, file_source)
 
                 meshes = _meshes_from_cf(cf)
 
