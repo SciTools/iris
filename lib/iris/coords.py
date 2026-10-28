@@ -2493,7 +2493,7 @@ class Coord(_DimensionalMetadata):
         if self.ndim != 1:
             raise iris.exceptions.CoordinateMultiDimError(self)
 
-        if not monthly and self.shape[0] < 2:
+        if not (monthly or yearly) and self.shape[0] < 2:
             raise ValueError("Cannot guess bounds for a coordinate of length 1.")
 
         if self.has_bounds():
