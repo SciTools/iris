@@ -1,0 +1,5 @@
+:user:`bhaskargurram-ai` fixed :meth:`~iris.cube.Cube.collapsed` with
+:data:`~iris.analysis.SUM` and 1D weights for lazy data, which failed or
+weighted the wrong dimension, and with ``returned=True``. 1D weights given as
+a list, and 1D weights with :data:`~iris.analysis.WPERCENTILE`, now also work.
+(:issue:`5083`)
