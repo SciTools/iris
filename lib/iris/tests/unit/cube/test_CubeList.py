@@ -42,6 +42,10 @@ class Test_append:
         with pytest.raises(ValueError, match=NOT_CUBE_MSG):
             self.cubelist.append(None)
 
+    def test_fail_message_names_object(self):
+        with pytest.raises(ValueError, match="Object 'not a cube' cannot be put"):
+            self.cubelist.append("not a cube")
+
 
 class Test_concatenate_cube:
     @pytest.fixture(autouse=True, params=[True, False], ids=["dataless", "with_data"])
