@@ -296,10 +296,10 @@ def load_meshes(uris, var_name=None):
                 handling_format_spec = FORMAT_AGENT.get_spec(source, None)
 
             # TODO: drop this format dispatch once the netCDF and Zarr
-            #  cube-building loops are unified. This copy, not the mesh code
-            #  below, is the only reason a netCDF-named module names Zarr at
-            #  all. See the merge-back section of
-            #  `docs/superpowers/specs/2026-09-21-zarr-io-design.md`.
+            #  cube-building loops are unified - see
+            #  https://github.com/SciTools/iris/issues/7353. This copy, not
+            #  the mesh code below, is the only reason a netCDF-named module
+            #  names Zarr at all.
             #
             # `_load_zarr` is compared, never `zarr.load_cubes`: a store's
             #  presence is what should reach zarr-python, not this comparison.

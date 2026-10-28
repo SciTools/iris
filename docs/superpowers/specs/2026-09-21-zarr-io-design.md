@@ -10,13 +10,13 @@
 |---|---|
 | **Phase** | In delivery |
 | **Progress** | All nine feature PRs merged into `brownfield`; the whole-branch audit of 2026-10-28 actioned; merge-back open as [#7309](https://github.com/SciTools/iris/pull/7309), its changelog fragments written — see §12.1 |
-| **Next action** | The reviews of PRs 7 and 8, then the merge-back — see §12.1 |
+| **Next action** | The merge-back — see §12.1 |
 | **Blocked on** | Nothing |
 | **Branch** | `zarr-io-design` on `bjlittle/iris`, targeting `SciTools/iris:brownfield` |
 | **Delivery** | Nine pull requests into `brownfield`, then one merge-back into `main` — §5 |
 | **Resolves** | SciTools/iris#6977, #6979, #6980 — at merge-back, not before |
 
-**Created:** 2026-09-21 · **Last updated:** 2026-10-27 (see §12.6)
+**Created:** 2026-09-21 · **Last updated:** 2026-10-28 (see §12.6)
 **Baseline:** `brownfield` at `b0ab90b98`, Iris `3.17.0.dev4`
 **Verified against:** zarr-python 3.4.0, numcodecs 0.16.5, Python 3.13,
 dask 2026.7.1, xarray 2026.7.0
@@ -1962,6 +1962,9 @@ against `main` with `-W`, since the two branches can drift.
 raised *here* rather than when it was found, so that nobody starts on it while
 the programme's pull requests are still in flight and depending on each other:
 
+Raised as [#7353](https://github.com/SciTools/iris/issues/7353), which the
+`TODO` in `netcdf/ugrid_load.py` now names.
+
 | What | Why it waits |
 |---|---|
 | Unify the cube-building loops in `netcdf/loader.py` and `zarr/loader.py`, and with them the format dispatch `load_meshes` duplicates (§2.3) | Raised by @pp-mo reviewing PR 4. Since PR 4 gave the Zarr loader the same mesh handling, the two bodies differ only in how the dataset is opened. The duplicated dispatch is the same defect wearing a different hat, and is the only reason `netcdf/ugrid_load.py` names Zarr: the mesh code it shares with the Zarr loader names no format at all. A `TODO` in that function points here. The refactor is internal — neither `load_cubes` signature moves — so it is safe to do later and disruptive to do now |
@@ -3346,6 +3349,58 @@ does not have.
   `IRIS_TEST_DATA_VERSION` bump — against a checkout that has the fixtures
   the Zarr integration package is 86 passed **[verified]**. The red ended on
   2026-10-27, the same day it was committed, when v2.32 released.
+
+**2026-10-28 — actioning the whole-branch audit of `brownfield`, decisions with @trexfeathers**
+
+- **`storage_settings` reports compression through zarr-python's `Array`
+  properties** — `compressors`, `filters`, `serializer` — not the raw `codecs`
+  metadata field. Version 2 has no `codecs` field, so a GZip-compressed
+  version 2 array reported nothing about its compression. Reporting each
+  version's own fields verbatim was rejected: a caller would have to establish
+  which version wrote an array before knowing which key to read. §4.2.
+- **A malformed `_FillValue` counts as a declaration.** The version 2 storage
+  fill fallback now turns on the attribute being present, not usable. Its
+  premise is that the store predates the CF convention, which a store carrying
+  the attribute does not, however badly written. Keeping the masking and
+  fixing only the warning was rejected, as was amending the specification to
+  bless it. §4.4.
+- **The deprecated netCDF member warning names the replacement member**, from
+  a table, falling back to the general message where there is no CF
+  equivalent. §4.3.
+- **`_NCProperties` filtering stays on every group** rather than narrowing to
+  the root. netCDF-c stamps only the root, so a subgroup has none to withhold
+  and the narrower rule would guard a case that cannot arise. §4.4 restated to
+  say so.
+- Three fixes needed no decision: `iris.mesh.load_meshes` routes through the
+  Zarr dependency gate, which it had bypassed by importing `._dataset`;
+  `storage_settings["consolidated"]` reads the store rather than the open
+  group, which on a writable dataset can never report a document it has just
+  written; and the three module-level Zarr guards outside the Zarr test
+  packages are per test, restoring 22 netCDF and I/O checks on an Iris without
+  zarr. §6.
+
+**2026-10-28 — actioning the Codex verification, decision with @trexfeathers**
+
+- **A suggested group is verified, not assumed.** The audit response had the
+  empty-group walk stop at the first group holding arrays, on the premise that
+  such a group loads. A group holding only coordinate variables holds arrays
+  and yields no cubes, so the premise was wrong.
+  `ZarrDataset.groups_holding_arrays` now reports candidates and
+  `zarr.loader._groups_yielding_cubes` classifies each as a load of it would,
+  keeping those that produce cubes. A heuristic — an array whose name is not
+  one of its own dimension names — was rejected for skipping a genuine data
+  variable named after its dimension. §4.6.
+- **Suggestions are relative to the store**, not to the group already
+  selected, which is what the `group` keyword takes. §4.6.
+- **The deprecated-member advice for `setncattr` and `delncattr` names
+  `cf_var.cf_data.attributes`.** `CFVariable.attributes` is a snapshot, so the
+  advice first written would have turned a write into a silent no-op. Advice
+  replacing a deprecated operation has to preserve the effect, and its test
+  has to exercise the effect rather than the warning text. §4.3.
+- **The shape-rewrite cache test is restored under a fixed chunking policy.**
+  It was discarded as unfalsifiable, which held only for default chunk sizing:
+  `as_lazy_data` keys on the chunks, so only a caller-fixed chunking leaves
+  `cache_key` as the one thing that can notice a rewrite. §6.
 
 ### 12.5 Artefacts
 
