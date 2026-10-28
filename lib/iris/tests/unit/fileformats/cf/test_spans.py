@@ -18,11 +18,23 @@ from iris.fileformats.cf import (
     CFDataVariable,
     CFLabelVariable,
 )
+from iris.fileformats.netcdf._dataset import NetCDFDataset
 
-zarr = pytest.importorskip("zarr")
 
-from iris.fileformats.netcdf._dataset import NetCDFDataset  # noqa: E402
-from iris.fileformats.zarr._dataset import ZarrDataset  # noqa: E402
+@pytest.fixture
+def zarr():
+    """The ``zarr`` package, skipping the test when it is not installed.
+
+    Per test, not per module: the netCDF half below runs without Zarr.
+    """
+    return pytest.importorskip("zarr", minversion="3.1.0")
+
+
+def zarr_dataset(path):
+    """Return the Zarr dataset at `path`, imported only where it is used."""
+    from iris.fileformats.zarr._dataset import ZarrDataset
+
+    return ZarrDataset(str(path))
 
 
 def build_netcdf(path, described):
@@ -41,10 +53,11 @@ def build_netcdf(path, described):
 
 def build_zarr(path, described):
     """Write `described` as a Zarr store and return its open dataset."""
+    zarr = pytest.importorskip("zarr", minversion="3.1.0")
     group = zarr.open_group(store=path, mode="w", zarr_format=3)
     for name, (dimensions, shape) in described.items():
         group.create_array(name, shape=shape, dtype="f4", dimension_names=dimensions)
-    return ZarrDataset(str(path))
+    return zarr_dataset(path)
 
 
 @pytest.fixture(params=[build_netcdf, build_zarr], ids=["netcdf", "zarr"])
@@ -93,7 +106,7 @@ def test_a_label_variable_ignores_its_string_length_dimension(build):
     assert label.spans(variables["data"]) is True
 
 
-def test_a_name_at_two_sizes_does_not_link(tmp_path):
+def test_a_name_at_two_sizes_does_not_link(zarr, tmp_path):
     """Zarr-only: a name guarantees nothing across arrays.
 
     The version 3 core specification "does not place any restrictions on the
@@ -107,13 +120,13 @@ def test_a_name_at_two_sizes_does_not_link(tmp_path):
     group.create_array("data", shape=(3,), dtype="f4", dimension_names=("t",))
     group.create_array("aux", shape=(5,), dtype="f4", dimension_names=("t",))
 
-    dataset = ZarrDataset(str(tmp_path / "s.zarr"))
+    dataset = zarr_dataset(tmp_path / "s.zarr")
     data = CFDataVariable("data", dataset.variables["data"])
     aux = CFDataVariable("aux", dataset.variables["aux"])
     assert aux.spans(data) is False
 
 
-def test_an_anonymous_dimension_matches_nothing(tmp_path):
+def test_an_anonymous_dimension_matches_nothing(zarr, tmp_path):
     """Not even another anonymous dimension, of the same size, elsewhere.
 
     Bare-name matching treats `None == None` as a match: `aux` would span
@@ -125,13 +138,13 @@ def test_an_anonymous_dimension_matches_nothing(tmp_path):
     group.create_array("data", shape=(3,), dtype="f4")
     group.create_array("aux", shape=(3,), dtype="f4")
 
-    dataset = ZarrDataset(str(tmp_path / "s.zarr"))
+    dataset = zarr_dataset(tmp_path / "s.zarr")
     data = CFDataVariable("data", dataset.variables["data"])
     aux = CFDataVariable("aux", dataset.variables["aux"])
     assert aux.spans(data) is False
 
 
-def test_two_anonymous_dimensions_of_one_size_do_not_match(tmp_path):
+def test_two_anonymous_dimensions_of_one_size_do_not_match(zarr, tmp_path):
     """Not even each other, and not within one variable.
 
     There is no information to match on, so claiming a match would be
@@ -141,13 +154,13 @@ def test_two_anonymous_dimensions_of_one_size_do_not_match(tmp_path):
     group.create_array("data", shape=(3, 3), dtype="f4")
     group.create_array("aux", shape=(3,), dtype="f4")
 
-    dataset = ZarrDataset(str(tmp_path / "s.zarr"))
+    dataset = zarr_dataset(tmp_path / "s.zarr")
     data = CFDataVariable("data", dataset.variables["data"])
     aux = CFDataVariable("aux", dataset.variables["aux"])
     assert aux.spans(data) is False
 
 
-def test_an_anonymous_dimension_is_not_a_coordinate_variable(tmp_path):
+def test_an_anonymous_dimension_is_not_a_coordinate_variable(zarr, tmp_path):
     """A one-dimensional array is a coordinate variable by name coincidence.
 
     `CFCoordinateVariable.identify` requires the variable's own name to be
@@ -160,11 +173,11 @@ def test_an_anonymous_dimension_is_not_a_coordinate_variable(tmp_path):
     group = zarr.open_group(store=tmp_path / "s.zarr", mode="w", zarr_format=3)
     group.create_array("t", shape=(3,), dtype="f4")
 
-    dataset = ZarrDataset(str(tmp_path / "s.zarr"))
+    dataset = zarr_dataset(tmp_path / "s.zarr")
     assert CFCoordinateVariable.identify(dataset.variables) == {}
 
 
-def test_a_partly_named_variable_matches_on_the_named_part(tmp_path):
+def test_a_partly_named_variable_matches_on_the_named_part(zarr, tmp_path):
     # "A variable may name some of its dimensions and not others." The named
     # part ("y") is present in the target and would be enough to span under
     # the old rule once the anonymous part is set aside - so `data` carries
@@ -177,13 +190,13 @@ def test_a_partly_named_variable_matches_on_the_named_part(tmp_path):
     )
     group.create_array("aux", shape=(3, 2), dtype="f4", dimension_names=("y", None))
 
-    dataset = ZarrDataset(str(tmp_path / "s.zarr"))
+    dataset = zarr_dataset(tmp_path / "s.zarr")
     data = CFDataVariable("data", dataset.variables["data"])
     aux = CFDataVariable("aux", dataset.variables["aux"])
     assert aux.spans(data) is False
 
 
-def test_a_non_spanning_variable_is_dropped_and_promoted(tmp_path):
+def test_a_non_spanning_variable_is_dropped_and_promoted(zarr, tmp_path):
     """An anonymous-dimension variable becomes a cube of its own.
 
     This is what keeps `None` out of `iris.fileformats._nc_load_rules.helpers`,
@@ -198,6 +211,6 @@ def test_a_non_spanning_variable_is_dropped_and_promoted(tmp_path):
     data.attrs["coordinates"] = "aux"
     group.create_array("aux", shape=(3,), dtype="f4")
 
-    with CFReader(ZarrDataset(str(tmp_path / "s.zarr"))) as reader:
+    with CFReader(zarr_dataset(tmp_path / "s.zarr")) as reader:
         assert "aux" not in reader.cf_group["data"].cf_group
         assert "aux" in reader.cf_group.promoted
