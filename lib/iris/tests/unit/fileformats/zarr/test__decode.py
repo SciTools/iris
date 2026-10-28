@@ -155,6 +155,51 @@ class Test_decode_parameters:
         )
         assert 0 not in result["sentinels"]
 
+    def test_a_malformed_fill_value_keeps_the_version_2_fill_value_out(self):
+        """A declaration Iris cannot read is still a declaration.
+
+        The version 2 fallback is for stores predating the convention. A
+        store carrying `_FillValue` at all is not one, however badly written.
+        """
+        with pytest.warns(IrisCfLoadWarning, match="v"):
+            result = parameters(
+                {"_FillValue": "invalid"}, storage_fill_value=0, zarr_format=2
+            )
+        assert result["sentinels"] == ()
+
+    def test_version_2_zeros_survive_a_malformed_fill_value(self):
+        """int16 [0, 1, 2] with an unreadable `_FillValue`.
+
+        The valid zero is data. Adopting the default storage fill of zero
+        would mask it.
+        """
+        with pytest.warns(IrisCfLoadWarning, match="v"):
+            params = parameters(
+                {"_FillValue": "invalid"}, storage_fill_value=0, zarr_format=2
+            )
+        block = np.array([0, 1, 2], dtype="i2")
+        result = _decode.mask_and_scale(block, **params)
+        assert not result.mask.any()
+        assert result.tolist() == [0, 1, 2]
+
+    def test_a_malformed_declaration_is_not_reported_as_no_declaration(self):
+        """The fallback's warning would send a user looking for an attribute
+        that is already there.
+        """
+        with pytest.warns(IrisCfLoadWarning) as warnings_raised:
+            parameters({"_FillValue": "invalid"}, storage_fill_value=0, zarr_format=2)
+        messages = [str(warning.message) for warning in warnings_raised]
+        assert not [message for message in messages if "declares no" in message]
+
+    def test_an_unreadable_missing_value_vector_keeps_the_fill_value_out(self):
+        with pytest.warns(IrisCfLoadWarning, match="v"):
+            result = parameters(
+                {"missing_value": ["bad", "worse"]},
+                storage_fill_value=0,
+                zarr_format=2,
+            )
+        assert result["sentinels"] == ()
+
     def test_one_unreadable_element_does_not_discard_the_others(self):
         with pytest.warns(IrisCfLoadWarning, match="v"):
             result = parameters({"missing_value": [-999, "nonsense"]})
