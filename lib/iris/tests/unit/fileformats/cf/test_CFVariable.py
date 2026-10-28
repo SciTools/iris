@@ -223,7 +223,7 @@ class TestAttributeAccess:
         assert "bounds" not in nc_var.attributes
 
     def test_getattr_of_a_non_attribute_reaches_the_variable(self, nc_var):
-        # The one-cycle compatibility route, now delegated to the storage
+        # The one-release compatibility route, now delegated to the storage
         # object - which is also what warns.
         nc_var.deprecated_netcdf_member.return_value = 42
         cf_var = CFVariableSub("foo", nc_var)

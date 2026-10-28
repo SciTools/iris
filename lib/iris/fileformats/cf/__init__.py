@@ -79,4 +79,5 @@ reference_terms = reference_terms
 # Re-stating the name here, with the doc comment that travels with it, is what
 # puts it on the API reference page. Sphinx autodoc documents module data only
 # where the module's own source assigns it; an imported name it silently drops,
-# with no warning and no build failure. See the plan, section 8.4.
+# with no warning and no build failure. See Re-export packages in
+# docs/AGENTS.md.

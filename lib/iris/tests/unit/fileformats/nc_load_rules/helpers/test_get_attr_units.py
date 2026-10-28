@@ -77,7 +77,7 @@ class TestGetAttrUnits(MockerMixin):
     def test_flag_values_untracked(self):
         """Presence of flag_values must force NO_UNIT_STRING without recording a read.
 
-        This is the load-bearing assertion for the untracked probe in
+        This is the assertion that matters for the untracked probe in
         `get_attr_units` (`name in cf_var.attributes.untracked`): if that
         probe is ever simplified to `name in cf_var.attributes` (a tracked
         read), `flag_values`/`flag_masks`/`flag_meanings` would stop being

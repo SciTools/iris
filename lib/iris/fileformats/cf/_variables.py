@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Classify netCDF variables by the role the CF conventions give them.
 
-A CF-netCDF file is a flat bag of variables; the conventions turn it into a
+A CF-netCDF file is a flat set of variables; the conventions turn it into a
 structure by having variables name each other in their attributes. A
 ``bounds`` attribute names a bounds variable, a ``grid_mapping`` attribute
 names a coordinate system variable, and so on. This module is where those
@@ -374,7 +374,7 @@ class CFVariable(metaclass=ABCMeta):
     def _deprecated_netcdf_member(self, name):
         """Return a netCDF4 member of the backing variable, as this class used to.
 
-        The one-cycle compatibility route for code that reached netCDF4 API
+        The one-release compatibility route for code that reached netCDF4 API
         through a CFVariable. Records nothing: this is not a CF attribute.
         The storage object decides what this means, and warns - see
         :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`'s

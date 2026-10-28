@@ -255,7 +255,7 @@ one netCDF uses for that dtype.
 A floating ``_FillValue`` is written as the base64 of a little-endian
 ``float64``, which is what xarray and the wider Zarr ecosystem read. This
 deviates from CF section 2.5.1, which asks for a value of the variable's own
-type. The deviation is deliberate and load-bearing: a plain JSON number there
+type. The deviation is deliberate and necessary: a plain JSON number there
 makes the whole store unreadable by default xarray, which is a worse outcome
 than a convention deviation that every reader understands.
 

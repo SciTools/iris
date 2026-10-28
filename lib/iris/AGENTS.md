@@ -167,7 +167,7 @@ a human treats it as documentation.
   the design against an alternative nobody proposed, or narrate how you found
   out. Contract first, caveat second, rationale last, so that anything
   overlong is at least skippable.
-- A comment runs one to three lines. A fourth is the alarm bell: the fact has
+- A comment runs one to three lines. A fourth says the fact has
   outgrown the site and wants a better home.
 - One fact, one place — for prose. A comment you would paste at a second site
   belongs in the class or module docstring instead; pasted at a third it is
@@ -247,8 +247,8 @@ code in a private sibling module instead.
 - **One exit.** Nearly every function here has a single `return`; match them.
   A second exit added later silently skips whatever the first does on the way
   out — the warning, the record, the close.
-- Flatten a deep conditional with a progress flag carried down a flat
-  sequence of `if`s, rather than with extra returns.
+- Flatten a deep conditional by carrying a boolean down a flat sequence of
+  `if`s, rather than by adding returns.
 - Nesting beyond three levels is a signal to extract a named helper.
 
 

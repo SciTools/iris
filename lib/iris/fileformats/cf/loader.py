@@ -234,7 +234,7 @@ def _warn_if_storage_chunk_binds(cf_var) -> None:
     divides stored chunks rather than tiling them - fetching each one once per
     division.
 
-    Iris does not correct for this. Which trade is right depends on the case,
+    Iris does not correct for this. Which trade-off is right depends on the case,
     and :data:`CHUNK_CONTROL` is how a caller says so; this warning exists so
     that they know there is something to say. See section 4.6 of
     ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
