@@ -1114,7 +1114,7 @@ class Test_create_cf_grid_mapping(MockerMixin):
         }
         if extended_grid_mapping:
             expected["crs_wkt"] = (
-                'GEOGCRS["unnamed",BASEGEOGCRS["unknown",DATUM["unknown",'
+                'GEOGCRS["unknown",BASEGEOGCRS["unknown",DATUM["unknown",'
                 'ELLIPSOID["unknown",6371229,0,LENGTHUNIT["metre",1,ID['
                 '"EPSG",9001]]]],PRIMEM["Greenwich",0,ANGLEUNIT["degree",'
                 '0.0174532925199433],ID["EPSG",8901]]],DERIVINGCONVERSION['
