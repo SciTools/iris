@@ -37,6 +37,7 @@ dependencies:
   - python-stratify
   - rasterio
   - affine
+  - zarr >=3.1.0
 
 # Test dependencies.
   - asv_runner
@@ -50,6 +51,7 @@ dependencies:
   - pytest-mock
   - pytest-xdist
   - requests
+  - xarray
 
 # Documentation dependencies.
   - sphinx <8.2

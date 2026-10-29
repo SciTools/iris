@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Common code for benchmarks."""
 
+from functools import cache
 from os import environ
 
 import iris
@@ -37,6 +38,27 @@ def disable_repeat_between_setup(benchmark_object):
     benchmark_object.warmup_time = 0.0
 
     return benchmark_object
+
+
+@cache
+def zarr_supported() -> bool:
+    """Whether the Iris being benchmarked can read and write Zarr stores.
+
+    A benchmark run spans commits either side of native Zarr support being
+    added, and before it there is nothing to time. Benchmarks parametrised
+    over file format ask this in ``setup()`` and raise ``NotImplementedError``
+    when it is ``False``, which is how ASV is told to skip.
+
+    Asks by importing a public name, which is what triggers the optional
+    dependency: ``iris.fileformats.zarr`` imports whether or not ``zarr``
+    itself is installed. Asked on demand, so that the benchmarks that never
+    touch Zarr do not import it.
+    """
+    try:
+        from iris.fileformats.zarr import save  # noqa: F401
+    except ImportError:
+        return False
+    return True
 
 
 def on_demand_benchmark(benchmark_object):

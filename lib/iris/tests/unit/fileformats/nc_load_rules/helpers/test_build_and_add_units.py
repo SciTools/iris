@@ -9,20 +9,16 @@ import pytest
 
 from iris.cube import Cube
 from iris.fileformats._nc_load_rules import helpers
-from iris.fileformats.cf import CFDataVariable
 from iris.loading import LOAD_PROBLEMS
+from iris.tests.unit.fileformats.nc_load_rules.helpers import real_cf_data_variable
 
 
 @pytest.fixture
-def mock_cf_data_var(mocker):
-    return mocker.Mock(
-        spec=CFDataVariable,
-        units="kelvin",
-        cf_name="wibble",
-        filename="DUMMY",
-        dtype=float,
-        cf_data=mocker.Mock(spec=[]),
-    )
+def mock_cf_data_var():
+    # A real CFDataVariable, not a CFVariableStandIn: build_and_add_units calls
+    # get_attr_units with capture_invalid=True, whose first act is to assert
+    # isinstance(cf_var, cf.CFDataVariable).
+    return real_cf_data_variable(units="kelvin")
 
 
 @pytest.fixture
@@ -41,7 +37,7 @@ def test_construction(mock_engine):
 
 
 def test_invalid_units(mock_engine, mock_cf_data_var):
-    mock_cf_data_var.units = "not_built"
+    mock_cf_data_var.attributes["units"] = "not_built"
     helpers.build_and_add_units(mock_engine)
     assert mock_engine.cube.attributes["invalid_units"] == "not_built"
     load_problem = LOAD_PROBLEMS.problems[-1]

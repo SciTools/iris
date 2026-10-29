@@ -6,7 +6,7 @@
 .. testsetup:: chunk_control
 
     import iris
-    from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+    from iris.fileformats.cf.loader import CHUNK_CONTROL
 
     from pathlib import Path
     import dask
@@ -67,14 +67,24 @@ calculated based on a number of factors, including:
     >>> print(cube.core_data().chunksize)
     (60, 37, 49)
 
+A file chunk is read and decompressed whole, so a Dask chunk smaller than one
+costs a re-read per division. Iris does not adjust its chunking to avoid
+that, but it warns when a file chunk is larger than Dask's default chunksize,
+which is where the cost starts to be worth your attention.
+
 For more user control, functionality was updated in :pull:`5588`, with the
-creation of the :data:`iris.fileformats.netcdf.loader.CHUNK_CONTROL` class.
+creation of the :data:`iris.fileformats.cf.loader.CHUNK_CONTROL` class.
+
+Chunking policy is not specific to NetCDF, so from Iris 3.17 it lives in
+:mod:`iris.fileformats.cf.loader`. The old name,
+``iris.fileformats.netcdf.loader.CHUNK_CONTROL``, still works but raises
+a deprecation warning.
 
 Custom Chunking: Set
 ^^^^^^^^^^^^^^^^^^^^
 
-There are three context managers within :data:`~iris.fileformats.netcdf.loader.CHUNK_CONTROL`. The most basic is
-:meth:`~iris.fileformats.netcdf.loader.ChunkControl.set`. This allows you to specify the chunksize for each dimension,
+There are three context managers within :data:`~iris.fileformats.cf.loader.CHUNK_CONTROL`. The most basic is
+:meth:`~iris.fileformats.cf.loader.ChunkControl.set`. This allows you to specify the chunksize for each dimension,
 and to specify a ``var_name`` specifically to change.
 
 Using ``-1`` in place of a chunksize will ensure the chunksize stays the same
@@ -104,7 +114,7 @@ specify only one dimension, the rest will be optimised using Iris' default behav
 Custom Chunking: From File
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The second context manager is :meth:`~iris.fileformats.netcdf.loader.ChunkControl.from_file`.
+The second context manager is :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file`.
 This takes chunksizes as defined in the NetCDF file. Any dimensions without specified chunks
 will default to Iris optimisation.
 
@@ -120,7 +130,7 @@ will default to Iris optimisation.
 Custom Chunking: As Dask
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
-The final context manager, :meth:`~iris.fileformats.netcdf.loader.ChunkControl.as_dask`, bypasses
+The final context manager, :meth:`~iris.fileformats.cf.loader.ChunkControl.as_dask`, bypasses
 Iris' optimisation all together, and will take its chunksizes from Dask's behaviour.
 
 .. doctest:: chunk_control
@@ -482,7 +492,7 @@ loader so it can be make a more informed decision on lazy loading:
 .. doctest::
 
     >>> import iris
-    >>> from iris.fileformats.netcdf.loader import CHUNK_CONTROL
+    >>> from iris.fileformats.cf.loader import CHUNK_CONTROL
     >>>
     >>> sample_file = iris.sample_data_path("vlstr_type.nc")
     >>> cube = iris.load_cube(sample_file)

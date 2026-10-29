@@ -24,7 +24,6 @@ from textwrap import dedent
 from warnings import warn
 
 from iris._lazy_data import as_concrete_data
-from iris.fileformats import netcdf
 
 #: Python executable used by :func:`run_function_elsewhere`, set via env
 #:  variable of same name. Must be path of Python within an environment that
@@ -123,13 +122,23 @@ def load_realised():
     arrays.
     """
     from iris.fileformats._nc_load_rules import helpers
-    from iris.fileformats.netcdf.loader import _get_cf_var_data as pre_patched
+
+    try:
+        from iris.fileformats.cf import loader as cf_loader
+    except ImportError:
+        # The CF loader relocated out of iris.fileformats.netcdf in #7316.
+        #  A benchmark run spans commits either side of that, so both
+        #  spellings have to work - see "Benchmarks outlive the code they
+        #  import" in ../../README.md.
+        from iris.fileformats.netcdf import loader as cf_loader
+
+    pre_patched = cf_loader._get_cf_var_data
 
     def patched(*args, **kwargs):
         return as_concrete_data(pre_patched(*args, **kwargs))
 
-    netcdf.loader._get_cf_var_data = patched
+    cf_loader._get_cf_var_data = patched
     helpers._get_cf_var_data = patched
     yield
-    netcdf.loader._get_cf_var_data = pre_patched
+    cf_loader._get_cf_var_data = pre_patched
     helpers._get_cf_var_data = pre_patched

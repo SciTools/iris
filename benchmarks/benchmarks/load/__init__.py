@@ -8,6 +8,7 @@ from iris import AttributeConstraint, Constraint, load, load_cube
 from iris.cube import Cube
 from iris.fileformats.um import structured_um_loading
 
+from .. import zarr_supported
 from ..generate_data import BENCHMARK_DATA, REUSE_DATA, run_function_elsewhere
 from ..generate_data.um_files import create_um_files
 
@@ -18,7 +19,7 @@ class LoadAndRealise:
     params = (
         [(50, 50, 2), (1280, 960, 5), (2, 2, 1000)],
         [False, True],
-        ["FF", "PP", "NetCDF"],
+        ["FF", "PP", "NetCDF", "Zarr"],
     )
     param_names = ["xyz", "compressed", "file_format"]
 
@@ -41,6 +42,9 @@ class LoadAndRealise:
         compress: bool,
         file_format: str,
     ) -> None:
+        if file_format == "Zarr" and not zarr_supported():
+            # Nothing to time: this commit predates native Zarr support.
+            raise NotImplementedError
         self.file_path = file_path_dict[xyz][compress][file_format]
         self.cube = self.load()
 
@@ -78,7 +82,7 @@ class STASHConstraint:
 
 
 class TimeConstraint:
-    params = ([3, 20], ["FF", "PP", "NetCDF"])
+    params = ([3, 20], ["FF", "PP", "NetCDF", "Zarr"])
     param_names = ["time_dim_len", "file_format"]
 
     def setup_cache(self) -> dict:
@@ -91,6 +95,9 @@ class TimeConstraint:
         return file_path_dict
 
     def setup(self, file_path_dict: dict, time_dim_len: int, file_format: str) -> None:
+        if file_format == "Zarr" and not zarr_supported():
+            # Nothing to time: this commit predates native Zarr support.
+            raise NotImplementedError
         self.file_path = file_path_dict[time_dim_len][file_format]
         self.time_constr = Constraint(time=lambda cell: cell.point.year < 3)
 

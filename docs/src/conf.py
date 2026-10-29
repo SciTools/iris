@@ -152,10 +152,11 @@ rst_epilog = f"""
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
+    "maintainer_notes",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    "page_metadata_validator",
     "readingtime",
-    "readingtime_validator",
     "sphinx.ext.autodoc",
     "sphinx.ext.autosummary",
     "sphinx.ext.coverage",

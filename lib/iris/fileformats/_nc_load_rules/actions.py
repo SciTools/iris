@@ -4,38 +4,41 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Replacement code for the Pyke rules.
 
-For now, we are still emulating various aspects of how our original Pyke-based
-code used the Pyke 'engine' to hold translation data, both Pyke-specific and
-not :
+.. maintainer-notes::
 
-1) basic details from the iris.fileformats.cf analysis of the file are
-   recorded before translating each output cube, using
-   "engine.assert_case_specific_fact(name, args)".
+   For now, we are still emulating various aspects of how our original
+   Pyke-based code used the Pyke 'engine' to hold translation data, both
+   Pyke-specific and not :
 
-2) this is also used to store intermediate info passed between rules, which
-   used to be done with a "facts_cf.provides" statement in rule actions.
+   1) basic details from the iris.fileformats.cf analysis of the file are
+      recorded before translating each output cube, using
+      "engine.assert_case_specific_fact(name, args)".
 
-3) Iris-specific info is (still) stored in additional properties created on
-   the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
+   2) this is also used to store intermediate info passed between rules, which
+      used to be done with a "facts_cf.provides" statement in rule actions.
 
-Our "rules" are just action routines.
-The top-level 'run_actions' routine decides which actions to call, based on the
-info recorded when processing each cube output.  It does this in a simple
-explicit way, which doesn't use any clever chaining, "trigger conditions" or
-other rule-type logic.
+   3) Iris-specific info is (still) stored in additional properties created on
+      the engine object :
+          engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered,
+          .filename
 
-Each 'action' function can replace several similar 'rules'.
-E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid_mapping_<X>'.
-To aid debug, each returns a 'rule_name' string, indicating which original rule
-this particular action call is emulating :  In some cases, this may include a
-textual note that this rule 'failed', aka "did not trigger", which would not be
-recorded in the original implementation.
+   Our "rules" are just action routines. The top-level 'run_actions' routine
+   decides which actions to call, based on the info recorded when processing
+   each cube output.  It does this in a simple explicit way, which doesn't use
+   any clever chaining, "trigger conditions" or other rule-type logic.
 
-TODO: remove the use of intermediate "facts" to carry information between
-actions.  This mimics older behaviour, so is still useful while we are still
-comparing behaviour with the old Pyke rules (debugging).  But once that is no
-longer useful, this can be considerably simplified.
+   Each 'action' function can replace several similar 'rules'. E.G.
+   'action_provides_grid_mapping' replaces all
+   'fc_provides_grid_mapping_<X>'. To aid debug, each returns a 'rule_name'
+   string, indicating which original rule this particular action call is
+   emulating :  In some cases, this may include a textual note that this rule
+   'failed', aka "did not trigger", which would not be recorded in the
+   original implementation.
+
+   TODO: remove the use of intermediate "facts" to carry information between
+   actions.  This mimics older behaviour, so is still useful while we are
+   still comparing behaviour with the old Pyke rules (debugging).  But once
+   that is no longer useful, this can be considerably simplified.
 
 """
 
@@ -176,7 +179,7 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
-    grid_mapping_type = getattr(cf_var, hh.CF_ATTR_GRID_MAPPING_NAME, None)
+    grid_mapping_type = cf_var.attributes.get(hh.CF_ATTR_GRID_MAPPING_NAME)
 
     succeed = True
     if grid_mapping_type is None:
@@ -549,7 +552,7 @@ def action_unmanaged_attribute(engine, attr_name, attr_value):
 
 def action_all_managed_attributes(engine):
     """Check for and convert all 'handled' attributes."""
-    from iris.fileformats.netcdf._attribute_handlers import ATTRIBUTE_HANDLERS
+    from iris.fileformats.cf._attribute_handlers import ATTRIBUTE_HANDLERS
 
     var = engine.cf_var
     for handler in ATTRIBUTE_HANDLERS.values():
@@ -557,7 +560,7 @@ def action_all_managed_attributes(engine):
         iris_name = handler.iris_name
         matches = []
         for match_name in handler.netcdf_names:
-            match_value = getattr(var, match_name, None)
+            match_value = var.attributes.get(match_name)
             if match_value is not None:
                 matches.append((match_name, match_value))
 
@@ -623,7 +626,7 @@ def action_formula_type(engine, formula_root_fact):
     (var_name,) = formula_root_fact
     cf_var = engine.cf_var.cf_group[var_name]
     # cf_var.standard_name is a formula type (or we should never get here).
-    formula_type = getattr(cf_var, "standard_name", None)
+    formula_type = cf_var.attributes.get("standard_name")
     succeed = True
     if formula_type not in iris.fileformats.cf.reference_terms:
         succeed = False
@@ -652,7 +655,7 @@ def action_formula_type(engine, formula_root_fact):
                 category=_WarnComboLoadIgnoring,
             )
         rule_name += f"_{formula_type}"
-        # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
+        # Set 'requires' info for iris.fileformats.cf.loader._load_aux_factory.
         engine.requires["formula_type"] = formula_type
 
     return rule_name
