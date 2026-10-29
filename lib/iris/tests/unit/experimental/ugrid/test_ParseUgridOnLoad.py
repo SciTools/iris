@@ -11,6 +11,12 @@ TODO: remove this module when ParseUGridOnLoad itself is removed.
 import pytest
 
 from iris._deprecation import IrisDeprecation
+# Suppress deprecation warnings for experimental.ugrid, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.ugrid.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.ugrid import PARSE_UGRID_ON_LOAD, ParseUGridOnLoad
 
 

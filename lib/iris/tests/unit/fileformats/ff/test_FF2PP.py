@@ -6,6 +6,7 @@
 
 import collections
 import contextlib
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -72,7 +73,7 @@ class Test__extract_field__LBC_format(MockerMixin):
         the "make_pp_field" call.
 
         """
-        with self.mocker.patch("iris.fileformats._ff.FFHeader"):
+        with patch("iris.fileformats._ff.FFHeader"):
             ff2pp = ff.FF2PP("mock")
         ff2pp._ff_header.lookup_table = [0, 0, len(fields)]
         # Fake level constants, with shape specifying just one model-level.
@@ -83,13 +84,13 @@ class Test__extract_field__LBC_format(MockerMixin):
 
         open_func = "builtins.open"
         with (
-            self.mocker.patch(
+            patch(
                 "iris.fileformats._ff._parse_binary_stream", return_value=[0]
             ),
-            self.mocker.patch(open_func),
-            self.mocker.patch("struct.unpack_from", return_value=[4]),
-            self.mocker.patch("iris.fileformats.pp.make_pp_field", side_effect=fields),
-            self.mocker.patch(
+            patch(open_func),
+            patch("struct.unpack_from", return_value=[4]),
+            patch("iris.fileformats.pp.make_pp_field", side_effect=fields),
+            patch(
                 "iris.fileformats._ff.FF2PP._payload", return_value=(0, 0)
             ),
         ):
@@ -217,7 +218,7 @@ class Test__payload(MockerMixin):
         field.boundary_packing = None
 
     def _test(self, mock_field, expected_depth, expected_dtype, word_depth=None):
-        with self.mocker.patch("iris.fileformats._ff.FFHeader", return_value=None):
+        with patch("iris.fileformats._ff.FFHeader", return_value=None):
             kwargs = {}
             if word_depth is not None:
                 kwargs["word_depth"] = word_depth
