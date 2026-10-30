@@ -1,8 +1,0 @@
-:user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
-:user:`bjlittle`, and OpenAI's Codex
-split the CF loading and saving code out of
-:mod:`iris.fileformats.netcdf` into :mod:`iris.fileformats.cf`, so that it is
-shared by the netCDF and Zarr backends rather than owned by one of them. Both
-backends reach their storage through one abstraction,
-:class:`iris.fileformats.cf.dataset.CFDataset`. The public netCDF names are
-unchanged.

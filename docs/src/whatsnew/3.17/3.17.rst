@@ -1,0 +1,123 @@
+v3.17 (30 Oct 2026)
+===================
+
+.. include:: highlights.rst
+
+✨ Features
+~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7236`: :user:`mo-AndrewCreswick` added the option to set the step between
+  rolling windows in :meth:`iris.cube.Cube.rolling_window()`. (:far:`circle-dot` :issue:`7217`)
+
+- :fa:`code-pull-request` :pull:`7309`: :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  added native Zarr support. Iris reads Zarr version 2 and
+  version 3 stores and writes version 3, through the same
+  :func:`iris.load` and :func:`iris.save` calls as any other format, with
+  ``zarr`` an optional dependency. :func:`iris.fileformats.zarr.load_cubes`
+  and :func:`iris.fileformats.zarr.save` take a ``group`` keyword for a store
+  that holds more than one dataset. (:far:`circle-dot` :issue:`6977`, :far:`circle-dot` :issue:`6979`,
+  :far:`circle-dot` :issue:`6980`)
+
+- :fa:`code-pull-request` :pull:`7361`: :user:`ESadek-MO` updated the CF standard names table to version 95.
+
+
+
+🐛 Bugs Fixed
+~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7253`: :user:`stephenworsley` fixed a bug which caused indexing to fail when
+  ``start_index`` was 1. (:far:`circle-dot` :issue:`7246`)
+
+- :fa:`code-pull-request` :pull:`7257`: :user:`stephenworsley` fixed the default value for ``TEST_DATA_DIR``.
+
+- :fa:`code-pull-request` :pull:`7309`: :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  fixed the handling of attributes whose name collides with a
+  member of the netCDF4 Python API -- ``shape``, ``size``, ``dtype``, ``name``,
+  ``dimensions`` and ``mask``. They were silently dropped when saving and
+  silently shadowed when loading; they now round-trip.
+
+  :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  fixed saving ``int64`` data to ``NETCDF3_64BIT``, which failed
+  inside the netCDF C library rather than narrowing the data to ``int32`` as
+  the other netCDF 3 formats do. (:far:`circle-dot` :issue:`7337`)
+
+- :fa:`code-pull-request` :pull:`7348`: :user:`syahra712` fixed the error raised when adding a non-cube to a
+  :class:`~iris.cube.CubeList`, which showed a literal ``{obj}`` placeholder
+  instead of the rejected object. (:fa:`code-pull-request` :pull:`7348`)
+
+
+
+🔥 Deprecations
+~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7309`: :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  deprecated reading a CF attribute as an attribute of a
+  ``CFVariable`` -- ``cf_var.units`` rather than ``cf_var.attributes["units"]``
+  -- and reaching a netCDF4 variable member through one. Both warn on use and
+  will be removed in a future release.
+
+  :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  relocated six public names out of
+  :mod:`iris.fileformats.netcdf` into :mod:`iris.fileformats.cf`, the package
+  that now holds the shared CF loading and saving code. The old names still
+  work, and warn with their new location.
+
+
+
+🔗 Dependencies
+~~~~~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7270`: :user:`trexfeathers` modernised the Iris gallery tests, and set several to skip
+  if using the incompatible combination of PROJ>=9.8 and Cartopy<0.26.
+
+- :fa:`code-pull-request` :pull:`7309`: :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  added ``zarr`` (>=3.1.0) as an optional dependency, needed
+  only to read or write a Zarr store, and ``xarray`` as a test dependency, used
+  to check that stores Iris writes are readable by another Zarr reader.
+
+
+
+💼 Internal
+~~~~~~~~~~~
+
+- :fa:`code-pull-request` :pull:`7198`: :user:`01luyicheng` added unit tests for :meth:`~iris.cube.Cube.coord_dims`.
+  (:far:`circle-dot` :issue:`4552`)
+
+- :fa:`code-pull-request` :pull:`7254`: :user:`trexfeathers` made CI compatible with PROJ 9.8, including known incompatibilities with Cartopy <0.26 when plotting coastlines.
+
+- :fa:`code-pull-request` :pull:`7267`: :user:`rcomer` moved the developers' conda yaml file.  It is now ``environment.yml`` in the repository root directory.  (:far:`circle-dot` :issue:`7205`)
+
+- :fa:`code-pull-request` :pull:`7269`: :user:`rcomer` updated the scipy intersphinx mapping to make documentation builds more reliable.
+
+- :fa:`code-pull-request` :pull:`7278`: :user:`claude` fixed a race between the release-tooling tests, which under
+  ``pytest-xdist`` could share a ``nothing`` progress file and so read one that
+  another worker was part way through writing. Each test now runs in its own
+  working directory, which also stops the test suite writing ``.nothing/`` into
+  the working copy. (:fa:`code-pull-request` :pull:`7278`)
+
+- :fa:`code-pull-request` :pull:`7299`: Fix 1d-plot adjustment for line directions, for cartopy >= 0.26.
+
+- :fa:`code-pull-request` :pull:`7299`: Fix shape-masking test for more stable results.
+
+- :fa:`code-pull-request` :pull:`7303`: :user:`trexfeathers` removed ``iris.fileformats.netcdf.saver.VariableEmulator``.
+
+- :fa:`code-pull-request` :pull:`7309`: :user:`claude`, :user:`trexfeathers`, :user:`stephenworsley`, :user:`pp-mo`,
+  :user:`bjlittle`, and OpenAI's Codex
+  split the CF loading and saving code out of
+  :mod:`iris.fileformats.netcdf` into :mod:`iris.fileformats.cf`, so that it is
+  shared by the netCDF and Zarr backends rather than owned by one of them. Both
+  backends reach their storage through one abstraction,
+  :class:`iris.fileformats.cf.dataset.CFDataset`. The public netCDF names are
+  unchanged.
+
+- :fa:`code-pull-request` :pull:`7312`: :user:`trexfeathers` tightened the ``AGENTS.md`` agent instructions: comment
+  and docstring rules are regrouped, lazy data has its own section, citations
+  that decay silently - line numbers in other files, counts of call sites - are
+  banned, and a new section covers a review comment that contradicts a written
+  rule.
