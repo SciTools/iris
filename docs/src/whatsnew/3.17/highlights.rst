@@ -1,5 +1,5 @@
 This document explains the changes made to Iris for this release
-(:doc:`View all changes <index>`.)
+(:doc:`View all changes </whatsnew/index>`.)
 
 
 .. dropdown:: v3.17 Release Highlights
