@@ -412,6 +412,26 @@ def fill_between(x, y1, y2, *args, **kwargs):
     return result
 
 
+def fill_betweenx(y, x1, x2, *args, **kwargs):
+    """Draw a labelled fill_betweenx plot based on the given cubes or coordinates.
+
+    See :func:`iris.plot.fill_betweenx` for details of valid arguments and
+    keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
+    """
+    axes = kwargs.get("axes")
+    footer = kwargs.pop("footer", None)
+    result = iplt.fill_betweenx(y, x1, x2, *args, **kwargs)
+    _label_1d_plot(x1, y, axes=axes)
+    _footer(footer)
+    return result
+
+
 def hist(x, *args, **kwargs):
     """Compute and plot a labelled histogram.
 
