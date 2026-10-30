@@ -2,7 +2,7 @@ This document explains the changes made to Iris for this release
 (:doc:`View all changes <index>`.)
 
 
-.. dropdown:: |iris_version| Release Highlights
+.. dropdown:: v3.17 Release Highlights
    :color: primary
    :icon: info
    :animate: fade-in

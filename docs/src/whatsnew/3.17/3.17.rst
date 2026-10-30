@@ -1,7 +1,7 @@
 v3.17 (30 Oct 2026)
 ===================
 
-.. include:: highlights.rst
+.. include:: /whatsnew/3.17/highlights.rst
 
 ✨ Features
 ~~~~~~~~~~~
