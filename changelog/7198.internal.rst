@@ -1,2 +1,0 @@
-:user:`01luyicheng` added unit tests for :meth:`~iris.cube.Cube.coord_dims`.
-(:issue:`4552`)
