@@ -9,6 +9,8 @@ todo: migrate the remaining unit-esque tests from iris.tests.test_netcdf,
 
 """
 
+from dataclasses import dataclass
+
 from cf_units import as_unit
 import numpy as np
 import pytest
@@ -23,21 +25,23 @@ from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import ncgen_from_cdl
 
 
-@pytest.fixture(autouse=True, scope="module")
-def _setup(tmp_path_factory):
-    global TMP_DIR
-    TMP_DIR = tmp_path_factory.mktemp("temp")
+@pytest.fixture(scope="module")
+def cdl_to_nc(tmp_path_factory):
+    # Generate a per-module common temporary directory for test files (cdl and nc).
+    tmp_dir = tmp_path_factory.mktemp("temp")
 
+    # Return 'cdl_to_nc' function which embeds a common per-module temporary directory.
+    def _inner_call(cdl: str, name_root: str):
+        cdl_path = tmp_dir / f"{name_root}.cdl"
+        nc_path = tmp_dir / f"{name_root}.nc"
+        ncgen_from_cdl(cdl, cdl_path, nc_path)
+        return str(nc_path)
 
-def cdl_to_nc(cdl):
-    cdl_path = TMP_DIR / "tst.cdl"
-    nc_path = TMP_DIR / "tst.nc"
-    ncgen_from_cdl(cdl, cdl_path, nc_path)
-    return str(nc_path)
+    return _inner_call
 
 
 class Tests:
-    def test_ancillary_variables(self):
+    def test_ancillary_variables(self, cdl_to_nc):
         # Note: using a CDL string as a test data reference, rather than a
         # binary file.
         ref_cdl = """
@@ -61,8 +65,7 @@ class Tests:
                 my_av = 11., 12., 13.;
             }
             """
-        nc_path = cdl_to_nc(ref_cdl)
-
+        nc_path = cdl_to_nc(ref_cdl, "ancils")
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
         assert len(cubes) == 1
@@ -77,7 +80,7 @@ class Tests:
         )
         assert avs[0] == expected
 
-    def test_status_flags(self):
+    def test_status_flags(self, cdl_to_nc):
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -100,7 +103,7 @@ class Tests:
                 my_av = 1b, 1b, 2b;
             }
             """
-        nc_path = cdl_to_nc(ref_cdl)
+        nc_path = cdl_to_nc(ref_cdl, "status_flags")
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
@@ -119,7 +122,7 @@ class Tests:
         )
         assert avs[0] == expected
 
-    def test_cell_measures(self):
+    def test_cell_measures(self, cdl_to_nc):
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -147,7 +150,7 @@ class Tests:
                 my_areas = 110., 120., 130., 221., 231., 241.;
             }
             """
-        nc_path = cdl_to_nc(ref_cdl)
+        nc_path = cdl_to_nc(ref_cdl, "cell_measures")
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
@@ -164,7 +167,7 @@ class Tests:
         )
         assert cms[0] == expected
 
-    def test_default_units(self):
+    def test_default_units(self, cdl_to_nc):
         # Note: using a CDL string as a test data reference, rather than a binary file.
         ref_cdl = """
             netcdf cm_attr {
@@ -191,7 +194,7 @@ class Tests:
                 my_areas = 110., 120., 130., 221., 231., 241.;
             }
             """
-        nc_path = cdl_to_nc(ref_cdl)
+        nc_path = cdl_to_nc(ref_cdl, "default_units")
 
         # Load with iris.fileformats.netcdf.load_cubes, and check expected content.
         cubes = list(load_cubes(nc_path))
@@ -204,9 +207,24 @@ class Tests:
 
 
 class TestsMesh:
-    @classmethod
-    def setup_class(cls):
-        cls.ref_cdl = """
+    @dataclass
+    class SampleMeshInfo:
+        """A reference for the module-scoped test files.
+
+        Done this way mostly so we can say 'samples.nc_path' and the like.
+        """
+
+        ref_cdl: str
+        nc_path: str
+        mesh_cubes: list[Cube]
+
+    @pytest.fixture(scope="module")
+    def sample_mesh(self, cdl_to_nc):
+        """Create a sample mesh cdl, nc and loaded cubes.
+
+        Done only once, for the whole module.
+        """
+        ref_cdl = """
             netcdf mesh_test {
                 dimensions:
                     node = 3 ;
@@ -252,8 +270,11 @@ class TestsMesh:
                     face_data = 0.;
                 }
             """
-        cls.nc_path = cdl_to_nc(cls.ref_cdl)
-        cls.mesh_cubes = list(load_cubes(cls.nc_path))
+        nc_path = cdl_to_nc(ref_cdl, "sample_mesh")
+        mesh_cubes = list(load_cubes(nc_path))
+        return self.SampleMeshInfo(
+            ref_cdl=ref_cdl, nc_path=nc_path, mesh_cubes=mesh_cubes
+        )
 
     @pytest.fixture(autouse=True)
     def _setup(self):
@@ -261,12 +282,14 @@ class TestsMesh:
         #  full-scale pytest conversion.
         self.monkeypatch = pytest.MonkeyPatch()
 
-    def test_standard_dims(self):
-        for cube in self.mesh_cubes:
+    def test_standard_dims(self, sample_mesh):
+        for cube in sample_mesh.mesh_cubes:
             assert cube.coords("levels") is not None
 
-    def test_mesh_coord(self):
-        cube = [cube for cube in self.mesh_cubes if cube.var_name == "face_data"][0]
+    def test_mesh_coord(self, sample_mesh):
+        cube = [
+            cube for cube in sample_mesh.mesh_cubes if cube.var_name == "face_data"
+        ][0]
         face_x = cube.coord("longitude")
         face_y = cube.coord("latitude")
 
@@ -281,15 +304,15 @@ class TestsMesh:
         _shared_utils.assert_array_equal(np.ma.array([[0.0, 2.0, 1.0]]), face_x.bounds)
         _shared_utils.assert_array_equal(np.ma.array([[0.0, 0.0, 1.0]]), face_y.bounds)
 
-    def test_shared_mesh(self):
-        cube_meshes = [cube.coord("latitude").mesh for cube in self.mesh_cubes]
+    def test_shared_mesh(self, sample_mesh):
+        cube_meshes = [cube.coord("latitude").mesh for cube in sample_mesh.mesh_cubes]
         assert cube_meshes[0] == cube_meshes[1]
 
-    def test_missing_mesh(self, caplog):
-        ref_cdl = self.ref_cdl.replace(
+    def test_missing_mesh(self, caplog, cdl_to_nc, sample_mesh):
+        ref_cdl = sample_mesh.ref_cdl.replace(
             'face_data:mesh = "mesh"', 'face_data:mesh = "mesh2"'
         )
-        nc_path = cdl_to_nc(ref_cdl)
+        nc_path = cdl_to_nc(ref_cdl, "missing_mesh")
 
         # No error when mesh handling not activated.
         _ = list(load_cubes(nc_path))
@@ -300,7 +323,7 @@ class TestsMesh:
         ):
             _ = list(load_cubes(nc_path))
 
-    def test_mesh_coord_not_built(self):
+    def test_mesh_coord_not_built(self, sample_mesh):
         def mock_build_mesh_coords(mesh, cf_var):
             raise RuntimeError("Mesh coords not built")
 
@@ -309,23 +332,23 @@ class TestsMesh:
                 "iris.fileformats.netcdf.ugrid_load._build_mesh_coords",
                 mock_build_mesh_coords,
             )
-            _ = list(load_cubes(self.nc_path))
+            _ = list(load_cubes(sample_mesh.nc_path))
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert "Mesh coords not built" in "".join(load_problem.stack_trace.format())
 
-    def test_mesh_coord_not_added(self):
+    def test_mesh_coord_not_added(self, sample_mesh):
         def mock_add_aux_coord(self, coord, data_dims=None):
             raise RuntimeError("Mesh coord not added")
 
         with self.monkeypatch.context() as m:
             m.setattr("iris.cube.Cube.add_aux_coord", mock_add_aux_coord)
-            _ = list(load_cubes(self.nc_path))
+            _ = list(load_cubes(sample_mesh.nc_path))
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         assert "Mesh coord not added" in "".join(load_problem.stack_trace.format())
 
-    def test_mesh_coord_capture_destination(self):
+    def test_mesh_coord_capture_destination(self, sample_mesh):
         def mock_build_mesh_coords(mesh, cf_var):
             raise RuntimeError("Mesh coords not built")
 
@@ -334,7 +357,7 @@ class TestsMesh:
                 "iris.fileformats.netcdf.ugrid_load._build_mesh_coords",
                 mock_build_mesh_coords,
             )
-            _ = list(load_cubes(self.nc_path))
+            _ = list(load_cubes(sample_mesh.nc_path))
 
         load_problem = LOAD_PROBLEMS.problems[-1]
         destination = load_problem.destination
