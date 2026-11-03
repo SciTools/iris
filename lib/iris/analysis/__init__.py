@@ -1217,10 +1217,14 @@ class _Weights:
                 )
             derived_units = dim_metadata.units
 
-        # Remaining types (e.g., np.ndarray, dask.array.core.Array, etc.)
-        # --> Use array directly and assign units of "1"
+        # Remaining types (e.g., np.ndarray, dask.array.core.Array, list, etc.)
+        # --> Use array directly (converting other array-likes, such as lists,
+        # to arrays) and assign units of "1"
         else:
-            derived_array = weights
+            if iris._lazy_data.is_lazy_data(weights):
+                derived_array = weights
+            else:
+                derived_array = np.asanyarray(weights)
             derived_units = Unit("1")
 
         self.array = derived_array
@@ -1491,9 +1495,9 @@ def _weighted_percentile(data, axis, weights, percent, returned=False, **kwargs)
     """
     # Ensure that weights array is the same shape as data, or the shape of data along
     # axis.
-    if data.shape != weights.shape and data.shape[axis : axis + 1] != weights.shape:
+    if data.shape != weights.shape and (data.shape[axis],) != weights.shape:
         raise ValueError(
-            f"For data array of shape {data.shape}, weights should be {data.shape} or {data.shape[axis : axis + 1]}"
+            f"For data array of shape {data.shape}, weights should be {data.shape} or {(data.shape[axis],)}"
         )
     # Ensure that the target axis is the last dimension.
     data = np.rollaxis(data, axis, start=data.ndim)
@@ -1663,12 +1667,22 @@ def _sum(array, **kwargs):
     axis_in = kwargs.get("axis", None)
     weights_in = kwargs.pop("weights", None)
     returned_in = kwargs.pop("returned", False)
+    al = da if iris._lazy_data.is_lazy_data(array) else np
+    if (
+        getattr(weights_in, "ndim", None) == 1
+        and array.ndim > 1
+        and isinstance(axis_in, (int, np.integer))
+    ):
+        # As for np.average, 1D weights apply along the given axis: align them
+        # with it, rather than with the last dimension of the array.
+        shape = [1] * array.ndim
+        shape[axis_in] = -1
+        weights_in = al.broadcast_to(weights_in.reshape(shape), array.shape)
     if weights_in is not None:
         wsum = np.sum(weights_in * array, **kwargs)
     else:
         wsum = np.sum(array, **kwargs)
     if returned_in:
-        al = da if iris._lazy_data.is_lazy_data(array) else np
         if weights_in is None:
             weights = al.ones_like(array)
             if al is da:

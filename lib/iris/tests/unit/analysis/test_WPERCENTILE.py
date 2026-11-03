@@ -176,6 +176,17 @@ class Test_aggregate:
         # Results should be the same whether we use 1d or 2d weights.
         _shared_utils.assert_array_all_close(result_1d, result_2d)
 
+    def test_2d_weight1d_negative_axis(self):
+        # Cube.collapsed passes axis=-1 for real data.
+        shape = (3, 10)
+        data = np.arange(np.prod(shape)).reshape(shape)
+        weights1d = np.ones(shape[-1])
+        weights1d[::3] = 3
+        weights2d = np.broadcast_to(weights1d, shape)
+        result_1d = WPERCENTILE.aggregate(data, axis=-1, percent=50, weights=weights1d)
+        result_2d = WPERCENTILE.aggregate(data, axis=-1, percent=50, weights=weights2d)
+        _shared_utils.assert_array_all_close(result_1d, result_2d)
+
 
 class Test_name:
     def test(self):
