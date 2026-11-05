@@ -332,7 +332,7 @@ class Test_data__getter:
         assert dm.has_lazy_data()
         result = dm.data
         assert not dm.has_lazy_data()
-        assert isinstance(result, np.core.ndarray)
+        assert isinstance(result, np.ndarray)
         assert dm.dtype == self.dtype
         assert result.fill_value == self.fill_value
         _shared_utils.assert_array_equal(result, self.real_array)
@@ -543,11 +543,15 @@ class Test_data__setter:
         shape = (2, 3)
         size = np.prod(shape)
         real_array = np.arange(size).reshape(shape)
-        matrix = np.matrix(real_array)
+        # Create a custom ndarray subclass to replace deprecated np.matrix.
+        class NdArraySubclass(np.ndarray):
+            pass
+        
+        matrix = real_array.view(NdArraySubclass)
         dm = DataManager(real_array)
         dm.data = matrix
-        assert isinstance(dm._real_array, np.core.ndarray)
-        assert isinstance(dm.data, np.core.ndarray)
+        assert isinstance(dm._real_array, np.ndarray)
+        assert isinstance(dm.data, np.ndarray)
         _shared_utils.assert_array_equal(dm.data, real_array)
 
     def test_real_masked_constant_to_array(self):
