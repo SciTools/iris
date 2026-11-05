@@ -1,0 +1,4 @@
+:user:`Sulaiman-Dauda` added :func:`iris.plot.fill_betweenx` and
+:func:`iris.quickplot.fill_betweenx`, the horizontal counterparts of
+:func:`~iris.plot.fill_between`, for plotting a range against a vertical
+coordinate such as depth. (:issue:`5390`)
