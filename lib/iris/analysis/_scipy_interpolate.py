@@ -176,8 +176,8 @@ class _RegularGridInterpolator:
         should only be used for passing to
         :meth:`interp_using_pre_computed_weights`.
 
-        Example
-        -------
+        Examples
+        --------
         >>> coords = np.array([[[50.7, -3.5],
                                 [50.6, -3.5]],
                                [[50.7, -3.1],
@@ -203,8 +203,7 @@ class _RegularGridInterpolator:
                     np.all(self.grid[i][0] <= p), np.all(p <= self.grid[i][-1])
                 ):
                     raise ValueError(
-                        "One of the requested xi is out of "
-                        "bounds in dimension %d" % i
+                        "One of the requested xi is out of bounds in dimension %d" % i
                     )
 
         method = self.method if method is None else method

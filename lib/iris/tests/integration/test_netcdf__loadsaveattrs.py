@@ -17,6 +17,8 @@ and "user" = any additional attributes *not* recognised in conventions, which
 might be recorded either globally or locally.
 
 """
+
+from collections.abc import Sequence
 import inspect
 import json
 import os
@@ -32,6 +34,7 @@ import iris
 import iris.coord_systems
 from iris.coords import DimCoord
 from iris.cube import Cube
+import iris.fileformats.cf.saver
 import iris.fileformats.netcdf
 import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 
@@ -46,12 +49,11 @@ import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc4
 # A list of "global-style" attribute names : those which should be global attributes by
 # default (i.e. file- or group-level, *not* attached to a variable).
 
-_GLOBAL_TEST_ATTRS = set(iris.fileformats.netcdf.saver._CF_GLOBAL_ATTRS)
+_GLOBAL_TEST_ATTRS = sorted(iris.fileformats.cf.saver._CF_GLOBAL_ATTRS)
 # Remove this one, which has peculiar behaviour + is tested separately
 # N.B. this is not the same as 'Conventions', but is caught in the crossfire when that
 # one is processed.
-_GLOBAL_TEST_ATTRS -= set(["conventions"])
-_GLOBAL_TEST_ATTRS = sorted(_GLOBAL_TEST_ATTRS)
+_GLOBAL_TEST_ATTRS = [a for a in _GLOBAL_TEST_ATTRS if a != "conventions"]
 
 
 # Define a fixture to parametrise tests over the 'global-style' test attributes.
@@ -65,9 +67,19 @@ def global_attr(request):
 # A list of "local-style" attribute names : those which should be variable attributes
 # by default (aka "local", "variable" or "data" attributes) .
 _LOCAL_TEST_ATTRS = (
-    iris.fileformats.netcdf.saver._CF_DATA_ATTRS
-    + iris.fileformats.netcdf.saver._UKMO_DATA_ATTRS
+    iris.fileformats.cf.saver._CF_DATA_ATTRS
+    + iris.fileformats.cf.saver._UKMO_DATA_ATTRS
 )
+# For simplicity, we exclude several special cases that don't act with "standard"
+#  behaviour (because they translate in special ways):
+#   * "iris_extended_grid_mapping" : not expected to always roundtrip
+#   * "ukmo__process_flags" : has an odd value structure
+#   * "um_stash_source" : should only occur in files, not in Iris attribute dicts
+_LOCAL_TEST_ATTRS = [
+    a
+    for a in _LOCAL_TEST_ATTRS
+    if a not in ("iris_extended_grid_mapping", "ukmo__process_flags", "um_stash_source")
+]
 
 
 # Define a fixture to parametrise over the 'local-style' test attributes.
@@ -94,7 +106,7 @@ _SKIP_WARNCHECK = "_no_warnings_check"
 
 
 def check_captured_warnings(
-    expected_keys: List[str],
+    expected_keys: List[str] | str | None,
     captured_warnings: List[warnings.WarningMessage],
     allow_possible_legacy_warning: bool = False,
 ):
@@ -108,13 +120,14 @@ def check_captured_warnings(
     # TODO: when iris.FUTURE.save_split_attrs is removed, we can remove the
     #  'allow_possible_legacy_warning' arg.
 
+    if expected_keys == _SKIP_WARNCHECK:
+        # No check at all in this case
+        return
+
     if expected_keys is None:
         expected_keys = []
-    elif hasattr(expected_keys, "upper"):
+    elif isinstance(expected_keys, str):
         # Handle a single string
-        if expected_keys == _SKIP_WARNCHECK:
-            # No check at all in this case
-            return
         expected_keys = [expected_keys]
 
     if allow_possible_legacy_warning:
@@ -125,14 +138,14 @@ def check_captured_warnings(
         )
         expected_keys.append(legacy_message_key)
 
-    expected_keys = [re.compile(key) for key in expected_keys]
+    expected_patterns = [re.compile(key) for key in expected_keys]
     found_results = [str(warning.message) for warning in captured_warnings]
-    remaining_keys = expected_keys.copy()
+    remaining_keys = expected_patterns.copy()
     for i_message, message in enumerate(found_results.copy()):
         for key in remaining_keys:
             if key.search(message):
                 # Hit : replace one message in the list with its matching "key"
-                found_results[i_message] = key
+                found_results[i_message] = key  # type: ignore[call-overload]
                 # remove the matching key
                 remaining_keys.remove(key)
                 # skip on to next message
@@ -141,9 +154,11 @@ def check_captured_warnings(
     if allow_possible_legacy_warning:
         # Remove any unused "legacy attribute saving" key.
         # N.B. this is the *only* key we will tolerate not being used.
-        expected_keys = [key for key in expected_keys if key != legacy_message_key]
+        expected_patterns = [
+            key for key in expected_patterns if key != legacy_message_key
+        ]
 
-    assert set(found_results) == set(expected_keys)
+    assert set(found_results) == set(expected_patterns)
 
 
 class MixinAttrsTesting:
@@ -152,7 +167,7 @@ class MixinAttrsTesting:
         """Search up the callstack for a function named "test_*", and return the name for
         use as a test identifier.
 
-        Idea borrowed from :meth:`iris.tests.IrisTest.result_path`.
+        Idea borrowed from :meth:`iris.tests._shared_utils.IrisTest.result_path`.
 
         Returns
         -------
@@ -360,8 +375,8 @@ class MixinAttrsTesting:
 
     def fetch_results(
         self,
-        filepath: str = None,
-        cubes: Iterable[Cube] = None,
+        filepath: str | None = None,
+        cubes: Iterable[Cube] | None = None,
         oldstyle_combined: bool = False,
     ):
         """Return testcase results from an output file or cubes in a standardised form.
@@ -509,6 +524,7 @@ _SPECIAL_ATTRS = [
     "standard_error_multiplier",
     "STASH",
     "um_stash_source",
+    "iris_extended_grid_mapping",
 ]
 _MATRIX_ATTRNAMES = [attr for attr in _MATRIX_ATTRNAMES if attr not in _SPECIAL_ATTRS]
 
@@ -542,7 +558,8 @@ def decode_matrix_input(input_spec):
     # N.B. in this form "values" are all one-character strings.
     def decode_specstring(spec: str) -> List[Union[str, None]]:
         # Decode an input spec-string to input/output attribute values
-        assert spec[0] == "G" and spec[2] == "L"
+        assert spec[0] == "G"
+        assert spec[2] == "L"
         allvals = spec[1] + spec[3:]
         result = [None if valchar == "-" else valchar for valchar in allvals]
         return result
@@ -560,11 +577,12 @@ def decode_matrix_input(input_spec):
     return result
 
 
-def encode_matrix_result(results: List[List[str]]) -> List[str]:
+def encode_matrix_result(results) -> List[str]:
     # Re-code a set of output results, [*[global-value, *local-values]] as a list of
     # strings, like ["GaL-b"] or ["GaLabc", "GbLabc"].
     # N.B. again assuming that all values are just one-character strings, or None.
-    assert isinstance(results, Iterable) and len(results) >= 1
+    assert isinstance(results, Sequence)
+    assert len(results) >= 1
     if not isinstance(results[0], list):
         results = [results]
     assert all(
@@ -971,12 +989,9 @@ class TestRoundtrip(MixinAttrsTesting):
         if local_attr == "missing_value":
             # Special-cases : 'missing_value' type must be compatible with the variable
             attrval = 303
-        elif local_attr == "ukmo__process_flags":
-            # What this does when a GLOBAL attr seems to be weird + unintended.
-            # 'this' --> 't h i s'
-            attrval = "process"
-            # NOTE: it's also supposed to handle vector values - which we are not
-            # testing.
+        elif local_attr == "STASH":
+            # Provide a valid content.
+            attrval = "m01s02i123"
 
         # NOTE: results *should* be the same whether the original attribute is written
         # as global or a variable attribute
@@ -1018,7 +1033,7 @@ class TestRoundtrip(MixinAttrsTesting):
         expected_result = [expect_global, expect_var]
         if do_split and origin_style == "input_global":
             # The result is simply the "other way around"
-            expected_result = expected_result[::-1]
+            expected_result.reverse()
         self.check_roundtrip_results(expected_result)
 
     @pytest.mark.parametrize("testcase", _MATRIX_TESTCASES[:max_param_attrs])
@@ -1344,7 +1359,7 @@ class TestSave(MixinAttrsTesting):
 
         self.captured_warnings = captured_warnings
 
-    def run_save_testcase_legacytype(self, attr_name: str, values: list):
+    def run_save_testcase_legacytype(self, attr_name: str, values):
         """Legacy-type means : before cubes had split attributes.
 
         This just means we have only one "set" of cubes, with ***no*** distinct global
@@ -1356,7 +1371,9 @@ class TestSave(MixinAttrsTesting):
 
         self.run_save_testcase(attr_name, [None] + values)
 
-    def check_save_results(self, expected: list, expected_warnings: List[str] = None):
+    def check_save_results(
+        self, expected: list, expected_warnings: List[str] | None = None
+    ):
         results = self.fetch_results(filepath=self.result_filepath)
         assert results == expected
         check_captured_warnings(
@@ -1467,51 +1484,43 @@ class TestSave(MixinAttrsTesting):
             [None, "value", "value", None], expected_warnings=msg_regexp
         )
 
+    def _teststr_safevalue(self, attrname, value, offset=0):
+        if attrname == "STASH":
+            value = f"m01s02i{213 + offset}"
+        return value
+
     def test_localstyle__single(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value"])
+        value_single = self._teststr_safevalue(local_attr, "value-single")
+        self.run_save_testcase_legacytype(local_attr, [value_single])
 
         # Defaults to local
-        expected_results = [None, "value"]
-        # .. but a couple of special cases
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [None, "v a l u e"]
-        elif local_attr == "STASH":
+        expected_results = [None, value_single]
+        # .. but a special case
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
 
         self.check_save_results(expected_results)
 
     def test_localstyle__multiple_same(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value-same", "value-same"])
+        value_same = self._teststr_safevalue(local_attr, "value-same")
+        self.run_save_testcase_legacytype(local_attr, [value_same, value_same])
 
         # They remain separate + local
-        expected_results = [None, "value-same", "value-same"]
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [
-                None,
-                "v a l u e - s a m e",
-                "v a l u e - s a m e",
-            ]
-        elif local_attr == "STASH":
+        expected_results = [None, value_same, value_same]
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
 
         self.check_save_results(expected_results)
 
     def test_localstyle__multiple_different(self, local_attr):
-        self.run_save_testcase_legacytype(local_attr, ["value-A", "value-B"])
+        value_a = self._teststr_safevalue(local_attr, "value-A", 1)
+        value_b = self._teststr_safevalue(local_attr, "value-B", 2)
+        self.run_save_testcase_legacytype(local_attr, [value_a, value_b])
         # Different values are treated just the same as matching ones.
-        expected_results = [None, "value-A", "value-B"]
-        if local_attr == "ukmo__process_flags":
-            # A particular, really weird case
-            expected_results = [
-                None,
-                "v a l u e - A",
-                "v a l u e - B",
-            ]
-        elif local_attr == "STASH":
+        expected_results = [None, value_a, value_b]
+        if local_attr == "STASH":
             # A special case : the stored name is different
             self.attrname = "um_stash_source"
         self.check_save_results(expected_results)

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Resolve metadata common between two cubes.
 
+.. z_reference:: iris.common.resolve
+   :tags: topic_data_model;topic_maths_stats
+
+   API reference
+
 Provides the infrastructure to support the analysis, identification and
 combination of metadata common between two :class:`~iris.cube.Cube`
 operands into a single resultant :class:`~iris.cube.Cube`, which will be
@@ -31,7 +36,7 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 _AuxCoverage = namedtuple(
-    "AuxCoverage",
+    "_AuxCoverage",
     [
         "cube",
         "common_items_aux",
@@ -45,18 +50,18 @@ _AuxCoverage = namedtuple(
 )
 
 _CategoryItems = namedtuple(
-    "CategoryItems",
+    "_CategoryItems",
     ["items_dim", "items_aux", "items_scalar"],
 )
 
 _DimCoverage = namedtuple(
-    "DimCoverage",
+    "_DimCoverage",
     ["cube", "metadata", "coords", "dims_common", "dims_local", "dims_free"],
 )
 
-_Item = namedtuple("Item", ["metadata", "coord", "dims"])
+_Item = namedtuple("_Item", ["metadata", "coord", "dims"])
 
-_PreparedFactory = namedtuple("PreparedFactory", ["container", "dependencies"])
+_PreparedFactory = namedtuple("_PreparedFactory", ["container", "dependencies"])
 
 
 @dataclass
@@ -71,7 +76,7 @@ class _PreparedItem:
     axis: Any = None
 
     def create_coord(self, metadata):
-        from iris.experimental.ugrid.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(self.container, MeshCoord):
             # Make a MeshCoord, for which we have mesh/location/axis.
@@ -95,7 +100,7 @@ class _PreparedItem:
         return result
 
 
-_PreparedMetadata = namedtuple("PreparedMetadata", ["combined", "src", "tgt"])
+_PreparedMetadata = namedtuple("_PreparedMetadata", ["combined", "src", "tgt"])
 
 
 class Resolve:
@@ -741,13 +746,14 @@ class Resolve:
         if container is None:
             container = type(coord)
 
-        from iris.experimental.ugrid.mesh import MeshCoord
+        from iris.mesh import MeshCoord
 
         if issubclass(container, MeshCoord):
             # Build a prepared-item to make a MeshCoord.
             # This case does *NOT* use points + bounds, so alternatives to the
             # coord content should not have been specified by the caller.
-            assert points is None and bounds is None
+            assert points is None
+            assert bounds is None
             mesh = coord.mesh
             location = coord.location
             axis = coord.axis
@@ -1639,7 +1645,7 @@ class Resolve:
             Boolean stating whether the ``metadata`` is from the ``src`` (``True``)
             or ``tgt`` :class:`~iris.cube.Cube`.
             Defaults to ``True``.
-        from_local: bool, default=False
+        from_local : bool, default=False
             Boolean controlling whether the ``metadata`` is used to search the
             ``category_local`` (``True``) or the :attr:`~iris.common.resolve.Resolve.prepared_category`.
             Defaults to ``False``.
@@ -2358,16 +2364,16 @@ class Resolve:
             >>> resolver.map_rhs_to_lhs
             True
             >>> cube1.data.sum()
-            124652160.0
+            np.float32(1.2465214e+08)
             >>> zeros.shape
             (240, 37, 49)
             >>> zeros.sum()
-            0.0
+            np.float32(0.0)
             >>> result = resolver.cube(zeros, in_place=True)
             >>> result is cube1
             True
             >>> cube1.data.sum()
-            0.0
+            np.float32(0.0)
 
         """
         from iris.cube import Cube

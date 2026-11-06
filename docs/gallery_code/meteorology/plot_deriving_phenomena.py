@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Deriving Exner Pressure and Air Temperature
 ===========================================
+
+.. how-to:: Deriving Exner Pressure and Air Temperature
+   :tags: topic_plotting;topic_maths_stats
+
+   How to use Iris arithmetic to derive phenomena from existing cubes and plot them.
 
 This example shows some processing of cubes in order to derive further related
 cubes; in this case the derived cubes are Exner pressure and air temperature

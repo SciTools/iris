@@ -2,7 +2,7 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Generate FF, PP and NetCDF files based on a minimal synthetic FF file.
+"""Generate FF, PP, NetCDF and Zarr files based on a minimal synthetic FF file.
 
 NOTE: uses the Mule package, so depends on an environment with Mule installed.
 """
@@ -122,12 +122,13 @@ def _create_um_files(
     ff_path = save_paths.get("FF", None)
     pp_path = save_paths.get("PP", None)
     nc_path = save_paths.get("NetCDF", None)
+    zarr_path = save_paths.get("Zarr", None)
 
     if ff_path:
         new_ff.to_file(ff_path)
     if pp_path:
         fields_to_pp_file(str(pp_path), new_ff.fields)
-    if nc_path:
+    if nc_path or zarr_path:
         temp_ff_path = None
         # Need an Iris Cube from the FF content.
         if ff_path:
@@ -139,12 +140,18 @@ def _create_um_files(
             new_ff.to_file(temp_ff_path.name)
             ff_cube = load_cube(temp_ff_path.name)
 
-        save_cube(ff_cube, nc_path, zlib=compress)
+        if nc_path:
+            save_cube(ff_cube, nc_path, zlib=compress)
+        if zarr_path:
+            # Zarr's own spelling of compression. The Zarr saver rejects
+            #  netCDF keywords such as zlib= rather than translating them.
+            compressors = "auto" if compress else None
+            save_cube(ff_cube, zarr_path, mode="w", compressors=compressors)
         if temp_ff_path:
             temp_ff_path.close()
 
 
-FILE_EXTENSIONS = {"FF": "", "PP": ".pp", "NetCDF": ".nc"}
+FILE_EXTENSIONS = {"FF": "", "PP": ".pp", "NetCDF": ".nc", "Zarr": ".zarr"}
 
 
 def create_um_files(
@@ -177,7 +184,9 @@ def create_um_files(
     for file_type in file_types:
         file_ext = FILE_EXTENSIONS[file_type]
         save_path = (save_dir / f"{compress}").with_suffix(file_ext)
-        files_exist = files_exist and save_path.is_file()
+        # exists() not is_file(): a Zarr store is a directory, so is_file()
+        #  is always False for one and REUSE_DATA would never hold.
+        files_exist = files_exist and save_path.exists()
         save_paths[file_type] = str(save_path)
 
     if not REUSE_DATA or not files_exist:

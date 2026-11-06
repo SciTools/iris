@@ -51,6 +51,22 @@ class HorizontalChunkedRegridding:
         # Realise data
         out.data
 
+    def tracemalloc_regrid_area_w(self) -> None:
+        # Regrid the chunked cube
+        out = self.cube.regrid(self.template_cube, self.scheme_area_w)
+        # Realise data
+        out.data
+
+    tracemalloc_regrid_area_w.number = 3  # type: ignore[attr-defined]
+
+    def tracemalloc_regrid_area_w_new_grid(self) -> None:
+        # Regrid the chunked cube
+        out = self.chunked_cube.regrid(self.template_cube, self.scheme_area_w)
+        # Realise data
+        out.data
+
+    tracemalloc_regrid_area_w_new_grid.number = 3  # type: ignore[attr-defined]
+
 
 class CurvilinearRegridding:
     def setup(self) -> None:
@@ -93,3 +109,11 @@ class CurvilinearRegridding:
         out = self.cube.regrid(self.template_cube, self.scheme_pic)
         # Realise the data
         out.data
+
+    def tracemalloc_regrid_pic(self) -> None:
+        # Regrid the cube onto the template.
+        out = self.cube.regrid(self.template_cube, self.scheme_pic)
+        # Realise the data
+        out.data
+
+    tracemalloc_regrid_pic.number = 3  # type: ignore[attr-defined]

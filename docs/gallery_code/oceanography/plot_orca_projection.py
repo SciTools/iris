@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Tri-Polar Grid Projected Plotting
 =================================
+
+.. how-to:: Tri-Polar Grid Projected Plotting
+   :tags: topic_plotting
+
+   How to visualise data defined on a tri-polar grid using different map projections.
 
 This example demonstrates cell plots of data on the semi-structured ORCA2 model
 grid.

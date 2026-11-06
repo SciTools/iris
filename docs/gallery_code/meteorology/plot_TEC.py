@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Ionosphere Space Weather
 ========================
+
+.. how-to:: Ionosphere Space Weather
+   :tags: topic_plotting
+
+   How to mask out values below a threshold in a plot.
 
 This space weather example plots a filled contour of rotated pole point
 data with a shaded relief image underlay. The plot shows aggregated

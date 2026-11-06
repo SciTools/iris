@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Calculating a Custom Statistic
 ==============================
+
+.. how-to:: Calculating a Custom Statistic
+   :tags: topic_plotting;topic_maths_stats
+
+   How to define and use a custom aggregation operation, including visualisation.
 
 This example shows how to define and use a custom
 :class:`iris.analysis.Aggregator`, that provides a new statistical operator for
@@ -39,14 +48,14 @@ def count_spells(data, threshold, axis, spell_length):
     Parameters
     ----------
     data : array
-        raw data to be compared with value threshold.
+        Raw data to be compared with value threshold.
     threshold : float
-        threshold point for 'significant' datapoints.
+        Threshold point for 'significant' datapoints.
     axis : int
-        number of the array dimension mapping the time sequences.
-        (Can also be negative, e.g. '-1' means last dimension)
+        Number of the array dimension mapping the time sequences.
+        (Can also be negative, e.g. '-1' means last dimension).
     spell_length : int
-        number of consecutive times at which value > threshold to "count".
+        Number of consecutive times at which value > threshold to "count".
 
     """
     if axis < 0:

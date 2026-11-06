@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Equality benchmarks for the CPerf scheme of the UK Met Office's NG-VAT project."""
+
 from .. import on_demand_benchmark
 from . import SingleDiagnosticMixin
 

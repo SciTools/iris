@@ -4,19 +4,15 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for cube arithmetic involving derived (i.e. factory) coords."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
+from iris.tests import _shared_utils
 from iris.tests.unit.analysis.maths import (
     CubeArithmeticBroadcastingTestMixin,
     MathsAddOperationMixin,
 )
 
 
-@tests.skip_data
+@_shared_utils.skip_data
 class TestBroadcastingDerived(
-    tests.IrisTest,
     MathsAddOperationMixin,
     CubeArithmeticBroadcastingTestMixin,
 ):
@@ -31,7 +27,3 @@ class TestBroadcastingDerived(
 
     def _base_testcube(self):
         return super()._base_testcube(include_derived=True)
-
-
-if __name__ == "__main__":
-    tests.main()

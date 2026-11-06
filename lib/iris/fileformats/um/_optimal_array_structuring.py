@@ -4,7 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """A module to provide an optimal array structure calculation."""
 
-
 from iris.fileformats._structured_array_identification import GroupStructure
 
 

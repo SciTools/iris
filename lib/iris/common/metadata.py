@@ -2,8 +2,15 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides the infrastructure to support the common metadata API."""
+"""Provides the infrastructure to support the common metadata API.
 
+.. z_reference:: iris.common.metadata
+   :tags: topic_data_model
+
+   API reference
+"""
+
+from __future__ import annotations
 
 from abc import ABCMeta
 from collections import namedtuple
@@ -11,11 +18,18 @@ from collections.abc import Iterable, Mapping
 from copy import deepcopy
 from functools import lru_cache, wraps
 import re
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import numpy.ma as ma
 from xxhash import xxh64_hexdigest
 
+if TYPE_CHECKING:
+    import cf_units
+
+    from iris.common.mixin import CFVariableMixin
+    from iris.coords import CellMethod
+    from iris.util import Axis
 from ..config import get_logger
 from ._split_attribute_dicts import adjust_for_split_attribute_dictionaries
 from .lenient import _LENIENT
@@ -29,6 +43,8 @@ __all__ = [
     "CoordMetadata",
     "CubeMetadata",
     "DimCoordMetadata",
+    "MeshCoordMetadata",
+    "MeshMetadata",
     "SERVICES",
     "SERVICES_COMBINE",
     "SERVICES_DIFFERENCE",
@@ -39,7 +55,7 @@ __all__ = [
 ]
 
 
-# https://www.unidata.ucar.edu/software/netcdf/docs/netcdf_data_set_components.html#object_name
+# https://docs.unidata.ucar.edu/nug/current/netcdf_data_set_components.html#object_name
 
 _TOKEN_PARSE = re.compile(r"""^[a-zA-Z0-9][\w\.\+\-@]*$""")
 
@@ -80,6 +96,10 @@ def hexdigest(item):
         parts = (item.shape, xxh64_hexdigest(item))
         item = str(parts)
 
+    # xxhash 4.0+: str is no longer accepted; encode to bytes first.
+    if isinstance(item, str):
+        item = item.encode()
+
     try:
         # Calculate single-shot hash to avoid allocating state on the heap
         result = xxh64_hexdigest(item)
@@ -88,7 +108,7 @@ def hexdigest(item):
         # string representation of the provided item instead, but
         # also fold in the object type...
         parts = (type(item), item)
-        result = xxh64_hexdigest(str(parts))
+        result = xxh64_hexdigest(str(parts).encode())
 
     return result
 
@@ -104,6 +124,7 @@ class _NamedTupleMeta(ABCMeta):
     def __new__(mcs, name, bases, namespace):
         names = []
 
+        # "Inherit" the base classes' `_fields`
         for base in bases:
             if hasattr(base, "_fields"):
                 base_names = getattr(base, "_fields")
@@ -115,6 +136,8 @@ class _NamedTupleMeta(ABCMeta):
                         base_names = (base_names,)
                     names.extend(base_names)
 
+        # _members are fields that are specific in this NamedTuple.
+        # Add these as fields.
         if "_members" in namespace and not getattr(
             namespace["_members"], "__isabstractmethod__", False
         ):
@@ -142,7 +165,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
     DEFAULT_NAME = "unknown"  # the fall-back name for metadata identity
 
-    _members = (
+    _members: str | Iterable[str] = (
         "standard_name",
         "long_name",
         "var_name",
@@ -151,6 +174,12 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
     )
 
     __slots__ = ()
+
+    standard_name: str | None
+    long_name: str | None
+    var_name: str | None
+    units: cf_units.Unit
+    attributes: Any
 
     @lenient_service
     def __eq__(self, other):
@@ -191,13 +220,15 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 # Certain members never participate in strict equivalence, so
                 # are filtered out.
                 fields = filter(
-                    lambda field: field
-                    not in (
-                        "circular",
-                        "location_axis",
-                        "node_dimension",
-                        "edge_dimension",
-                        "face_dimension",
+                    lambda field: (
+                        field
+                        not in (
+                            "circular",
+                            "location_axis",
+                            "node_dimension",
+                            "edge_dimension",
+                            "face_dimension",
+                        )
                     ),
                     self._fields,
                 )
@@ -682,7 +713,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
                 result = cls(**kwargs)
         return result
 
-    def name(self, default=None, token=False):
+    def name(self, default: str | None = None, token: bool = False) -> str:
         """Return a string name representing the identity of the metadata.
 
         First it tries standard name, then it tries the long name, then
@@ -691,10 +722,10 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
 
         Parameters
         ----------
-        default : optional
+        default :
             The fall-back string representing the default name. Defaults to
             the string 'unknown'.
-        token : bool, default=False
+        token :
             If True, ensures that the name returned satisfies the criteria for
             the characters required by a valid NetCDF name. If it is not
             possible to return a valid name, then a ValueError exception is
@@ -734,7 +765,7 @@ class BaseMetadata(metaclass=_NamedTupleMeta):
         Parameters
         ----------
         name : str
-            The string name to verify
+            The string name to verify.
 
         Returns
         -------
@@ -871,7 +902,7 @@ class CellMeasureMetadata(BaseMetadata):
 class CoordMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.coords.Coord`."""
 
-    _members = ("coord_system", "climatological")
+    _members: str | Iterable[str] = ("coord_system", "climatological")
 
     __slots__ = ()
 
@@ -1037,6 +1068,8 @@ class CubeMetadata(BaseMetadata):
     """Metadata container for a :class:`~iris.cube.Cube`."""
 
     _members = "cell_methods"
+
+    cell_methods: tuple[CellMethod, ...]
 
     __slots__ = ()
 
@@ -1335,15 +1368,477 @@ class DimCoordMetadata(CoordMetadata):
         return super().equal(other, lenient=lenient)
 
 
-def metadata_filter(
-    instances,
-    item=None,
-    standard_name=None,
-    long_name=None,
-    var_name=None,
-    attributes=None,
-    axis=None,
-):
+class ConnectivityMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.mesh.Connectivity`."""
+
+    # The "location_axis" member is stateful only, and does not participate in
+    # lenient/strict equivalence.
+    _members = ("cf_role", "start_index", "location_axis")
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """Perform lenient combination of metadata members for connectivities.
+
+        Parameters
+        ----------
+        other : ConnectivityMetadata
+            The other connectivity metadata participating in the lenient
+            combination.
+
+        Returns
+        -------
+        A list of combined metadata member values.
+
+        """
+
+        # Perform "strict" combination for "cf_role", "start_index", "location_axis".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in ConnectivityMetadata._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """Perform lenient equality of metadata members for connectivities.
+
+        Parameters
+        ----------
+        other : ConnectivityMetadata
+            The other connectivity metadata participating in the lenient
+            comparison.
+
+        Returns
+        -------
+        bool
+
+        """
+        # Perform "strict" comparison for "cf_role", "start_index".
+        # The "location_axis" member is not part of lenient equivalence.
+        members = filter(
+            lambda member: member != "location_axis",
+            ConnectivityMetadata._members,
+        )
+        result = all(
+            [getattr(self, field) == getattr(other, field) for field in members]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """Perform lenient difference of metadata members for connectivities.
+
+        Parameters
+        ----------
+        other : ConnectivityMetadata
+            The other connectivity metadata participating in the lenient
+            difference.
+
+        Returns
+        -------
+        A list of difference metadata member values.
+
+        """
+
+        # Perform "strict" difference for "cf_role", "start_index", "location_axis".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in ConnectivityMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class MeshMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.mesh.MeshXY`."""
+
+    # The node_dimension", "edge_dimension" and "face_dimension" members are
+    # stateful only; they not participate in lenient/strict equivalence.
+    _members = (
+        "topology_dimension",
+        "node_dimension",
+        "edge_dimension",
+        "face_dimension",
+    )
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """Perform lenient combination of metadata members for meshes.
+
+        Parameters
+        ----------
+        other : MeshMetadata
+            The other mesh metadata participating in the lenient
+            combination.
+
+        Returns
+        -------
+        A list of combined metadata member values.
+
+        """
+
+        # Perform "strict" combination for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """Perform lenient equality of metadata members for meshes.
+
+        Parameters
+        ----------
+        other : MeshMetadata
+            The other mesh metadata participating in the lenient
+            comparison.
+
+        Returns
+        -------
+        bool
+
+        """
+        # Perform "strict" comparison for "topology_dimension".
+        # "node_dimension", "edge_dimension" and "face_dimension" are not part
+        # of lenient equivalence at all.
+        result = self.topology_dimension == other.topology_dimension
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """Perform lenient difference of metadata members for meshes.
+
+        Parameters
+        ----------
+        other : MeshMetadata
+            The other mesh metadata participating in the lenient
+            difference.
+
+        Returns
+        -------
+        A list of difference metadata member values.
+
+        """
+
+        # Perform "strict" difference for "topology_dimension",
+        # "node_dimension", "edge_dimension" and "face_dimension".
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in MeshMetadata._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class _MeshIndexSetMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.mesh.components._MeshIndexSet`.
+
+    **Classed as experimental until ``_MeshIndexSet`` is no longer experimental.**
+    """
+
+    _members = ("mesh", "location", "start_index")
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """Perform lenient combination of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient combination.
+
+        Returns
+        -------
+        A list of combined metadata member values.
+
+        """
+
+        # It is actually "strict" : return None except where members are equal.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """Perform lenient equality of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient comparison.
+
+        Returns
+        -------
+        bool
+
+        """
+        # Perform "strict" comparison for the _MeshIndexSet specific members
+        # 'mesh', 'location', 'start_index' : for equality, they must all match.
+        result = all(
+            [getattr(self, field) == getattr(other, field) for field in self._members]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """Perform lenient difference of metadata members for _MeshIndexSet.
+
+        Parameters
+        ----------
+        other : _MeshIndexSetMetadata
+            The other metadata participating in the lenient difference.
+
+        Returns
+        -------
+        A list of different metadata member values.
+
+        """
+
+        # Perform "strict" difference for location / axis.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+class MeshCoordMetadata(BaseMetadata):
+    """Metadata container for a :class:`~iris.coords.MeshCoord`."""
+
+    _members = ("location", "axis")
+    # NOTE: in future, we may add 'mesh' as part of this metadata,
+    # as the MeshXY seems part of the 'identity' of a MeshCoord.
+    # For now we omit it, particularly as we don't yet implement MeshXY.__eq__.
+    #
+    # Thus, for now, the MeshCoord class will need to handle 'mesh' explicitly
+    # in identity / comparison, but in future that may be simplified.
+
+    __slots__ = ()
+
+    @wraps(BaseMetadata.__eq__, assigned=("__doc__",), updated=())
+    @lenient_service
+    def __eq__(self, other):
+        return super().__eq__(other)
+
+    def _combine_lenient(self, other):
+        """Perform lenient combination of metadata members for MeshCoord.
+
+        Parameters
+        ----------
+        other : MeshCoordMetadata
+            The other metadata participating in the lenient combination.
+
+        Returns
+        -------
+        A list of combined metadata member values.
+
+        """
+
+        # It is actually "strict" : return None except where members are equal.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return left if left == right else None
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient combination of the other parent members.
+        result = super()._combine_lenient(other)
+        result.extend(values)
+
+        return result
+
+    def _compare_lenient(self, other):
+        """Perform lenient equality of metadata members for MeshCoord.
+
+        Parameters
+        ----------
+        other : MeshCoordMetadata
+            The other metadata participating in the lenient comparison.
+
+        Returns
+        -------
+        bool
+
+        """
+        # Perform "strict" comparison for the MeshCoord specific members
+        # 'location', 'axis' : for equality, they must all match.
+        result = all(
+            [getattr(self, field) == getattr(other, field) for field in self._members]
+        )
+        if result:
+            # Perform lenient comparison of the other parent members.
+            result = super()._compare_lenient(other)
+
+        return result
+
+    def _difference_lenient(self, other):
+        """Perform lenient difference of metadata members for MeshCoord.
+
+        Parameters
+        ----------
+        other : MeshCoordMetadata
+            The other MeshCoord metadata participating in the lenient
+            difference.
+
+        Returns
+        -------
+        A list of different metadata member values.
+
+        """
+
+        # Perform "strict" difference for location / axis.
+        def func(field):
+            left = getattr(self, field)
+            right = getattr(other, field)
+            return None if left == right else (left, right)
+
+        # Note that, we use "_members" not "_fields".
+        values = [func(field) for field in self._members]
+        # Perform lenient difference of the other parent members.
+        result = super()._difference_lenient(other)
+        result.extend(values)
+
+        return result
+
+    @wraps(BaseMetadata.combine, assigned=("__doc__",), updated=())
+    @lenient_service
+    def combine(self, other, lenient=None):
+        return super().combine(other, lenient=lenient)
+
+    @wraps(BaseMetadata.difference, assigned=("__doc__",), updated=())
+    @lenient_service
+    def difference(self, other, lenient=None):
+        return super().difference(other, lenient=lenient)
+
+    @wraps(BaseMetadata.equal, assigned=("__doc__",), updated=())
+    @lenient_service
+    def equal(self, other, lenient=None):
+        return super().equal(other, lenient=lenient)
+
+
+def metadata_filter[T: CFVariableMixin](
+    instances: T | list[T],
+    item: str | CFVariableMixin | BaseMetadata | None = None,
+    standard_name: str | None = None,
+    long_name: str | None = None,
+    var_name: str | None = None,
+    attributes: Mapping | None | Any = None,
+    axis: str | None = None,
+) -> list[T]:
     """Filter a collection of objects by their metadata to fit the given metadata criteria.
 
     Criteria can be either specific properties or other objects with metadata
@@ -1351,9 +1846,10 @@ def metadata_filter(
 
     Parameters
     ----------
-    instances :
-        One or more objects to be filtered.
-    item : optional
+    instances : CFVariableMixin or list of CFVariableMixin:
+        One or more objects to be filtered. The objects should be a subclass of
+        :class:`~iris.common.mixin.CFVariableMixin`.
+    item : str or CFVariableMixin or BaseMetadata, optional
         Either,
 
         * a :attr:`~iris.common.mixin.CFVariableMixin.standard_name`,
@@ -1363,26 +1859,26 @@ def metadata_filter(
         * a coordinate or metadata instance equal to that of
           the desired objects e.g., :class:`~iris.coords.DimCoord`
           or :class:`CoordMetadata`.
-    standard_name : optional
+    standard_name : str, optional
         The CF standard name of the desired object. If ``None``, does not
         check for ``standard_name``.
-    long_name : optional
+    long_name : str, optional
         An unconstrained description of the object. If ``None``, does not
         check for ``long_name``.
-    var_name : optional
+    var_name : str, optional
         The NetCDF variable name of the desired object. If ``None``, does
         not check for ``var_name``.
-    attributes : dict, optional
-        A dictionary of attributes desired on the object. If ``None``,
-        does not check for ``attributes``.
-    axis : optional
+    attributes : Mapping, optional, Any
+        A mapping of attributes desired on the object. `dict` is a type of Mapping.
+        If ``None``, does not check for ``attributes``. Will error if it is anything else.
+    axis : str, optional
         The desired object's axis, see :func:`~iris.util.guess_coord_axis`.
         If ``None``, does not check for ``axis``. Accepts the values ``X``,
         ``Y``, ``Z`` and ``T`` (case-insensitive).
 
     Returns
     -------
-    list of the objects
+    list of CFVariableMixin
         A list of the objects supplied in the ``instances`` argument, limited
         to only those that matched the given criteria.
 
@@ -1397,8 +1893,7 @@ def metadata_filter(
     else:
         obj = item
 
-    # apply de morgan's law for one less logical operation
-    if not (isinstance(instances, str) or isinstance(instances, Iterable)):
+    if not isinstance(instances, Iterable):
         instances = [instances]
 
     result = instances
@@ -1437,7 +1932,7 @@ def metadata_filter(
     if axis is not None:
         axis = axis.upper()
 
-        def get_axis(instance):
+        def get_axis(instance: T) -> Axis | None:
             if hasattr(instance, "axis"):
                 axis = instance.axis.upper()
             else:
@@ -1447,7 +1942,7 @@ def metadata_filter(
         result = [instance for instance in result if get_axis(instance) == axis]
 
     if obj is not None:
-        if hasattr(obj, "__class__") and issubclass(obj.__class__, BaseMetadata):
+        if isinstance(obj, BaseMetadata):
             target_metadata = obj
         else:
             target_metadata = obj.metadata
@@ -1602,45 +2097,54 @@ def metadata_manager_factory(cls, **kwargs):
 
 
 #: Convenience collection of lenient metadata combine services.
-# TODO: change lists back to tuples once CellMeasureMetadata is re-integrated
-# here (currently in experimental.ugrid).
-SERVICES_COMBINE = [
+SERVICES_COMBINE = (
     AncillaryVariableMetadata.combine,
     BaseMetadata.combine,
     CellMeasureMetadata.combine,
+    ConnectivityMetadata.combine,
     CoordMetadata.combine,
     CubeMetadata.combine,
     DimCoordMetadata.combine,
-]
+    MeshCoordMetadata.combine,
+    MeshMetadata.combine,
+)
 
 
 #: Convenience collection of lenient metadata difference services.
-SERVICES_DIFFERENCE = [
+SERVICES_DIFFERENCE = (
     AncillaryVariableMetadata.difference,
     BaseMetadata.difference,
     CellMeasureMetadata.difference,
+    ConnectivityMetadata.difference,
     CoordMetadata.difference,
     CubeMetadata.difference,
     DimCoordMetadata.difference,
-]
+    MeshCoordMetadata.difference,
+    MeshMetadata.difference,
+)
 
 
 #: Convenience collection of lenient metadata equality services.
-SERVICES_EQUAL = [
+SERVICES_EQUAL = (
     AncillaryVariableMetadata.__eq__,
     AncillaryVariableMetadata.equal,
     BaseMetadata.__eq__,
     BaseMetadata.equal,
     CellMeasureMetadata.__eq__,
     CellMeasureMetadata.equal,
+    ConnectivityMetadata.__eq__,
+    ConnectivityMetadata.equal,
     CoordMetadata.__eq__,
     CoordMetadata.equal,
     CubeMetadata.__eq__,
     CubeMetadata.equal,
     DimCoordMetadata.__eq__,
     DimCoordMetadata.equal,
-]
-
+    MeshCoordMetadata.__eq__,
+    MeshCoordMetadata.equal,
+    MeshMetadata.__eq__,
+    MeshMetadata.equal,
+)
 
 #: Convenience collection of lenient metadata services.
 SERVICES = SERVICES_COMBINE + SERVICES_DIFFERENCE + SERVICES_EQUAL

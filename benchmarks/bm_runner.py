@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 # Copyright Iris contributors
 #
 # This file is part of Iris and is released under the BSD license.
@@ -6,7 +7,6 @@
 
 from abc import ABC, abstractmethod
 import argparse
-from argparse import ArgumentParser
 from datetime import datetime
 from importlib import import_module
 from os import environ
@@ -16,7 +16,7 @@ import shlex
 import subprocess
 from tempfile import NamedTemporaryFile
 from textwrap import dedent
-from typing import Literal
+from typing import Literal, Protocol
 
 # The threshold beyond which shifts are 'notable'. See `asv compare`` docs
 #  for more.
@@ -28,7 +28,7 @@ ROOT_DIR = BENCHMARKS_DIR.parent
 GH_REPORT_DIR = ROOT_DIR.joinpath(".github", "workflows", "benchmark_reports")
 
 # Common ASV arguments for all run_types except `custom`.
-ASV_HARNESS = "run {posargs} --attribute rounds=4 --interleave-rounds --show-stderr"
+ASV_HARNESS = "run {posargs} --attribute rounds=3 --interleave-rounds --show-stderr"
 
 
 def echo(echo_string: str):
@@ -66,8 +66,8 @@ def _check_requirements(package: str) -> None:
 
 
 def _prep_data_gen_env() -> None:
-    """Create/access a separate, unchanging environment for generating test data."""
-    python_version = "3.11"
+    """Create or access a separate, unchanging environment for generating test data."""
+    python_version = "3.14"
     data_gen_var = "DATA_GEN_PYTHON"
     if data_gen_var in environ:
         echo("Using existing data generation environment.")
@@ -86,22 +86,20 @@ def _prep_data_gen_env() -> None:
         )
         # Find the environment built above, set it to be the data generation
         #  environment.
-        data_gen_python = next(
-            (ROOT_DIR / ".nox").rglob(f"tests*/bin/python{python_version}")
-        ).resolve()
+        env_directory: Path = next((ROOT_DIR / ".nox").rglob(f"tests*"))
+        data_gen_python = (env_directory / "bin" / "python").resolve()
         environ[data_gen_var] = str(data_gen_python)
 
+        def clone_resource(name: str, clone_source: str) -> Path:
+            resource_dir = data_gen_python.parents[1] / "resources"
+            resource_dir.mkdir(exist_ok=True)
+            clone_dir = resource_dir / name
+            if not clone_dir.is_dir():
+                _subprocess_runner(["git", "clone", clone_source, str(clone_dir)])
+            return clone_dir
+
         echo("Installing Mule into data generation environment ...")
-        mule_dir = data_gen_python.parents[1] / "resources" / "mule"
-        if not mule_dir.is_dir():
-            _subprocess_runner(
-                [
-                    "git",
-                    "clone",
-                    "https://github.com/metomi/mule.git",
-                    str(mule_dir),
-                ]
-            )
+        mule_dir = clone_resource("mule", "https://github.com/MetOffice/mule.git")
         _subprocess_runner(
             [
                 str(data_gen_python),
@@ -111,6 +109,14 @@ def _prep_data_gen_env() -> None:
                 str(mule_dir / "mule"),
             ]
         )
+
+        test_data_var = "OVERRIDE_TEST_DATA_REPOSITORY"
+        if test_data_var not in environ:
+            echo("Installing iris-test-data into data generation environment ...")
+            test_data_dir = clone_resource(
+                "iris-test-data", "https://github.com/SciTools/iris-test-data.git"
+            )
+            environ[test_data_var] = str(test_data_dir / "test_data")
 
         echo("Data generation environment ready.")
 
@@ -127,14 +133,28 @@ def _setup_common() -> None:
     echo("Setup complete.")
 
 
-def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
+def _asv_compare(
+    *commits: str,
+    overnight_mode: bool = False,
+    fail_on_regression: bool = False,
+) -> None:
     """Run through a list of commits comparing each one to the next."""
-    commits = [commit[:8] for commit in commits]
+    commits = tuple(commit[:8] for commit in commits)
+
+    machine_script = [
+        "from asv.machine import Machine",
+        "print(Machine.get_unique_machine_name())",
+    ]
+    machine_name = _subprocess_runner_capture(
+        ["python", "-c", ";".join(machine_script)]
+    )
+
     for i in range(len(commits) - 1):
         before = commits[i]
         after = commits[i + 1]
         asv_command = shlex.split(
-            f"compare {before} {after} --factor={COMPARE_FACTOR} --split"
+            f"compare {before} {after} "
+            f"--machine {machine_name} --factor={COMPARE_FACTOR} --split"
         )
 
         comparison = _subprocess_runner_capture(asv_command, asv=True)
@@ -144,6 +164,53 @@ def _asv_compare(*commits: str, overnight_mode: bool = False) -> None:
         if shifts or (not overnight_mode):
             # For the overnight run: only post if there are shifts.
             _gh_create_reports(after, comparison, shifts)
+
+        if shifts and fail_on_regression:
+            # fail_on_regression supports setups that expect CI failures.
+            message = (
+                f"Performance shifts detected between commits {before} and {after}.\n"
+            )
+            raise RuntimeError(message)
+
+
+def _read_gh_report_command(command_path: Path, commit_dir: Path) -> list[str]:
+    body_file = commit_dir / "body.txt"
+    command = command_path.read_text().strip().split("\t")
+    if len(command) == 3 and command[0] == "pr_comment":
+        _, pr_number, repo = command
+        return [
+            "gh",
+            "pr",
+            "comment",
+            pr_number,
+            "--body-file",
+            str(body_file),
+            "--repo",
+            repo,
+        ]
+    if len(command) == 4 and command[0] == "issue_create":
+        _, repo, title, assignee = command
+        command = [
+            "gh",
+            "issue",
+            "create",
+            "--title",
+            title,
+            "--body-file",
+            str(body_file),
+            "--label",
+            "Bot",
+            "--label",
+            "Type: Performance",
+            "--repo",
+            repo,
+        ]
+        if assignee:
+            command.extend(["--assignee", assignee])
+        return command
+
+    message = f"Unexpected report command format: {command_path}"
+    raise ValueError(message)
 
 
 def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) -> None:
@@ -171,7 +238,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
     performance_report = dedent(
         (
             """
-            ### Performance Benchmark Report: {commit_sha}
+            # :stopwatch: Performance Benchmark Report: {commit_sha}
 
             <details>
             <summary>Performance shifts</summary>
@@ -203,17 +270,12 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
     )
 
     if on_pull_request:
-        # Command to post the report as a comment on the active PR.
+        # Strict command format to post report as a comment on the active PR.
         body_path.write_text(performance_report)
-        command = (
-            f"gh pr comment {pr_number} "
-            f"--body-file {body_path.absolute()} "
-            f"--repo {repo}"
-        )
-        command_path.write_text(command)
+        command_path.write_text(f"pr_comment\t{pr_number}\t{repo}")
 
     else:
-        # Command to post the report as new issue.
+        # Strict command format to post the report as a new issue.
         commit_msg = _subprocess_runner_capture(
             f"git log {commit_sha}^! --oneline".split(" ")
         )
@@ -228,19 +290,19 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
 
             for login_type in ("author", "mergedBy"):
                 gh_query = f'.["{login_type}"]["login"]'
-                command = shlex.split(
+                commandlist = shlex.split(
                     f"gh pr view {pr_tag[1:]} "
                     f"--json {login_type} -q '{gh_query}' "
                     f"--repo {repo}"
                 )
-                login = _subprocess_runner_capture(command)
+                login = _subprocess_runner_capture(commandlist)
 
-                command = [
+                commandlist = [
                     "curl",
                     "-s",
                     f"https://api.github.com/users/{login}",
                 ]
-                login_info = _subprocess_runner_capture(command)
+                login_info = _subprocess_runner_capture(commandlist)
                 is_user = '"type": "User"' in login_info
                 if is_user:
                     assignee = login
@@ -264,18 +326,7 @@ def _gh_create_reports(commit_sha: str, results_full: str, results_shifts: str) 
         )
         body += performance_report
         body_path.write_text(body)
-
-        command = (
-            "gh issue create "
-            f'--title "{title}" '
-            f"--body-file {body_path.absolute()} "
-            '--label "Bot" '
-            '--label "Type: Performance" '
-            f"--repo {repo}"
-        )
-        if assignee:
-            command += f" --assignee {assignee}"
-        command_path.write_text(command)
+        command_path.write_text(f"issue_create\t{repo}\t{title}\t{assignee}")
 
 
 def _gh_post_reports() -> None:
@@ -291,12 +342,8 @@ def _gh_post_reports() -> None:
     commit_dirs = [x for x in GH_REPORT_DIR.iterdir() if x.is_dir()]
     for commit_dir in commit_dirs:
         command_path = commit_dir / "command.txt"
-        command = command_path.read_text()
-
-        # Security: only accept certain commands to run.
-        assert command.startswith(("gh issue create", "gh pr comment"))
-
-        _subprocess_runner(shlex.split(command))
+        command = _read_gh_report_command(command_path, commit_dir)
+        _subprocess_runner(command)
 
 
 class _SubParserGenerator(ABC):
@@ -306,8 +353,13 @@ class _SubParserGenerator(ABC):
     description: str = NotImplemented
     epilog: str = NotImplemented
 
-    def __init__(self, subparsers: ArgumentParser.add_subparsers) -> None:
-        self.subparser: ArgumentParser = subparsers.add_parser(
+    class _SubParsersType(Protocol):
+        """Duck typing since argparse._SubParsersAction is private."""
+
+        def add_parser(self, name, **kwargs) -> argparse.ArgumentParser: ...
+
+    def __init__(self, subparsers: _SubParsersType) -> None:
+        self.subparser = subparsers.add_parser(
             self.name,
             description=self.description,
             epilog=self.epilog,
@@ -385,14 +437,15 @@ class Overnight(_SubParserGenerator):
 class Branch(_SubParserGenerator):
     name = "branch"
     description = (
-        "Performs the same operations as ``overnight``, but always on two commits "
-        "only - ``HEAD``, and ``HEAD``'s merge-base with the input "
-        "**base_branch**. If running on GitHub Actions: HEAD will be GitHub's "
+        "Performs the same operations as ``overnight``, but always on two "
+        "commits only - ``HEAD``, and ``HEAD``'s merge-base with the input "
+        "**base_branch**.\n"
+        "If running on GitHub Actions: HEAD will be GitHub's "
         "merge commit and merge-base will be the merge target. Performance "
         "comparisons will be posted in a comment on the relevant pull request.\n"
-        "Designed "
-        "for testing if the active branch's changes cause performance shifts - "
-        "anticipating what would be caught by ``overnight`` once merged.\n\n"
+        "Designed for testing if the active branch's changes cause performance "
+        "shifts - anticipating what would be caught by ``overnight`` once "
+        "merged.\n\n"
         "**For maximum accuracy, avoid using the machine that is running this "
         "session. Run time could be >1 hour for the full benchmark suite.**\n"
         "Uses `asv run`."
@@ -469,10 +522,12 @@ class _CSPerf(_SubParserGenerator, ABC):
         environ["ON_DEMAND_BENCHMARKS"] = "True"
         commit_range = "upstream/main^!"
 
-        asv_command = ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        asv_command_str = (
+            ASV_HARNESS.format(posargs=commit_range) + f" --bench={run_type}"
+        )
 
         # Only do a single round.
-        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command))
+        asv_command = shlex.split(re.sub(r"rounds=\d", "rounds=1", asv_command_str))
         try:
             _subprocess_runner([*asv_command, *args.asv_args], asv=True)
         except subprocess.CalledProcessError as err:
@@ -537,6 +592,107 @@ class Custom(_SubParserGenerator):
         _subprocess_runner([args.asv_sub_command, *args.asv_args], asv=True)
 
 
+class TrialRun(_SubParserGenerator):
+    name = "trialrun"
+    description = (
+        "Fast trial-run a given benchmark, to check it works : "
+        "in a provided or latest-lockfile environment, "
+        "with no repeats for accuracy of measurement."
+    )
+    epilog = (
+        "e.g. python bm_runner.py trialrun "
+        "MyBenchmarks.time_calc ${DATA_GEN_PYTHON}"
+        "\n\nNOTE: 'runpath' also replaces $DATA_GEN_PYTHON during the run."
+    )
+
+    def add_arguments(self) -> None:
+        self.subparser.add_argument(
+            "benchmark",
+            type=str,
+            help=(
+                "A benchmark name, possibly including wildcards, "
+                "as supported by the ASV '--bench' argument."
+            ),
+        )
+        self.subparser.add_argument(
+            "runpath",
+            type=str,
+            help=(
+                "A path to an existing python executable, "
+                "to completely bypass environment building."
+            ),
+        )
+
+    @staticmethod
+    def func(args: argparse.Namespace) -> None:
+        if args.runpath:
+            # Shortcut creation of a data-gen environment
+            # - which is also the trial-run env.
+            python_path = Path(args.runpath).resolve()
+            environ["DATA_GEN_PYTHON"] = str(python_path)
+        _setup_common()
+        # get path of data-gen environment, setup by previous call
+        python_path = Path(environ["DATA_GEN_PYTHON"])
+        # allow 'on-demand' benchmarks
+        environ["ON_DEMAND_BENCHMARKS"] = "1"
+        asv_command = [
+            "run",
+            "--bench",
+            args.benchmark,
+            # no repeats for timing accuracy
+            "--quick",
+            "--show-stderr",
+            # do not build a unique env : run test in data-gen environment
+            "--environment",
+            f"existing:{python_path}",
+        ] + args.asv_args
+        _subprocess_runner(asv_command, asv=True)
+
+
+class Validate(_SubParserGenerator):
+    name = "validate"
+    description = (
+        "Quickly check that the benchmark architecture works as intended with "
+        "the current codebase. Things that are checked: env creation/update, "
+        "package build/install/uninstall, artificial data creation."
+    )
+    epilog = "Sole acceptable syntax: python bm_runner.py validate"
+
+    @staticmethod
+    def func(args: argparse.Namespace) -> None:
+        _setup_common()
+
+        git_command = shlex.split("git rev-parse HEAD")
+        head_sha = _subprocess_runner_capture(git_command)[:8]
+
+        # Find the most recent commit where the lock-files are not
+        #  identical to HEAD - will force environment updates.
+        locks_dir = Path(__file__).parents[1] / "requirements" / "locks"
+        assert locks_dir.is_dir()
+        git_command = shlex.split(
+            f"git log -1 --pretty=format:%P -- {locks_dir.resolve()}"
+        )
+        locks_sha = _subprocess_runner_capture(git_command)[:8]
+
+        with NamedTemporaryFile("w") as hashfile:
+            hashfile.writelines([locks_sha, "\n", head_sha])
+            hashfile.flush()
+            asv_command = shlex.split(
+                f"run HASHFILE:{hashfile.name} --bench ValidateSetup "
+                "--attribute rounds=1 --show-stderr"
+            )
+            extra_env = environ | {"ON_DEMAND_BENCHMARKS": "1"}
+            _subprocess_runner(asv_command, asv=True, env=extra_env)
+
+    # No arguments permitted for this subclass:
+
+    def add_arguments(self) -> None:
+        pass
+
+    def add_asv_arguments(self) -> None:
+        pass
+
+
 class GhPost(_SubParserGenerator):
     name = "_gh_post"
     description = (
@@ -559,14 +715,40 @@ class GhPost(_SubParserGenerator):
         pass
 
 
-def main():
-    parser = ArgumentParser(
-        description="Run the Iris performance benchmarks (using Airspeed Velocity).",
-        epilog="More help is available within each sub-command.",
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description=(
+            "Run the repository performance benchmarks (using Airspeed Velocity)."
+        ),
+        epilog=(
+            "More help is available within each sub-command."
+            "\n\nNOTE(1): a separate python environment is created to "
+            "construct test files.\n   Set $DATA_GEN_PYTHON to avoid the cost "
+            "of this."
+            "\nNOTE(2): iris-test-data is downloaded and cached within the "
+            "data generation environment.\n   Set "
+            "$OVERRIDE_TEST_DATA_REPOSITORY to avoid the cost of this."
+            "\nNOTE(3): test data is cached within the "
+            "benchmarks code directory, and uses a lot of disk space "
+            "of disk space (Gb).\n   Set $BENCHMARK_DATA to specify where this "
+            "space can be safely allocated."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     subparsers = parser.add_subparsers(required=True)
 
-    for gen in (Overnight, Branch, CPerf, SPerf, Custom, GhPost):
+    parser_generators: tuple[type[_SubParserGenerator], ...] = (
+        Overnight,
+        Branch,
+        CPerf,
+        SPerf,
+        Custom,
+        TrialRun,
+        Validate,
+        GhPost,
+    )
+
+    for gen in parser_generators:
         _ = gen(subparsers).subparser
 
     parsed = parser.parse_args()

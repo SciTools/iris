@@ -3,17 +3,17 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the module :mod:`iris.fileformats._nc_load_rules.actions`."""
-from pathlib import Path
-import shutil
-import tempfile
+
 import warnings
 
-from iris.exceptions import IrisLoadWarning
+import pytest
+
 import iris.fileformats._nc_load_rules.engine
 from iris.fileformats.cf import CFReader
-import iris.fileformats.netcdf
-from iris.fileformats.netcdf.loader import _load_cube
+from iris.fileformats.cf.loader import _load_cube
+from iris.tests import _shared_utils
 from iris.tests.stock.netcdf import ncgen_from_cdl
+from iris.warnings import IrisLoadWarning
 
 """
 Notes on testing method.
@@ -34,11 +34,8 @@ For this, we just use 'tests.stock.netcdf.ncgen_from_cdl'.
 class Mixin__nc_load_actions:
     """Class to make testcases for rules or actions code, and check results.
 
-    Defines standard setUpClass/tearDownClass methods, to create a temporary
+    Defines standard setup method, to create a temporary
     directory for intermediate files.
-    NOTE: owing to peculiarities of unittest, these must be explicitly called
-    from a setUpClass/tearDownClass within the 'final' inheritor, i.e. the
-    actual Test_XXX class which also inherits unittest.TestCase.
 
     Testcases are manufactured by the '_make_testcase_cdl' method.
     The 'run_testcase' method takes the '_make_testcase_cdl' kwargs and makes
@@ -52,19 +49,14 @@ class Mixin__nc_load_actions:
     """
 
     # "global" test setting : whether to output various debug info
-    debug = False
+    debug_info = False
 
-    @classmethod
-    def setUpClass(cls):
+    @pytest.fixture(autouse=True, scope="class")
+    def setup_mixin(self, request, tmp_path_factory):
         # Create a temp directory for temp files.
-        cls.temp_dirpath = Path(tempfile.mkdtemp())
+        request.cls.temp_dirpath = tmp_path_factory.mktemp("temp")
 
-    @classmethod
-    def tearDownClass(cls):
-        # Destroy a temp directory for temp files.
-        shutil.rmtree(cls.temp_dirpath)
-
-    def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path):
+    def load_cube_from_cdl(self, cdl_string, cdl_path, nc_path, mocker=None):
         """Load the 'phenom' data variable in a CDL testcase, as a cube.
 
         Using ncgen, CFReader and the _load_cube call.
@@ -80,12 +72,16 @@ class Mixin__nc_load_actions:
             # Grab a data variable : FOR NOW always grab the 'phenom' variable.
             cf_var = cf.cf_group.data_variables["phenom"]
 
-            engine = iris.fileformats.netcdf.loader._actions_engine()
+            engine = iris.fileformats.cf.loader._actions_engine()
 
             # If debug enabled, switch on the activation summary debug output.
             # Use 'patch' so it is restored after the test.
-            self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug)
-
+            if mocker:
+                # If pytest mocker provided, use that to patch:
+                mocker.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
+            elif hasattr(self, "patch"):
+                # keep old UnitTest patch working
+                self.patch("iris.fileformats.netcdf.loader.DEBUG", self.debug_info)
             with warnings.catch_warnings():
                 warnings.filterwarnings(
                     "ignore",
@@ -104,7 +100,7 @@ class Mixin__nc_load_actions:
             # by the rules operation.
             # Unlike the other translations, _load_cube does *not* convert this
             # information into actual cube elements.  That is instead done by
-            # `iris.fileformats.netcdf._load_aux_factory`.
+            # `iris.fileformats.cf.loader._load_aux_factory`.
             # For rules testing, it is anyway more convenient to deal with the raw
             # data, as each factory type has different validity requirements to
             # build it, and none of that is relevant to the rules operation.
@@ -124,22 +120,22 @@ class Mixin__nc_load_actions:
         nc_path = cdl_path.replace(".cdl", ".nc")
 
         cdl_string = self._make_testcase_cdl(**testcase_kwargs)
-        if self.debug:
+        if self.debug_info:
             print("CDL file content:")
             print(cdl_string)
             print("------\n")
 
         if warning_regex is None:
-            context = self.assertNoWarningsRegexp()
+            context = _shared_utils.assert_no_warnings_regexp()
         else:
-            context = self.assertWarnsRegex(IrisLoadWarning, warning_regex)
+            context = pytest.warns(IrisLoadWarning, match=warning_regex)
         with context:
             cube = self.load_cube_from_cdl(cdl_string, cdl_path, nc_path)
 
-        if self.debug:
+        if self.debug_info:
             print("\nCube:")
             print(cube)
-            print("")
+            print()
         return cube
 
     def _make_testcase_cdl(self, **kwargs):

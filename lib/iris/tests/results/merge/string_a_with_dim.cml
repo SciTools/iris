@@ -3,16 +3,16 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <auxCoord id="78c32bc2" long_name="a" points="['a', 'b', 'c', 'd']" shape="(4,)" units="Unit('1')" value_type="string"/>
+        <auxCoord checksum="0x55db62d8" id="78c32bc2" long_name="a" points="['a', 'b', 'c', 'd']" shape="(4,)" units="Unit('1')" value_type="string"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="414e1707" long_name="b" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x25601b8b" id="414e1707" long_name="b" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord checksum="0x4c6b0437" id="78a0dfe8" long_name="x" points="[0, 1, 2, 3, 4]" shape="(5,)" units="Unit('1')" value_type="int32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="6fdbcbab" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
+        <dimCoord checksum="0x278eafa9" id="6fdbcbab" long_name="y" points="[0, 1, 2, 3]" shape="(4,)" units="Unit('1')" value_type="int32"/>
       </coord>
     </coords>
     <cellMethods/>

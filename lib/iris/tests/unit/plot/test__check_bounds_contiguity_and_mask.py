@@ -6,22 +6,18 @@
 function.
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 from iris.coords import DimCoord
 from iris.plot import _check_bounds_contiguity_and_mask
+from iris.tests import _shared_utils
 from iris.tests.stock import make_bounds_discontiguous_at_point, sample_2d_latlons
 
 
-@tests.skip_plot
-class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
+@_shared_utils.skip_plot
+class Test_check_bounds_contiguity_and_mask:
     def test_1d_not_checked(self):
         # Test a 1D coordinate, which is not checked as atol is not set.
         coord = DimCoord([1, 3, 5], bounds=[[0, 2], [2, 4], [5, 6]])
@@ -51,7 +47,7 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
             "coordinate are not contiguous and data is not masked where "
             "the discontiguity occurs"
         )
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             _check_bounds_contiguity_and_mask(coord, data, atol=1e-3)
 
     def test_2d_contiguous(self):
@@ -60,18 +56,14 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         cube = sample_2d_latlons()
         _check_bounds_contiguity_and_mask(cube.coord("longitude"), cube.data)
 
-    def test_2d_contiguous_atol(self):
+    def test_2d_contiguous_atol(self, mocker):
         # Check the atol is passed correctly.
         cube = sample_2d_latlons()
-        with mock.patch(
-            "iris.coords.Coord._discontiguity_in_bounds"
-        ) as discontiguity_check:
-            # Discontiguity returns two objects that are unpacked in
-            # `_check_bounds_contiguity_and_mask`.
-            discontiguity_check.return_value = [True, None]
-            _check_bounds_contiguity_and_mask(
-                cube.coord("longitude"), cube.data, atol=1e-3
-            )
+        discontiguity_check = mocker.patch("iris.coords.Coord._discontiguity_in_bounds")
+        # Discontiguity returns two objects that are unpacked in
+        # `_check_bounds_contiguity_and_mask`.
+        discontiguity_check.return_value = [True, None]
+        _check_bounds_contiguity_and_mask(cube.coord("longitude"), cube.data, atol=1e-3)
         discontiguity_check.assert_called_with(atol=1e-3)
 
     def test_2d_discontigous_masked(self):
@@ -88,9 +80,5 @@ class Test_check_bounds_contiguity_and_mask(tests.IrisTest):
         make_bounds_discontiguous_at_point(cube, 3, 4)
         msg = "coordinate are not contiguous"
         cube.data[3, 4] = ma.nomask
-        with self.assertRaisesRegex(ValueError, msg):
+        with pytest.raises(ValueError, match=msg):
             _check_bounds_contiguity_and_mask(cube.coord("longitude"), cube.data)
-
-
-if __name__ == "__main__":
-    tests.main()

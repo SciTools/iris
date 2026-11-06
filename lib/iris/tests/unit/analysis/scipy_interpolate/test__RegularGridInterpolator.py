@@ -6,19 +6,18 @@
 :func:`iris.analysis._scipy_interpolate._RegularGridInterpolator` class.
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 from scipy.sparse import csr_matrix
 
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
+from iris.tests import _shared_utils
 import iris.tests.stock as stock
 
 
-class Test(tests.IrisTest):
-    def setUp(self):
+class Test:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         # Load a source cube, then generate an interpolator instance, calculate
         # the interpolation weights and set up a target grid.
         self.cube = stock.simple_2d()
@@ -56,27 +55,23 @@ class Test(tests.IrisTest):
 
     def test_compute_interp_weights(self):
         weights = self.weights
-        self.assertIsInstance(weights, tuple)
-        self.assertEqual(len(weights), 5)
-        self.assertEqual(weights[0], self.tgrid.shape)
-        self.assertEqual(weights[1], "linear")
-        self.assertIsInstance(weights[2], csr_matrix)
+        assert isinstance(weights, tuple)
+        assert len(weights) == 5
+        assert weights[0] == self.tgrid.shape
+        assert weights[1] == "linear"
+        assert isinstance(weights[2], csr_matrix)
 
     def test__evaluate_linear_sparse(self):
         interpolator = self.interpolator
         weights = self.weights
         output_data = interpolator._evaluate_linear_sparse(weights[2])
         test_data = self.cube.data.reshape(-1) + self.test_increment
-        self.assertArrayAlmostEqual(output_data, test_data)
+        _shared_utils.assert_array_almost_equal(output_data, test_data)
 
     def test_interp_using_pre_computed_weights(self):
         interpolator = self.interpolator
         weights = self.weights
         output_data = interpolator.interp_using_pre_computed_weights(weights)
         test_data = self.cube.data + self.test_increment
-        self.assertEqual(output_data.shape, self.cube.data.shape)
-        self.assertArrayAlmostEqual(output_data, test_data)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert output_data.shape == self.cube.data.shape
+        _shared_utils.assert_array_almost_equal(output_data, test_data)

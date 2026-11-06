@@ -15,11 +15,11 @@ This document explains the changes made to Iris for this release
 
     We're so excited about our recent support for **delayed saving of lazy data
     to netCDF** (:pull:`5191`) that we're celebrating this important step change
-    in behavour with its very own dedicated release 🥳
+    in behaviour with its very own dedicated release 🥳
 
     By using ``iris.save(..., compute=False)`` you can now save to multiple NetCDF files
     in parallel.  See the new ``compute`` keyword in :func:`iris.fileformats.netcdf.save`.
-    This can share and re-use any common (lazy) result computations, and it makes much
+    This can share and reuse any common (lazy) result computations, and it makes much
     better use of resources during any file-system waiting (i.e., it can use such periods
     to progress the *other* saves).
 

@@ -3,13 +3,10 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 from iris.std_names import CF_STANDARD_NAMES_TABLE_VERSION, STD_NAMES
 
 
-class TestStandardNames(tests.IrisTest):
+class TestStandardNames:
     """standard_names.py is a machine generated file which contains a single dictionary
     called STD_NAMES.
     """
@@ -18,15 +15,14 @@ class TestStandardNames(tests.IrisTest):
 
     def test_standard_names_table(self):
         # Check we have a dict
-        self.assertIsInstance(STD_NAMES, dict)
+        assert isinstance(STD_NAMES, dict)
 
         keyset = set(STD_NAMES)
 
         # Check for some known standard names
         valid_nameset = set(["air_density", "northward_wind", "wind_speed"])
-        self.assertTrue(
-            valid_nameset.issubset(keyset),
-            "Known standard name missing from STD_NAMES",
+        assert valid_nameset.issubset(keyset), (
+            "Known standard name missing from STD_NAMES"
         )
 
         # Check for some invalid standard names
@@ -38,18 +34,12 @@ class TestStandardNames(tests.IrisTest):
                 "stratiform_snowfall_rate",
             ]
         )
-        self.assertSetEqual(
-            invalid_nameset - keyset,
-            invalid_nameset,
-            "\nInvalid standard name(s) present in STD_NAMES",
+        assert invalid_nameset - keyset == invalid_nameset, (
+            "\nInvalid standard name(s) present in STD_NAMES"
         )
 
     def test_standard_names_version(self):
         # Check we have a dict
-        self.assertIsInstance(CF_STANDARD_NAMES_TABLE_VERSION, int)
+        assert isinstance(CF_STANDARD_NAMES_TABLE_VERSION, int)
         # Check the value is roughly sensible.
-        self.assertTrue(70 < CF_STANDARD_NAMES_TABLE_VERSION < 999)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert 70 < CF_STANDARD_NAMES_TABLE_VERSION < 999

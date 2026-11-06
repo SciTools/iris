@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Rotated Pole Mapping
-=====================
+====================
+
+.. how-to:: Rotated Pole Mapping
+   :tags: topic_plotting
+
+   How to visualise data via different methods and coordinate systems.
 
 This example uses several visualisation methods to achieve an array of
 differing images, including:

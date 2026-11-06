@@ -2,16 +2,31 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Miscellaneous utility functions."""
+"""Miscellaneous utility functions.
+
+.. z_reference:: iris.util
+   :tags: topic_data_model;topic_slice_combine
+
+   API reference
+"""
+
+from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
 from collections.abc import Hashable, Iterable
+from contextlib import contextmanager
+from copy import deepcopy
+from dataclasses import dataclass
 import functools
 import inspect
 import os
 import os.path
 import sys
 import tempfile
+import threading
+from typing import TYPE_CHECKING, Any, List, Literal
+from warnings import warn
+import zlib
 
 import cf_units
 from dask import array as da
@@ -20,13 +35,22 @@ import numpy.ma as ma
 
 from iris._deprecation import warn_deprecated
 from iris._lazy_data import is_lazy_data, is_lazy_masked_data
-from iris._shapefiles import create_shapefile_mask
 from iris.common import SERVICES
 from iris.common.lenient import _lenient_client
+from iris.coord_systems import GeogCS
 import iris.exceptions
+import iris.warnings
+
+if TYPE_CHECKING:
+    import cartopy
+    from numpy.typing import ArrayLike
+    import pyproj
+    import shapely
+
+    from iris.cube import Cube, CubeList
 
 
-def broadcast_to_shape(array, shape, dim_map):
+def broadcast_to_shape(array, shape, dim_map, chunks=None):
     """Broadcast an array to a given shape.
 
     Each dimension of the array must correspond to a dimension in the
@@ -47,6 +71,19 @@ def broadcast_to_shape(array, shape, dim_map):
         the index in *shape* which the dimension of *array* corresponds
         to, so the first element of *dim_map* gives the index of *shape*
         that corresponds to the first dimension of *array* etc.
+    chunks : :class:`tuple`, optional
+        If the source array is a :class:`dask.array.Array` and a value is
+        provided, then the result will use these chunks instead of the same
+        chunks as the source array. Setting chunks explicitly as part of
+        broadcast_to_shape is more efficient than rechunking afterwards. See
+        also :func:`dask.array.broadcast_to`. Note that the values provided
+        here will only be used along dimensions that are new on the result or
+        have size 1 on the source array.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -63,19 +100,26 @@ def broadcast_to_shape(array, shape, dim_map):
         # a is an array of shape (48, 96)
         result = broadcast_to_shape(a, (96, 48, 12), (1, 0))
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
+    if isinstance(array, da.Array):
+        if chunks is not None:
+            chunks = list(chunks)
+            for src_idx, tgt_idx in enumerate(dim_map):
+                # Only use the specified chunks along new dimensions or on
+                # dimensions that have size 1 in the source array.
+                if array.shape[src_idx] != 1:
+                    chunks[tgt_idx] = array.chunks[src_idx]
+        broadcast = functools.partial(da.broadcast_to, shape=shape, chunks=chunks)
+    else:
+        broadcast = functools.partial(np.broadcast_to, shape=shape)
+
     n_orig_dims = len(array.shape)
     n_new_dims = len(shape) - n_orig_dims
     array = array.reshape(array.shape + (1,) * n_new_dims)
 
     # Get dims in required order.
     array = np.moveaxis(array, range(n_orig_dims), dim_map)
-    new_array = np.broadcast_to(array, shape)
+    new_array = broadcast(array)
 
     if ma.isMA(array):
         # broadcast_to strips masks so we need to handle them explicitly.
@@ -83,13 +127,13 @@ def broadcast_to_shape(array, shape, dim_map):
         if mask is ma.nomask:
             new_mask = ma.nomask
         else:
-            new_mask = np.broadcast_to(mask, shape)
+            new_mask = broadcast(mask)
         new_array = ma.array(new_array, mask=new_mask)
 
     elif is_lazy_masked_data(array):
         # broadcast_to strips masks so we need to handle them explicitly.
         mask = da.ma.getmaskarray(array)
-        new_mask = da.broadcast_to(mask, shape)
+        new_mask = broadcast(mask)
         new_array = da.ma.masked_array(new_array, new_mask)
 
     return new_array
@@ -137,7 +181,7 @@ def delta(ndarray, dimension, circular=False):
     .. note::
 
         This function maintains laziness when called; it does not realise data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if circular is not False:
@@ -176,10 +220,15 @@ def describe_diff(cube_a, cube_b, output_file=None):
         A :class:`file` or file-like object to receive output. Defaults to
         sys.stdout.
 
+    See Also
+    --------
+    iris.cube.Cube.is_compatible :
+        Check if a Cube is compatible with another.
+
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. note::
 
@@ -188,10 +237,6 @@ def describe_diff(cube_a, cube_b, output_file=None):
         of the differences in metadata between two cubes. Determining whether
         two cubes will merge requires additional logic that is beyond the
         scope of this function.
-
-    See Also
-    --------
-    :meth:`iris.cube.Cube.is_compatible()`
 
     """
     if output_file is None:
@@ -202,7 +247,12 @@ def describe_diff(cube_a, cube_b, output_file=None):
     else:
         common_keys = set(cube_a.attributes).intersection(cube_b.attributes)
         for key in common_keys:
-            if np.any(cube_a.attributes[key] != cube_b.attributes[key]):
+            try:
+                eq = np.all(cube_a.attributes[key] == cube_b.attributes[key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+            if not eq:
                 output_file.write(
                     '"%s" cube_a attribute value "%s" is not '
                     "compatible with cube_b "
@@ -229,7 +279,10 @@ def describe_diff(cube_a, cube_b, output_file=None):
             )
 
 
-def guess_coord_axis(coord):
+Axis = Literal["X", "Y", "Z", "T"]
+
+
+def guess_coord_axis(coord) -> Axis | None:
     """Return a "best guess" axis name of the coordinate.
 
     Heuristic categorisation of the coordinate into either label
@@ -247,13 +300,13 @@ def guess_coord_axis(coord):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
-    The ``guess_coord_axis`` behaviour can be skipped by setting the coordinate
-    property ``ignore_axis`` to ``False``.
+    The ``guess_coord_axis`` behaviour can be skipped by setting the
+    :attr:`~iris.coords.Coord.ignore_axis` property on `coord` to ``False``.
 
     """
-    axis = None
+    axis: Axis | None = None
 
     if hasattr(coord, "ignore_axis") and coord.ignore_axis is True:
         return axis
@@ -283,25 +336,35 @@ def guess_coord_axis(coord):
     return axis
 
 
-def rolling_window(a, window=1, step=1, axis=-1):
+def rolling_window(
+    a: np.ndarray | da.Array,
+    window: int = 1,
+    step: int = 1,
+    axis: int = -1,
+) -> np.ndarray | da.Array:
     """Make an ndarray with a rolling window of the last dimension.
 
     Parameters
     ----------
     a : array_like
-        Array to add rolling window to
+        Array to add rolling window to.
     window : int, default=1
-        Size of rolling window
+        Size of rolling window.
     step : int, default=1
-        Size of step between rolling windows
+        Size of step between rolling windows.
     axis : int, default=-1
-        Axis to take the rolling window over
+        Axis to take the rolling window over.
 
     Returns
     -------
     array
         Array that is a view of the original array with an added dimension
         of the size of the given window at axis + 1.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -318,14 +381,7 @@ def rolling_window(a, window=1, step=1, axis=-1):
         array([[ 1.,  2.,  3.],
                [ 6.,  7.,  8.]])
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
-    # NOTE: The implementation of this function originates from
-    # https://github.com/numpy/numpy/pull/31#issuecomment-1304851 04/08/2011
     if window < 1:
         raise ValueError("`window` must be at least 1.")
     if window > a.shape[axis]:
@@ -333,36 +389,104 @@ def rolling_window(a, window=1, step=1, axis=-1):
     if step < 1:
         raise ValueError("`step` must be at least 1.")
     axis = axis % a.ndim
-    num_windows = (a.shape[axis] - window + step) // step
-    shape = a.shape[:axis] + (num_windows, window) + a.shape[axis + 1 :]
-    strides = (
-        a.strides[:axis]
-        + (step * a.strides[axis], a.strides[axis])
-        + a.strides[axis + 1 :]
+    array_module = da if isinstance(a, da.Array) else np
+    steps = tuple(
+        slice(None, None, step) if i == axis else slice(None) for i in range(a.ndim)
     )
-    rw = np.lib.stride_tricks.as_strided(a, shape=shape, strides=strides)
-    if ma.isMaskedArray(a):
-        mask = ma.getmaskarray(a)
-        strides = (
-            mask.strides[:axis]
-            + (step * mask.strides[axis], mask.strides[axis])
-            + mask.strides[axis + 1 :]
+
+    def _rolling_window(array):
+        return array_module.moveaxis(
+            array_module.lib.stride_tricks.sliding_window_view(
+                array,
+                window_shape=window,
+                axis=axis,
+            )[steps],
+            -1,
+            axis + 1,
         )
-        rw = ma.array(
-            rw,
-            mask=np.lib.stride_tricks.as_strided(mask, shape=shape, strides=strides),
-        )
+
+    rw = _rolling_window(a)
+    if isinstance(da.utils.meta_from_array(a), np.ma.MaskedArray):
+        mask = _rolling_window(array_module.ma.getmaskarray(a))
+        rw = array_module.ma.masked_array(rw, mask)
     return rw
 
 
-def array_equal(array1, array2, withnans=False):
+def _attribute_equal(
+    attr1: Any,
+    attr2: Any,
+) -> bool:
+    """Compare two attribute values, including np arrays.
+
+    If either attribute is a NumPy array, :func:`numpy.array_equal` is used, to
+    avoid broadcastability errors in case of mismatches.
+    """
+    # TODO: at next major release replace uses of this with hexdigest
+    #  comparisons, in alignment with iris.common.metadata (consider calling
+    #  a routine in iris.common.metadata).
+    if isinstance(attr1, np.ndarray) or isinstance(attr2, np.ndarray):
+        return np.array_equal(attr1, attr2)
+    else:
+        return attr1 == attr2
+
+
+def _masked_array_equal(
+    array1: np.ndarray,
+    array2: np.ndarray,
+    equal_nan: bool,
+) -> np.ndarray:
+    """Return whether two, possibly masked, arrays are equal."""
+    mask1 = ma.getmask(array1)
+    mask2 = ma.getmask(array2)
+
+    # Compare mask equality.
+    if mask1 is ma.nomask and mask2 is ma.nomask:
+        eq = True
+    elif mask1 is ma.nomask:
+        eq = not mask2.any()
+    elif mask2 is ma.nomask:
+        eq = not mask1.any()
+    else:
+        eq = np.array_equal(mask1, mask2)
+
+    if not eq:
+        eqs = np.zeros(array1.shape, dtype=bool)
+    else:
+        # Compare data equality.
+        if not (mask1 is ma.nomask or mask2 is ma.nomask):
+            # Ignore masked data.
+            ignore = mask1
+        else:
+            ignore = None
+
+        if equal_nan:
+            # Ignore data that is np.nan in both arrays.
+            nanmask = np.isnan(array1) & np.isnan(array2)
+            if ignore is None:
+                ignore = nanmask
+            else:
+                ignore |= nanmask
+
+        try:
+            eqs = ma.getdata(array1) == ma.getdata(array2)
+        except ValueError:
+            # In case of broadcasting errors.
+            eqs = np.zeros(array1.shape, dtype=bool)
+
+        if ignore is not None:
+            eqs = np.where(ignore, True, eqs)
+
+    return eqs
+
+
+def array_equal(array1, array2, withnans: bool = False) -> bool:
     """Return whether two arrays have the same shape and elements.
 
     Parameters
     ----------
-    array1, array2 : arraylike
-        args to be compared, normalised if necessary with :func:`np.asarray`.
-    withnans : bool, default=False
+    array1, array2 : array-like
+        Args to be compared, normalised if necessary with :func:`np.asarray`.
+    withnans : default=False
         When unset (default), the result is False if either input contains NaN
         points.  This is the normal floating-point arithmetic result.
         When set, return True if inputs contain the same value in all elements,
@@ -370,30 +494,49 @@ def array_equal(array1, array2, withnans=False):
 
     Notes
     -----
-    This provides much the same functionality as :func:`numpy.array_equal`, but
-    with additional support for arrays of strings and NaN-tolerant operation.
+    This provides similar functionality to :func:`numpy.array_equal`, but
+    will compare arrays as unequal when their masks differ and has
+    additional support for arrays of strings and NaN-tolerant operation.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
-    if withnans and (array1 is array2):
-        return True
 
     def normalise_array(array):
-        if not is_lazy_data(array):
-            array = np.asarray(array)
+        if not isinstance(array, np.ndarray | da.Array):
+            array = np.asanyarray(array)
         return array
 
     array1, array2 = normalise_array(array1), normalise_array(array2)
 
+    floating_point_arrays = array1.dtype.kind == "f" or array2.dtype.kind == "f"
+    if (array1 is array2) and (withnans or not floating_point_arrays):
+        return True
+
+    if not floating_point_arrays:
+        withnans = False
+
     eq = array1.shape == array2.shape
     if eq:
-        eqs = array1 == array2
-        if withnans and (array1.dtype.kind == "f" or array2.dtype.kind == "f"):
-            eqs = np.where(np.isnan(array1) & np.isnan(array2), True, eqs)
-        eq = bool(np.all(eqs))
+        if is_lazy_data(array1) or is_lazy_data(array2):
+            # Use a separate map and reduce operation to avoid running out of memory.
+            ndim = array1.ndim
+            indices = tuple(range(ndim))
+            eq = da.blockwise(
+                _masked_array_equal,
+                indices,
+                array1,
+                indices,
+                array2,
+                indices,
+                dtype=bool,
+                meta=np.empty((0,) * ndim, dtype=bool),
+                equal_nan=withnans,
+            ).all()
+        else:
+            eq = _masked_array_equal(array1, array2, equal_nan=withnans).all()
 
-    return eq
+    return bool(eq)
 
 
 def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
@@ -402,6 +545,11 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
     Returns whether two numbers are almost equal, allowing for the finite
     precision of floating point numbers.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     .. deprecated:: 3.2.0
 
        Instead use :func:`math.isclose`. For example, rather than calling
@@ -409,11 +557,6 @@ def approx_equal(a, b, max_absolute_error=1e-10, max_relative_error=1e-10):
        b, max_rel, max_abs)``. Note that :func:`~math.isclose` will return True
        if the actual error equals the maximum, whereas :func:`util.approx_equal`
        will return False.
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     wmsg = (
@@ -440,14 +583,19 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
     Parameters
     ----------
     lh :
-        The left hand element of the inequality
+        The left hand element of the inequality.
     rh :
-        The right hand element of the inequality
+        The right hand element of the inequality.
     lh_inclusive : bool, default=True
         Affects the left hand comparison operator to use in the inequality.
         True for ``<=`` false for ``<``. Defaults to True.
     rh_inclusive : bool, default=True
         Same as lh_inclusive but for right hand operator.
+
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -461,11 +609,6 @@ def between(lh, rh, lh_inclusive=True, rh_inclusive=True):
         between_3_and_6 = between(3, 6, rh_inclusive=False)
         for i in range(10):
            print(i, between_3_and_6(i))
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if lh_inclusive and rh_inclusive:
@@ -490,6 +633,11 @@ def reverse(cube_or_array, coords_or_dims):
         numpy array, use int or a sequence of ints, as in the examples below.
         If cube_or_array is a Cube, a Coord or coordinate name (or sequence of
         these) may be specified instead.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -522,11 +670,6 @@ def reverse(cube_or_array, coords_or_dims):
           [19 18 17 16]
           [15 14 13 12]]]
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
     from iris.cube import Cube
 
@@ -552,15 +695,13 @@ def reverse(cube_or_array, coords_or_dims):
                 axes.update(cube_or_array.coord_dims(coord_or_dim))
             except AttributeError:
                 raise TypeError(
-                    "coords_or_dims must be int, str, coordinate "
-                    "or sequence of these."
+                    "coords_or_dims must be int, str, coordinate or sequence of these."
                 )
 
     axes = np.array(list(axes), ndmin=1)
     if axes.ndim != 1 or axes.size == 0:
         raise ValueError(
-            "Reverse was expecting a single axis or a 1d array "
-            "of axes, got %r" % axes
+            "Reverse was expecting a single axis or a 1d array of axes, got %r" % axes
         )
     if np.min(axes) < 0 or np.max(axes) > cube_or_array.ndim - 1:
         raise ValueError(
@@ -583,7 +724,7 @@ def monotonic(array, strict=False, return_direction=False):
     Parameters
     ----------
     strict : bool, default=False
-        Flag to enable strict monotonic checking
+        Flag to enable strict monotonic checking.
     return_direction : bool, default=False
         Flag to change return behaviour to return
         (monotonic_status, direction). Direction will be 1 for positive
@@ -592,16 +733,14 @@ def monotonic(array, strict=False, return_direction=False):
 
     Returns
     -------
-    monotonic_status : bool
-        Whether the array was monotonic.
-
-        If the return_direction flag was given then the returned value
-        will be: ``(monotonic_status, direction)``
+    bool
+        Whether the array was monotonic.  If the return_direction flag was given
+        then the returned value will be: ``(monotonic_status, direction)``.
 
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if array.ndim != 1 or len(array) <= 1:
@@ -658,7 +797,7 @@ def column_slices_generator(full_slice, ndims):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     list_of_slices = []
@@ -779,15 +918,18 @@ def _build_full_slice_given_keys(keys, ndim):
     return full_slice
 
 
-def _slice_data_with_keys(data, keys):
+def _slice_data_with_keys(data, keys, shape=None):
     """Index an array-like object as "data[keys]", with orthogonal indexing.
 
     Parameters
     ----------
     data : array-like
-        array to index.
+        Array to index.
     keys : list
-        list of indexes, as received from a __getitem__ call.
+        List of indexes, as received from a __getitem__ call.
+    shape : tuple, optional
+        Tuple of dimension lengths. Only used when wanting
+        dim_maps, but no data i.e. in dataless operations.
 
     Returns
     -------
@@ -803,7 +945,7 @@ def _slice_data_with_keys(data, keys):
     both 'real' (numpy) arrays and other array-likes index in the same way,
     instead of numpy arrays doing 'fancy indexing'.
 
-    .. Note::
+    .. note::
 
         Avoids copying the data, where possible.
 
@@ -812,14 +954,31 @@ def _slice_data_with_keys(data, keys):
     # column_slices_generator.
     # By slicing on only one index at a time, this also mostly avoids copying
     # the data, except some cases when a key contains a list of indices.
-    n_dims = len(data.shape)
+    if data is not None:
+        shape = data.shape
+    elif shape is None:
+        raise TypeError("Dataless slicing requires shape.")
+    n_dims = len(shape)
     full_slice = _build_full_slice_given_keys(keys, n_dims)
     dims_mapping, slices_iter = column_slices_generator(full_slice, n_dims)
-    for this_slice in slices_iter:
-        data = data[this_slice]
-        if data.ndim > 0 and min(data.shape) < 1:
-            # Disallow slicings where a dimension has no points, like "[5:5]".
-            raise IndexError("Cannot index with zero length slice.")
+
+    if data is not None:
+        for this_slice in slices_iter:
+            data = data[this_slice]
+            if data.ndim > 0 and min(data.shape) < 1:
+                # Disallow slicings where a dimension has no points, like "[5:5]".
+                raise IndexError("Cannot index with zero length slice.")
+    else:
+        if not isinstance(keys, tuple):
+            keys = tuple([keys])
+        for key in keys:
+            if isinstance(key, slice):
+                if (
+                    len(shape) > 0
+                    and (key.start and key.stop)
+                    and key.start == key.stop
+                ):
+                    raise IndexError("Cannot index with zero length slice.")
 
     return dims_mapping, data
 
@@ -907,8 +1066,7 @@ class _MetaOrderedHashable(ABCMeta):
             if "_init" not in namespace:
                 # Create a default _init method for the class
                 method_source = (
-                    "def _init(self, %s):\n "
-                    "self._init_from_tuple((%s,))" % (args, args)
+                    "def _init(self, %s):\n self._init_from_tuple((%s,))" % (args, args)
                 )
                 exec(method_source, namespace)
 
@@ -1024,7 +1182,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     Parameters
     ----------
     the_str : str
-        The string to be clipped
+        The string to be clipped.
     clip_length : int, default=70
         The length in characters that the input string should be clipped
         to. Defaults to a preconfigured value if not specified.
@@ -1043,7 +1201,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if clip_length >= len(the_str) or clip_length <= 0:
@@ -1065,7 +1223,7 @@ def clip_string(the_str, clip_length=70, rider="..."):
             return first_part + remainder[:termination_point] + rider
 
 
-def format_array(arr):
+def format_array(arr, edgeitems=3):
     """Create a new axis as the leading dimension of the cube.
 
     Returns the given array as a string, using the python builtin str
@@ -1078,7 +1236,7 @@ def format_array(arr):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     max_line_len = 50
@@ -1086,6 +1244,7 @@ def format_array(arr):
     result = np.array2string(
         arr,
         max_line_len,
+        edgeitems=edgeitems,
         separator=", ",
         threshold=85,
     )
@@ -1103,7 +1262,7 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
     ----------
     src_cube : :class:`iris.cube.Cube`
         Source cube on which to generate a new axis.
-    scalar_coord : :class:`iris.coord.Coord` or 'string', optional
+    scalar_coord : :class:`iris.coord.Coord` or str, optional
         Scalar coordinate to promote to a dimension coordinate.
     expand_extras : iterable, optional
         Auxiliary coordinates, ancillary variables and cell measures which will
@@ -1118,6 +1277,11 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         variables will also be given an additional dimension, associated with
         the leading dimension of the cube.
 
+    Notes
+    -----
+    This function does maintain laziness when called; it doesn't realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -1127,11 +1291,6 @@ def new_axis(src_cube, scalar_coord=None, expand_extras=()):  # maybe not lazy
         >>> ncube = iris.util.new_axis(cube, 'time')
         >>> ncube.shape
         (1, 360, 360)
-
-    Notes
-    -----
-    This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
 
@@ -1237,6 +1396,11 @@ def squeeze(cube):
         A new :class:`iris.cube.Cube` instance without any dimensions of
         length 1.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     For example::
@@ -1246,11 +1410,6 @@ def squeeze(cube):
         >>> ncube = iris.util.squeeze(cube)
         >>> ncube.shape
         (360, 360)
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     slices = [0 if cube.shape[dim] == 1 else slice(None) for dim in range(cube.ndim)]
@@ -1327,7 +1486,7 @@ def is_regular(coord):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     try:
         regular_step(coord)
@@ -1344,7 +1503,7 @@ def regular_step(coord):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if coord.ndim != 1:
@@ -1378,12 +1537,18 @@ def regular_points(zeroth, step, count):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
-    points = (zeroth + step) + step * np.arange(count, dtype=np.float32)
+
+    def make_steps(dtype: np.dtype):
+        start = np.add(zeroth, step, dtype=dtype)
+        steps = np.multiply(step, np.arange(count), dtype=dtype)
+        return np.add(start, steps, dtype=dtype)
+
+    points = make_steps(np.float32)
     _, regular = iris.util.points_step(points)
     if not regular:
-        points = (zeroth + step) + step * np.arange(count, dtype=np.float64)
+        points = make_steps(np.float64)
     return points
 
 
@@ -1404,7 +1569,7 @@ def points_step(points):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # Calculations only make sense with multiple points
     points = np.asanyarray(points)
@@ -1439,7 +1604,7 @@ def unify_time_units(cubes):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     epochs = {}
@@ -1504,10 +1669,12 @@ def _is_circular(points, modulus, bounds=None):
                 circular_value = (points[-1] + diff) % modulus
                 try:
                     np.testing.assert_approx_equal(
-                        points[0], circular_value, significant=4
+                        points[0] % modulus, circular_value, significant=4
                     )
                     circular = True
                 except AssertionError:
+                    # TODO: I consider the following to be not needed with the modulus being used in the
+                    # above check, but there are some tests that seem to rely on this behavior...
                     if points[0] == 0:
                         try:
                             np.testing.assert_approx_equal(
@@ -1533,12 +1700,17 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.AuxCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.AuxCoord`.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1576,11 +1748,6 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
                 forecast_period                  x              -              -
                 time                             x              -              -
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
     from iris.coords import Coord, DimCoord
 
@@ -1603,10 +1770,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
         return
 
     if aux_coord not in cube.aux_coords:
-        msg = (
-            "Attempting to promote an AuxCoord ({}) "
-            "which does not exist in the cube."
-        )
+        msg = "Attempting to promote an AuxCoord ({}) which does not exist in the cube."
         msg = msg.format(aux_coord.name())
         raise ValueError(msg)
 
@@ -1645,7 +1809,7 @@ def promote_aux_coord_to_dim_coord(cube, name_or_coord):
 
 
 def demote_dim_coord_to_aux_coord(cube, name_or_coord):
-    r"""Demotes a dimension coordinate  on the cube to an auxiliary coordinate.
+    r"""Demote a dimension coordinate  on the cube to an auxiliary coordinate.
 
     The DimCoord is demoted to an auxiliary coordinate on the cube.
     The dimension of the cube that was associated with the DimCoord becomes
@@ -1655,12 +1819,17 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
     Parameters
     ----------
     cube :
-        An instance of :class:`iris.cube.Cube`
+        An instance of :class:`iris.cube.Cube`.
     name_or_coord :
         * \(a) An instance of :class:`iris.coords.DimCoord`
         * \(b) the :attr:`standard_name`, :attr:`long_name`, or
           :attr:`var_name` of an instance of an instance of
           :class:`iris.coords.DimCoord`.
+
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1697,11 +1866,6 @@ def demote_dim_coord_to_aux_coord(cube, name_or_coord):
                 forecast_period                 x              -              -
                 time                            x              -              -
                 year                            x              -              -
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     from iris.coords import Coord
@@ -1770,12 +1934,17 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
 
     Returns
     -------
-    result : `numpy.ndarray` of bool
-        true/false map of which cells in the cube XY grid have
+    numpy.ndarray
+        Boolean True/false map of which cells in the cube XY grid have
         discontiguities in the coordinate points array.
 
         This can be used as the input array for
         :func:`iris.util.mask_cube`.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1792,10 +1961,6 @@ def find_discontiguities(cube, rel_tol=1e-5, abs_tol=1e-8):
         # Plot the masked cube slice:
         iplt.pcolormesh(masked_cube_slice)
 
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     lats_and_lons = [
@@ -1897,7 +2062,7 @@ def _mask_array(array, points_to_mask, in_place=False):
 
 @_lenient_client(services=SERVICES)
 def mask_cube(cube, points_to_mask, in_place=False, dim=None):
-    """Masks any cells in the cube's data array.
+    """Mask any cells in the cube's data array.
 
     Masks any cells in the cube's data array which correspond to cells marked
     ``True`` (or non zero) in ``points_to_mask``.  ``points_to_mask`` may be
@@ -1929,7 +2094,7 @@ def mask_cube(cube, points_to_mask, in_place=False, dim=None):
     If either ``cube`` or ``points_to_mask`` is lazy, the result will be lazy.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 
     """
@@ -1980,7 +2145,7 @@ def equalise_attributes(cubes):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # deferred import to avoid circularity problem
@@ -2010,11 +2175,15 @@ def equalise_attributes(cubes):
     for attrs in cube_attrs[1:]:
         cube_keys = list(attrs.keys())
         keys_to_remove.update(cube_keys)
-        common_keys = [
-            key
-            for key in common_keys
-            if (key in cube_keys and np.all(attrs[key] == cube_attrs[0][key]))
-        ]
+
+        def eq(key):
+            try:
+                return np.all(attrs[key] == cube_attrs[0][key])
+            except ValueError as err:
+                message = f"Error comparing {key} attributes: {err}"
+                raise ValueError(message)
+
+        common_keys = [key for key in common_keys if (key in cube_keys and eq(key))]
     keys_to_remove.difference_update(common_keys)
 
     # Convert back from the resulting 'paired' keys set, extracting just the
@@ -2052,7 +2221,7 @@ def is_masked(array):
     Notes
     -----
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
 
     """
@@ -2091,61 +2260,935 @@ def _strip_metadata_from_dims(cube, dims):
     return reduced_cube
 
 
-def mask_cube_from_shapefile(cube, shape, minimum_weight=0.0, in_place=False):
-    """Take a shape object and masks all points not touching it in a cube.
-
-    Finds the overlap between the `shape` and the `cube` in 2D xy space and
-    masks out any cells with less % overlap with shape than set.
-    Default behaviour is to count any overlap between shape and cell as valid
+def mask_cube_from_shapefile(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    minimum_weight: float = 0.0,
+    in_place: bool = False,
+) -> iris.cube.Cube | None:
+    """Mask all points in a cube that do not intersect a shapefile object.
 
     Parameters
     ----------
-    shape : Shapely.Geometry object
-        A single `shape` of the area to remain unmasked on the `cube`.
-        If it a line object of some kind then minimum_weight will be ignored,
-        because you cannot compare the area of a 1D line and 2D Cell
     cube : :class:`~iris.cube.Cube` object
-        The `Cube` object to masked. Must be singular, rather than a `CubeList`
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+         rather than a :class:`~iris.cube.CubeList`.
+    shape : Shapely.Geometry object
+        A single `shape` of the area to remain unmasked on the ``cube``.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell.
     minimum_weight : float , default=0.0
         A number between 0-1 describing what % of a cube cell area must
         the shape overlap to include it.
     in_place : bool, default=False
-        Whether to mask the `cube` in-place or return a newly masked `cube`.
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
         Defaults to False.
 
     Returns
     -------
     iris.Cube
-        A masked version of the input cube, if in_place is False
+        A masked version of the input cube, if in_place is False.
 
+    Warnings
+    --------
+    This function requires additional dependencies:
+    `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
 
     See Also
     --------
     :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
+    :func:`~iris.util.mask_cube_from_shape`
+        Mask all points in a cube that do not intersect a shape object.
 
     Notes
     -----
-    This function allows masking a cube with any cartopy projection by a shape object,
-    most commonly from Natural Earth Shapefiles via cartopy.
-    To mask a cube from a shapefile, both must first be on the same coordinate system.
-    Shapefiles are mostly on a lat/lon grid with a projection very similar to GeogCS
-    The shapefile is projected to the coord system of the cube using cartopy, then each cell
-    is compared to the shapefile to determine overlap and populate a true/false array
-    This array is then used to mask the cube using the `iris.util.mask_cube` function
-    This uses numpy arithmetic logic for broadcasting, so you may encounter unexpected
-    results if your cube has other dimensions the same length as the x/y dimensions
+    .. deprecated:: 3.14
+
+        :func:`mask_cube_from_shapefile` function is scheduled for removal in a
+        future release, being replaced by :func:`iris.util.mask_cube_from_shape`,
+        which offers richer shape handling.
+    """
+    message = (
+        "iris.util.mask_cube_from_shapefile has been deprecated, and will be removed in a "
+        "future release. Please use iris.util.mask_cube_from_shape instead."
+    )
+    warn_deprecated(message)
+
+    # Make depreciated function defaults:
+    # https://github.com/SciTools/iris/blob/fa6d61dd5f358c9e6b585a132cc213acebf95b70/lib/iris/_shapefiles.py#L142C18-L144C6
+    from iris.analysis.cartography import DEFAULT_SPHERICAL_EARTH_RADIUS
+
+    shape_crs = iris.coord_systems.GeogCS(
+        DEFAULT_SPHERICAL_EARTH_RADIUS
+    ).as_cartopy_projection()
+    # Call the new function `mask_cube_from_shape`with the same parameters.
+    return mask_cube_from_shape(
+        cube,
+        shape,
+        shape_crs=shape_crs,
+        in_place=in_place,
+        minimum_weight=minimum_weight,
+    )
+
+
+def mask_cube_from_shape(
+    cube: iris.cube.Cube,
+    shape: shapely.Geometry,
+    shape_crs: cartopy.crs | pyproj.CRS = None,
+    in_place: bool = False,
+    minimum_weight: float = 0.0,
+    all_touched: bool | None = None,
+    invert: bool = False,
+) -> iris.cube.Cube | None:
+    """Mask all points in a cube that do not intersect a shape object.
+
+    Mask a :class:`~iris.cube.Cube` with any shape object, (e.g. Natural Earth Shapefiles
+    via ``cartopy``). Finds the overlap between the ``shape`` and the :class:`~iris.cube.Cube`
+    and masks out any cells that *do not* intersect the shape.
+
+    Shapes can be Polygons, Lines or Points, or their multi-part equivalents.
+
+    By default, all cells touched by geometries are kept (equivalent to ``minimum_weight=0``).
+    This behaviour can be changed by increasing the ``minimum_weight`` keyword argument or
+    setting ``all_touched=False``, then only the only cells whose *centre* is within the
+    polygon or that are selected by Bresenham’s line algorithm (for line type shapes) are kept.
+
+    For points, ``minimum_weight`` is ignored, and the cell that intersects the point
+    is kept.
+
+    Parameters
+    ----------
+    cube : :class:`~iris.cube.Cube` object
+        The :class:`~iris.cube.Cube` object to masked. Must be singular,
+        rather than a :class:`~iris.cube.CubeList`.
+    shape : shapely.Geometry object
+        A single ``shape`` of the area to remain unmasked on the ``cube``.
+        If it a line object of some kind then minimum_weight will be ignored,
+        because you cannot compare the area of a 1D line and 2D Cell.
+    shape_crs : cartopy.crs.CRS, default=None
+        The coordinate reference system of the ``shape`` object.
+    in_place : bool, default=False
+        Whether to mask the ``cube`` in-place or return a newly masked ``cube``.
+        Defaults to ``False``.
+    minimum_weight : float, default=0.0
+        A number between 0-1 describing what percentage of a cube cell area must the shape overlap to be masked.
+        Only applied to polygon shapes.  If the shape is a line or point then this is ignored.
+    all_touched : bool, default=None
+        If ``True``, all cells touched by the shape are kept. If ``False``, only cells whose
+        center is within the polygon or that are selected by Bresenham’s line algorithm
+        (for line type shape) are kept. Note that ``minimum_weight`` and ``all_touched`` are
+        mutually exclusive options: an error will be raised if a ``minimum_weight`` > 0 *and*
+        ``all_touched`` is set to ``True``. This is because ``all_touched=True`` is equivalent
+        to ``minimum_weight=0``.
+    invert : bool, default=False
+        If ``True``, the mask is inverted, meaning that cells that intersect the shape are masked out
+        and cells that do not intersect the shape are kept. If ``False``, the mask is applied normally,
+        meaning that cells that intersect the shape are kept and cells that do not intersect the shape
+        are masked out.
+
+    Returns
+    -------
+    iris.Cube
+        A masked version of the input cube, if ``in_place`` is ``False``.
+
+    Warnings
+    --------
+    For best masking results, both the cube **and** masking geometry should have a
+    coordinate reference system (CRS) defined. Note that CRS of the masking geometry
+    must be provided explicitly to this function (via ``shape_crs``), whereas the
+    cube CRS is read from the cube itself. The cube **must** have a coord_system defined.
+
+    Masking results will be most consistent when the cube and masking geometry have the same CRS.
+
+    If a CRS is **not** provided for the the masking geometry, the CRS of the cube is assumed.
+
+    This function requires additional dependencies: `rasterio <https://rasterio.readthedocs.io/en/stable/>`_
+    and `affine <https://affine.readthedocs.io/en/latest/>`_.
+
+    Because shape vectors are inherently Cartesian in nature, they contain no inherent
+    understanding of the spherical geometry underpinning geographic coordinate systems.
+    For this reason, **shapefiles or shape vectors that cross the antimeridian or poles
+    are not supported by this function** to avoid unexpected masking behaviour.  For shapes
+    that do cross these boundaries, this function expects the user to undertake fixes upstream
+    of Iris, using tools like `GDAL <https://gdal.org/en/stable/programs/ogr2ogr.html>`_ or
+    `antimeridian <https://github.com/gadomski/antimeridian>`_ to fix shape wrapping.
+
+    See Also
+    --------
+    :func:`~iris.util.mask_cube`
+        Mask any cells in the cube’s data array.
+
+    Notes
+    -----
+    Iris does not handle the shape loading so it is agnostic to the source type of the shape.
+    The shape can be loaded from an Esri shapefile, created using the
+    `shapely <https://shapely.readthedocs.io/en/stable/>`_ library, or any other source that
+    can be interpreted as a `shapely.Geometry <https://shapely.readthedocs.io/en/stable/geometry.html>`_
+    object, such as shapes encoded in a geoJSON or KML file.
 
     Examples
     --------
+    >>> import numpy as np
     >>> import shapely
-    >>> from iris.util import mask_cube_from_shapefile
+    >>> from pyproj import CRS
+    >>> from iris.util import mask_cube_from_shape
+
+    Extract a rectangular region covering the UK from a stereographic projection cube:
+
+    >>> cube = iris.load_cube(iris.sample_data_path("toa_brightness_stereographic.nc"))
+    >>> shape = shapely.geometry.box(-10, 50, 2, 60) # box around the UK
+    >>> wgs84 = CRS.from_epsg(4326) # WGS84 coordinate system
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
+
+    Note that there is no change in the dimensions of the masked cube, only in the mask
+    applied to data values:
+
+    >>> print(cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {np.sum(cube.data.mask)} of {np.multiply(*cube.shape)}")
+    Masked cells: 3152 of 40960
+    >>> print(masked_cube.summary(shorten=True))
+    toa_brightness_temperature / (K)    (projection_y_coordinate: 160; projection_x_coordinate: 256)
+    >>> print(f"Masked cells: {sum(sum(masked_cube.data.mask))} of {np.multiply(*masked_cube.shape)}")
+    Masked cells: 40062 of 40960
+
+    Extract a trajectory by using a line shapefile:
+
+    >>> from shapely import LineString
+    >>> line = LineString([(-45, 40), (-28, 53), (-2, 55), (19, 45)])
+    >>> masked_cube = mask_cube_from_shape(cube, line, wgs84)
+
+    Standard shapely manipulations can be applied.  For example, to extract a trajectory
+    with a 1 degree buffer around it:
+
+    >>> buffer = line.buffer(1)
+    >>> masked_cube = mask_cube_from_shape(cube, buffer, wgs84)
+
+    You can load more complex shapes from other libraries. For example, to extract the
+    Canadian provience of Ontario from a cube:
+
+    >>> import cartopy.io.shapereader as shpreader
+    >>> admin1 = shpreader.natural_earth(resolution='110m',
+    ...                                  category='cultural',
+    ...                                  name='admin_1_states_provinces_lakes')
+    >>> admin1shp = shpreader.Reader(admin1).geometries()
+
     >>> cube = iris.load_cube(iris.sample_data_path("E1_north_america.nc"))
     >>> shape = shapely.geometry.box(-100,30, -80,40) # box between 30N-40N 100W-80W
-    >>> masked_cube = mask_cube_from_shapefile(cube, shape)
+    >>> wgs84 = CRS.from_epsg(4326)
+    >>> masked_cube = mask_cube_from_shape(cube, shape, wgs84)
 
-    ...
     """
-    shapefile_mask = create_shapefile_mask(shape, cube, minimum_weight)
+    from iris._shapefiles import create_shape_mask
+
+    shapefile_mask = create_shape_mask(
+        geometry=shape,
+        geometry_crs=shape_crs,
+        cube=cube,
+        minimum_weight=minimum_weight,
+        all_touched=all_touched,
+        invert=invert,
+    )
     masked_cube = mask_cube(cube, shapefile_mask, in_place=in_place)
     if not in_place:
         return masked_cube
+    return None
+
+
+def equalise_cubes(
+    cubes,
+    apply_all=False,
+    normalise_names=False,
+    equalise_attributes=False,
+    unify_time_units=False,
+):
+    """Modify a set of cubes to assist merge/concatenate operations.
+
+    Various different adjustments can be applied to the input cubes, to remove
+    differences which may prevent them from combining into larger cubes.  The requested
+    "equalisation" operations are applied to each group of input cubes with matching
+    cube metadata (names, units, attributes and cell-methods).
+
+    Parameters
+    ----------
+    cubes : sequence of :class:`~iris.cube.Cube`
+        The input cubes, in a list or similar.
+
+    apply_all : bool, default=False
+        Enable *all* the equalisation operations.
+
+    normalise_names : bool, default=False
+        When True, remove any redundant ``var_name`` and ``long_name`` properties,
+        leaving only one ``standard_name``, ``long_name`` or ``var_name`` per cube.
+        In this case, the adjusted names are also used when selecting input groups.
+
+    equalise_attributes : bool, default=False
+        When ``True``, apply an :func:`equalise_attributes` operation to each input
+        group.  In this case, attributes are ignored when selecting input groups.
+
+    unify_time_units : bool, default=False
+        When True, apply the :func:`unify_time_units` operation to each input group.
+        Note : while this may convert units of time reference coordinates, it does
+        not affect the units of the cubes themselves.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+        A CubeList containing the original input cubes, modified as required (in-place)
+        ready for merge or concatenate operations.
+
+    Notes
+    -----
+    All the 'equalise' operations operate in a similar fashion, in that they identify
+    and remove differences in a specific metadata element, altering metadata so that
+    a merge or concatenate can potentially combine a group of cubes into a single
+    result cube.
+
+    The various 'equalise' operations are not applied to the entire input, but to
+    groups of input cubes with the same ``cube.metadata``.
+
+    The input cube groups also depend on the equalisation operation(s) selected :
+    Operations which equalise a specific cube metadata element (names, units,
+    attributes or cell-methods) exclude that element from the input grouping criteria.
+
+    """
+    from iris.common.metadata import CubeMetadata
+    from iris.cube import CubeList
+
+    if normalise_names or apply_all:
+        # Rationalise all the cube names
+        # Note: this option operates as a special case, independent of
+        #  and *in advance of* the group selection
+        # (hence, it affects the groups which other operations are applied to)
+        for cube in cubes:
+            if cube.standard_name:
+                cube.long_name = None
+                cube.var_name = None
+            elif cube.long_name:
+                cube.var_name = None
+
+    # Snapshot the cube metadata elements which we use to identify input groups
+    # TODO: we might want to sanitise practically comparable types here ?
+    #  (e.g. large object arrays ??)
+    cube_grouping_values = [
+        {
+            field: deepcopy(getattr(cube.metadata, field))
+            for field in CubeMetadata._fields
+        }
+        for cube in cubes
+    ]
+
+    # Collect the selected operations which we are going to apply.
+    equalisation_ops = []
+
+    if equalise_attributes or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["equalise_attributes"])
+        # Prevent attributes from distinguishing input groups
+        for grouping_values in cube_grouping_values:
+            grouping_values.pop("attributes")
+
+    if unify_time_units or apply_all:
+        # get the function of the same name in this module
+        equalisation_ops.append(globals()["unify_time_units"])
+
+    if not equalisation_ops:
+        if not normalise_names:
+            msg = (
+                "'equalise_cubes' call does nothing, as no equalisation operations "
+                "are enabled (neither `apply_all` nor any individual keywords set)."
+            )
+            warn(msg, category=iris.warnings.IrisUserWarning)
+
+    else:
+        # NOTE: if no "equalisation_ops", nothing more to do.
+        # However, if 'unify-names' was done, we *already* modified cubes in-place.
+
+        # Group the cubes into sets with the same 'grouping values'.
+        # N.B. we *can't* use sets, or dictionary key checking, as our 'values' are not
+        #  always hashable -- e.g. especially, array attributes.
+        # I fear this can be inefficient (repeated array compare), but maybe unavoidable
+        # TODO: might something nasty happen here if attributes contain weird stuff ??
+        cubegroup_values = []
+        cubegroup_cubes = []
+        for cube, grouping_values in zip(cubes, cube_grouping_values):
+            if grouping_values not in cubegroup_values:
+                cubegroup_values.append(grouping_values)
+                cubegroup_cubes.append([cube])
+            else:
+                i_at = cubegroup_values.index(grouping_values)
+                cubegroup_cubes[i_at].append(cube)
+
+        # Apply operations to the groups : in-place modifications on the cubes
+        for group_cubes in cubegroup_cubes:
+            for op in equalisation_ops:
+                op(group_cubes)
+
+    # Return a CubeList result = the *original* cubes, as modified
+    result = CubeList(cubes)
+    return result
+
+
+def _print_xml(doc):
+    """Print xml in a standard fashion.
+
+    Modifies :meth: `xml.dom.minidom.Document.toprettyxml` to maintain backwards
+    compatibilitiy with the way Iris expects arrays to be represented. Changes to
+    xml introduced with https://github.com/python/cpython/pull/107947 mean that
+    newlines in attributes are escaped by default. This reverts to the old behaviour
+    by replacing the escaped newlines with proper newlines.
+
+    Parameters
+    ----------
+    doc : :class: `xml.dom.minidom.Document`
+        The xml document to be printed.
+
+    Returns
+    -------
+    str
+        Standard string representation of xml document.
+    """
+    result = doc.toprettyxml(indent="  ")
+    return result.replace("&#10;", "\n")
+
+
+def _combine_options_asdict(options: str | dict | None) -> dict:
+    """Convert any valid combine options into an options dictionary."""
+    from iris import COMBINE_POLICY
+
+    if options is None:
+        opts_dict = COMBINE_POLICY.settings()
+    elif isinstance(options, dict):
+        opts_dict = options
+    elif isinstance(options, str):
+        if options in COMBINE_POLICY.SETTINGS:
+            opts_dict = COMBINE_POLICY.SETTINGS[options]
+        else:
+            msg = (
+                "Unrecognised settings name : expected one of "
+                f"{tuple(COMBINE_POLICY.SETTINGS)}."
+            )
+            raise ValueError(msg)
+    else:
+        msg = (  # type: ignore[unreachable]
+            f"arg 'options' has type {type(options)!r}, "
+            "expected one of (str | dict | None)"
+        )
+        raise ValueError(msg)  # type: ignore[unreachable]
+
+    return opts_dict
+
+
+def combine_cubes(
+    cubes: List[Cube],
+    options: str | dict | None = None,
+    **kwargs,
+) -> CubeList:
+    """Combine cubes, according to "combine options".
+
+    Applies a combination of :meth:`~iris.util.equalise_cubes`,
+    :meth:`~iris.cube.CubeList.merge` and/or :meth:`~iris.cube.CubeList.concatenate`
+    steps to the given cubes, as determined by the given settings (from `options` and
+    `kwargs`).
+
+    Parameters
+    ----------
+    cubes : list of :class:`~iris.cube.Cube`
+        A list of cubes to combine.
+
+    options : str or dict, optional
+        Either a standard "combine settings" name, i.e. one of the
+        :data:`iris.CombineOptions.SETTINGS_NAMES`, or a dictionary of
+        settings options, as described for :class:`~iris.CombineOptions`.
+        Defaults to the current :meth:`~iris.CombineOptions.settings` of the
+        :data:`iris.COMBINE_POLICY`.
+
+    kwargs : dict
+        Individual option setting values, i.e. values for keys named in
+        :data:`iris.CombineOptions.OPTION_KEYS`, as described for
+        :meth:`~iris.CombineOptions.set`.  These take precedence over those set by the
+        `options` arg.
+
+    Returns
+    -------
+    :class:`~iris.cube.CubeList`
+
+    Notes
+    -----
+        A ``support_multiple_references`` option will be accepted as valid, but will
+        have *no* effect on :func:`combine_cubes` because this option only acts during
+        load operations.
+
+
+    Examples
+    --------
+    .. testsetup::
+
+        import numpy as np
+        from iris.cube import Cube, CubeList
+        from iris.coords import DimCoord
+        from iris.util import combine_cubes
+
+        def testcube(timepts):
+            cube = Cube(np.array(timepts))
+            cube.add_dim_coord(
+                DimCoord(timepts, standard_name="time", units="days since 1990-01-01"),
+                0
+            )
+            return cube
+
+        cubes = CubeList([testcube([1., 2]), testcube([13., 14, 15])])
+        combinecubes_old_policysettings = iris.COMBINE_POLICY.settings()
+
+    .. testcleanup::
+
+        # restore old state to avoid upsetting other tests
+        iris.COMBINE_POLICY.set(combinecubes_old_policysettings)
+
+    >>> # Take a pair of sample cubes which can concatenate together
+    >>> print(cubes)
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> print([cube.coord("time").points for cube in cubes])
+    [array([1., 2.]), array([13., 14., 15.])]
+
+    >>> # Show these do NOT combine with the "default" action, which only merges ..
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... however, they **do** combine if you enable concatenation
+    >>> print(combine_cubes(cubes, merge_concat_sequence="mc"))
+    0: unknown / (unknown)                 (time: 5)
+    >>> # ... which may be controlled by various means
+    >>> iris.COMBINE_POLICY.set("recommended")
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # Also, show how a differing attribute will block cube combination
+    >>> cubes[0].attributes["x"] = 3
+    >>> print(combine_cubes(cubes))
+    0: unknown / (unknown)                 (time: 2)
+    1: unknown / (unknown)                 (time: 3)
+    >>> # ... which can then be fixed by enabling attribute equalisation
+    >>> with iris.COMBINE_POLICY.context(equalise_cubes_kwargs={"apply_all":True}):
+    ...     print(combine_cubes(cubes))
+    ...
+    0: unknown / (unknown)                 (time: 5)
+
+    >>> # .. BUT NOTE : this modifies the original input cubes
+    >>> print(cubes[0].attributes.get("x"))
+    None
+
+    """
+    from iris._combine import _combine_cubes
+
+    opts_dict = _combine_options_asdict(options)
+    if kwargs is not None:
+        opts_dict = opts_dict.copy()  # avoid changing original
+        opts_dict.update(kwargs)
+
+    return _combine_cubes(cubes, opts_dict)
+
+
+# Storage for the default gridcube coordinate system.
+# This is actually always == GeogCs(iris.fileformats.pp.EARTH_RADIUS), but cannot be
+#  setup on import due to circular import problems.
+_DEFAULT_GRIDCUBE_CS = None
+
+
+def make_gridcube(
+    nx: int = 30,
+    ny: int = 20,
+    xlims: tuple[float | int, float | int] = (0.0, 360.0),
+    ylims: tuple[float | int, float | int] = (-90.0, 90.0),
+    *,
+    x_points: ArrayLike | None = None,
+    y_points: ArrayLike | None = None,
+    coord_system: iris.coord_systems.CoordSystem | None = None,
+) -> Cube:
+    """Make a 2D sample cube with a specified XY grid.
+
+    The cube is suitable as a regridding target, amongst other uses.
+    It has one-dimensional X and Y coordinates, in a specific coordinate system.
+    Both can be given either regularly spaced or irregular points.
+
+    The cube is dataless, meaning that ``cube.data`` is ``None``, but data can easily be
+    assigned if required.  See :ref:`dataless-cubes`.
+
+    Parameters
+    ----------
+    nx : int, optional
+        Number of points on the X axis. Defaults to 30.
+    ny : int, optional
+        Number of points on the Y axis. Defaults to 20.
+    xlims : pair of floats or ints, optional
+        End points of the X coordinate: (first, last).
+        Defaults to (0., 360.).
+    ylims : pair of floats or ints, optional
+        End points of the Y coordinate: (first, last).
+        Defaults to (-90., +90.).
+    x_points : array-like, optional
+        If not None, this sets the number and exact values of x points: in this case,
+        `nx` and `xlims` are ignored.
+        Defaults to None.
+    y_points : array-like, optional
+        If not None, this sets the number and exact values of y points: in this case,
+        `ny` and `ylims` are ignored.
+        Defaults to None.
+    coord_system : iris.coord_system.CoordSystem, optional
+        The coordinate system of the cube: also sets the coordinate system and
+        ``standard_name`` s of the X and Y coordinates.
+        Defaults to a :class:`iris.coord_systems.GeogCS` (i.e. spherical lat-lon), with
+        a standard radius of :data:`iris.fileformats.pp.EARTH_RADIUS`.
+
+    Returns
+    -------
+    cube: iris.cube.Cube
+        A cube with the specified grid, but no data.
+
+    Warnings
+    --------
+    If given, the `x_points` or `y_points` args define a DimCoord, and so must be
+    one-dimensional, have at least 1 value, and be strictly monotonic
+    (increasing or decreasing).
+
+    """
+    from iris.coords import DimCoord
+    from iris.cube import Cube
+
+    global _DEFAULT_GRIDCUBE_CS
+
+    # float32 zero, to force minimum 'f4' floating point precision
+    zero_f4 = np.asarray(
+        0.0,
+        dtype="f4",
+    )
+
+    def dimco(
+        axis: str,  # 'x' or 'y'
+        name: str,
+        units: str,
+        points: ArrayLike | None,
+        lims: tuple[float | int, float | int],
+        num: int,
+        coord_system: iris.coord_systems.CoordSystem,
+    ):
+        """Build a dim-coord with given name+units`, from points or n-points + limits."""
+        if points is not None:
+            orig_points = points  # just for an error message
+            ok = isinstance(points, Iterable)
+            if ok:
+                points = np.asarray(points)
+                ok = points.ndim == 1 and points.size >= 1 and points.dtype.kind in "if"
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision,
+                # just for greater clarity.
+                points = points + zero_f4
+
+                if points.size > 1:
+                    # Also (pre-)check monotonicity.
+                    # Just to avoid a more confusing error when creating a DimCoord.
+                    dp = np.diff(points)
+                    ok = np.all(dp != 0) and np.all(np.sign(dp) == np.sign(dp[0]))
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}_points' arg : {orig_points!s}. "
+                    "Must be a monotonic 1-d array-like of at least 1 floats or ints."
+                )
+                raise ValueError(msg)
+
+        else:
+            # points is None : interpret n? / ?lims
+            if not isinstance(num, int) or num < 1:  # type: ignore[redundant-expr]
+                msg = f"Bad value for 'n{axis}' arg : {num}. Must be an integer >= 1."
+                raise ValueError(msg)
+
+            ok = isinstance(lims, Iterable)
+            if ok:
+                limsarr = np.asarray(lims)
+                ok = limsarr.shape == (2,) and limsarr.dtype.kind in "if"
+            if ok:
+                # Force to always floating-point, minimum 'f4' precision.
+                limsarr = limsarr + zero_f4
+                ok = num == 1 or limsarr[0] != limsarr[1]
+
+            if not ok:
+                msg = (
+                    f"Bad value for '{axis}lims' arg : {lims}. "
+                    f"Must be a pair of floats or ints, different unless `n{axis}`=1."
+                )
+                raise ValueError(msg)
+
+            # set points from n? / ?lims
+            points = np.linspace(limsarr[0], limsarr[1], num)
+
+        co = DimCoord(
+            points, standard_name=name, units=units, coord_system=coord_system
+        )
+        return co
+
+    if coord_system is None:
+        if _DEFAULT_GRIDCUBE_CS is None:
+            # This import needs to be dynamic, to avoid a circular import problem.
+            from iris.fileformats.pp import EARTH_RADIUS
+
+            _DEFAULT_GRIDCUBE_CS = GeogCS(EARTH_RADIUS)
+
+        coord_system = _DEFAULT_GRIDCUBE_CS
+
+    if isinstance(coord_system, GeogCS):
+        x_name, y_name = "longitude", "latitude"
+        units = "degrees"
+    elif isinstance(coord_system, iris.coord_systems.RotatedGeogCS):
+        x_name, y_name = "grid_longitude", "grid_latitude"
+        units = "degrees"
+    else:
+        x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
+        units = "m"
+
+    xco = dimco("x", x_name, units, x_points, xlims, nx, coord_system=coord_system)
+    yco = dimco("y", y_name, units, y_points, ylims, ny, coord_system=coord_system)
+    cube = Cube(
+        data=None,
+        shape=(yco.shape[0], xco.shape[0]),
+        long_name="grid_cube",
+        dim_coords_and_dims=((yco, 0), (xco, 1)),
+    )
+    return cube
+
+
+def array_checksum(data: ArrayLike) -> str:
+    """Calculate a checksum for an array.
+
+    Returns the crc32 checksum of the array data as a hex string.
+    Masked data is filled with zeros before calculating to ensure
+    that the checksum is not sensitive to unset values.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to calculate the checksum for.
+
+    Returns
+    -------
+    str :
+        32 bit checksum hexstring, e.g. '0x1a2b3c4d'.
+    """
+
+    # Ensure consistent memory layout for checksums.
+    def normalise(data):
+        data = np.ascontiguousarray(data)
+        if data.dtype.newbyteorder("<") != data.dtype:
+            data = data.byteswap(False)
+            data.dtype = data.dtype.newbyteorder("<")
+        return data
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+
+    if ma.isMaskedArray(data):
+        # Fill in masked values to avoid the checksum being
+        # sensitive to unused numbers. Use a fixed value so
+        # a change in fill_value doesn't affect the
+        # checksum.
+        crc = "0x%08x" % (zlib.crc32(normalise(data.filled(0))) & 0xFFFFFFFF,)
+    else:
+        crc = "0x%08x" % (zlib.crc32(normalise(data)) & 0xFFFFFFFF,)
+
+    return crc
+
+
+def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> str:
+    """Return a strictly formatted summarised view of an array (first and last N elements).
+
+    Generates a string formatted summary of the array. The first and last `edgeitems` elements
+    are printed out with strictly controlled formatting. Useful for summarising arrays in
+    tests for comparing against known good outputs.
+
+    Multi-dimensional arrays will be flattened prior to summarising.
+
+    Parameters
+    ----------
+    data : array-like
+        The array to summarise.
+
+    edgeitems : int, optional
+        The number of elements at the beginning and end of the array to format. Should be
+        a positive value > 1. Defaults to 3.
+
+    precision : int, optional
+        The precision to use for floating point values. Defaults to 8.
+
+    Returns
+    -------
+    str :
+        A string formatted summary of the array.
+    """
+    edgeitems = max(abs(edgeitems), 1)
+    precision = max(abs(precision), 0)
+
+    data = np.asanyarray(data)  # Make sure is a numpy array
+    if data.shape == ():
+        data = np.asanyarray([data])  # Handle scalars
+
+    isnumeric = np.issubdtype(data.dtype, np.number)
+
+    def _get_format_str(data):
+        """Return the format string for the datatype."""
+        # default to empty formatting string (default python formatting)
+        fmt = ""
+
+        # for numeric types, explicitly set the formatter based on
+        # type and size of number:
+        if isnumeric:
+            data = data[np.isfinite(data)]
+
+            if data.size == 0:
+                return ""  # no valid data
+
+            abs_non_zero = np.absolute(data[data != 0])
+
+            if abs_non_zero.size:
+                abs_max = np.max(abs_non_zero)
+                abs_min = np.min(abs_non_zero)
+
+                exp_max_cutoff = 1e8
+                exp_min_cutoff = 1e-4
+
+                # If we have very large or very small numbers, prefer scientific
+                # number formatting (e.g. 1.2e7)
+                exp_mode = abs_max > exp_max_cutoff or abs_min < exp_min_cutoff
+            else:
+                exp_mode = False  # all data is zero
+
+            if issubclass(data.dtype.type, np.floating):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = f".{precision}f"
+            elif issubclass(data.dtype.type, np.integer):
+                if exp_mode:
+                    fmt = f".{precision}E"
+                else:
+                    fmt = "d"
+        # For all other types, use default python formatting
+        return fmt
+
+    def _format(value: Any) -> str:
+        """Format a single array element in to a string."""
+        if value is np.ma.masked:
+            return "--"
+        elif isnumeric and np.isnan(value):
+            return "nan"
+        elif isnumeric and np.isinf(value):
+            if np.sign(value) < 0:
+                return "-inf"
+            return "inf"
+        else:
+            # apply the formatter
+            s = f"{value:{fmt}}"
+            if isnumeric and np.issubdtype(type(value), np.floating):
+                s = s.rstrip("0")  # strip trailing zeros from floats
+            elif isinstance(value, (str, bytes)):
+                s = f"'{s}'"  # quote strings
+            return s
+
+    data = data.ravel()  # flatten multi-dimensional arrays
+
+    if data.size > edgeitems * 2:
+        summary = np.concatenate((data[:edgeitems], data[-edgeitems:]))
+        fmt = _get_format_str(summary)
+        s = (
+            "["
+            + ", ".join(_format(x) for x in summary[:edgeitems])
+            + ", ..., "
+            + ", ".join(_format(x) for x in summary[-edgeitems:])
+            + "]"
+        )
+    else:
+        fmt = _get_format_str(data)
+        s = "[" + ", ".join(_format(x) for x in data) + "]"
+
+    return s
+
+
+@dataclass
+class CMLSettings(threading.local):
+    """Settings for controlling the behaviour and formatting of the CML output.
+
+    Use the ``set`` method of this class as a context manager to temporarily
+    modify the settings.
+    """
+
+    numpy_formatting: bool = True
+    data_array_stats: bool = False
+    coord_checksum: bool = False
+    coord_data_array_stats: bool = False
+    coord_order: bool = False
+    array_edgeitems: int = 3
+    masked_value_count: bool = False
+
+    @contextmanager
+    def set(
+        self,
+        numpy_formatting: bool | None = None,
+        data_array_stats: bool | None = None,
+        coord_checksum: bool | None = None,
+        coord_data_array_stats: bool | None = None,
+        coord_order: bool | None = None,
+        array_edgeitems: int | None = None,
+        masked_value_count: bool | None = None,
+    ):
+        """Context manager to control the CML output settings.
+
+        Use this method in a `with` statement to override specific output settings
+        of the Cube Metadata Language (CML), e.g. as generated from ``cube.xml()``.
+
+        Example:
+
+        # Generate a CML output for a cube, but also include array statistics for the
+        # cube coordinate data:
+
+        .. code-block:: python
+
+            with iris.CML_SETTINGS.set(coord_data_array_stats=True):
+                print(cube.xml())
+
+
+        Parameters
+        ----------
+        numpy_formatting : bool or None, optional
+            Whether to use numpy-style formatting for arrays.
+        data_array_stats : bool or None, optional
+            Whether to include statistics for cube data array.
+        coord_checksum : bool or None, optional
+            Whether to include a checksum for coordinate data arrays.
+        coord_data_array_stats : bool or None, optional
+            Whether to include statistics for coordinate data arrays.
+        coord_order : bool or None, optional
+            Whether to output the array ordering (i.e. Fortran/C) for coordinate data arrays.
+        array_edgeitems : int or None, optional
+            The number of elements to display at the edges of arrays.
+        masked_value_count : bool or None, optional
+            Whether to include a count of masked values in the output.
+        """
+        # Keep track of current state:
+        prev_state = self.__dict__.copy()
+
+        # Set new values for non-None arguments:
+        opts = {k: v for k, v in list(locals().items()) if v is not None}
+        self.__dict__.update(opts)
+
+        # Try/finally block needed to ensure previous state is reinstated
+        # if code yielded to raises an exception.
+        try:
+            yield
+
+        finally:
+            # Reinstate previous values
+            self.__dict__.update(prev_state)
+
+
+# Global CML settings object for use as context manager
+CML_SETTINGS: CMLSettings = CMLSettings()

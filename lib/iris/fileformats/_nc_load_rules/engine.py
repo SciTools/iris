@@ -15,9 +15,14 @@ as used by our code to translate each data cube.
 
 engine.get_kb() also returns a FactEntity object, which mimics *just enough*
 API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
-used in :meth:`iris.fileformats.netcdf._actions_activation_stats`.
+used in :meth:`iris.fileformats.cf.loader._actions_activation_stats`.
 
 """
+
+from iris.coords import _DimensionalMetadata
+from iris.cube import Cube
+from iris.fileformats.cf import CFDataVariable
+
 from .actions import run_actions
 
 
@@ -72,6 +77,11 @@ class Engine:
     -- at present, in practice, those are all strings too.
 
     """
+
+    cf_var: CFDataVariable | None
+    cube: Cube | None
+    cube_parts: dict[str, list[tuple[_DimensionalMetadata, str]]] | None
+    filename: str | None
 
     def __init__(self):
         """Init new engine."""

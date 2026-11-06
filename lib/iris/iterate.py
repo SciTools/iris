@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Cube functions for iteration in step."""
+"""Cube functions for iteration in step.
+
+.. z_reference:: iris.iterate
+   :tags: topic_slice_combine
+
+   API reference
+"""
 
 from collections.abc import Iterator
 import itertools
@@ -10,7 +16,7 @@ import warnings
 
 import numpy as np
 
-from iris.exceptions import IrisUserWarning
+from iris.warnings import IrisUserWarning
 
 __all__ = ["izip"]
 
@@ -43,6 +49,11 @@ def izip(*cubes, **kwargs):
     -------
     An iterator over a collection of tuples that contain the resulting subcubes.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
         >>> e_content, e_density = iris.load_cubes(
@@ -52,11 +63,6 @@ def izip(*cubes, **kwargs):
         ...                                         coords=['grid_latitude',
         ...                                                 'grid_longitude']):
         ...    pass
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     if not cubes:
@@ -90,9 +96,9 @@ def izip(*cubes, **kwargs):
         if len(requested_dims) != sum(
             (len(cube.coord_dims(coord)) for coord in coords)
         ):
-            msg = (
-                "The requested coordinates (%r) of cube (%r) are not "
-                "orthogonal." % ([coord.name() for coord in coords], cube)
+            msg = "The requested coordinates (%r) of cube (%r) are not orthogonal." % (
+                [coord.name() for coord in coords],
+                cube,
             )
             raise ValueError(msg)
 

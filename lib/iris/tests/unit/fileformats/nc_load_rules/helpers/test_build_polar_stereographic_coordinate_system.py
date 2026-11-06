@@ -7,23 +7,17 @@ build_polar_stereographic_coordinate_system`.
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import iris
 from iris.coord_systems import PolarStereographic
 from iris.fileformats._nc_load_rules.helpers import (
     build_polar_stereographic_coordinate_system,
 )
+from iris.tests.unit.fileformats.nc_load_rules.helpers import CFVariableStandIn
 
 
-class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
-    def test_valid_north(self):
-        cf_grid_var = mock.Mock(
-            spec=[],
+class TestBuildPolarStereographicCoordinateSystem:
+    def test_valid_north(self, mocker):
+        cf_grid_var = CFVariableStandIn(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,
@@ -43,11 +37,10 @@ class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
         )
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
-    def test_valid_south(self):
-        cf_grid_var = mock.Mock(
-            spec=[],
+    def test_valid_south(self, mocker):
+        cf_grid_var = CFVariableStandIn(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=-90,
             scale_factor_at_projection_origin=1,
@@ -67,11 +60,10 @@ class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
         )
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
-    def test_valid_with_standard_parallel(self):
-        cf_grid_var = mock.Mock(
-            spec=[],
+    def test_valid_with_standard_parallel(self, mocker):
+        cf_grid_var = CFVariableStandIn(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             standard_parallel=30,
@@ -89,11 +81,10 @@ class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
         )
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
-    def test_valid_with_false_easting_northing(self):
-        cf_grid_var = mock.Mock(
-            spec=[],
+    def test_valid_with_false_easting_northing(self, mocker):
+        cf_grid_var = CFVariableStandIn(
             straight_vertical_longitude_from_pole=0,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,
@@ -117,11 +108,10 @@ class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
         )
-        self.assertEqual(cs, expected)
+        assert cs == expected
 
-    def test_valid_nonzero_veritcal_lon(self):
-        cf_grid_var = mock.Mock(
-            spec=[],
+    def test_valid_nonzero_veritcal_lon(self, mocker):
+        cf_grid_var = CFVariableStandIn(
             straight_vertical_longitude_from_pole=30,
             latitude_of_projection_origin=90,
             scale_factor_at_projection_origin=1,
@@ -141,8 +131,4 @@ class TestBuildPolarStereographicCoordinateSystem(tests.IrisTest):
                 cf_grid_var.semi_major_axis, cf_grid_var.semi_minor_axis
             ),
         )
-        self.assertEqual(cs, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert cs == expected

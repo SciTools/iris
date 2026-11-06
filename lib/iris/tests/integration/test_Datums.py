@@ -4,18 +4,17 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for :class:`iris.coord_systems` datum support."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
 import numpy as np
+import pytest
 
 from iris.coord_systems import GeogCS, LambertConformal
+from iris.tests import _shared_utils
 
 
-class TestDatumTransformation(tests.IrisTest):
-    def setUp(self):
+class TestDatumTransformation:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.x_points = np.array([-1.5])
         self.y_points = np.array([50.5])
 
@@ -48,4 +47,4 @@ class TestDatumTransformation(tests.IrisTest):
             self.start_crs, self.x_points, self.y_points
         )
 
-        self.assertArrayEqual(expected, actual)
+        _shared_utils.assert_array_equal(expected, actual)

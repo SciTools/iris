@@ -1,8 +1,12 @@
 
+.. include:: ../common_links.inc
+
 .. _contributing.documentation_easy:
 
 Contributing to the Documentation (the easy way)
 ------------------------------------------------
+
+.. readingtime::
 
 Documentation is important and we encourage any improvements that can be made.
 If you believe the documentation is not clear please contribute a change to
@@ -15,11 +19,10 @@ the improvement yourself)!
 
 First Time Only Steps
 ^^^^^^^^^^^^^^^^^^^^^
- 
+
 1. Create a `GitHub <https://github.com/>`_ account.
 
-2. Complete the Scitools Contributor License Agreement (`link to Google Form
-   <https://docs.google.com/forms/d/e/1FAIpQLSfd0tdE-DcJOXh8ej_7T93IizwJFYBFyRWYQOi2A8QRaKwykA/viewform>`_).
+2. Complete the `SciTools Contributor's License Agreement (CLA)`_.
    This is a one-off requirement for anyone who wishes to contribute to a
    Scitools repository - including the documentation.
 

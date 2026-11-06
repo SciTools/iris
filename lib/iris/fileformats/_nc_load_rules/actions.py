@@ -4,48 +4,51 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Replacement code for the Pyke rules.
 
-For now, we are still emulating various aspects of how our original Pyke-based
-code used the Pyke 'engine' to hold translation data, both Pyke-specific and
-not :
+.. maintainer-notes::
 
-1) basic details from the iris.fileformats.cf analysis of the file are
-   recorded before translating each output cube, using
-   "engine.assert_case_specific_fact(name, args)".
+   For now, we are still emulating various aspects of how our original
+   Pyke-based code used the Pyke 'engine' to hold translation data, both
+   Pyke-specific and not :
 
-2) this is also used to store intermediate info passed between rules, which
-   used to be done with a "facts_cf.provides" statement in rule actions.
+   1) basic details from the iris.fileformats.cf analysis of the file are
+      recorded before translating each output cube, using
+      "engine.assert_case_specific_fact(name, args)".
 
-3) Iris-specific info is (still) stored in additional properties created on
-   the engine object :
-       engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered, .filename
+   2) this is also used to store intermediate info passed between rules, which
+      used to be done with a "facts_cf.provides" statement in rule actions.
 
-Our "rules" are just action routines.
-The top-level 'run_actions' routine decides which actions to call, based on the
-info recorded when processing each cube output.  It does this in a simple
-explicit way, which doesn't use any clever chaining, "trigger conditions" or
-other rule-type logic.
+   3) Iris-specific info is (still) stored in additional properties created on
+      the engine object :
+          engine.cf_var, .cube, .cube_parts, .requires, .rules_triggered,
+          .filename
 
-Each 'action' function can replace several similar 'rules'.
-E.G. 'action_provides_grid_mapping' replaces all 'fc_provides_grid_mapping_<X>'.
-To aid debug, each returns a 'rule_name' string, indicating which original rule
-this particular action call is emulating :  In some cases, this may include a
-textual note that this rule 'failed', aka "did not trigger", which would not be
-recorded in the original implementation.
+   Our "rules" are just action routines. The top-level 'run_actions' routine
+   decides which actions to call, based on the info recorded when processing
+   each cube output.  It does this in a simple explicit way, which doesn't use
+   any clever chaining, "trigger conditions" or other rule-type logic.
 
-TODO: remove the use of intermediate "facts" to carry information between
-actions.  This mimics older behaviour, so is still useful while we are still
-comparing behaviour with the old Pyke rules (debugging).  But once that is no
-longer useful, this can be considerably simplified.
+   Each 'action' function can replace several similar 'rules'. E.G.
+   'action_provides_grid_mapping' replaces all
+   'fc_provides_grid_mapping_<X>'. To aid debug, each returns a 'rule_name'
+   string, indicating which original rule this particular action call is
+   emulating :  In some cases, this may include a textual note that this rule
+   'failed', aka "did not trigger", which would not be recorded in the
+   original implementation.
+
+   TODO: remove the use of intermediate "facts" to carry information between
+   actions.  This mimics older behaviour, so is still useful while we are
+   still comparing behaviour with the old Pyke rules (debugging).  But once
+   that is no longer useful, this can be considerably simplified.
 
 """
 
-from functools import wraps
+from functools import partial, wraps
 import warnings
 
 from iris.config import get_logger
-import iris.exceptions
 import iris.fileformats.cf
-import iris.fileformats.pp as pp
+from iris.loading import LOAD_PROBLEMS, LoadProblems
+import iris.warnings
 
 from . import helpers as hh
 
@@ -54,8 +57,8 @@ logger = get_logger(__name__, fmt="[%(funcName)s]")
 
 
 class _WarnComboCfLoadIgnoring(
-    iris.exceptions.IrisCfLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisCfLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -63,8 +66,8 @@ class _WarnComboCfLoadIgnoring(
 
 
 class _WarnComboLoadIgnoring(
-    iris.exceptions.IrisLoadWarning,
-    iris.exceptions.IrisIgnoringWarning,
+    iris.warnings.IrisLoadWarning,
+    iris.warnings.IrisIgnoringWarning,
 ):
     """One-off combination of warning classes - enhances user filtering."""
 
@@ -76,8 +79,7 @@ def _default_rulenamesfunc(func_name):
     funcname_prefix = "action_"
     rulename_prefix = "fc_"  # To match existing behaviours
     rule_name = func_name
-    if rule_name.startswith(funcname_prefix):
-        rule_name = rule_name[len(funcname_prefix) :]
+    rule_name = rule_name.removeprefix(funcname_prefix)
     if not rule_name.startswith(rulename_prefix):
         rule_name = rulename_prefix + rule_name
     return rule_name
@@ -105,7 +107,10 @@ def action_function(func):
 @action_function
 def action_default(engine):
     """Perform standard operations for every cube."""
-    hh.build_cube_metadata(engine)
+    hh.build_and_add_global_attributes(engine)
+    hh.build_and_add_names(engine)
+    hh.build_and_add_units(engine)
+    hh.build_and_add_cell_methods(engine)
 
 
 # Lookup table used by 'action_provides_grid_mapping'.
@@ -169,10 +174,12 @@ _GRIDTYPE_CHECKER_AND_BUILDER = {
 @action_function
 def action_provides_grid_mapping(engine, gridmapping_fact):
     """Convert a CFGridMappingVariable into a cube coord-system."""
+    from iris.coords import Coord
+
     (var_name,) = gridmapping_fact
     rule_name = "fc_provides_grid_mapping"
     cf_var = engine.cf_var.cf_group[var_name]
-    grid_mapping_type = getattr(cf_var, hh.CF_ATTR_GRID_MAPPING_NAME, None)
+    grid_mapping_type = cf_var.attributes.get(hh.CF_ATTR_GRID_MAPPING_NAME)
 
     succeed = True
     if grid_mapping_type is None:
@@ -195,14 +202,49 @@ def action_provides_grid_mapping(engine, gridmapping_fact):
             rule_name += f" --(FAILED check {checker.__name__})"
 
     if succeed:
-        coordinate_system = builder(engine, cf_var)
-        engine.cube_parts["coordinate_system"] = coordinate_system
 
-        # Check there is not an existing one.
-        # ATM this is guaranteed by the caller, "run_actions".
-        assert engine.fact_list("grid-type") == []
+        def build_outer(engine_, cf_var_):
+            coordinate_system = builder(engine_, cf_var_)
+            # We can now handle more than one coordinate_system, so store as dictionary:
+            engine_.cube_parts["coordinate_systems"][cf_var_.cf_name] = (
+                coordinate_system
+            )
 
-        engine.add_fact("grid-type", (grid_mapping_type,))
+        # Part 1 - only building - adding takes place downstream in
+        #  helpers.build_and_add_dimension/auxiliary_coordinate().
+        _ = hh._add_or_capture(
+            build_func=partial(build_outer, engine, cf_var),
+            add_method=partial(lambda coord_system: None),
+            cf_var=cf_var,
+            destination=LoadProblems.Problem.Destination(
+                iris_class=Coord,
+                # The coordinate(s) have not been determined at this stage.
+                identifier="NOT_KNOWN",
+            ),
+        )
+
+        # Store grid-mapping name along with grid-type to match them later on
+        engine.add_fact("grid-type", (var_name, grid_mapping_type))
+
+    else:
+        message = "Coordinate system not created. Debug info:\n"
+        message += rule_name
+        error = ValueError(message)
+
+        try:
+            raise error
+        except error.__class__ as error:
+            _ = LOAD_PROBLEMS.record(
+                filename=engine.filename,
+                loaded=hh.build_raw_cube(cf_var),
+                exception=error,
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=Coord,
+                    # The coordinate(s) have not been determined at this stage.
+                    identifier="NOT_KNOWN",
+                ),
+                handled=False,
+            )
 
     return rule_name
 
@@ -293,6 +335,7 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
     cf_var = engine.cf_var.cf_group[var_name]
     rule_name = f"fc_build_coordinate_({coord_type})"
     coord_grid_class, coord_name = _COORDTYPE_GRIDTYPES_AND_COORDNAMES[coord_type]
+    succeed = None
     if coord_grid_class is None:
         # Coordinates not identified with a specific grid-type class (latlon,
         # rotated or projected) are always built, but can have no coord-system.
@@ -308,7 +351,35 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
         # Non-conforming lon/lat/projection coords will be classed as
         # dim-coords by cf.py, but 'action_provides_coordinate' will give them
         # a coord-type of 'miscellaneous' : hence, they have no coord-system.
-        coord_system = engine.cube_parts.get("coordinate_system")
+        #
+        # At this point, we need to match any "coordinate_system" entries in
+        # the engine to the coord we are building. There are a couple of cases here:
+        #  1. Simple `grid_mapping = crs` is used, in which case
+        #     we should just apply that mapping to all dim coords.
+        #  2. Extended `grid_mapping = crs: coord1 coord2 crs: coord3 coord4`
+        #     is used in which case we need to match the crs to the coord here.
+
+        # We can have multiple coordinate_system, so now stored as a list (note plural key)
+        coord_systems = engine.cube_parts.get("coordinate_systems")
+        coord_system = None
+
+        if len(coord_systems):
+            # Find which coord system applies to this coordinate.
+            cs_mappings = engine.cube_parts.get("coordinate_system_mappings")
+            if cs_mappings and coord_systems:
+                if len(coord_systems) == 1 and None in cs_mappings:
+                    # Simple grid mapping (a single coord_system with no explicit coords)
+                    # Applies to spatial DimCoord(s) only. In this case only one
+                    # coordinate_system will have been built, so just use it.
+                    (coord_system,) = coord_systems.values()
+                    (cs_name,) = cs_mappings.values()
+                else:
+                    # Extended grid mapping, e.g.
+                    #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+                    # We need to search for coord system that references our coordinate.
+                    if cs_name := cs_mappings.get(cf_var.cf_name):
+                        coord_system = coord_systems.get(cs_name, None)
+
         # Translate the specific grid-mapping type to a grid-class
         if coord_system is None:
             succeed = True
@@ -317,8 +388,13 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             # Get a grid-class from the grid-type
             # i.e. one of latlon/rotated/projected, as for coord_grid_class.
             gridtypes_factlist = engine.fact_list("grid-type")
-            (gridtypes_fact,) = gridtypes_factlist  # only 1 fact
-            (cs_gridtype,) = gridtypes_fact  # fact contains 1 term
+
+            # potentially multiple grid-type facts; find one for CRS varname
+            cs_gridtype = None
+            for fact_cs_name, fact_cs_type in gridtypes_factlist:
+                if fact_cs_name == cs_name:
+                    cs_gridtype = fact_cs_type
+
             if cs_gridtype == "latitude_longitude":
                 cs_gridclass = "latlon"
             elif cs_gridtype == "rotated_latitude_longitude":
@@ -374,9 +450,35 @@ def action_build_dimension_coordinate(engine, providescoord_fact):
             assert coord_grid_class in grid_classes
 
     if succeed:
-        hh.build_dimension_coordinate(
+        hh.build_and_add_dimension_coordinate(
             engine, cf_var, coord_name=coord_name, coord_system=coord_system
         )
+
+    else:
+        message = f"Dimension coordinate {var_name} not created. Debug info:\n"
+        if succeed is None:
+            message += "An unexpected error occurred"
+            error = NotImplementedError(message)
+        else:
+            message += rule_name
+            error = ValueError(message)
+
+        try:
+            raise error
+        except error.__class__ as error:
+            from iris.cube import Cube
+
+            _ = LOAD_PROBLEMS.record(
+                filename=engine.filename,
+                loaded=hh.build_raw_cube(cf_var),
+                exception=error,
+                destination=LoadProblems.Problem.Destination(
+                    iris_class=Cube,
+                    identifier=engine.cf_var.cf_name,
+                ),
+                handled=False,
+            )
+
     return rule_name
 
 
@@ -385,6 +487,7 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     """Convert a CFAuxiliaryCoordinateVariable into a cube aux-coord."""
     (var_name,) = auxcoord_fact
     rule_name = "fc_build_auxiliary_coordinate"
+    cf_var = engine.cf_var.cf_group[var_name]
 
     # Identify any known coord "type" : latitude/longitude/time/time_period
     # If latitude/longitude, this sets the standard_name of the built AuxCoord
@@ -412,56 +515,90 @@ def action_build_auxiliary_coordinate(engine, auxcoord_fact):
     if coord_type:
         rule_name += f"_{coord_type}"
 
-    cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
-    hh.build_auxiliary_coordinate(engine, cf_var, coord_name=coord_name)
+    # Check if we have a coord_system specified for this coordinate.
+    # (Only possible via extended grid_mapping attribute)
+    coord_systems = engine.cube_parts.get("coordinate_systems")
+    coord_system = None
 
-    return rule_name
-
-
-@action_function
-def action_ukmo_stash(engine):
-    """Convert 'ukmo stash' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__um_stash_source"
-    var = engine.cf_var
-    attr_name = "ukmo__um_stash_source"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        attr_name = "um_stash_source"  # legacy form
-        attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        try:
-            stash_code = pp.STASH.from_msi(attr_value)
-        except (TypeError, ValueError):
-            engine.cube.attributes[attr_name] = attr_value
-            msg = (
-                "Unable to set attribute STASH as not a valid MSI "
-                f'string "mXXsXXiXXX", got "{attr_value}"'
-            )
-            logger.debug(msg)
+    cs_mappings = engine.cube_parts.get("coordinate_system_mappings", None)
+    if cs_mappings and coord_systems:
+        if len(coord_systems) == 1 and None in cs_mappings:
+            # Simple grid_mapping - doesn't apply to AuxCoords (we need an explicit mapping)
+            pass
         else:
-            engine.cube.attributes["STASH"] = stash_code
+            # Extended grid mapping, e.g.
+            #  `grid_mapping = "crs: coord1 coord2 crs: coord3 coord4"`
+            # We need to search for coord system that references our coordinate.
+            if cs_name := cs_mappings.get(cf_var.cf_name):
+                coord_system = coord_systems.get(cs_name, None)
+
+    cf_var = engine.cf_var.cf_group.auxiliary_coordinates[var_name]
+    hh.build_and_add_auxiliary_coordinate(
+        engine, cf_var, coord_name=coord_name, coord_system=coord_system
+    )
 
     return rule_name
 
 
 @action_function
-def action_ukmo_processflags(engine):
-    """Convert 'ukmo process flags' cf property into a cube attribute."""
-    rule_name = "fc_attribute_ukmo__process_flags"
-    var = engine.cf_var
-    attr_name = "ukmo__process_flags"
-    attr_value = getattr(var, attr_name, None)
-    if attr_value is None:
-        rule_name += "(NOT-TRIGGERED)"
-    else:
-        # No helper routine : just do it
-        flags = [x.replace("_", " ") for x in attr_value.split(" ")]
-        engine.cube.attributes["ukmo__process_flags"] = tuple(flags)
-
+def action_managed_attribute(engine, attr_name, attr_value):
+    """Record a managed attribute, as successfully translated."""
+    rule_name = f"fc_special_attribute__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
     return rule_name
+
+
+@action_function
+def action_unmanaged_attribute(engine, attr_name, attr_value):
+    """Record the original attribute, when translation of a managed one failed."""
+    rule_name = f"fc_special_attribute__fallback__{attr_name}"
+    engine.cube.attributes[attr_name] = attr_value
+    return rule_name
+
+
+def action_all_managed_attributes(engine):
+    """Check for and convert all 'handled' attributes."""
+    from iris.fileformats.cf._attribute_handlers import ATTRIBUTE_HANDLERS
+
+    var = engine.cf_var
+    for handler in ATTRIBUTE_HANDLERS.values():
+        # Each handler can have several match names, but ideally only 0 or 1 appears !
+        iris_name = handler.iris_name
+        matches = []
+        for match_name in handler.netcdf_names:
+            match_value = var.attributes.get(match_name)
+            if match_value is not None:
+                matches.append((match_name, match_value))
+
+        if len(matches) > 1:
+            msg = (
+                f"Multiple file attributes would set the iris '.{iris_name}' cube "
+                "attribute:"
+                + "".join(f"\n  {name!r}: {val!r}" for name, val in matches)
+                + "\n- only the first of these is actioned."
+            )
+            warnings.warn(msg, category=_WarnComboLoadIgnoring)
+
+        if len(matches) > 0:
+            # Take the first as priority
+            input_name, input_value = matches[0]
+            try:
+                iris_value = handler.decode_attribute(input_value)
+                # process as a rule
+                action_managed_attribute(engine, iris_name, iris_value)
+
+            except (ValueError, TypeError):
+                msg = (
+                    f"Invalid content for managed attribute name {match_name!r} "
+                    f"= {input_value!r}: The attribute is retained untranslated, which "
+                    "may not re-save correctly."
+                )
+                warnings.warn(msg, category=iris.warnings.IrisLoadWarning)
+
+                # ALSO record the attribute on the cube since, now it has been fetched
+                #  by the CF interpreting code, it will be discounted from inclusion.
+                # Since translation failed, record as original name=value.
+                action_unmanaged_attribute(engine, input_name, input_value)
 
 
 @action_function
@@ -469,7 +606,7 @@ def action_build_cell_measure(engine, cellm_fact):
     """Convert a CFCellMeasureVariable into a cube cell-measure."""
     (var_name,) = cellm_fact
     var = engine.cf_var.cf_group.cell_measures[var_name]
-    hh.build_cell_measures(engine, var)
+    hh.build_and_add_cell_measure(engine, var)
 
 
 @action_function
@@ -477,7 +614,7 @@ def action_build_ancil_var(engine, ancil_fact):
     """Convert a CFAncillaryVariable into a cube ancil-var."""
     (var_name,) = ancil_fact
     var = engine.cf_var.cf_group.ancillary_variables[var_name]
-    hh.build_ancil_var(engine, var)
+    hh.build_and_add_ancil_var(engine, var)
 
 
 @action_function
@@ -485,7 +622,7 @@ def action_build_label_coordinate(engine, label_fact):
     """Convert a CFLabelVariable into a cube string-type aux-coord."""
     (var_name,) = label_fact
     var = engine.cf_var.cf_group.labels[var_name]
-    hh.build_auxiliary_coordinate(engine, var)
+    hh.build_and_add_auxiliary_coordinate(engine, var)
 
 
 @action_function
@@ -495,7 +632,7 @@ def action_formula_type(engine, formula_root_fact):
     (var_name,) = formula_root_fact
     cf_var = engine.cf_var.cf_group[var_name]
     # cf_var.standard_name is a formula type (or we should never get here).
-    formula_type = getattr(cf_var, "standard_name", None)
+    formula_type = cf_var.attributes.get("standard_name")
     succeed = True
     if formula_type not in iris.fileformats.cf.reference_terms:
         succeed = False
@@ -524,7 +661,7 @@ def action_formula_type(engine, formula_root_fact):
                 category=_WarnComboLoadIgnoring,
             )
         rule_name += f"_{formula_type}"
-        # Set 'requires' info for iris.fileformats.netcdf._load_aux_factory.
+        # Set 'requires' info for iris.fileformats.cf.loader._load_aux_factory.
         engine.requires["formula_type"] = formula_type
 
     return rule_name
@@ -554,10 +691,9 @@ def run_actions(engine):
     # default (all cubes) action, always runs
     action_default(engine)  # This should run the default rules.
 
-    # deal with grid-mappings
+    # deal with grid-mappings; potentially multiple mappings if extended grid_mapping used.
     grid_mapping_facts = engine.fact_list("grid_mapping")
-    # For now, there should be at most *one* of these.
-    assert len(grid_mapping_facts) in (0, 1)
+
     for grid_mapping_fact in grid_mapping_facts:
         action_provides_grid_mapping(engine, grid_mapping_fact)
 
@@ -580,10 +716,9 @@ def run_actions(engine):
     for auxcoord_fact in auxcoord_facts:
         action_build_auxiliary_coordinate(engine, auxcoord_fact)
 
-    # Detect + process and special 'ukmo' attributes
+    # Detect + process and special handling attributes
     # Run on every cube : they choose themselves whether to trigger.
-    action_ukmo_stash(engine)
-    action_ukmo_processflags(engine)
+    action_all_managed_attributes(engine)
 
     # cell measures
     cellm_facts = engine.fact_list("cell_measure")

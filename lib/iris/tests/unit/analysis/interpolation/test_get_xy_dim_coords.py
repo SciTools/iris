@@ -4,58 +4,58 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.analysis._interpolation.get_xy_dim_coords`."""
 
-# import iris tests first so that some things can be initialised
-# before importing anything else.
-import iris.tests as tests  # isort:skip
-
 import copy
 
 import numpy as np
+import pytest
 
 from iris.analysis._interpolation import get_xy_dim_coords
 import iris.coord_systems
 import iris.coords
 import iris.experimental.regrid
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 
-class TestGetXYCoords(tests.IrisTest):
-    @tests.skip_data
+class TestGetXYCoords:
+    @_shared_utils.skip_data
     def test_grid_lat_lon(self):
         cube = iris.tests.stock.realistic_4d()
         x, y = get_xy_dim_coords(cube)
-        self.assertIs(x, cube.coord("grid_longitude"))
-        self.assertIs(y, cube.coord("grid_latitude"))
+        assert x is cube.coord("grid_longitude")
+        assert y is cube.coord("grid_latitude")
 
     def test_lat_lon(self):
         cube = iris.tests.stock.lat_lon_cube()
         x, y = get_xy_dim_coords(cube)
-        self.assertIs(x, cube.coord("longitude"))
-        self.assertIs(y, cube.coord("latitude"))
+        assert x is cube.coord("longitude")
+        assert y is cube.coord("latitude")
 
     def test_projection_coords(self):
         cube = iris.tests.stock.lat_lon_cube()
         cube.coord("longitude").rename("projection_x_coordinate")
         cube.coord("latitude").rename("projection_y_coordinate")
         x, y = get_xy_dim_coords(cube)
-        self.assertIs(x, cube.coord("projection_x_coordinate"))
-        self.assertIs(y, cube.coord("projection_y_coordinate"))
+        assert x is cube.coord("projection_x_coordinate")
+        assert y is cube.coord("projection_y_coordinate")
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_missing_x_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord("grid_longitude")
-        with self.assertRaises(ValueError):
+        emsg = "Cube '.*' must contain a single 1D x coordinate"
+        with pytest.raises(ValueError, match=emsg):
             get_xy_dim_coords(cube)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_missing_y_coord(self):
         cube = iris.tests.stock.realistic_4d()
         cube.remove_coord("grid_latitude")
-        with self.assertRaises(ValueError):
+        emsg = "Cube '.*' must contain a single 1D y coordinate"
+        with pytest.raises(ValueError, match=emsg):
             get_xy_dim_coords(cube)
 
-    @tests.skip_data
+    @_shared_utils.skip_data
     def test_multiple_coords(self):
         cube = iris.tests.stock.realistic_4d()
         cs = iris.coord_systems.GeogCS(6371229)
@@ -80,28 +80,30 @@ class TestGetXYCoords(tests.IrisTest):
         cube.remove_coord(model_level_coord)
         cube.add_dim_coord(lon_coord, model_level_dims)
 
-        with self.assertRaises(ValueError):
+        emsg = "Cube '.*' must contain a single 1D x coordinate"
+        with pytest.raises(ValueError, match=emsg):
             get_xy_dim_coords(cube)
 
         cube.remove_coord("grid_latitude")
         cube.remove_coord("grid_longitude")
 
         x, y = get_xy_dim_coords(cube)
-        self.assertIs(x, lon_coord)
-        self.assertIs(y, lat_coord)
+        assert x is lon_coord
+        assert y is lat_coord
 
     def test_no_coordsystem(self):
         cube = iris.tests.stock.lat_lon_cube()
         for coord in cube.coords():
             coord.coord_system = None
         x, y = get_xy_dim_coords(cube)
-        self.assertIs(x, cube.coord("longitude"))
-        self.assertIs(y, cube.coord("latitude"))
+        assert x is cube.coord("longitude")
+        assert y is cube.coord("latitude")
 
     def test_one_coordsystem(self):
         cube = iris.tests.stock.lat_lon_cube()
         cube.coord("longitude").coord_system = None
-        with self.assertRaises(ValueError):
+        emsg = "coordinates must have the same coordinate system"
+        with pytest.raises(ValueError, match=emsg):
             get_xy_dim_coords(cube)
 
     def test_different_coordsystem(self):
@@ -115,9 +117,6 @@ class TestGetXYCoords(tests.IrisTest):
         lon_cs.semi_major_axis = 7000001
         cube.coord("longitude").coord_system = lon_cs
 
-        with self.assertRaises(ValueError):
+        emsg = "coordinates must have the same coordinate system"
+        with pytest.raises(ValueError, match=emsg):
             get_xy_dim_coords(cube)
-
-
-if __name__ == "__main__":
-    tests.main()

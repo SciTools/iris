@@ -30,9 +30,23 @@ class PearsonR:
     def time_real(self):
         pearsonr(self.cube_a, self.cube_b, weights=self.weights)
 
+    def tracemalloc_real(self):
+        pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+
+    tracemalloc_real.number = 3  # type: ignore[attr-defined]
+
     def time_lazy(self):
         for cube in self.cube_a, self.cube_b:
             cube.data = cube.lazy_data()
 
         result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
         result.data
+
+    def tracemalloc_lazy(self):
+        for cube in self.cube_a, self.cube_b:
+            cube.data = cube.lazy_data()
+
+        result = pearsonr(self.cube_a, self.cube_b, weights=self.weights)
+        result.data
+
+    tracemalloc_lazy.number = 3  # type: ignore[attr-defined]

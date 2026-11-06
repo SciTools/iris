@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Plotting Wind Direction Using Quiver
 ====================================
+
+.. how-to:: Plotting Wind Direction Using Quiver
+   :tags: topic_plotting
+
+   How to use Iris to plot wind quivers.
 
 This example demonstrates using quiver to plot wind speed contours and wind
 direction arrows from wind vector component input data. The vector components

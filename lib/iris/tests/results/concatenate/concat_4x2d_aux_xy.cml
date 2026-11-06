@@ -3,22 +3,13 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5],
- [ 1.5,  2.5],
- [ 2.5,  3.5]]" id="78a0dfe8" long_name="x" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, ..., 2.5, 2.5, 3.5]" checksum="0x25601b8b" id="78a0dfe8" long_name="x" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0, 1]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  1., 101.,   2., 102.],
- [201., 301., 202., 302.],
- [  3., 103.,   4., 104.],
- [203., 303., 204., 304.]]" shape="(4, 4)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0x06003f56" id="af0ab254" long_name="xy-aux" points="[1., 101., 2., ..., 303., 204., 304.]" shape="(4, 4)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5],
- [ 1.5,  2.5],
- [ 2.5,  3.5]]" id="6fdbcbab" long_name="y" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, ..., 2.5, 2.5, 3.5]" checksum="0x25601b8b" id="6fdbcbab" long_name="y" points="[0., 1., 2., 3.]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

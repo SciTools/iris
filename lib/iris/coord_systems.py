@@ -2,18 +2,25 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Definitions of coordinate systems."""
+"""Definitions of coordinate systems.
+
+.. z_reference:: iris.coord_systems
+   :tags: topic_data_model
+
+   API reference
+"""
 
 from abc import ABCMeta, abstractmethod
 from functools import cached_property
 import re
+from typing import ClassVar
 import warnings
 
 import cartopy.crs as ccrs
 import numpy as np
 
 from iris._deprecation import warn_deprecated
-import iris.exceptions
+import iris.warnings
 
 
 def _arg_default(value, default, cast_as=float):
@@ -48,7 +55,7 @@ def _float_or_None(arg):
 class CoordSystem(metaclass=ABCMeta):
     """Abstract base class for coordinate systems."""
 
-    grid_mapping_name = None
+    grid_mapping_name: ClassVar[str | None] = None
 
     def __eq__(self, other):
         """Override equality.
@@ -161,9 +168,9 @@ class GeogCS(CoordSystem):
             Axes of ellipsoid, in metres.  At least one must be given (see note
             below).
         inverse_flattening : optional
-            Can be omitted if both axes given (see note below). Default 0.0
+            Can be omitted if both axes given (see note below). Default 0.0.
         longitude_of_prime_meridian : optional
-            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0
+            Specifies the prime meridian on the ellipsoid, in degrees. Default 0.0.
 
         Notes
         -----
@@ -330,8 +337,8 @@ class GeogCS(CoordSystem):
     def _globe(self):
         """A representation of this CRS as a Cartopy Globe.
 
-        Note
-        ----
+        Notes
+        -----
         This property is created when required and then cached for speed. That
         cached value is cleared when an assignment is made to a property of the
         class that invalidates the cache.
@@ -352,19 +359,21 @@ class GeogCS(CoordSystem):
     def _crs(self):
         """A representation of this CRS as a Cartopy CRS.
 
-        Note
-        ----
+        Notes
+        -----
         This property is created when required and then cached for speed. That
         cached value is cleared when an assignment is made to a property of the
         class that invalidates the cache.
+
         """
         return ccrs.Geodetic(self._globe)
 
     def _wipe_cached_properties(self):
-        """Wipes the cached properties on the object.
+        """Wipe the cached properties on the object.
 
-        Wipes the cached properties on the object as part of any update to a
+        Wipe the cached properties on the object as part of any update to a
         value that invalidates the cache.
+
         """
         try:
             delattr(self, "_crs")
@@ -439,7 +448,7 @@ class GeogCS(CoordSystem):
             "the GeogCS object. To change other properties set them explicitly"
             " or create a new GeogCS instance."
         )
-        warnings.warn(wmsg, category=iris.exceptions.IrisUserWarning)
+        warnings.warn(wmsg, category=iris.warnings.IrisUserWarning)
         value = float(value)
         self._inverse_flattening = value
 
@@ -766,9 +775,8 @@ class Orthographic(CoordSystem):
         globe = self._ellipsoid_to_globe(self.ellipsoid, ccrs.Globe())
 
         warnings.warn(
-            "Discarding false_easting and false_northing that are "
-            "not used by Cartopy.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            "Discarding false_easting and false_northing that are not used by Cartopy.",
+            category=iris.warnings.IrisDefaultingWarning,
         )
 
         return ccrs.Orthographic(
@@ -990,10 +998,10 @@ class Stereographic(CoordSystem):
             Y offset from planar origin in metres.
         true_scale_lat : float, optional
             Latitude of true scale.
-        scale_factor_at_projection_origin : float, optional
-            Scale factor at the origin of the projection
         ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
+        scale_factor_at_projection_origin : float, optional
+            Scale factor at the origin of the projection.
 
         Notes
         -----
@@ -1098,7 +1106,7 @@ class PolarStereographic(Stereographic):
         true_scale_lat : float, optional
             Latitude of true scale.
         scale_factor_at_projection_origin : float, optional
-            Scale factor at the origin of the projection
+            Scale factor at the origin of the projection.
         ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
 
@@ -1502,7 +1510,8 @@ class ObliqueMercator(CoordSystem):
 
     See Also
     --------
-    :class:`RotatedMercator`
+    RotatedMercator :
+        :class:`ObliqueMercator` with ``azimuth_of_central_line=90``.
 
     """
 
@@ -1527,15 +1536,15 @@ class ObliqueMercator(CoordSystem):
             the centre line.
         latitude_of_projection_origin : float
             The true longitude of the central meridian in degrees.
-        longitude_of_projection_origin: float
+        longitude_of_projection_origin : float
             The true latitude of the planar origin in degrees.
-        false_easting: float, optional
+        false_easting : float, optional
             X offset from the planar origin in metres.
             Defaults to 0.0.
-        false_northing: float, optional
+        false_northing : float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0.
-        scale_factor_at_projection_origin: float, optional
+        scale_factor_at_projection_origin : float, optional
             Scale factor at the central meridian.
             Defaults to 1.0 .
         ellipsoid : :class:`GeogCS`, optional
@@ -1615,6 +1624,8 @@ class RotatedMercator(ObliqueMercator):
         The Rotated Mercator projection is an Oblique Mercator projection
         with azimuth = +90.
 
+    Notes
+    -----
     .. deprecated:: 3.8.0
         This coordinate system was introduced as already scheduled for removal
         in a future release, since CF version 1.11 onwards now requires use of
@@ -1639,18 +1650,18 @@ class RotatedMercator(ObliqueMercator):
         ----------
         latitude_of_projection_origin : float
             The true longitude of the central meridian in degrees.
-        longitude_of_projection_origin: float
+        longitude_of_projection_origin : float
             The true latitude of the planar origin in degrees.
-        false_easting: float, optional
+        false_easting : float, optional
             X offset from the planar origin in metres.
             Defaults to 0.0.
-        false_northing: float, optional
+        false_northing : float, optional
             Y offset from the planar origin in metres.
             Defaults to 0.0.
-        scale_factor_at_projection_origin: float, optional
+        scale_factor_at_projection_origin : float, optional
             Scale factor at the central meridian.
             Defaults to 1.0 .
-        ellipsoid: :class:`GeogCS`, optional
+        ellipsoid : :class:`GeogCS`, optional
             If given, defines the ellipsoid.
 
         """

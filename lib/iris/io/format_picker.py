@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Provide convenient file format identification.
 
+.. z_reference:: iris.io.format_picker
+   :tags: topic_load_save
+
+   API reference
+
 A module to provide convenient file format identification through a combination
 of filename extension and file based *magic* numbers.
 
@@ -43,7 +48,7 @@ original specification and can be customised to your project's needs.
 
 from collections.abc import Callable
 import functools
-import os
+from pathlib import Path
 import struct
 
 
@@ -83,6 +88,19 @@ class FormatAgent:
         return prefix + "\n * ".join(
             ["%s" % format_spec for format_spec in self._format_specs]
         )
+
+    def __eq__(self, other):
+        return self._format_specs == other._format_specs
+
+    def copy(self):
+        """Return a copy of the format agent.
+
+        Returns
+        -------
+        FormatAgent
+            A copy of the format agent.
+        """
+        return FormatAgent(self._format_specs.copy())
 
     def get_spec(self, basename, buffer_obj):
         """Pick the first FormatSpecification.
@@ -175,21 +193,22 @@ class FormatSpecification:
         Parameters
         ----------
         format_name : str
-            string name of fileformat being described
+            String name of fileformat being described.
         file_element :
             FileElement instance of the element which identifies this
-            FormatSpecification
+            FormatSpecification.
         file_element_value :
             The value that the file_element should take if a file matches this
-            FormatSpecification
+            FormatSpecification.
         handler : optional
-            function which will be called when the specification has been
+            Function which will be called when the specification has been
             identified and is required to handler a format.  If None, then the
             file can still be identified but no handling can be done.
-        priority: int
+        priority : int
             Integer giving a priority for considering this specification where
             higher priority means sooner consideration.
-        constraint_aware_handler: default=False
+        constraint_aware_handler : default=False
+
         """
         if not isinstance(file_element, FileElement):
             raise ValueError(
@@ -329,7 +348,7 @@ class FileExtension(FileElement):
 
     def get_element(self, basename, file_handle):
         # noqa D102
-        return os.path.splitext(basename)[1]
+        return Path(basename).suffix
 
 
 class LeadingLine(FileElement):
@@ -341,9 +360,9 @@ class LeadingLine(FileElement):
 
 
 class UriProtocol(FileElement):
-    """Return the scheme and part from a URI, using :func:`~iris.io.decode_uri`.
+    """Return URI decode parts, using :func:`~iris.io.decode_uri`.
 
-    A :class:`FileElement` that returns the "scheme" and "part" from a URI,
+    A :class:`FileElement` that returns the "scheme", "part" and "fragment" from a URI,
     using :func:`~iris.io.decode_uri`.
 
     """
@@ -355,7 +374,34 @@ class UriProtocol(FileElement):
         # noqa: D102
         from iris.io import decode_uri
 
-        return decode_uri(basename)[0]
+        return decode_uri(basename)
+
+
+class ZarrStore(FileElement):
+    """A :class:`FileElement` that returns a target that may be a Zarr store.
+
+    Carries the whole target rather than its basename, because recognising a
+    local store means reading a marker file inside it, and recognising a
+    remote one means reading its scheme.
+
+    """
+
+    def __init__(self):
+        FileElement.__init__(self, requires_fh=False)
+
+    def get_element(self, basename, file_handle):
+        """Return the target, which here is the whole path or URL.
+
+        ``None`` when a file handle is supplied, which no store ever has: a
+        store is a directory or a URL, so the caller that opened a single
+        seekable file has already settled the question. That caller also
+        passes a basename rather than a path, which resolved against the
+        working directory could name an unrelated store that happens to share
+        the file's name.
+        """
+        if file_handle is not None:
+            return None
+        return basename
 
 
 class DataSourceObjectProtocol(FileElement):

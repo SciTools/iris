@@ -7,10 +7,6 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import cartopy.crs as ccrs
 import numpy as np
 import numpy.ma as ma
@@ -20,6 +16,7 @@ from iris.analysis.cartography import rotate_winds, unrotate_pole
 import iris.coord_systems
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 
 
 def uv_cubes(x=None, y=None):
@@ -70,12 +67,12 @@ def uv_cubes_3d(ref_cube, n_realization=3):
     return u_cube, v_cube
 
 
-class TestPrerequisites(tests.IrisTest):
+class TestPrerequisites:
     def test_different_coord_systems(self):
         u, v = uv_cubes()
         v.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(1)
-        with self.assertRaisesRegex(
-            ValueError, "Coordinates differ between u and v cubes"
+        with pytest.raises(
+            ValueError, match="Coordinates differ between u and v cubes"
         ):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
@@ -83,8 +80,8 @@ class TestPrerequisites(tests.IrisTest):
         u, v = uv_cubes()
         u.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(1)
         v.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(1)
-        with self.assertRaisesRegex(
-            ValueError, "Coordinate systems of x and y coordinates differ"
+        with pytest.raises(
+            ValueError, match="Coordinate systems of x and y coordinates differ"
         ):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
@@ -93,7 +90,7 @@ class TestPrerequisites(tests.IrisTest):
         y = np.linspace(-23.6, 24.8, 5)
         u, _ = uv_cubes(x, y)
         _, v = uv_cubes(x[:-1], y)
-        with self.assertRaisesRegex(ValueError, "same shape"):
+        with pytest.raises(ValueError, match="same shape"):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
     def test_xy_dimensionality(self):
@@ -112,9 +109,9 @@ class TestPrerequisites(tests.IrisTest):
             cube.remove_coord("grid_latitude")
             cube.add_aux_coord(lat_2d.copy(), (0, 1))
 
-        with self.assertRaisesRegex(
+        with pytest.raises(
             ValueError,
-            "x and y coordinates must have the same number of dimensions",
+            match="x and y coordinates must have the same number of dimensions",
         ):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
@@ -123,11 +120,11 @@ class TestPrerequisites(tests.IrisTest):
         y = np.linspace(-23.6, 24.8, 3)
         u, v = uv_cubes(x, y)
         v.transpose()
-        with self.assertRaisesRegex(ValueError, "Dimension mapping"):
+        with pytest.raises(ValueError, match="Dimension mapping"):
             rotate_winds(u, v, iris.coord_systems.OSGB())
 
 
-class TestAnalyticComparison(tests.IrisTest):
+class TestAnalyticComparison:
     @staticmethod
     def _unrotate_equation(
         rotated_lons, rotated_lats, rotated_us, rotated_vs, pole_lon, pole_lat
@@ -184,8 +181,8 @@ class TestAnalyticComparison(tests.IrisTest):
         )
 
         # Check that all the numerical results are within given tolerances.
-        self.assertArrayAllClose(u_true.data, u_ref, **kwds)
-        self.assertArrayAllClose(v_true.data, v_ref, **kwds)
+        _shared_utils.assert_array_all_close(u_true.data, u_ref, **kwds)
+        _shared_utils.assert_array_all_close(v_true.data, v_ref, **kwds)
 
     def test_rotated_to_true__small(self):
         # Check for a small field with varying data.
@@ -212,7 +209,7 @@ class TestAnalyticComparison(tests.IrisTest):
             )
 
 
-class TestRotatedToOSGB(tests.IrisTest):
+class TestRotatedToOSGB:
     # Define some coordinate ranges for the uv_cubes 'standard' RotatedPole
     # system, that exceed the OSGB margins, but not by "too much".
     _rp_x_min, _rp_x_max = -5.0, 5.0
@@ -230,8 +227,8 @@ class TestRotatedToOSGB(tests.IrisTest):
         u.rename("bob")
         v.rename("alice")
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
-        self.assertEqual(ut.name(), "transformed_" + u.name())
-        self.assertEqual(vt.name(), "transformed_" + v.name())
+        assert ut.name() == "transformed_" + u.name()
+        assert vt.name() == "transformed_" + v.name()
 
     def test_new_coords(self):
         u, v = self._uv_cubes_limited_extent()
@@ -251,8 +248,8 @@ class TestRotatedToOSGB(tests.IrisTest):
             units="m",
             coord_system=iris.coord_systems.OSGB(),
         )
-        self.assertEqual(ut.coord("projection_x_coordinate"), expected_x)
-        self.assertEqual(vt.coord("projection_x_coordinate"), expected_x)
+        assert ut.coord("projection_x_coordinate") == expected_x
+        assert vt.coord("projection_x_coordinate") == expected_x
 
         points = xyz_tran[..., 1].reshape(y2d.shape)
         expected_y = AuxCoord(
@@ -261,8 +258,8 @@ class TestRotatedToOSGB(tests.IrisTest):
             units="m",
             coord_system=iris.coord_systems.OSGB(),
         )
-        self.assertEqual(ut.coord("projection_y_coordinate"), expected_y)
-        self.assertEqual(vt.coord("projection_y_coordinate"), expected_y)
+        assert ut.coord("projection_y_coordinate") == expected_y
+        assert vt.coord("projection_y_coordinate") == expected_y
 
     def test_new_coords_transposed(self):
         u, v = self._uv_cubes_limited_extent()
@@ -286,8 +283,8 @@ class TestRotatedToOSGB(tests.IrisTest):
             units="m",
             coord_system=iris.coord_systems.OSGB(),
         )
-        self.assertEqual(ut.coord("projection_x_coordinate"), expected_x)
-        self.assertEqual(vt.coord("projection_x_coordinate"), expected_x)
+        assert ut.coord("projection_x_coordinate") == expected_x
+        assert vt.coord("projection_x_coordinate") == expected_x
 
         points = xyz_tran[..., 1].reshape(y2d.shape)
         expected_y = AuxCoord(
@@ -296,29 +293,29 @@ class TestRotatedToOSGB(tests.IrisTest):
             units="m",
             coord_system=iris.coord_systems.OSGB(),
         )
-        self.assertEqual(ut.coord("projection_y_coordinate"), expected_y)
-        self.assertEqual(vt.coord("projection_y_coordinate"), expected_y)
+        assert ut.coord("projection_y_coordinate") == expected_y
+        assert vt.coord("projection_y_coordinate") == expected_y
         # Check dim mapping for 2d coords is yx.
         expected_dims = u.coord_dims("grid_latitude") + u.coord_dims("grid_longitude")
-        self.assertEqual(ut.coord_dims("projection_x_coordinate"), expected_dims)
-        self.assertEqual(ut.coord_dims("projection_y_coordinate"), expected_dims)
-        self.assertEqual(vt.coord_dims("projection_x_coordinate"), expected_dims)
-        self.assertEqual(vt.coord_dims("projection_y_coordinate"), expected_dims)
+        assert ut.coord_dims("projection_x_coordinate") == expected_dims
+        assert ut.coord_dims("projection_y_coordinate") == expected_dims
+        assert vt.coord_dims("projection_x_coordinate") == expected_dims
+        assert vt.coord_dims("projection_y_coordinate") == expected_dims
 
     def test_orig_coords(self):
         u, v = self._uv_cubes_limited_extent()
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
-        self.assertEqual(u.coord("grid_latitude"), ut.coord("grid_latitude"))
-        self.assertEqual(v.coord("grid_latitude"), vt.coord("grid_latitude"))
-        self.assertEqual(u.coord("grid_longitude"), ut.coord("grid_longitude"))
-        self.assertEqual(v.coord("grid_longitude"), vt.coord("grid_longitude"))
+        assert u.coord("grid_latitude") == ut.coord("grid_latitude")
+        assert v.coord("grid_latitude") == vt.coord("grid_latitude")
+        assert u.coord("grid_longitude") == ut.coord("grid_longitude")
+        assert v.coord("grid_longitude") == vt.coord("grid_longitude")
 
     def test_magnitude_preservation(self):
         u, v = self._uv_cubes_limited_extent()
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
         orig_sq_mag = u.data**2 + v.data**2
         res_sq_mag = ut.data**2 + vt.data**2
-        self.assertArrayAllClose(orig_sq_mag, res_sq_mag, rtol=5e-4)
+        _shared_utils.assert_array_all_close(orig_sq_mag, res_sq_mag, rtol=5e-4)
 
     def test_data_values(self):
         u, v = self._uv_cubes_limited_extent()
@@ -334,8 +331,8 @@ class TestRotatedToOSGB(tests.IrisTest):
             [[19.88979966, 19.01921346], [19.88018847, 19.01424281]]
         )
         # Compare u and v data values against previously calculated values.
-        self.assertArrayAllClose(ut.data, expected_ut_data, rtol=1e-5)
-        self.assertArrayAllClose(vt.data, expected_vt_data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(ut.data, expected_ut_data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(vt.data, expected_vt_data, rtol=1e-5)
 
     def test_nd_data(self):
         u2d, y2d = self._uv_cubes_limited_extent()
@@ -355,8 +352,8 @@ class TestRotatedToOSGB(tests.IrisTest):
         expected_ut_data = factor * expected_ut_data
         expected_vt_data = factor * expected_vt_data
         # Compare u and v data values against previously calculated values.
-        self.assertArrayAlmostEqual(ut.data, expected_ut_data)
-        self.assertArrayAlmostEqual(vt.data, expected_vt_data)
+        _shared_utils.assert_array_almost_equal(ut.data, expected_ut_data)
+        _shared_utils.assert_array_almost_equal(vt.data, expected_vt_data)
 
     def test_transposed(self):
         # Test case where the coordinates are not ordered yx in the cube.
@@ -376,11 +373,11 @@ class TestRotatedToOSGB(tests.IrisTest):
             [[19.88979966, 19.01921346], [19.88018847, 19.01424281]]
         ).T
         # Compare u and v data values against previously calculated values.
-        self.assertArrayAllClose(ut.data, expected_ut_data, rtol=1e-5)
-        self.assertArrayAllClose(vt.data, expected_vt_data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(ut.data, expected_ut_data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(vt.data, expected_vt_data, rtol=1e-5)
 
 
-class TestMasking(tests.IrisTest):
+class TestMasking:
     def test_rotated_to_osgb(self):
         # Rotated Pole data with large extent.
         # A 'correct' answer is not known for this test; it is therefore
@@ -393,8 +390,8 @@ class TestMasking(tests.IrisTest):
         ut, vt = rotate_winds(u, v, iris.coord_systems.OSGB())
 
         # Ensure cells with discrepancies in magnitude are masked.
-        self.assertTrue(ma.isMaskedArray(ut.data))
-        self.assertTrue(ma.isMaskedArray(vt.data))
+        assert ma.isMaskedArray(ut.data)
+        assert ma.isMaskedArray(vt.data)
 
         # Snapshot of mask with fixed tolerance of atol=2e-3
         expected_mask = np.array(
@@ -410,8 +407,8 @@ class TestMasking(tests.IrisTest):
             ],
             np.bool_,
         )
-        self.assertArrayEqual(expected_mask, ut.data.mask)
-        self.assertArrayEqual(expected_mask, vt.data.mask)
+        _shared_utils.assert_array_equal(expected_mask, ut.data.mask)
+        _shared_utils.assert_array_equal(expected_mask, vt.data.mask)
 
         # Check unmasked values have sufficiently small error in mag.
         expected_mag = np.sqrt(u.data**2 + v.data**2)
@@ -426,11 +423,11 @@ class TestMasking(tests.IrisTest):
         # Sufficiently accurate so that no mask is introduced.
         u, v = uv_cubes()
         ut, vt = rotate_winds(u, v, iris.coord_systems.GeogCS(6371229))
-        self.assertFalse(ma.isMaskedArray(ut.data))
-        self.assertFalse(ma.isMaskedArray(vt.data))
+        assert not ma.isMaskedArray(ut.data)
+        assert not ma.isMaskedArray(vt.data)
 
 
-class TestRoundTrip(tests.IrisTest):
+class TestRoundTrip:
     def test_rotated_to_unrotated(self):
         # Check ability to use 2d coords as input.
         u, v = uv_cubes()
@@ -444,8 +441,8 @@ class TestRoundTrip(tests.IrisTest):
         orig_cs = u.coord("grid_latitude").coord_system
         res_u, res_v = rotate_winds(ut, vt, orig_cs)
         # Check data values - limited accuracy due to numerical approx.
-        self.assertArrayAlmostEqual(res_u.data, u.data, decimal=3)
-        self.assertArrayAlmostEqual(res_v.data, v.data, decimal=3)
+        _shared_utils.assert_array_almost_equal(res_u.data, u.data, decimal=3)
+        _shared_utils.assert_array_almost_equal(res_v.data, v.data, decimal=3)
         # Check coords locations.
         x2d, y2d = np.meshgrid(
             u.coord("grid_longitude").points, u.coord("grid_latitude").points
@@ -454,15 +451,15 @@ class TestRoundTrip(tests.IrisTest):
         x2d = np.where(x2d > 180, x2d - 360, x2d)
         res_x = res_u.coord("projection_x_coordinate", coord_system=orig_cs).points
         res_y = res_u.coord("projection_y_coordinate", coord_system=orig_cs).points
-        self.assertArrayAlmostEqual(res_x, x2d)
-        self.assertArrayAlmostEqual(res_y, y2d)
+        _shared_utils.assert_array_almost_equal(res_x, x2d)
+        _shared_utils.assert_array_almost_equal(res_y, y2d)
         res_x = res_v.coord("projection_x_coordinate", coord_system=orig_cs).points
         res_y = res_v.coord("projection_y_coordinate", coord_system=orig_cs).points
-        self.assertArrayAlmostEqual(res_x, x2d)
-        self.assertArrayAlmostEqual(res_y, y2d)
+        _shared_utils.assert_array_almost_equal(res_x, x2d)
+        _shared_utils.assert_array_almost_equal(res_y, y2d)
 
 
-class TestNonEarthPlanet(tests.IrisTest):
+class TestNonEarthPlanet:
     def test_non_earth_semimajor_axis(self):
         u, v = uv_cubes()
         u.coord("grid_latitude").coord_system = iris.coord_systems.GeogCS(123)
@@ -475,7 +472,7 @@ class TestNonEarthPlanet(tests.IrisTest):
         rotate_winds(u, v, other_cs)
 
 
-class TestLazyRotateWinds(tests.IrisTest):
+class TestLazyRotateWinds:
     def _compare_lazy_rotate_winds(self, masked):
         # Compute wind rotation with lazy data and compare results
 
@@ -493,44 +490,40 @@ class TestLazyRotateWinds(tests.IrisTest):
         v_lazy = v.copy(data=v.copy().lazy_data().rechunk([1, 2]))
 
         ut_ref, vt_ref = rotate_winds(u, v, coord_sys)
-        self.assertFalse(ut_ref.has_lazy_data())
-        self.assertFalse(vt_ref.has_lazy_data())
+        assert not ut_ref.has_lazy_data()
+        assert not vt_ref.has_lazy_data()
         # Ensure that choice of target coordinates leads to (no) masking
-        self.assertTrue(ma.isMaskedArray(ut_ref.data) == masked)
+        assert ma.isMaskedArray(ut_ref.data) == masked
 
         # Results are lazy if at least one component is lazy
         ut, vt = rotate_winds(u_lazy, v, coord_sys)
-        self.assertTrue(ut.has_lazy_data())
-        self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(ut.core_data().chunksize == (2, 1))
-        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
-        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+        assert ut.has_lazy_data()
+        assert vt.has_lazy_data()
+        assert ut.core_data().chunksize == (2, 1)
+        _shared_utils.assert_array_all_close(ut.data, ut_ref.data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(vt.data, vt_ref.data, rtol=1e-5)
 
         ut, vt = rotate_winds(u, v_lazy, coord_sys)
-        self.assertTrue(ut.has_lazy_data())
-        self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(vt.core_data().chunksize == (1, 2))
-        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
-        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+        assert ut.has_lazy_data()
+        assert vt.has_lazy_data()
+        assert vt.core_data().chunksize == (1, 2)
+        _shared_utils.assert_array_all_close(ut.data, ut_ref.data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(vt.data, vt_ref.data, rtol=1e-5)
 
         ut, vt = rotate_winds(u_lazy, v_lazy, coord_sys)
-        self.assertTrue(ut.has_lazy_data())
-        self.assertTrue(vt.has_lazy_data())
-        self.assertTrue(ut.core_data().chunksize == (2, 1))
-        self.assertTrue(vt.core_data().chunksize == (1, 2))
-        self.assertArrayAllClose(ut.data, ut_ref.data, rtol=1e-5)
-        self.assertArrayAllClose(vt.data, vt_ref.data, rtol=1e-5)
+        assert ut.has_lazy_data()
+        assert vt.has_lazy_data()
+        assert ut.core_data().chunksize == (2, 1)
+        assert vt.core_data().chunksize == (1, 2)
+        _shared_utils.assert_array_all_close(ut.data, ut_ref.data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(vt.data, vt_ref.data, rtol=1e-5)
 
         # Ensure that input data has not been modified
-        self.assertArrayAllClose(u.data, u_lazy.data, rtol=1e-5)
-        self.assertArrayAllClose(v.data, v_lazy.data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(u.data, u_lazy.data, rtol=1e-5)
+        _shared_utils.assert_array_all_close(v.data, v_lazy.data, rtol=1e-5)
 
     def test_lazy_rotate_winds_masked(self):
         self._compare_lazy_rotate_winds(True)
 
     def test_lazy_rotate_winds_notmasked(self):
         self._compare_lazy_rotate_winds(False)
-
-
-if __name__ == "__main__":
-    tests.main()

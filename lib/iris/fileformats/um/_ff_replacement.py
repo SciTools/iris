@@ -4,7 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Support for UM "fieldsfile-like" files.
 
-At present, the only UM file types supported are true FieldsFiles and LBCs.
+UM file types known to be supported: FieldsFiles, LBCs, Ancillaries.
 Other types of UM file may fail to load correctly (or at all).
 
 """
@@ -56,9 +56,9 @@ def load_cubes(filenames, callback, constraints=None, _loader_kwargs=None):
     Parameters
     ----------
     filenames :
-        list of filenames to load
+        List of filenames to load.
     callback : optional
-        A function which can be passed on to :func:`iris.io.run_callback`
+        A function which can be passed on to :func:`iris.io.run_callback`.
     constraints : optional
     _loader_kwargs : optional
 
@@ -86,7 +86,7 @@ def load_cubes_32bit_ieee(filenames, callback, constraints=None):
     See Also
     --------
     :func:`load_cubes`
-        For keyword details
+        For keyword details.
 
     """
     return load_cubes(

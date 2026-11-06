@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory."""
+"""Defines a Trajectory class, and a routine to extract a sub-cube along a trajectory.
+
+.. z_reference:: iris.analysis.trajectory
+   :tags: topic_maths_stats;topic_regrid
+
+   API reference
+"""
 
 import math
 
@@ -196,6 +202,11 @@ def interpolate(cube, sample_points, method=None):
         Only nearest neighbour is available when specifying multi-dimensional
         coordinates.
 
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
@@ -204,10 +215,6 @@ def interpolate(cube, sample_points, method=None):
         ('longitude', [-60, -50, -40])]
         interpolated_cube = interpolate(cube, sample_points)
 
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     from iris.analysis import Linear
 
@@ -490,7 +497,7 @@ def _cartesian_sample_points(sample_points, sample_point_coord_names):
         [coord][datum] list of sample_positions for each datum, formatted for
         fast use of :func:`_ll_to_cart()`.
     sample_point_coord_names :
-        [coord] list of n coord names
+        [coord] list of n coord names.
 
     Returns
     -------
@@ -544,7 +551,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
     Because this function can be slow for multidimensional coordinates,
     a 'cache' dictionary can be provided by the calling code.
 
-    .. Note::
+    .. note::
 
         If the points are longitudes/latitudes, these are handled correctly as
         points on the sphere, but the values must be in 'degrees'.
@@ -560,8 +567,7 @@ def _nearest_neighbour_indices_ndcoords(cube, sample_points, cache=None):
             coord, value = sample_points[0]
         except (KeyError, ValueError):
             emsg = (
-                "Sample points must be a list of "
-                "(coordinate, value) pairs, got {!r}."
+                "Sample points must be a list of (coordinate, value) pairs, got {!r}."
             )
             raise TypeError(emsg.format(sample_points))
 
@@ -745,7 +751,7 @@ class UnstructuredNearestNeigbourRegridder:
 
         Notes
         -----
-        .. Note::
+        .. note::
 
             For latitude-longitude coordinates, the nearest-neighbour distances
             are computed on the sphere, otherwise flat Euclidean distances are

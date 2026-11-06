@@ -4,33 +4,25 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test set up of limited area map extents which bridge the date line."""
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import iris
+from iris.tests import _shared_utils
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
     from iris.plot import pcolormesh
 
 
-@tests.skip_plot
-@tests.skip_data
-class TestExtent(tests.IrisTest):
+@_shared_utils.skip_plot
+@_shared_utils.skip_data
+class TestExtent:
     def test_dateline(self):
-        dpath = tests.get_data_path(["PP", "nzgust.pp"])
+        dpath = _shared_utils.get_data_path(["PP", "nzgust.pp"])
         cube = iris.load_cube(dpath)
         pcolormesh(cube)
         # Ensure that the limited area expected for NZ is set.
         # This is set in longitudes with the datum set to the
         # International Date Line.
-        self.assertTrue(
-            -10 < plt.gca().get_xlim()[0] < -5 and 5 < plt.gca().get_xlim()[1] < 10
-        )
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert -10 < plt.gca().get_xlim()[0] < -5
+        assert 5 < plt.gca().get_xlim()[1] < 10

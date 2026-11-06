@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Iris-specific extensions to matplotlib, mimicking the :mod:`matplotlib.pyplot` interface.
 
+.. z_reference:: iris.plot
+   :tags: topic_plotting
+
+   API reference
+
 See also: :ref:`matplotlib <matplotlib:users-guide-index>`.
 
 """
@@ -12,6 +17,7 @@ import collections
 import datetime
 import warnings
 
+import cartopy
 import cartopy.crs as ccrs
 from cartopy.geodesic import Geodesic
 import cartopy.mpl.geoaxes
@@ -25,21 +31,43 @@ import matplotlib.ticker as mpl_ticker
 import matplotlib.transforms as mpl_transforms
 import numpy as np
 import numpy.ma as ma
+from packaging.version import Version
 
 import iris.analysis.cartography as cartography
 import iris.coord_systems
 import iris.coords
 import iris.cube
-from iris.exceptions import IrisError, IrisUnsupportedPlottingWarning
+from iris.exceptions import IrisError
 
 # Importing iris.palette to register the brewer palettes.
 import iris.palette
 from iris.util import _meshgrid
+from iris.warnings import IrisUnsupportedPlottingWarning
 
 # Cynthia Brewer citation text.
 BREWER_CITE = "Colours based on ColorBrewer.org"
 
 PlotDefn = collections.namedtuple("PlotDefn", ("coords", "transpose"))
+
+
+class _GeoAxesPatched(cartopy.mpl.geoaxes.GeoAxes):
+    # Workaround for a bug where titles collide with axis labels (cartopy#2390)
+    # Bug is only present in Cartopy v0.23, so this will only be invoked for
+    #  that version.
+    def _draw_preprocess(self, renderer):
+        super()._draw_preprocess(renderer)
+
+        for artist in self.artists:
+            if hasattr(artist, "_draw_gridliner"):
+                # Note this is only necessary since Cartopy v0.23, but is not
+                #  wasteful for earlier versions as _draw_gridliner() includes
+                #  a check for whether a draw is necessary.
+                artist._draw_gridliner(renderer=renderer)
+
+
+cartopy_version = Version(cartopy.__version__)
+if cartopy_version.major == 0 and cartopy_version.minor == 23:
+    cartopy.mpl.geoaxes.GeoAxes = _GeoAxesPatched
 
 
 def _get_plot_defn_custom_coords_picked(cube, coords, mode, ndims=2):
@@ -212,9 +240,7 @@ def _get_plot_defn(cube, mode, ndims=2):
 
 
 def _can_draw_map(coords):
-    std_names = [
-        c and c.standard_name for c in coords if isinstance(c, iris.coords.Coord)
-    ]
+    std_names = [c.standard_name for c in coords if isinstance(c, iris.coords.Coord)]
     valid_std_names = [
         ["latitude", "longitude"],
         ["grid_latitude", "grid_longitude"],
@@ -236,7 +262,7 @@ def _broadcast_2d(u, v):
 
 def _string_coord_axis_tick_labels(string_axes, axes=None):
     """Apply tick labels for string coordinates."""
-    ax = axes if axes else plt.gca()
+    ax = axes or plt.gca()
     for axis, ticks in string_axes.items():
         # Define a tick formatter. This will assign a label to all ticks
         # located precisely on  an integer in range(len(ticks)) and assign
@@ -256,7 +282,7 @@ def _string_coord_axis_tick_labels(string_axes, axes=None):
 
 
 def _invert_yaxis(v_coord, axes=None):
-    """Inverts the y-axis of the current plot based on conditions.
+    """Invert the y-axis of the current plot based on conditions.
 
     * If the y-axis is already inverted we don't want to re-invert it.
     * If v_coord is None then it will not have any attributes.
@@ -266,11 +292,11 @@ def _invert_yaxis(v_coord, axes=None):
     Parameters
     ----------
     v_coord :
-        The coord to be plotted on the y-axis
+        The coord to be plotted on the y-axis.
     axes : optional
 
     """
-    axes = axes if axes else plt.gca()
+    axes = axes or plt.gca()
     yaxis_is_inverted = axes.yaxis_inverted()
     if not yaxis_is_inverted and isinstance(v_coord, iris.coords.Coord):
         attr_pve = v_coord.attributes.get("positive")
@@ -294,9 +320,9 @@ def _check_bounds_contiguity_and_mask(coord, data, atol=None, rtol=None):
     Parameters
     ----------
     coord : iris.coord.Coord
-        Coordinate the bounds of which will be checked for contiguity
+        Coordinate the bounds of which will be checked for contiguity.
     data : array
-        Data of the the cube we are plotting
+        Data of the the cube we are plotting.
     atol : optional
         Absolute tolerance when checking the contiguity. Defaults to None.
         If an absolute tolerance is not set, 1D coords are not checked (so
@@ -455,7 +481,7 @@ def _draw_2d_from_bounds(draw_method_name, cube, *args, **kwargs):
             u, v = _broadcast_2d(u, v)
 
         axes = kwargs.pop("axes", None)
-        draw_method = getattr(axes if axes else plt, draw_method_name)
+        draw_method = getattr(axes or plt, draw_method_name)
         result = draw_method(u, v, data, *args, **kwargs)
 
         # Apply tick labels for string coordinates.
@@ -546,7 +572,7 @@ def _draw_2d_from_points(draw_method_name, arg_func, cube, *args, **kwargs):
         u, v = _broadcast_2d(u, v)
 
         axes = kwargs.pop("axes", None)
-        draw_method = getattr(axes if axes else plt, draw_method_name)
+        draw_method = getattr(axes or plt, draw_method_name)
         if arg_func is not None:
             args, kwargs = arg_func(u, v, data, *args, **kwargs)
             result = draw_method(*args, **kwargs)
@@ -706,7 +732,7 @@ def _get_geodesic_params(globe):
 
 
 def _shift_plot_sections(u_object, u, v):
-    """Shifts subsections of u by multiples of 360 degrees.
+    """Shift subsections of u by multiples of 360 degrees.
 
     Shifts subsections of u by multiples of 360 degrees within ranges
     defined by the points where the line should cross over the 0/360 degree
@@ -728,6 +754,11 @@ def _shift_plot_sections(u_object, u, v):
     startpoints = points[:-1, :2]
     endpoints = points[1:, :2]
     proj_x, proj_y, _ = tgt_proj.transform_points(src_crs, u, v).T
+
+    # Wrap proj_x into range -180..+180, as that's what the following logic needs.
+    # N.B. upto cartopy v0.26, this was true anyway, but has since changed.
+    # see : https://github.com/SciTools/cartopy/issues/2747
+    proj_x = (proj_x + 540.0) % 360.0 - 180.0
 
     # Calculate the inverse geodesic for each pair of points in turn, and
     # convert the start point's azimuth into a vector in the source coordinate
@@ -804,7 +835,7 @@ def _draw_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
             u = _shift_plot_sections(u_object, u, v)
 
     axes = kwargs.pop("axes", None)
-    draw_method = getattr(axes if axes else plt, draw_method_name)
+    draw_method = getattr(axes or plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v, *args, **kwargs)
         result = draw_method(*args, **kwargs)
@@ -852,7 +883,7 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object1, kwargs)
 
     axes = kwargs.pop("axes", None)
-    draw_method = getattr(axes if axes else plt, draw_method_name)
+    draw_method = getattr(axes or plt, draw_method_name)
     if arg_func is not None:
         args, kwargs = arg_func(u, v1, v2, *args, **kwargs)
         result = draw_method(*args, **kwargs)
@@ -1049,12 +1080,12 @@ def _map_common(draw_method_name, arg_func, mode, cube, plot_defn, *args, **kwar
 
     # Draw the contour lines/filled contours.
     axes = kwargs.pop("axes", None)
-    plotfn = getattr(axes if axes else plt, draw_method_name)
+    plotfn = getattr(axes or plt, draw_method_name)
     return plotfn(*new_args, **kwargs)
 
 
 def contour(cube, *args, **kwargs):
-    """Draws contour lines based on the given Cube.
+    """Draw contour lines based on the given Cube.
 
     Parameters
     ----------
@@ -1074,7 +1105,7 @@ def contour(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_points("contour", None, cube, *args, **kwargs)
@@ -1082,7 +1113,7 @@ def contour(cube, *args, **kwargs):
 
 
 def contourf(cube, *args, **kwargs):
-    """Draws filled contours based on the given Cube.
+    """Draw filled contours based on the given Cube.
 
     Parameters
     ----------
@@ -1101,7 +1132,7 @@ def contourf(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     coords = kwargs.get("coords")
@@ -1175,7 +1206,7 @@ def default_projection(cube):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # XXX logic seems flawed, but it is what map_setup did...
@@ -1198,7 +1229,7 @@ def default_projection_extent(cube, mode=iris.coords.POINT_MODE):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     extents = cartography._xy_range(cube, mode)
@@ -1240,7 +1271,7 @@ def orography_at_bounds(cube, facecolor="#888888", coords=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     # XXX Needs contiguous orography corners to work.
     raise NotImplementedError(
@@ -1278,7 +1309,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
     """
     style_args = {"facecolor": facecolor}
 
@@ -1300,7 +1331,7 @@ def orography_at_points(cube, facecolor="#888888", coords=None, axes=None):
 
 
 def outline(cube, coords=None, color="k", linewidth=None, axes=None):
-    """Draws cell outlines based on the given Cube.
+    """Draw cell outlines based on the given Cube.
 
     Parameters
     ----------
@@ -1323,7 +1354,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_bounds(
@@ -1341,7 +1372,7 @@ def outline(cube, coords=None, color="k", linewidth=None, axes=None):
 
 
 def pcolor(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot the cube against.
@@ -1367,7 +1398,7 @@ def pcolor(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     kwargs.setdefault("antialiased", True)
@@ -1377,7 +1408,7 @@ def pcolor(cube, *args, **kwargs):
 
 
 def pcolormesh(cube, *args, **kwargs):
-    """Draws a pseudocolor plot based on the given 2-dimensional Cube.
+    """Draw a pseudocolor plot based on the given 2-dimensional Cube.
 
     The cube must have either two 1-dimensional coordinates or two
     2-dimensional coordinates with contiguous bounds to plot against each
@@ -1403,7 +1434,7 @@ def pcolormesh(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     result = _draw_2d_from_bounds("pcolormesh", cube, *args, **kwargs)
@@ -1411,7 +1442,7 @@ def pcolormesh(cube, *args, **kwargs):
 
 
 def points(cube, *args, **kwargs):
-    """Draws sample point positions based on the given Cube.
+    """Draw sample point positions based on the given Cube.
 
     Parameters
     ----------
@@ -1431,7 +1462,7 @@ def points(cube, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
 
@@ -1481,7 +1512,7 @@ def _vector_component_args(x_points, y_points, u_data, *args, **kwargs):
     return ((x_points, y_points, u_data, v_data), kwargs)
 
 
-def barbs(u_cube, v_cube, *args, **kwargs):
+def barbs(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
     """Draw a barb plot from two vector component cubes.
 
     Draws a barb plot from two vector component cubes. Triangles, full-lines
@@ -1521,7 +1552,7 @@ def barbs(u_cube, v_cube, *args, **kwargs):
         :class:`cartopy.crs.CRS`.
 
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     #
@@ -1533,8 +1564,8 @@ def barbs(u_cube, v_cube, *args, **kwargs):
     )
 
 
-def quiver(u_cube, v_cube, *args, **kwargs):
-    """Draws an arrow plot from two vector component cubes.
+def quiver(u_cube, v_cube, *args, **kwargs):  # numpydoc ignore=PR08
+    """Draw an arrow plot from two vector component cubes.
 
     Parameters
     ----------
@@ -1571,7 +1602,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
         :class:`cartopy.crs.CRS`.
 
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     #
@@ -1584,7 +1615,7 @@ def quiver(u_cube, v_cube, *args, **kwargs):
 
 
 def plot(*args, **kwargs):
-    """Draws a line plot based on the given cube(s) or coordinate(s).
+    """Draw a line plot based on the given cube(s) or coordinate(s).
 
     Parameters
     ----------
@@ -1598,7 +1629,7 @@ def plot(*args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1637,7 +1668,7 @@ def plot(*args, **kwargs):
 
 
 def scatter(x, y, *args, **kwargs):
-    """Draws a scatter plot based on the given cube(s) or coordinate(s).
+    """Draw a scatter plot based on the given cube(s) or coordinate(s).
 
     Parameters
     ----------
@@ -1655,7 +1686,7 @@ def scatter(x, y, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1689,7 +1720,7 @@ def fill_between(x, y1, y2, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     # here we are more specific about argument types than generic 1d plotting
@@ -1723,7 +1754,7 @@ def hist(x, *args, **kwargs):
     Notes
     -----
     This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if isinstance(x, iris.cube.Cube):
@@ -1742,7 +1773,7 @@ show = plt.show
 
 
 def symbols(x, y, symbols, size, axes=None, units="inches"):
-    """Draws fixed-size symbols.
+    """Draw fixed-size symbols.
 
     See :mod:`iris.symbols` for available symbols.
 
@@ -1765,7 +1796,7 @@ def symbols(x, y, symbols, size, axes=None, units="inches"):
     Notes
     -----
     This function does maintain laziness when called; it doesn't realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     if axes is None:
@@ -1827,12 +1858,12 @@ def citation(text, figure=None, axes=None):
             figure = plt.gcf()
         anchor = AnchoredText(text, prop=dict(size=6), frameon=True, loc=4)
         anchor.patch.set_boxstyle("round, pad=0, rounding_size=0.2")
-        axes = axes if axes else figure.gca()
+        axes = axes or figure.gca()
         axes.add_artist(anchor)
 
 
 def animate(cube_iterator, plot_func, fig=None, **kwargs):
-    """Animates the given cube iterator.
+    """Animate the given cube iterator.
 
     Parameters
     ----------
@@ -1848,15 +1879,15 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     fig : :class:`matplotlib.figure.Figure` instance, optional
         By default, the current figure will be used or a new figure instance
         created if no figure is available. See :func:`matplotlib.pyplot.gcf`.
-    coords: list of :class:`~iris.coords.Coord` objects or coordinate names, optional
+    coords : list of :class:`~iris.coords.Coord` objects or coordinate names, optional
         Use the given coordinates as the axes for the plot. The order of the
         given coordinates indicates which axis to use for each, where the first
         element is the horizontal axis of the plot and the second element is
         the vertical axis of the plot.
-    interval: int, float or long, optional
+    interval : int, float or long, optional
         Defines the time interval in milliseconds between successive frames.
         A default interval of 100ms is set.
-    vmin, vmax: int, float or long, optional
+    vmin, vmax : int, float or long, optional
         Color scaling values, see :class:`matplotlib.colors.Normalize` for
         further details. Default values are determined by the min-max across
         the data set over the entire sequence.
@@ -1867,6 +1898,11 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     Returns
     -------
     :class:`~matplotlib.animation.FuncAnimation` object suitable for saving and or plotting.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Examples
     --------
@@ -1880,11 +1916,6 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
     >>> cube_iter = my_cube.slices(("longitude", "latitude"))
     >>> ani = iplt.animate(cube_iter, qplt.contourf)
     >>> iplt.show()
-
-    Notes
-    -----
-    This function does not maintain laziness when called; it realises data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     kwargs.setdefault("interval", 100)
@@ -1914,13 +1945,13 @@ def animate(cube_iterator, plot_func, fig=None, **kwargs):
 
     supported = ["iris.plot", "iris.quickplot"]
     if plot_func.__module__ not in supported:
-        msg = 'Given plotting module "{}" may not be supported, intended ' "use: {}."
+        msg = 'Given plotting module "{}" may not be supported, intended use: {}.'
         msg = msg.format(plot_func.__module__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 
     supported = ["contour", "contourf", "pcolor", "pcolormesh"]
     if plot_func.__name__ not in supported:
-        msg = 'Given plotting function "{}" may not be supported, intended ' "use: {}."
+        msg = 'Given plotting function "{}" may not be supported, intended use: {}.'
         msg = msg.format(plot_func.__name__, supported)
         warnings.warn(msg, category=IrisUnsupportedPlottingWarning)
 

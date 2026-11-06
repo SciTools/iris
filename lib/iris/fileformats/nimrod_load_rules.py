@@ -2,8 +2,15 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Rules for converting NIMROD fields into cubes."""
+"""Rules for converting NIMROD fields into cubes.
 
+.. z_reference:: iris.fileformats.nimrod_load_rules
+   :tags: topic_load_save
+
+   API reference
+"""
+
+from enum import Enum
 import re
 import string
 import warnings
@@ -17,9 +24,9 @@ import iris.coord_systems
 from iris.coords import DimCoord
 from iris.exceptions import (
     CoordinateNotFoundError,
-    IrisNimrodTranslationWarning,
     TranslationError,
 )
+from iris.warnings import IrisNimrodTranslationWarning
 
 __all__ = ["run"]
 
@@ -31,8 +38,16 @@ TIME_UNIT = cf_units.Unit(
 )
 
 
+class Table(Enum):
+    # The NIMROD documentation defines four tables of fields, with different header contents and load rules.
+    table_1 = "Table_1"
+    table_2 = "Table_2"
+    table_3 = "Table_3"
+    table_4 = "Table_4"
+
+
 class TranslationWarning(IrisNimrodTranslationWarning):
-    """Backwards compatible form of :class:`iris.exceptions.IrisNimrodTranslationWarning`."""
+    """Backwards compatible form of :class:`iris.warnings.IrisNimrodTranslationWarning`."""
 
     # TODO: remove at the next major release.
     pass
@@ -126,10 +141,11 @@ def units(cube, field):
         "n/a": "1",
     }
 
+    dtype_original = cube.dtype
     field_units = remove_unprintable_chars(field.units)
     if field_units == "m/2-25k":
         # Handle strange visibility units
-        cube.data = (cube.data.astype(np.float32) + 25000.0) * 2
+        cube.data = (cube.data + 25000.0) * 2
         field_units = "m"
     if "*" in field_units:
         # Split into unit string and integer
@@ -137,31 +153,29 @@ def units(cube, field):
         if "^" in unit_list[1]:
             # Split out magnitude
             unit_sublist = unit_list[1].split("^")
-            cube.data = cube.data.astype(np.float32) / float(unit_sublist[0]) ** float(
-                unit_sublist[1]
-            )
+            cube.data = cube.data / float(unit_sublist[0]) ** float(unit_sublist[1])
         else:
-            cube.data = cube.data.astype(np.float32) / float(unit_list[1])
+            cube.data = cube.data / float(unit_list[1])
         field_units = unit_list[0]
     if "ug/m3E1" in field_units:
         # Split into unit string and integer
         unit_list = field_units.split("E")
-        cube.data = cube.data.astype(np.float32) / 10.0
+        cube.data = cube.data / 10.0
         field_units = unit_list[0]
     if field_units == "%":
         # Convert any percentages into fraction
         field_units = "1"
-        cube.data = cube.data.astype(np.float32) / 100.0
+        cube.data = cube.data / 100.0
     if field_units == "oktas":
         field_units = "1"
-        cube.data = cube.data.astype(np.float32) / 8.0
+        cube.data = cube.data / 8.0
     if field_units == "dBZ":
         # cf_units doesn't recognise decibels (dBZ), but does know BZ
         field_units = "BZ"
-        cube.data = cube.data.astype(np.float32) / 10.0
+        cube.data = cube.data / 10.0
     if field_units == "g/Kg":
         field_units = "kg/kg"
-        cube.data = cube.data.astype(np.float32) / 1000.0
+        cube.data = cube.data / 1000.0
     if not field_units:
         if field.field_code == 8:
             # Relative Humidity data are unitless, but not "unknown"
@@ -175,6 +189,14 @@ def units(cube, field):
         # Deal with the case where the units are of the form '/unit' eg
         # '/second' in the Nimrod file. This converts to the form unit^-1
         field_units = field_units[1:] + "^-1"
+
+    if cube.dtype != dtype_original:
+        # Original development logic: if any arithmetic takes place, ensure
+        #  the data type is float32 (starts as an int). Unknown why.
+        #  Automatic casting is returning inconsistent types when masks are
+        #  involved, so the new logic is to do the casting as the final step.
+        cube.data = cube.data.astype(np.float32)
+
     try:
         cube.units = field_units
     except ValueError:
@@ -629,10 +651,8 @@ def attributes(cube, field):
         cube_source = "Nimrod pwind routine"
     for key in [
         "neighbourhood_radius",
-        "recursive_filter_iterations",
         "recursive_filter_alpha",
         "threshold_vicinity_radius",
-        "probability_period_of_event",
     ]:
         add_attr(key)
 
@@ -653,8 +673,62 @@ def attributes(cube, field):
     cube.attributes["institution"] = "Met Office"
 
 
+def table_1_attributes(cube, field):
+    """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            cube.attributes[item] = value
+
+    for key in [
+        "radar_number",
+        "radar_sites",
+        "additional_radar_sites",
+        "clutter_map_number",
+        "calibration_type",
+        "bright_band_height",
+        "bright_band_intensity",
+        "bright_band_test_param_1",
+        "bright_band_test_param_2",
+        "infill_flag",
+        "stop_elevation",
+        "sensor_identifier",
+        "meteosat_identifier",
+        "software_identifier",
+        "software_major_version",
+        "software_minor_version",
+        "software_micro_version",
+    ]:
+        add_attr(key)
+
+
+def table_2_attributes(cube, field):
+    """Add attributes to the cube."""
+    # TODO: This section may need to be changed in the future
+    #  as there may be some of these attributes that can be promoted into coords
+    #  but we in AVD do not have that level of domain knowledge to make those decisions
+
+    def add_attr(item):
+        """Add an attribute to the cube."""
+        if hasattr(field, item):
+            value = getattr(field, item)
+            if is_missing(field, value):
+                return
+            cube.attributes[item] = value
+
+    for key in ["recursive_filter_iterations", "probability_period_of_event"]:
+        add_attr(key)
+
+
 def known_threshold_coord(field):
-    """Supplies known threshold coord meta-data for known use cases.
+    """Supply known threshold coord meta-data for known use cases.
 
     threshold_value_alt exists because some meta-data are mis-assigned in the
     Nimrod data.
@@ -858,6 +932,26 @@ def soil_type_coord(cube, field):
         )
 
 
+def radiation_type_attr(cube, field):
+    """Decode the Radiation Types codes - similar to time_averaging."""
+    radiation_codes = {
+        64: 'instantaneous ("corrected")',
+        32: "upward_radiation",
+        16: "downward_radiation",
+        8: "diffuse_radiation",
+        4: "direct_radiation",
+        2: "clear_sky_radiation",
+    }
+    num = field.radiation_code
+    radiation_types = []
+    for key in sorted(radiation_codes.keys(), reverse=True):
+        if num >= key:
+            radiation_types.append(radiation_codes[key])
+            num = num - key
+    if radiation_types:
+        cube.attributes["radiation_type"] = radiation_types
+
+
 def time_averaging(cube, field):
     """Decode the averagingtype code - similar to the PP LBPROC code."""
     time_averaging_codes = {
@@ -895,7 +989,7 @@ def run(field, handle_metadata_errors=True):
     field : :class:`~iris.fileformats.nimrod.NimrodField`
     handle_metadata_errors : bool, default=True
         Set to False to omit handling of known meta-data deficiencies
-        in Nimrod-format data
+        in Nimrod-format data.
 
     Returns
     -------
@@ -923,9 +1017,18 @@ def run(field, handle_metadata_errors=True):
     # vertical
     vertical_coord(cube, field)
 
-    # add other stuff, if present
-    soil_type_coord(cube, field)
-    probability_coord(cube, field, handle_metadata_errors)
+    match field.table:
+        case Table.table_1:
+            table_1_attributes(cube, field)
+        case Table.table_2:
+            probability_coord(cube, field, handle_metadata_errors)
+            table_2_attributes(cube, field)
+        case Table.table_3:
+            soil_type_coord(cube, field)
+        case Table.table_4:
+            radiation_type_attr(cube, field)
+
+    # add other generic stuff, if present
     ensemble_member(cube, field)
     time_averaging(cube, field)
     attributes(cube, field)

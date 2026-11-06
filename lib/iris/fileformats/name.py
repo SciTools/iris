@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides NAME file format loading capabilities."""
+"""Provides NAME file format loading capabilities.
+
+.. z_reference:: iris.fileformats.name
+   :tags: topic_load_save
+
+   API reference
+"""
 
 
 def _get_NAME_loader(filename):

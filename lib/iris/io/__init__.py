@@ -3,21 +3,73 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""Provides an interface to manage URI scheme support in iris."""
+"""Provides an interface to manage URI scheme support in iris.
+
+.. z_reference:: iris.io
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import collections
 from collections import OrderedDict
 import glob
-import os.path
 import pathlib
 import re
+from urllib.parse import urlsplit
 
 import iris.exceptions
 
 
+def _is_nczarr_fragment(fragment):
+    """Return True if a URI fragment requests NCZarr-compatible mode."""
+    if not fragment:
+        return False
+
+    # Fragments are ampersand-separated key=value pairs.
+    for item in fragment.split("&"):
+        key, sep, value = item.partition("=")
+        if sep and key.casefold() == "mode":
+            flags = {
+                token.strip().casefold() for token in value.split(",") if token.strip()
+            }
+            return bool(flags.intersection({"nczarr", "xarray"}))
+
+    return False
+
+
+# URI schemes Iris hands to a store library rather than resolving as a local
+# path. Iris depends on none of them: zarr-python raises its own ImportError
+# naming what to install.
+_REMOTE_STORE_SCHEMES = frozenset({"s3", "gs", "az", "abfs"})
+
+
+def _is_remote_store_uri(spec):
+    """Whether `spec` names a store Iris hands to a store library untouched.
+
+    Such a URI must not be resolved as a local path: `.absolute()` turns
+    ``s3://bucket/data.zarr`` into ``/<cwd>/s3:/bucket/data.zarr``.
+    """
+    if not isinstance(spec, str):
+        return False
+    scheme, _part, _fragment = decode_uri(spec)
+    return scheme in _REMOTE_STORE_SCHEMES
+
+
 # Saving routines, indexed by file extension.
 class _SaversDict(dict):
-    """A dictionary that can only have string keys with no overlap."""
+    """A dictionary that can only have string keys with no overlap.
+
+    :attr:`cubelist_savers` records which of the registered savers take a
+    ``CubeList`` directly, rather than one cube at a time with
+    ``append=True``. It holds the saver functions themselves, not extensions,
+    because :func:`save` is also reached with a saver it never looked up here
+    - passed by the caller, or chosen directly for an NCZarr target.
+    """
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.cubelist_savers = set()
 
     def __setitem__(self, key, value):
         if not isinstance(key, str):
@@ -54,7 +106,7 @@ def run_callback(callback, cube, field, filename):
     the caller of this function should handle this case.
 
     This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     """
     from iris.cube import Cube
@@ -78,7 +130,7 @@ def run_callback(callback, cube, field, filename):
 
 
 def decode_uri(uri, default="file"):
-    r"""Decode a single URI into scheme and scheme-specific parts.
+    r"""Decode a single URI into scheme, scheme-specific part and fragment.
 
     In addition to well-formed URIs, it also supports bare file paths as strings
     or :class:`pathlib.PurePath`. Both Windows and UNIX style paths are
@@ -95,25 +147,28 @@ def decode_uri(uri, default="file"):
     --------
     >>> from iris.io import decode_uri
     >>> print(decode_uri('https://www.thing.com:8080/resource?id=a:b'))
-    ('https', '//www.thing.com:8080/resource?id=a:b')
+    ('https', '//www.thing.com:8080/resource?id=a:b', None)
 
     >>> print(decode_uri('file:///data/local/dataZoo/...'))
-    ('file', '///data/local/dataZoo/...')
+    ('file', '///data/local/dataZoo/...', None)
+
+    >>> print(decode_uri('file:///data/local/dataZoo/something#mode=nczarr,file'))
+    ('file', '///data/local/dataZoo/something', 'mode=nczarr,file')
 
     >>> print(decode_uri('/data/local/dataZoo/...'))
-    ('file', '/data/local/dataZoo/...')
+    ('file', '/data/local/dataZoo/...', None)
 
     >>> print(decode_uri('file:///C:\data\local\dataZoo\...'))
-    ('file', '///C:\\data\\local\\dataZoo\\...')
+    ('file', '///C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('C:\data\local\dataZoo\...'))
-    ('file', 'C:\\data\\local\\dataZoo\\...')
+    ('file', 'C:\\data\\local\\dataZoo\\...', None)
 
     >>> print(decode_uri('dataZoo/...'))
-    ('file', 'dataZoo/...')
+    ('file', 'dataZoo/...', None)
 
         >>> print(decode_uri({}))
-        ('data', {})
+        ('data', {}, None)
 
     """
     if isinstance(uri, pathlib.PurePath):
@@ -131,13 +186,40 @@ def decode_uri(uri, default="file"):
             # Catch bare UNIX and Windows paths
             scheme = default
             part = uri
+        fragment = urlsplit(uri).fragment or None
+        if fragment:
+            part = part[: -len(fragment) - 1]  # remove the fragment from the part
     else:
         # We can pass things other than strings, like open files.
         # These are simply identified as 'data objects'.
         scheme = "data"
         part = uri
+        fragment = None
 
-    return scheme, part
+    return scheme, part, fragment
+
+
+def _categorise_uri(uri) -> tuple[str, str, str]:
+    """Return `uri` as ``(category, scheme, part)``, for grouping by handler.
+
+    The category is the scheme, except that an NCZarr fragment makes it
+    ``"nczarr"``. netCDF-c's Zarr driver is asked for by ``#mode=nczarr,...``
+    rather than by scheme, so ``file:///s.zarr`` and
+    ``file:///s.zarr#mode=nczarr,file`` need different handlers despite
+    sharing one scheme. The fragment is folded back into `part`, because a
+    handler is handed a URI to reopen rather than the decoded pieces.
+
+    A native Zarr store has no category of its own. Remotely it is known by
+    its scheme, and locally it is a directory that only a marker file
+    distinguishes from any other - see
+    :func:`iris.fileformats._is_zarr_store`. Deciding it here would put a
+    filesystem test inside a function that otherwise only reads a string.
+    """
+    scheme, part, fragment = decode_uri(uri)
+    category = "nczarr" if _is_nczarr_fragment(fragment) else scheme
+    if fragment:
+        part = f"{part}#{fragment}"
+    return category, scheme, part
 
 
 def expand_filespecs(file_specs, files_expected=True):
@@ -153,22 +235,31 @@ def expand_filespecs(file_specs, files_expected=True):
     Returns
     -------
     list of str
-        if files_expected is ``True``:
+        If files_expected is ``True``:
             A well-ordered list of matching absolute file paths.
             If any of the file-specs match no existing files, an
             exception is raised.
-        if files_expected is ``False``:
+        If files_expected is ``False``:
             A list of expanded file paths.
     """
-    # Remove any hostname component - currently unused
+    # Remove any hostname component - currently unused. A remote store URI is
+    # passed through: it is not a path, and resolving it mangles it.
     filenames = [
-        os.path.abspath(os.path.expanduser(fn[2:] if fn.startswith("//") else fn))
+        fn
+        if _is_remote_store_uri(fn)
+        else str(pathlib.Path(fn.removeprefix("//")).expanduser().absolute())
         for fn in file_specs
     ]
 
     if files_expected:
-        # Try to expand all filenames as globs
-        glob_expanded = OrderedDict([[fn, sorted(glob.glob(fn))] for fn in filenames])
+        # Try to expand all filenames as globs. A remote URI stands for
+        # itself; Iris does not list a remote store's neighbours.
+        glob_expanded = OrderedDict(
+            [
+                [fn, [fn] if _is_remote_store_uri(fn) else sorted(glob.glob(fn))]
+                for fn in filenames
+            ]
+        )
 
         # If any of the specs expanded to an empty list then raise an error
         all_expanded = glob_expanded.values()
@@ -201,15 +292,29 @@ def load_files(filenames, callback, constraints=None):
     intended interface for loading is :func:`iris.load`.
 
     """
-    from iris.fileformats import FORMAT_AGENT
+    yield from _load_files(expand_filespecs(filenames), callback, constraints)
 
-    all_file_paths = expand_filespecs(filenames)
+
+def _load_files(filenames, callback, constraints=None):
+    """Create a generator of Cubes from files already expanded by `expand_filespecs`.
+
+    `filenames` is not expanded here: a glob matching the same file twice, by
+    two different patterns, must reach the format handler as two entries, and
+    :func:`expand_filespecs` keys its own glob cache by the spec string, so
+    expanding an already-expanded list collapses two identical paths into
+    one. :func:`load_files` is the public entry point that expands once and
+    delegates here; :func:`iris.loading._generate_cubes` is the other caller,
+    expanding once for itself so it can partition files from stores before
+    either sees the list.
+
+    """
+    from iris.fileformats import FORMAT_AGENT
 
     # Create default dict mapping iris format handler to its associated filenames
     handler_map = collections.defaultdict(list)
-    for fn in all_file_paths:
+    for fn in filenames:
         with open(fn, "rb") as fh:
-            handling_format_spec = FORMAT_AGENT.get_spec(os.path.basename(fn), fh)
+            handling_format_spec = FORMAT_AGENT.get_spec(pathlib.Path(fn).name, fh)
             handler_map[handling_format_spec].append(fn)
 
     # Call each iris format handler with the appropriate filenames
@@ -223,10 +328,53 @@ def load_files(filenames, callback, constraints=None):
                 yield cube
 
 
-def load_http(urls, callback):
-    """Create generator of Cubes from the given OPeNDAP URLs.
+def load_stores(targets, callback, constraints=None):
+    """Create a generator of Cubes from targets that are stores, not files.
 
-    Take a list of OPeNDAP URLs and a callback function, and returns a generator
+    A store is a directory or a URL: something with no single seekable file
+    to open, so :func:`load_files` cannot reach it and the format agent is
+    asked without a buffer.
+
+    Parameters
+    ----------
+    targets : iterable of str
+        Local directory paths or remote URLs, already expanded.
+    callback : callable
+        Passed to the format handler.
+    constraints : optional
+        Passed to a constraint-aware format handler.
+
+    Yields
+    ------
+    iris.cube.Cube
+
+    Notes
+    -----
+    Typically, this function should not be called directly; instead, the
+    intended interface for loading is :func:`iris.load`.
+
+    """
+    from iris.fileformats import FORMAT_AGENT
+
+    handler_map = collections.defaultdict(list)
+    for target in targets:
+        handling_format_spec = FORMAT_AGENT.get_spec(target, None)
+        handler_map[handling_format_spec].append(target)
+
+    for handling_format_spec in sorted(handler_map):
+        names = handler_map[handling_format_spec]
+        if handling_format_spec.constraint_aware_handler:
+            for cube in handling_format_spec.handler(names, callback, constraints):
+                yield cube
+        else:
+            for cube in handling_format_spec.handler(names, callback):
+                yield cube
+
+
+def load_http(urls, callback):
+    """Create generator of Cubes from the given OPeNDAP or NcZarr URLs.
+
+    Take a list of OPeNDAP or NcZarr URLs and a callback function, and returns a generator
     of Cubes from the given URLs.
 
     Notes
@@ -294,6 +442,18 @@ def _dot_save_png(cube, target, **kwargs):
     return save_png(cube, target, **kwargs)
 
 
+def _zarr_save(cube, target, **kwargs):
+    # A simple wrapper for `iris.fileformats.zarr.save` which allows the
+    # saver to be registered without triggering the import of `zarr`, an
+    # optional dependency. Importing the name from the package rather than
+    # from `iris.fileformats.zarr.saver` runs the package's `__getattr__`,
+    # which is what checks the installed zarr version and reports a missing
+    # or too-old one.
+    from iris.fileformats.zarr import save
+
+    return save(cube, target, **kwargs)
+
+
 def _grib_save(cube, target, append=False, **kwargs):
     # A simple wrapper for the grib save routine, which allows the saver to be
     # registered without having the grib implementation installed.
@@ -301,7 +461,7 @@ def _grib_save(cube, target, append=False, **kwargs):
         from iris_grib import save_grib2
     except ImportError:
         raise RuntimeError(
-            "Unable to save GRIB file - " '"iris_grib" package is not installed.'
+            'Unable to save GRIB file - "iris_grib" package is not installed.'
         )
 
     save_grib2(cube, target, append, **kwargs)
@@ -315,11 +475,15 @@ def _check_init_savers():
             {
                 "pp": pp.save,
                 "nc": netcdf.save,
+                "zarr": _zarr_save,
                 "dot": _dot_save,
                 "dotpng": _dot_save_png,
                 "grib2": _grib_save,
             }
         )
+        # One line per format that takes a CubeList whole.
+        _savers.cubelist_savers.add(netcdf.save)
+        _savers.cubelist_savers.add(_zarr_save)
 
 
 def add_saver(file_extension, new_saver):
@@ -334,7 +498,8 @@ def add_saver(file_extension, new_saver):
 
     See Also
     --------
-    :func:`iris.io.save`
+    iris.io.save :
+        Save one or more Cubes to file (or other writeable).
 
     """
     # Make sure it's a func with 2+ args
@@ -361,10 +526,10 @@ def find_saver(filespec):
 
     """
     _check_init_savers()
+    # A store is a directory, so "out.zarr/" is a natural thing to type.
+    candidate = filespec.rstrip("/\\").lower()
     matches = [
-        ext
-        for ext in _savers
-        if filespec.lower().endswith("." + ext) or filespec.lower() == ext
+        ext for ext in _savers if candidate.endswith("." + ext) or candidate == ext
     ]
     # Multiple matches could occur if one of the savers included a '.':
     #   e.g. _savers = {'.dot.png': dot_png_saver, '.png': png_saver}
@@ -378,8 +543,8 @@ def find_saver(filespec):
 def save(source, target, saver=None, **kwargs):
     """Save one or more Cubes to file (or other writeable).
 
-    Iris currently supports three file formats for saving, which it can
-    recognise by filename extension:
+    Iris currently supports five file formats for saving. Four are
+    recognised by filename extension:
 
     * **netCDF** - the Unidata network Common Data Format,
       see :func:`iris.fileformats.netcdf.save`
@@ -387,6 +552,19 @@ def save(source, target, saver=None, **kwargs):
       see :func:`iris_grib.save_grib2`.
     * **PP** - the Met Office UM Post Processing Format,
       see :func:`iris.fileformats.pp.save`
+    * **Zarr** - a native Zarr version 3 store, written through zarr-python,
+      see :func:`iris.fileformats.zarr.saver.save`. See
+      :doc:`/user_manual/explanation/zarr_io` for more.
+
+    The fifth format is recognised differently:
+
+    * **Zarr (via NcZarr)** - "The open foundation for chunked, compressed,
+      N-dimensional
+      arrays". Saved via the NcZarr utility of the NetCDF library, see
+      :func:`iris.fileformats.netcdf.save`. NcZarr recognises format via URL
+      fragments e.g. "file:///path/to/file#mode=nczarr,file". See the NcZarr
+      docs for more:
+      https://docs.unidata.ucar.edu/nug/current/nczarr_head.html.
 
     A custom saver can be provided to the function to write to a different
     file format.
@@ -429,6 +607,11 @@ def save(source, target, saver=None, **kwargs):
     data can result in corruption. Users should proceed with caution when
     attempting to overwrite an existing file.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     >>> # Setting up
@@ -449,11 +632,6 @@ def save(source, target, saver=None, **kwargs):
     >>> # Save a cube list to netCDF, using the NETCDF3_CLASSIC storage option
     >>> iris.save(my_cube_list, "myfile.nc", netcdf_format="NETCDF3_CLASSIC")
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
-
     """
     from iris.cube import Cube, CubeList
 
@@ -461,9 +639,15 @@ def save(source, target, saver=None, **kwargs):
     if isinstance(target, pathlib.PurePath):
         target = str(target)
     if isinstance(target, str) and saver is None:
-        # Converts tilde or wildcards to absolute path
-        (target,) = expand_filespecs([str(target)], False)
-        saver = find_saver(target)
+        if _is_nczarr_fragment(urlsplit(target).fragment or None):
+            # NCZarr URLs must be passed as-is; do not expand or match by extension.
+            from iris.fileformats.netcdf.saver import save as _nc_save
+
+            saver = _nc_save
+        else:
+            # Converts tilde or wildcards to absolute path
+            (target,) = expand_filespecs([str(target)], False)
+            saver = find_saver(target)
     elif hasattr(target, "name") and saver is None:
         saver = find_saver(target.name)
     elif isinstance(saver, str):
@@ -480,7 +664,8 @@ def save(source, target, saver=None, **kwargs):
         isinstance(source, (list, tuple)) and all([isinstance(i, Cube) for i in source])
     ):
         # Only allow cubelist saving for those fileformats that are capable.
-        if "iris.fileformats.netcdf" not in saver.__module__:
+        _check_init_savers()
+        if saver not in _savers.cubelist_savers:
             # Make sure the saver accepts an append keyword
             if "append" not in saver.__code__.co_varnames:
                 raise ValueError(

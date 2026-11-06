@@ -3,6 +3,7 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Provides text printouts of Iris cubes."""
+
 from copy import deepcopy
 
 from iris._representation.cube_summary import CubeSummary
@@ -65,7 +66,7 @@ class Table:
         """
         n_cols = len(cols)
         if len(aligns) != n_cols:
-            msg = f"Number of aligns ({len(aligns)})" f" != number of cols ({n_cols})"
+            msg = f"Number of aligns ({len(aligns)}) != number of cols ({n_cols})"
             raise ValueError(msg)
         if self.n_columns is not None:
             # For now, all rows must have same number of columns
@@ -105,7 +106,7 @@ class Table:
                 elif align == "right":
                     col_text = col.rjust(width)
                 else:
-                    msg = f'Unknown alignment "{align}" ' 'not in ("left", "right")'
+                    msg = f'Unknown alignment "{align}" not in ("left", "right")'
                     raise ValueError(msg)
                 col_texts.append(col_text)
 

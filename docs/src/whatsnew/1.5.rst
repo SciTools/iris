@@ -18,7 +18,7 @@ Features
   1D plotting capability.
 
   .. code-block:: python
-  
+
       # plot a 1d cube against a given 1d coordinate, with the cube
       # values on the x-axis and the coordinate on the y-axis
       iris.plot.plot(cube, coord)
@@ -34,18 +34,18 @@ Features
   types is also supported).
 
   .. code-block:: python
-  
+
       # Get cube slices corresponding to the dimension associated with longitude
       # and the first dimension from a multi-dimensional cube.
-      for sub_cube in cube.slices(['longitude', 0]):
+      for sub_cube in cube.slices(["longitude", 0]):
           print(sub_cube)
 
 * :mod:`iris.experimental.animate` now provides experimental animation support.
 
   .. code-block:: python
-  
+
       # Create an iterable of cubes (generator, lists etc.)
-      cube_iter = cubes.slices(('grid_longitude', 'grid_latitude'))
+      cube_iter = cubes.slices(("grid_longitude", "grid_latitude"))
       ani = animate(cube_iter, qplt.contourf)
       plt.show()
 
@@ -54,22 +54,21 @@ Features
 * Complete support for Transverse Mercator with saving to NetCDF also.
 
   .. code-block:: python
-  
+
       import cartopy.crs as ccrs
       import iris
       import iris.quickplot as qplt
       import matplotlib.pyplot as plt
-  
-  
-      fname = iris.sample_data_path('air_temp.pp')
+
+      fname = iris.sample_data_path("air_temp.pp")
       temperature = iris.load_cube(fname)
-  
+
       plt.axes(projection=ccrs.TransverseMercator())
       qplt.contourf(temperature)
       plt.gca().coastlines()
       plt.gca().gridlines()
       plt.show()
-  
+
   .. image:: images/transverse_merc.png
 
 * Support for loading NAME files (gridded and trajectory data).
@@ -96,13 +95,13 @@ Features
 * Added support for bool array indexing on a cube.
 
   .. code-block:: python
-  
-      fname = iris.sample_data_path('air_temp.pp')
+
+      fname = iris.sample_data_path("air_temp.pp")
       temperature = iris.load_cube(fname)
-      temperature[temperature.coord('latitude').points > 0]
-  
+      temperature[temperature.coord("latitude").points > 0]
+
       # The constraints mechanism is still the preferred means to do such a query.
-      temperature.extract(iris.Constraint(latitude=lambda v: v>0)))
+      temperature.extract(iris.Constraint(latitude=lambda v: v > 0))
 
 * Added support for loading fields defined on regular Gaussian grids from GRIB
   files.
@@ -197,4 +196,3 @@ Deprecations
 
 * :func:`iris.fileformats.pp.add_load_rules` and
   :func:`iris.fileformats.grib.add_load_rules` are now deprecated.
-

@@ -12,6 +12,9 @@ import pytest
 
 import iris
 
+pytest_plugins = ["iris.tests.conftest"]
+
+
 CURRENT_DIR = pathlib.Path(__file__).resolve()
 GALLERY_DIR = CURRENT_DIR.parents[1] / "gallery_code"
 
@@ -47,7 +50,7 @@ def import_patches(monkeypatch):
         if example_dir.is_dir():
             monkeypatch.syspath_prepend(example_dir)
 
-    yield
+    return
 
 
 @pytest.fixture

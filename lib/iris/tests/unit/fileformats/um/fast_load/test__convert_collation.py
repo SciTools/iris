@@ -4,12 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for :func:`iris.fileformats.um._fast_load._convert_collation`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import cf_units
 import cftime
 import numpy as np
@@ -34,7 +28,7 @@ LONGITUDE = iris.coords.DimCoord(
 )
 
 
-class Test(tests.IrisTest):
+class Test:
     def _field(self):
         # Create PP field for X wind on a regular lat-lon grid.
         header = [0] * 64
@@ -55,28 +49,28 @@ class Test(tests.IrisTest):
 
     def _check_phenomenon(self, metadata, factory=None):
         if factory is None:
-            self.assertEqual(metadata.factories, [])
+            assert metadata.factories == []
         else:
-            self.assertEqual(metadata.factories, [factory])
-        self.assertEqual(metadata.references, [])
-        self.assertEqual(metadata.standard_name, "x_wind")
-        self.assertIsNone(metadata.long_name)
-        self.assertEqual(metadata.units, cf_units.Unit("m s-1"))
-        self.assertEqual(metadata.attributes, {"STASH": (1, 0, 2)})
-        self.assertEqual(metadata.cell_methods, [])
+            assert metadata.factories == [factory]
+        assert metadata.references == []
+        assert metadata.standard_name == "x_wind"
+        assert metadata.long_name is None
+        assert metadata.units == cf_units.Unit("m s-1")
+        assert metadata.attributes == {"STASH": (1, 0, 2)}
+        assert metadata.cell_methods == []
 
-    def test_all_scalar(self):
+    def test_all_scalar(self, mocker):
         field = self._field()
         field.lbtim = 11
         field.t1 = cftime.datetime(1970, 1, 1, 18)
         field.t2 = cftime.datetime(1970, 1, 1, 12)
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field], vector_dims_shape=(), element_arrays_and_dims={}
         )
         metadata = convert_collation(collation)
         self._check_phenomenon(metadata)
         coords_and_dims = [(LONGITUDE, 1), (LATITUDE, 0)]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = [
             (
                 iris.coords.DimCoord(18, "time", units="hours since epoch"),
@@ -90,9 +84,9 @@ class Test(tests.IrisTest):
             ),
             (iris.coords.DimCoord(6, "forecast_period", units="hours"), None),
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vector_t1(self):
+    def test_vector_t1(self, mocker):
         field = self._field()
         field.lbtim = 11
         field.t2 = cftime.datetime(1970, 1, 1, 12)
@@ -104,7 +98,7 @@ class Test(tests.IrisTest):
             ],
             [0],
         )
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={"t1": t1},
@@ -119,7 +113,7 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = [
             (
                 iris.coords.DimCoord(
@@ -132,9 +126,9 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vector_t2(self):
+    def test_vector_t2(self, mocker):
         field = self._field()
         field.lbtim = 11
         field.t1 = cftime.datetime(1970, 1, 1, 18)
@@ -146,7 +140,7 @@ class Test(tests.IrisTest):
             ],
             [0],
         )
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={"t2": t2},
@@ -165,7 +159,7 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = [
             (
                 iris.coords.DimCoord(18, "time", units="hours since epoch"),
@@ -176,15 +170,15 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vector_lbft(self):
+    def test_vector_lbft(self, mocker):
         field = self._field()
         field.lbtim = 21
         field.t1 = cftime.datetime(1970, 1, 1, 12)
         field.t2 = cftime.datetime(1970, 1, 1, 18)
         lbft = ([18, 15, 12], [0])
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={"lbft": lbft},
@@ -220,9 +214,9 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vector_t1_and_t2(self):
+    def test_vector_t1_and_t2(self, mocker):
         field = self._field()
         field.lbtim = 11
         t1 = (
@@ -237,7 +231,7 @@ class Test(tests.IrisTest):
             [cftime.datetime(1970, 1, 1, 12), cftime.datetime(1970, 1, 2, 0)],
             [0],
         )
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(2, 3),
             element_arrays_and_dims={"t1": t1, "t2": t2},
@@ -260,7 +254,7 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = [
             (
                 iris.coords.AuxCoord(
@@ -271,14 +265,14 @@ class Test(tests.IrisTest):
                 (0, 1),
             )
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vertical_pressure(self):
+    def test_vertical_pressure(self, mocker):
         field = self._field()
         field.lbvc = 8
         blev = ([1000, 850, 700], (0,))
         lblev = ([1000, 850, 700], (0,))
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={"blev": blev, "lblev": lblev},
@@ -295,11 +289,11 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = []
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_soil_level(self):
+    def test_soil_level(self, mocker):
         field = self._field()
         field.lbvc = 6
         points = [10, 20, 30]
@@ -308,7 +302,7 @@ class Test(tests.IrisTest):
         lblev = (points, (0,))
         brsvd1 = (lower, (0,))
         brlev = (upper, (0,))
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={
@@ -326,11 +320,11 @@ class Test(tests.IrisTest):
             units="1",
         )
         coords_and_dims = [(LONGITUDE, 2), (LATITUDE, 1), (level, (0,))]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = []
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_soil_depth(self):
+    def test_soil_depth(self, mocker):
         field = self._field()
         field.lbvc = 6
         points = [10, 20, 30]
@@ -339,7 +333,7 @@ class Test(tests.IrisTest):
         blev = (points, (0,))
         brsvd1 = (lower, (0,))
         brlev = (upper, (0,))
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={
@@ -358,11 +352,11 @@ class Test(tests.IrisTest):
             attributes={"positive": "down"},
         )
         coords_and_dims = [(LONGITUDE, 2), (LATITUDE, 1), (depth, (0,))]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = []
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
+        assert metadata.aux_coords_and_dims == coords_and_dims
 
-    def test_vertical_hybrid_height(self):
+    def test_vertical_hybrid_height(self, mocker):
         field = self._field()
         field.lbvc = 65
         blev = ([5, 18, 38], (0,))
@@ -373,7 +367,7 @@ class Test(tests.IrisTest):
         bhrlev = ([1, 0.9989, 0.9970], (0,))
         lblev = ([1, 2, 3], (0,))
         bhlev = ([0.9994, 0.9979, 0.9957], (0,))
-        collation = mock.Mock(
+        collation = mocker.Mock(
             fields=[field],
             vector_dims_shape=(3,),
             element_arrays_and_dims={
@@ -410,7 +404,7 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.dim_coords_and_dims, coords_and_dims)
+        assert metadata.dim_coords_and_dims == coords_and_dims
         coords_and_dims = [
             (
                 iris.coords.DimCoord(
@@ -432,8 +426,4 @@ class Test(tests.IrisTest):
                 (0,),
             ),
         ]
-        self.assertEqual(metadata.aux_coords_and_dims, coords_and_dims)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert metadata.aux_coords_and_dims == coords_and_dims

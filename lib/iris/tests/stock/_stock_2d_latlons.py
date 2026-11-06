@@ -83,9 +83,7 @@ def grid_coords_2d_from_1d(x_coord_1d, y_coord_1d):
     """
     for coord in (x_coord_1d, y_coord_1d):
         if coord.ndim != 1:
-            msg = (
-                "Input coords must be one-dimensional. " 'Coordinate "{}" has shape {}.'
-            )
+            msg = 'Input coords must be one-dimensional. Coordinate "{}" has shape {}.'
             raise ValueError(msg.format(coord.name(), coord.shape))
 
     # Calculate centre-points as a mesh of the 2 inputs.
@@ -305,9 +303,9 @@ def make_bounds_discontiguous_at_point(cube, at_iy, at_ix, in_y=False, upper=Tru
     x_coord = cube.coord(axis="x")
     y_coord = cube.coord(axis="y")
     assert x_coord.shape == y_coord.shape
-    assert (
-        coord.bounds.ndim == 3 and coord.shape[-1] == 4 for coord in (x_coord, y_coord)
-    )
+    for coord in (x_coord, y_coord):
+        assert coord.bounds.ndim == 3
+        assert coord.bounds.shape[-1] == 4
 
     # For both X and Y coord, move points + bounds to create a discontinuity.
     def adjust_coord(coord):

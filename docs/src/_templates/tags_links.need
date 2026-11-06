@@ -1,0 +1,11 @@
+{# Render plain clickable text links for each tag #}
+{% if tags %}
+:strong:`Tags:` {{ " " }} {%- for t in tags -%}
+  {%- if t and t.startswith('topic_') -%}
+    :ref:`{{ t }} <{{ t }}>`
+  {%- else -%}
+    {{ t }}
+  {%- endif -%}
+  {%- if not loop.last %} | {% endif -%}
+{%- endfor %}
+{% endif %}

@@ -4,33 +4,62 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.io._generate_cubes` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 from pathlib import Path
 
-import iris
+import pytest
+
+from iris.loading import _generate_cubes
 
 
-class TestGenerateCubes(tests.IrisTest):
-    def test_pathlib_paths(self):
+class TestGenerateCubes:
+    def test_pathlib_paths(self, mocker):
         test_variants = [
             ("string", "string"),
             (["string"], "string"),
             (Path("string"), Path("string")),
         ]
 
-        decode_uri_mock = self.patch(
-            "iris.iris.io.decode_uri", return_value=("file", None)
+        decode_uri_mock = mocker.patch(
+            "iris.iris.io.decode_uri", return_value=("file", None, None)
         )
-        self.patch("iris.iris.io.load_files")
+        # `decode_uri` always reporting a `None` part is not a real path, so
+        # the file-or-store partition has nothing to resolve or classify.
+        mocker.patch("iris.iris.io.expand_filespecs", return_value=[])
+        mocker.patch("iris.iris.io._load_files")
 
         for gc_arg, du_arg in test_variants:
             decode_uri_mock.reset_mock()
-            list(iris._generate_cubes(gc_arg, None, None))
+            list(_generate_cubes(gc_arg, None, None))
             decode_uri_mock.assert_called_with(du_arg)
 
+    @pytest.mark.parametrize(
+        "uri",
+        [
+            "file:///foo#mode=nczarr",
+            "file:///foo#mode=xarray",
+            "https://foo#mode=nczarr",
+        ],
+    )
+    def test_nczarr_uri(self, uri, mocker):
+        load_files_mock = mocker.patch("iris.iris.io._load_files", return_value=[])
+        load_http_mock = mocker.patch("iris.iris.io.load_http", return_value=[])
 
-if __name__ == "__main__":
-    tests.main()
+        list(_generate_cubes(uri, None, None))
+
+        load_http_mock.assert_called_once_with([uri], None)
+        load_files_mock.assert_not_called()
+
+    def test_non_nczarr_uri(self, mocker):
+        uri = "file:///foo#bar=baz"
+        # The partition needs a real-looking part name to classify, not a
+        # file-system lookup against a path that was never written.
+        mocker.patch("iris.iris.io.expand_filespecs", side_effect=lambda names: names)
+        # The "file" branch calls the private, non-expanding `_load_files`
+        # directly, since it has already expanded - see its docstring.
+        load_files_mock = mocker.patch("iris.iris.io._load_files", return_value=[])
+        load_http_mock = mocker.patch("iris.iris.io.load_http", return_value=[])
+
+        list(_generate_cubes(uri, None, None))
+
+        load_files_mock.assert_called_once_with(["///foo#bar=baz"], None, None)
+        load_http_mock.assert_not_called()

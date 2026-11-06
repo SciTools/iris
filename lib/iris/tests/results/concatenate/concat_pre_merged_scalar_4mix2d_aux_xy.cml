@@ -3,19 +3,16 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord checksum="0xa8c16649" id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5]]" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, 1.5]" checksum="0xe8c76a1f" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  1., 101.],
- [201., 301.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0xcec7764f" id="af0ab254" long_name="xy-aux" points="[1., 101., 201., 301.]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5]]" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, 1.5]" checksum="0xe8c76a1f" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -24,19 +21,16 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord checksum="0xa8c16649" id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[1.5, 2.5],
- [2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[1.5, 2.5, 2.5, 3.5]" checksum="0xbb7489b5" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  4., 104.],
- [204., 304.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0x4cb46962" id="af0ab254" long_name="xy-aux" points="[4., 104., 204., 304.]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[1.5, 2.5],
- [2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[1.5, 2.5, 2.5, 3.5]" checksum="0xbb7489b5" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -45,19 +39,16 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord checksum="0xa8c16649" id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[1.5, 2.5],
- [2.5, 3.5]]" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[1.5, 2.5, 2.5, 3.5]" checksum="0xbb7489b5" id="78a0dfe8" long_name="x" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  2., 102.],
- [202., 302.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0xa3941834" id="af0ab254" long_name="xy-aux" points="[2., 102., 202., 302.]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5]]" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, 1.5]" checksum="0xe8c76a1f" id="6fdbcbab" long_name="y" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -66,19 +57,16 @@
   <cube dtype="float32" units="unknown">
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
+        <dimCoord checksum="0xa8c16649" id="ecc4ad5a" long_name="height" points="[10., 20.]" shape="(2,)" units="Unit('m')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord bounds="[[-0.5,  0.5],
- [ 0.5,  1.5]]" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[-0.5, 0.5, 0.5, 1.5]" checksum="0xe8c76a1f" id="78a0dfe8" long_name="x" points="[0., 1.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="af0ab254" long_name="xy-aux" points="[[  3., 103.],
- [203., 303.]]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0xccb1f7dd" id="af0ab254" long_name="xy-aux" points="[3., 103., 203., 303.]" shape="(2, 2)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord bounds="[[1.5, 2.5],
- [2.5, 3.5]]" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord bounds="[1.5, 2.5, 2.5, 3.5]" checksum="0xbb7489b5" id="6fdbcbab" long_name="y" points="[2., 3.]" shape="(2,)" units="Unit('1')" value_type="float32"/>
       </coord>
     </coords>
     <cellMethods/>

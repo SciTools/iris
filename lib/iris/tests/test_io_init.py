@@ -4,73 +4,151 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the io/__init__.py module."""
 
-# import iris tests first so that some things can be initialised before importing anything else
-import iris.tests as tests  # isort:skip
-
 from io import BytesIO
 from pathlib import Path
 
+import pytest
+
 import iris.fileformats as iff
 import iris.io
+from iris.tests import _shared_utils
 
 
-class TestDecodeUri(tests.IrisTest):
-    def test_decode_uri__str(self):
-        tests = {
-            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
+class TestDecodeUri:
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
+            (
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                ("file", r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                uri[:4],
-                uri[5:],
+            (
+                "file:///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "///data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "https://www.somehost.com:8080/resource/thing.grib"): (
-                uri[:5],
-                uri[6:],
+            (
+                "https://www.somehost.com:8080/resource/thing.grib",
+                ("https", "//www.somehost.com:8080/resource/thing.grib", None),
             ),
-            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
-                "file",
-                uri,
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure",
+                    "mode=nczarr,file",
+                ),
             ),
-        }
-        for uri, expected in tests.items():
-            self.assertEqual(expected, iris.io.decode_uri(uri))
+            (
+                "file:////data/users/joe.bloggs/air_pressure#mode=file",
+                (
+                    "file",
+                    "////data/users/joe.bloggs/air_pressure",
+                    "mode=file",
+                ),
+            ),
+            (
+                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                ("file", "/data/local/someDir/2013-11-25T13:49:17.632797", None),
+            ),
+            (
+                "/data/local/someDir/air_pressure.zarr",
+                ("file", "/data/local/someDir/air_pressure.zarr", None),
+            ),
+        ],
+    )
+    def test_decode_uri__str(self, uri, expected):
+        assert iris.io.decode_uri(uri) == expected
 
-    def test_decode_uri__path(self):
-        tests = {
-            (uri := "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp",
+                ("file", "/data/local/someDir/PP/COLPEX/COLPEX_16a_pj001.pp", None),
             ),
-            (uri := r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp"): (
-                "file",
-                uri,
+            (
+                r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp",
+                ("file", r"C:\data\local\someDir\PP\COLPEX\COLPEX_16a_pj001.pp", None),
             ),
-            (uri := "/data/local/someDir/2013-11-25T13:49:17.632797"): (
-                "file",
-                uri,
+            (
+                "/data/local/someDir/2013-11-25T13:49:17.632797",
+                ("file", "/data/local/someDir/2013-11-25T13:49:17.632797", None),
             ),
-        }
-        for uri, expected in tests.items():
-            self.assertEqual(expected, iris.io.decode_uri(Path(uri)))
+        ],
+    )
+    def test_decode_uri__path(self, uri, expected):
+        assert iris.io.decode_uri(Path(uri)) == expected
 
 
-class TestFileFormatPicker(tests.IrisTest):
-    def test_known_formats(self):
-        self.assertString(
+class TestCategoriseUri:
+    """`_categorise_uri` groups URIs by the handler that will take them.
+
+    `iris.loading._generate_cubes` and
+    `iris.fileformats.netcdf.ugrid_load.load_meshes` both group on the
+    category, so the two must agree about what an NCZarr target is.
+    """
+
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/forecast.nc",
+                ("file", "file", "/data/forecast.nc"),
+            ),
+            (
+                "/data/forecast.zarr",
+                ("file", "file", "/data/forecast.zarr"),
+            ),
+            (
+                "s3://bucket/forecast.zarr",
+                ("s3", "s3", "//bucket/forecast.zarr"),
+            ),
+            (
+                "https://example.com/forecast.nc",
+                ("https", "https", "//example.com/forecast.nc"),
+            ),
+            (
+                "file:///data/forecast.zarr#mode=nczarr,file",
+                ("nczarr", "file", "///data/forecast.zarr#mode=nczarr,file"),
+            ),
+        ],
+    )
+    def test_categorise_uri(self, uri, expected):
+        assert iris.io._categorise_uri(uri) == expected
+
+    def test_an_nczarr_fragment_outranks_its_scheme(self):
+        # The whole reason the category is not simply the scheme: these two
+        # share one and need different handlers.
+        plain = iris.io._categorise_uri("file:///data/forecast.zarr")
+        nczarr = iris.io._categorise_uri("file:///data/forecast.zarr#mode=nczarr,file")
+        assert plain[1] == nczarr[1] == "file"
+        assert plain[0] != nczarr[0]
+
+    def test_the_fragment_is_folded_back_into_the_part(self):
+        # A handler is handed a URI to reopen, so it needs the fragment.
+        _category, _scheme, part = iris.io._categorise_uri(
+            "file:///data/forecast.zarr#mode=nczarr,file"
+        )
+        assert part.endswith("#mode=nczarr,file")
+
+
+class TestFileFormatPicker:
+    def test_known_formats(self, request):
+        _shared_utils.assert_string(
+            request,
             str(iff.FORMAT_AGENT),
-            tests.get_result_path(("file_load", "known_loaders.txt")),
+            _shared_utils.get_result_path(("file_load", "known_loaders.txt")),
         )
 
-    @tests.skip_data
-    def test_format_picker(self):
+    @_shared_utils.skip_data
+    @pytest.mark.parametrize(
         # ways to test the format picker = list of (format-name, file-spec)
-        test_specs = [
+        ("expected_format_name", "file_spec"),
+        [
             (
                 "NetCDF",
                 ["NetCDF", "global", "xyt", "SMALL_total_column_co2.nc"],
@@ -114,33 +192,32 @@ class TestFileFormatPicker(tests.IrisTest):
                     "201007020900_u1096_ng_ey00_visibility0180_screen_2km",
                 ],
             ),
-            #            ('NAME',
-            #                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
-            #                 'Fields_grid1_201005110000.txt']),
-        ]
-
+        ],
+        #            ('NAME',
+        #                ['NAME', '20100509_18Z_variablesource_12Z_VAAC',
+        #                 'Fields_grid1_201005110000.txt']),
+    )
+    def test_format_picker(self, expected_format_name, file_spec):
         # test that each filespec is identified as the expected format
-        for expected_format_name, file_spec in test_specs:
-            test_path = tests.get_data_path(file_spec)
-            with open(test_path, "rb") as test_file:
-                a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
-                self.assertEqual(a.name, expected_format_name)
+        test_path = _shared_utils.get_data_path(file_spec)
+        with open(test_path, "rb") as test_file:
+            a = iff.FORMAT_AGENT.get_spec(test_path, test_file)
+            assert a.name == expected_format_name
 
-    def test_format_picker_nodata(self):
+    @pytest.mark.parametrize("header_length", [21, 80, 41, 42])
+    def test_format_picker_nodata(self, header_length):
         # The following is to replace the above at some point as no real files
         # are required.
         # (Used binascii.unhexlify() to convert from hex to binary)
 
         # Packaged grib, magic number offset by set length, this length is
         # specific to WMO bulletin headers
-        header_lengths = [21, 80, 41, 42]
-        for header_length in header_lengths:
-            binary_string = header_length * b"\x00" + b"GRIB" + b"\x00" * 100
-            with BytesIO(b"rw") as bh:
-                bh.write(binary_string)
-                bh.name = "fake_file_handle"
-                a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
-            self.assertEqual(a.name, "GRIB")
+        binary_string = header_length * b"\x00" + b"GRIB" + b"\x00" * 100
+        with BytesIO(b"rw") as bh:
+            bh.write(binary_string)
+            bh.name = "fake_file_handle"
+            a = iff.FORMAT_AGENT.get_spec(bh.name, bh)
+        assert a.name == "GRIB"
 
     def test_open_dap(self):
         # tests that *ANY* http or https URL is seen as an OPeNDAP service.
@@ -148,8 +225,9 @@ class TestFileFormatPicker(tests.IrisTest):
         # supported.
         DAP_URI = "https://geoport.whoi.edu/thredds/dodsC/bathy/gom15"
         a = iff.FORMAT_AGENT.get_spec(DAP_URI, None)
-        self.assertEqual(a.name, "NetCDF OPeNDAP")
+        assert a.name == "NetCDF OPeNDAP"
 
-
-if __name__ == "__main__":
-    tests.main()
+    def test_nczarr_url_without_zarr_suffix(self):
+        uri = "file:////data/users/joe.bloggs/air_pressure#mode=nczarr,file"
+        a = iff.FORMAT_AGENT.get_spec(uri, None)
+        assert a.name == "NcZarr"

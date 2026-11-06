@@ -1,0 +1,51 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float32" standard_name="air_potential_temperature" units="K">
+    <attributes>
+      <attribute name="source" value="Iris test case"/>
+    </attributes>
+    <coords>
+      <coord>
+        <dimCoord checksum="0x6522df69" id="1d45e087" points="[0.]" shape="(1,)" standard_name="forecast_period" units="Unit('hours')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord checksum="0x5872dd6f" id="8f75dad5" points="[nan, nan, -27.19603783, ..., 47.28049268, nan, nan]" shape="(10, 10)" standard_name="latitude" units="Unit('degrees')" value_type="float64">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord bounds="[0., 13.33333206, 13.33333206, 33.33333206, 33.33333206, 60.]" checksum="0x4f775417" id="fb105c19" long_name="level_height" points="[5., 21.66666412, 45.]" shape="(3,)" units="Unit('m')" value_type="float32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[2, 3]">
+        <auxCoord checksum="0x3ad2259b" id="81715b9b" points="[nan, nan, -168.15892035, ..., 14.27092227, nan, nan]" shape="(10, 10)" standard_name="longitude" units="Unit('degrees')" value_type="float64">
+          <rotatedGeogCS ellipsoid="GeogCS(6371229.0)" grid_north_pole_latitude="37.5" grid_north_pole_longitude="177.5"/>
+        </auxCoord>
+      </coord>
+      <coord datadims="[1]">
+        <dimCoord checksum="0xb0e02293" id="38fd0305" points="[1, 2, 3]" shape="(3,)" standard_name="model_level_number" units="Unit('1')" value_type="int32">
+          <attributes>
+            <attribute name="positive" value="up"/>
+          </attributes>
+        </dimCoord>
+      </coord>
+      <coord datadims="[3]">
+        <dimCoord checksum="0xc3f95bbe" id="aa537550" points="[-15305249.99747271, -11904083.33136766, -8502916.66526262, ..., 8502916.66526261, 11904083.33136766, 15305249.99747271]" shape="(10,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[2]">
+        <dimCoord checksum="0x54623432" id="3589f6ce" points="[-7762639.19859, -6037608.26557, -4312577.33255, ..., 4312577.33255, 6037608.26557, 7762639.19859]" shape="(10,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64"/>
+      </coord>
+      <coord datadims="[1]">
+        <auxCoord bounds="[1., 0.99846387, 0.99846387, 0.99616188, 0.99616188, 0.99309671]" checksum="0x1826f924" id="a5c170db" long_name="sigma" points="[0.9994238, 0.99750441, 0.9948203]" shape="(3,)" units="Unit('1')" value_type="float32"/>
+      </coord>
+      <coord datadims="[0]">
+        <dimCoord checksum="0x32955251" id="cb784457" points="[347921.16666667, 347921.33333333]" shape="(2,)" standard_name="time" units="Unit('hours since 1970-01-01 00:00:00', calendar='standard')" value_type="float64"/>
+      </coord>
+    </coords>
+    <cellMethods/>
+    <data dtype="float32" shape="(2, 3, 10, 10)" state="loaded"/>
+  </cube>
+</cubes>

@@ -1,63 +1,164 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+# See https://pre-commit.ci/#configuration
+# See https://github.com/scientific-python/cookie#sp-repo-review
 
+ci:
+  autofix_prs: false
+  autofix_commit_msg: "style: pre-commit fixes"
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+  autoupdate_schedule: "monthly"
+
+
+# Alphabetised, for lack of a better order.
 files: |
     (?x)(
-        noxfile\.py|
-        setup\.py|
+        AGENTS\.md|
+        .github\/workflows\/.*|
+        .hooks\/.+\.py|
+        benchmarks\/.+\.py|
         docs\/.+\.py|
         lib\/.+\.py|
-        benchmarks\/.+\.py
+        noxfile\.py|
+        pyproject\.toml|
+        tools\/.+\.py|
+        setup\.py
     )
 minimum_pre_commit_version: 1.21.0
 
 repos:
+-   repo: local
+    hooks:
+    -   id: check-netcdf4-imports
+        name: Check netCDF4 imports are via _thread_safe_nc
+        language: python
+        entry: python .hooks/check_netcdf4_imports.py
+        types: [python]
+    -   id: check-license-headers
+        name: Check license headers
+        language: python
+        entry: python .hooks/check_license_headers.py
+        types: [python]
+    -   id: check-categorised-warnings
+        name: Check warnings are categorised
+        language: python
+        entry: python .hooks/check_categorised_warnings.py
+        types: [python]
+    -   id: check-docs-page-metadata
+        name: Check docs page metadata
+        language: python
+        entry: python .hooks/check_docs_page_metadata.py
+        # Every file a documentation page is built from is walked on every
+        #  run: it takes milliseconds, and it catches pages broken by a change
+        #  made elsewhere, such as a rename.  Passing filenames would also
+        #  require admitting .rst to the global `files` list above, which would
+        #  newly expose every page to the formatting hooks.
+        pass_filenames: false
+        always_run: true
+    -   id: check-python-versions
+        name: Check Python version consistency
+        language: python
+        entry: python .hooks/check_python_versions.py
+        additional_dependencies: [packaging]
+        files: |
+            (?x)(
+                pyproject\.toml|
+                noxfile\.py|
+                \.github/workflows/(ci-tests|ci-wheels)\.yml|
+                benchmarks/bm_runner\.py|
+                requirements/py\d+\.yml
+            )
+
+
+# Hook for pre-commit's  built-in checks
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v6.0.0
     hooks:
         # Prevent giant files from being committed.
     -   id: check-added-large-files
         # Check whether files parse as valid Python.
     -   id: check-ast
-        # Check for file name conflicts on case-insensitive filesytems.
+        # Check for file name conflicts on case-insensitive filesystems.
     -   id: check-case-conflict
         # Check for files that contain merge conflict strings.
     -   id: check-merge-conflict
         # Check for debugger imports and py37+ `breakpoint()` calls in Python source.
     -   id: debug-statements
+        # Check TOML file syntax.
+    -   id: check-toml
+        # Check YAML file syntax.
+    -   id: check-yaml
+        # Makes sure files end in a newline and only a newline.
+        # Duplicates Ruff W292 but also works on non-Python files.
+    -   id: end-of-file-fixer
+        # Replaces or checks mixed line ending.
+    -   id: mixed-line-ending
         # Don't commit to main branch.
     -   id: no-commit-to-branch
+        # Trims trailing whitespace.
+        # Duplicates Ruff W291 but also works on non-Python files.
+    -   id: trailing-whitespace
 
--   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.2.1"
+# Hooks from all other repos
+# NOTE : keep these in hook-name (aka 'id') order
+-   repo: https://github.com/adamchainz/blacken-docs
+    # This template does not keep up-to-date with versions, visit the repo to see the most recent release.
+    rev: 1.20.0
     hooks:
-    -   id: ruff
-        types: [file, python]
-        args: [--fix, --show-fixes]
-    -   id: ruff-format
-        types: [file, python]
+    -   id: blacken-docs
+        types: [file, rst]
 
 -   repo: https://github.com/codespell-project/codespell
-    rev: "v2.2.6"
+    rev: "v2.4.3"
     hooks:
     -   id: codespell
         types_or: [asciidoc, python, markdown, rst]
         additional_dependencies: [tomli]
 
--   repo: https://github.com/PyCQA/flake8
-    rev: 7.0.0
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: 'v2.3.1'
     hooks:
-    -   id: flake8
+    -   id: mypy
+        additional_dependencies:
+            - 'types-requests'
+        exclude: 'noxfile\.py|docs/src/conf\.py'
+
+-   repo: https://github.com/numpy/numpydoc
+    rev: v1.11.0rc0
+    hooks:
+      - id: numpydoc-validation
+        exclude: "^lib/iris/tests/|docs/gallery_code/"
         types: [file, python]
 
--   repo: https://github.com/asottile/blacken-docs
-    rev: 1.16.0
+-   repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.16.6"
     hooks:
-    -   id: blacken-docs
-        types: [file, rst]
+    -   id: ruff-check
+        types: [file, python]
+        args: [--fix, --show-fixes]
+    -   id: ruff-format
+        types: [file, python]
 
 -   repo: https://github.com/aio-libs/sort-all
-    rev: v1.2.0
+    rev: v1.3.0
     hooks:
     -   id: sort-all
         types: [file, python]
+
+-   repo: https://github.com/scientific-python/cookie
+    rev: 2026.08.14
+    hooks:
+    - id: sp-repo-review
+      additional_dependencies: ["repo-review[cli]"]
+      args: ["--show=errskip"]
+
+-   repo: https://github.com/abravalheri/validate-pyproject
+    # More exhaustive than Ruff RUF200.
+    rev: "0.26"
+    hooks:
+    - id: validate-pyproject
+
+-   repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.30.0
+    hooks:
+      - id: zizmor

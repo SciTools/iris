@@ -8,15 +8,12 @@
 
 """
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
 import numpy as np
 
 from iris.analysis import Nearest
 from iris.coords import DimCoord
 from iris.cube import Cube
+from iris.tests import _shared_utils
 
 
 def grid_cube(xx, yy, data=None):
@@ -60,7 +57,7 @@ class MixinCheckingCode:
         dst_cube = grid_cube(dst_x, dst_y)
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "basic RESULT")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_src_extrapolation(self):
         src_x = [30.0, 40.0, 50.0]
@@ -78,7 +75,7 @@ class MixinCheckingCode:
         dst_cube = grid_cube(dst_x, dst_y)
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "extrapolate RESULT")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_exact_matching_points(self):
         src_x = [10.0, 20.0, 30.0]
@@ -98,7 +95,7 @@ class MixinCheckingCode:
         dst_cube = grid_cube(dst_x, dst_y)
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "matching RESULt")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_source_mask(self):
         src_x = [40.0, 50.0, 60.0]
@@ -127,7 +124,7 @@ class MixinCheckingCode:
         dst_cube = grid_cube(dst_x, dst_y)
         result_cube = self.regrid(src_cube, dst_cube, translate_nans_to_mask=True)
         _debug_data(result_cube, "masked RESULT")
-        self.assertMaskedArrayEqual(result_cube.data, expected_result)
+        _shared_utils.assert_masked_array_equal(result_cube.data, expected_result)
 
     def test_wrapping_non_circular(self):
         src_x = [-10.0, 0.0, 10.0]
@@ -144,7 +141,7 @@ class MixinCheckingCode:
         _debug_data(src_cube, "noncircular SOURCE")
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "noncircular RESULT")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_wrapping_circular(self):
         # When x-coord is "circular", the above distinction does not apply :
@@ -164,7 +161,7 @@ class MixinCheckingCode:
         _debug_data(src_cube, "circular SOURCE")
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "circular RESULT")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_wrapping_non_angular(self):
         src_x = [-10.0, 0.0, 10.0]
@@ -187,7 +184,7 @@ class MixinCheckingCode:
         _debug_data(src_cube, "non-angle-lons SOURCE")
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "non-angle-lons RESULT")
-        self.assertArrayAllClose(result_cube.data, expected_result)
+        _shared_utils.assert_array_all_close(result_cube.data, expected_result)
 
     def test_source_nan(self):
         src_x = [40.0, 50.0, 60.0]
@@ -210,15 +207,11 @@ class MixinCheckingCode:
         dst_cube = grid_cube(dst_x, dst_y)
         result_cube = self.regrid(src_cube, dst_cube)
         _debug_data(result_cube, "nan RESULT")
-        self.assertArrayEqual(result_cube.data, expected_result)
+        _shared_utils.assert_array_equal(result_cube.data, expected_result)
 
 
-class TestCubeRegridNearest(MixinCheckingCode, tests.IrisTest):
+class TestCubeRegridNearest(MixinCheckingCode):
     scheme = Nearest(extrapolation_mode="extrapolate")
 
     def regrid(self, src_cube, dst_cube, **kwargs):
         return src_cube.regrid(dst_cube, scheme=self.scheme)
-
-
-if __name__ == "__main__":
-    tests.main()

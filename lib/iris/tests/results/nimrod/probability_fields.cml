@@ -2,6 +2,7 @@
 <cubes xmlns="urn:x-iris:cubeml-0.2">
   <cube dtype="float32" long_name="mean_of_cloud_area_fraction_in_atmosphere" units="1">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="172"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -11,34 +12,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[    0. ,   304.8],
- [    0. , 30000. ]]" id="a2cbc1ea" points="[0., 0.]" shape="(2,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <auxCoord bounds="[0., 304.79998779, 0., 30000.]" checksum="0x6522df69" id="a2cbc1ea" points="[0., 0.]" shape="(2,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -56,39 +56,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[0]">
-        <auxCoord bounds="[[    0. ,   304.8],
- [    0. ,   304.8],
- [    0. , 30000. ],
- [    0. , 30000. ]]" id="a2cbc1ea" points="[0., 0., 0., 0.]" shape="(4,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <auxCoord bounds="[0., 304.79998779, 0., ..., 30000., 0., 30000.]" checksum="0xecbb4b55" id="a2cbc1ea" points="[0., 0., 0., 0.]" shape="(4,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </auxCoord>
       </coord>
       <coord datadims="[0]">
-        <auxCoord id="626e8c9f" long_name="percentile" points="[0.5, 0.9, 0.1, 0.5]" shape="(4,)" units="Unit('1')" value_type="float32"/>
+        <auxCoord checksum="0xfd2eb534" id="626e8c9f" long_name="percentile" points="[0.5, 0.89999998, 0.1, 0.5]" shape="(4,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -96,6 +93,7 @@
   </cube>
   <cube dtype="float32" long_name="standard_deviation_of_cloud_area_fraction_in_atmosphere" units="1">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="172"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -105,33 +103,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[  0. , 304.8]]" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[0., 304.79998779]" checksum="0x2144df1c" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -152,41 +150,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[  0. , 304.8]]" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[0., 304.79998779]" checksum="0x2144df1c" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[0.    , 0.    ],
- [0.1875, 0.3125]]" id="f53a7e97" points="[0.  , 0.25]" shape="(2,)" units="Unit('1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[0., 0., 0.1875, 0.3125]" checksum="0x9fc05a89" id="f53a7e97" points="[0., 0.25]" shape="(2,)" units="Unit('1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -204,40 +201,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[  0. , 304.8]]" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord bounds="[0., 304.79998779]" checksum="0x2144df1c" id="a2cbc1ea" points="[0.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="f53a7e97" points="[0.  , 0.25]" shape="(2,)" units="Unit('1')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0x9fc05a89" id="f53a7e97" points="[0., 0.25]" shape="(2,)" units="Unit('1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -258,40 +255,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.375, 0.625]]" id="84c0f905" long_name="fog_fraction" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[0.375, 0.625]" checksum="0x9722f221" id="84c0f905" long_name="fog_fraction" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[1.65]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xf984687b" id="a2cbc1ea" points="[1.64999998]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -309,29 +306,29 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x9722f221" id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -352,33 +349,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[157.5, 262.5]]" id="d7865e70" points="[210.]" shape="(1,)" standard_name="height" units="Unit('metres')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[157.5, 262.5]" checksum="0x461cf0e0" id="d7865e70" points="[210.]" shape="(1,)" standard_name="height" units="Unit('metres')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="below"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -396,33 +393,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="d7865e70" points="[61.]" shape="(1,)" standard_name="height" units="Unit('metres')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0xf2c54352" id="d7865e70" points="[61.]" shape="(1,)" standard_name="height" units="Unit('metres')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="below"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -439,29 +436,29 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="bb5e3de6" points="[0.625]" shape="(1,)" standard_name="cloud_area_fraction" units="Unit('1')" value_type="float32" var_name="threshold"/>
+        <dimCoord checksum="0x02a6d683" id="bb5e3de6" points="[0.625]" shape="(1,)" standard_name="cloud_area_fraction" units="Unit('1')" value_type="float32" var_name="threshold"/>
       </coord>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -469,6 +466,7 @@
   </cube>
   <cube dtype="int16" long_name="mean_of_snow_melting_level_above_sea_level" units="m">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -478,26 +476,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -515,29 +513,29 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x02f152b0" id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -545,6 +543,7 @@
   </cube>
   <cube dtype="int16" long_name="standard_deviation_of_snow_melting_level_above_sea_level" units="m">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="101"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -554,26 +553,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -594,33 +593,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[37.5, 62.5]]" id="cd81394c" points="[50.]" shape="(1,)" units="Unit('m')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[37.5, 62.5]" checksum="0x81363aad" id="cd81394c" points="[50.]" shape="(1,)" units="Unit('m')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="below"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -638,33 +637,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="cd81394c" points="[100.]" shape="(1,)" units="Unit('m')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0xbab5a2e6" id="cd81394c" points="[100.]" shape="(1,)" units="Unit('m')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="below"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -672,6 +671,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_amount_of_precipitation" units="mm">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="61"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -682,26 +682,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -720,29 +720,29 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x9722f221" id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -750,6 +750,7 @@
   </cube>
   <cube dtype="float32" long_name="standard_deviation_of_amount_of_precipitation" units="mm">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="61"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -760,26 +761,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -801,34 +802,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[0.15, 0.25],
- [3.75, 6.25]]" id="573b41e6" points="[0.2, 5. ]" shape="(2,)" units="Unit('mm')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[0.15000001, 0.25, 3.75, 6.25]" checksum="0x316c49f9" id="573b41e6" points="[0.2, 5.]" shape="(2,)" units="Unit('mm')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -847,33 +847,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="573b41e6" points="[5.]" shape="(1,)" units="Unit('mm')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0xf99f2265" id="573b41e6" points="[5.]" shape="(1,)" units="Unit('mm')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -895,34 +895,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[0.15, 0.25],
- [3.  , 5.  ]]" id="cecff436" points="[0.2, 4. ]" shape="(2,)" units="Unit('mm hr^-1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[0.15000001, 0.25, 3., 5.]" checksum="0xa4e86d5b" id="cecff436" points="[0.2, 4.]" shape="(2,)" units="Unit('mm hr^-1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -943,33 +942,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[0.15, 0.25]]" id="cecff436" points="[0.2]" shape="(1,)" units="Unit('mm hr^-1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[0.15000001, 0.25]" checksum="0xa07b9b41" id="cecff436" points="[0.2]" shape="(1,)" units="Unit('mm hr^-1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -977,6 +976,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_rate_of_precipitation" units="mm/hr">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="63"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -986,26 +986,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1023,26 +1023,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1050,7 +1050,6 @@
   </cube>
   <cube dtype="float32" long_name="snowfall" units="mm">
     <attributes>
-      <attribute name="Probability methods" value="['ST (Some Time)']"/>
       <attribute name="field_code" value="218"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1061,29 +1060,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
-      </coord>
-      <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1104,33 +1100,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[40., 40.]]" id="537282f0" points="[40.]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[40., 40.]" checksum="0x2c12db02" id="537282f0" points="[40.]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="equal"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1138,6 +1134,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_air_pressure_at_mean_sea_level" units="hPa">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="12"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1147,26 +1144,26 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1184,36 +1181,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[1.65]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xf984687b" id="a2cbc1ea" points="[1.64999998]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x9722f221" id="626e8c9f" long_name="percentile" points="[0.5]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1221,6 +1218,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_Visibility" units="m">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="155"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1230,33 +1228,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[1.65]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xf984687b" id="a2cbc1ea" points="[1.64999998]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1274,36 +1272,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[1.65]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xf984687b" id="a2cbc1ea" points="[1.64999998]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x02f152b0" id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1311,6 +1309,7 @@
   </cube>
   <cube dtype="int16" long_name="mean_of_wind direction" units="Degrees">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="806"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1320,33 +1319,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1354,6 +1353,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_wind_speed_of_gust" units="m/s">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="817"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1363,33 +1363,33 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0, 4]" shape="(2,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x45281a18" id="400234d7" long_name="experiment_number" points="[0, 4]" shape="(2,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1411,40 +1411,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[19.8, 24.2]]" id="6e23f501" points="[22.]" shape="(1,)" units="Unit('m s^-1')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[19.79999924, 24.20000076]" checksum="0xc45a00a2" id="6e23f501" points="[22.]" shape="(1,)" units="Unit('m s^-1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1462,40 +1462,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="6e23f501" points="[22.]" shape="(1,)" units="Unit('m s^-1')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0xc45a00a2" id="6e23f501" points="[22.]" shape="(1,)" units="Unit('m s^-1')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1503,6 +1503,7 @@
   </cube>
   <cube dtype="float32" long_name="mean_of_wind speed" units="knots">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="804"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1512,33 +1513,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1556,36 +1557,36 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x02f152b0" id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1593,6 +1594,7 @@
   </cube>
   <cube dtype="float32" long_name="standard_deviation_of_wind speed" units="knots">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="804"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1602,33 +1604,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1650,40 +1652,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[13.5, 16.5]]" id="d7d0bffb" points="[15.]" shape="(1,)" units="Unit('knots')" value_type="float32" var_name="threshold">
+        <dimCoord bounds="[13.5, 16.5]" checksum="0x0fa0d7ec" id="d7d0bffb" points="[15.]" shape="(1,)" units="Unit('knots')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1701,40 +1703,40 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="d7d0bffb" points="[15.]" shape="(1,)" units="Unit('knots')" value_type="float32" var_name="threshold">
+        <dimCoord checksum="0x0fa0d7ec" id="d7d0bffb" points="[15.]" shape="(1,)" units="Unit('knots')" value_type="float32" var_name="threshold">
           <attributes>
             <attribute name="relative_to_threshold" value="above"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1742,6 +1744,7 @@
   </cube>
   <cube dtype="float32" long_name="10m ensemble mean U wind" units="m/s">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="5"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1751,33 +1754,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1785,6 +1788,7 @@
   </cube>
   <cube dtype="float32" long_name="10m ensemble mean V wind" units="m/s">
     <attributes>
+      <attribute name="clutter_map_number" value="12"/>
       <attribute name="field_code" value="6"/>
       <attribute name="institution" value="Met Office"/>
       <attribute name="nimrod_version" value="2"/>
@@ -1794,33 +1798,33 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x41d912ff" id="400234d7" long_name="experiment_number" points="[0]" shape="(1,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>
@@ -1838,36 +1842,36 @@
     </attributes>
     <coords>
       <coord datadims="[0]">
-        <dimCoord id="400234d7" long_name="experiment_number" points="[0, 4]" shape="(2,)" units="Unit('1')" value_type="int16"/>
+        <dimCoord checksum="0x45281a18" id="400234d7" long_name="experiment_number" points="[0, 4]" shape="(2,)" units="Unit('1')" value_type="int16"/>
       </coord>
       <coord>
-        <dimCoord bounds="[[   0, 3600]]" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
+        <dimCoord bounds="[0, 3600]" checksum="0x7bc3a589" id="b40ecfd3" points="[3600]" shape="(1,)" standard_name="forecast_period" units="Unit('second')" value_type="int32"/>
       </coord>
       <coord>
-        <dimCoord id="201cc2ba" points="[1580180400]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord checksum="0xb44e0674" id="201cc2ba" points="[1.58018040E+09]" shape="(1,)" standard_name="forecast_reference_time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0xb51b8ab8" id="a2cbc1ea" points="[10.]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float32">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
+        <dimCoord checksum="0x02f152b0" id="626e8c9f" long_name="percentile" points="[0.1]" shape="(1,)" units="Unit('1')" value_type="float32"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x3d640a98" id="784eb7ff" points="[102000., 104000., 106000.]" shape="(3,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
+        <dimCoord checksum="0x11315931" id="1c8167bb" points="[94000., 96000., 98000.]" shape="(3,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float32">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord>
-        <dimCoord bounds="[[1580180400, 1580184000]]" id="90a3bd1c" points="[1580184000]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
+        <dimCoord bounds="[1.58018040E+09, 1.58018400E+09]" checksum="0xe85f1a03" id="90a3bd1c" points="[1.58018400E+09]" shape="(1,)" standard_name="time" units="Unit('seconds since 1970-01-01 00:00:00', calendar='standard')" value_type="int64"/>
       </coord>
     </coords>
     <cellMethods/>

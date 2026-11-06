@@ -7,7 +7,7 @@
 from pathlib import Path
 from string import Template
 import subprocess
-from typing import Optional
+from typing import Any, Optional
 
 import dask
 from dask import array as da
@@ -48,7 +48,7 @@ def ncgen_from_cdl(cdl_str: Optional[str], cdl_path: Optional[str], nc_path: str
     if cdl_path:
         # Create netcdf from stored CDL file.
         call_args = [NCGEN_PATHSTR, "-k3", "-o", nc_path, cdl_path]
-        call_kwargs = {}
+        call_kwargs: dict[str, Any] = {}
     else:
         # No CDL file : pipe 'cdl_str' directly into the ncgen program.
         if not cdl_str:
@@ -116,7 +116,7 @@ def _add_standard_data(nc_path, unlimited_dim_size=0):
             var[:] = data
         else:
             # Fill with a plain value.  But avoid zeros, so we can simulate
-            # valid ugrid connectivities even when start_index=1.
+            # valid mesh connectivities even when start_index=1.
             with dask.config.set({"array.chunk-size": "2048MiB"}):
                 data = da.ones(shape, dtype=var.dtype)  # Do not use zero
             da.store(data, var)

@@ -1,0 +1,396 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""The format-agnostic description of a CF-conforming array store.
+
+.. z_reference:: iris.fileformats.cf.dataset
+   :tags: topic_load_save
+
+   API reference
+
+:class:`CFDataset` and :class:`CFDatasetVariable` are what the rest of the CF
+layer is written against. They are deliberately small: only what the
+:class:`~iris.fileformats.cf.CFVariable` classes, the CF loader and the CF
+saver actually need, with one implementation per storage format.
+
+The property ``attributes`` is the only route to a CF attribute, and every
+storage property is a named, typed member.
+
+.. maintainer-notes::
+
+   That split makes these classes more restrictive than a netCDF variable
+   about what can be reached through attribute syntax. netCDF presents
+   ``units``, a CF attribute read from the file, and ``dimensions``, a
+   property of the storage, the same way, and a caller cannot tell which is
+   which.
+
+   ``attributes`` holds an open-ended set of data keys read from a file, with
+   no schema to enumerate, which is why :class:`TrackedAttributes` exists and
+   why :meth:`~iris.fileformats.cf.CFVariable.__getattr__` forwards to it.
+   Tracking is the part that matters: Iris decides which file attributes
+   survive onto a loaded cube by asking which ones the loading rules did *not*
+   read, so a read that goes unrecorded silently leaks a CF-reserved attribute
+   onto the cube.
+
+   See sections 4.2, 4.3 and 4.5 of
+   ``docs/superpowers/specs/2026-09-21-zarr-io-design.md``.
+
+"""
+
+from abc import ABC, abstractmethod
+from collections.abc import (
+    Callable,
+    ItemsView,
+    Iterable,
+    Iterator,
+    KeysView,
+    Mapping,
+    MutableMapping,
+    ValuesView,
+)
+from types import MappingProxyType
+from typing import Any
+
+import numpy as np
+
+
+class TrackedAttributes(MutableMapping):
+    """A variable's attributes, recording which of them have been looked up.
+
+    Single-key lookups record: :meth:`__getitem__`, :meth:`get` and
+    :meth:`__contains__`. Bulk access does not: iteration, :meth:`keys`,
+    :meth:`values`, :meth:`items` and :func:`len` leave the record alone.
+    :attr:`untracked` reads a single key without recording it.
+
+    """
+
+    def __init__(self, source: MutableMapping, *, ignored: Iterable[str] = ()):
+        """Wrap ``source``, treating any ``ignored`` name it holds as already read."""
+        self._source = source
+        self._ignored = frozenset(ignored)
+        self._read: set[str] = set()
+        self.reset()
+
+    def __getitem__(self, key: str) -> Any:
+        """Return ``key``'s value, recording it as read."""
+        # Index first: a KeyError must escape without recording anything.
+        value = self._source[key]
+        self._read.add(key)
+        return value
+
+    def __contains__(self, key: object) -> bool:
+        """Return whether ``key`` is present, recording a hit as read."""
+        result = key in self._source
+        if result:
+            self._read.add(key)  # type: ignore[arg-type]
+        return result
+
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Set ``key``'s value, recording nothing."""
+        self._source[key] = value
+
+    def __delitem__(self, key: str) -> None:
+        """Remove ``key``, and any record of it having been read."""
+        del self._source[key]
+        self._read.discard(key)
+
+    def __iter__(self) -> Iterator[str]:
+        """Return an iterator over the attribute names, recording nothing."""
+        return iter(self._source)
+
+    def __len__(self) -> int:
+        """Return the number of attributes, recording nothing."""
+        return len(self._source)
+
+    def keys(self) -> KeysView:
+        """Return a view of the attribute names, recording nothing."""
+        return self._source.keys()
+
+    def values(self) -> ValuesView:
+        """Return a view of the attribute values, recording nothing."""
+        return self._source.values()
+
+    def items(self) -> ItemsView:
+        """Return a view of the attribute pairs, recording nothing."""
+        return self._source.items()
+
+    def __repr__(self) -> str:
+        """Return a string representation, recording nothing."""
+        return f"{self.__class__.__name__}({dict(self._source)!r})"
+
+    @property
+    def untracked(self) -> Mapping:
+        """A read-only view of the same attributes that records nothing."""
+        return MappingProxyType(dict(self._source))
+
+    @property
+    def read(self) -> frozenset:
+        """The names looked up since construction or the last :meth:`reset`."""
+        return frozenset(self._read)
+
+    @property
+    def unread(self) -> frozenset:
+        """The names present but not looked up since the last :meth:`reset`."""
+        return frozenset(self._source) - self._read
+
+    def reset(self) -> None:
+        """Forget every recorded lookup, re-seeding from the ignored names."""
+        self._read = set(self._ignored) & set(self._source)
+
+
+class CFDatasetVariable(ABC):
+    """One named array in a CF-conforming dataset."""
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
+        """The variable's name within its dataset."""
+
+    @property
+    @abstractmethod
+    def location(self) -> str:
+        """The path or URL of the dataset holding this variable."""
+
+    @property
+    @abstractmethod
+    def format(self) -> str:
+        """The concrete format of the dataset holding this variable.
+
+        Repeated here from the dataset so that a variable can answer for
+        itself, as :attr:`location` is. For messages and diagnostics only:
+        generic code asks for a capability, never for a format.
+
+        """
+
+    @property
+    @abstractmethod
+    def dimensions(self) -> tuple:
+        """The names of the dimensions this variable spans, in order."""
+
+    @property
+    @abstractmethod
+    def shape(self) -> tuple:
+        """The variable's shape."""
+
+    @property
+    @abstractmethod
+    def dtype(self) -> np.dtype:
+        """A :class:`numpy.dtype`, or :class:`str` for a variable-length string."""
+
+    @property
+    @abstractmethod
+    def size(self) -> int:
+        """The total number of elements in the variable."""
+
+    @property
+    @abstractmethod
+    def fill_value(self) -> Any:
+        """The store's own fill value, or ``None`` if it has none."""
+
+    @property
+    @abstractmethod
+    def chunking(self) -> tuple | None:
+        """The variable's storage chunk shape, or ``None`` when unchunked."""
+
+    @property
+    @abstractmethod
+    def storage_settings(self) -> Mapping:
+        """The storage settings this variable holds, in the backend's spelling.
+
+        ``zlib``, ``complevel``, ``chunksizes`` for netCDF; ``chunks``,
+        ``shards``, ``compressors``, ``filters``, ``serializer``,
+        ``zarr_format`` for Zarr. Readable, never
+        interpreted: no generic code may branch on a key. The typed,
+        guaranteed-present member is :attr:`chunking`.
+
+        """
+
+    @property
+    @abstractmethod
+    def attributes(self) -> MutableMapping:
+        """The variable's CF attributes, materialised once at construction."""
+
+    @abstractmethod
+    def __getitem__(self, keys) -> np.ndarray:
+        """Return the indexed portion of the variable's data."""
+
+    @abstractmethod
+    def __setitem__(self, keys, values) -> None:
+        """Write ``values`` into the indexed portion of the variable."""
+
+    @abstractmethod
+    def read_data(self, chunking_policy: Callable[[], tuple]) -> Any:
+        """Return this variable's data, lazily where appropriate.
+
+        The one route by which the CF loader obtains arrays, so a new storage
+        format mainly needs a new implementation of this method. An
+        implementation is expected to share the CF-layer chunking helpers in
+        :mod:`iris.fileformats.cf.loader` - ``_get_actual_dtype`` for a lazy
+        result's dtype and ``_LAZYVAR_MIN_BYTES`` for the small-array cutoff -
+        as :class:`~iris.fileformats.netcdf._dataset.NetCDFDatasetVariable`
+        does, rather than reinventing them. Read ``_LAZYVAR_MIN_BYTES`` through
+        the module object (``loader._LAZYVAR_MIN_BYTES``), not by
+        ``from ... import _LAZYVAR_MIN_BYTES``, so that tests can patch the
+        cutoff.
+
+        ``chunking_policy`` is called with no arguments and returns the
+        ``(chunks, dims_fixed)`` pair for a lazy result. Call it **only** once
+        the result is known to be lazy, otherwise it may raise. Under
+        :meth:`~iris.fileformats.cf.loader.ChunkControl.from_file` it raises for
+        a variable the store has not chunked, and we want to avoid this when a
+        variable is small enough to read whole.
+
+        """
+
+    @abstractmethod
+    def write_handle(self) -> Any:
+        """Return a picklable object supporting ``__setitem__`` on this variable.
+
+        This is what a Dask worker receives as a ``da.store`` target, so it must
+        survive pickling and must remain usable after the dataset it came from
+        has been closed.
+
+        """
+
+    @property
+    def ndim(self) -> int:
+        """The number of dimensions the variable spans."""
+        return len(self.shape)
+
+    def __len__(self) -> int:
+        """Return the length of the variable's leading dimension."""
+        if not self.shape:
+            # netCDF4.Variable.__len__ raises exactly this for a scalar, and
+            # CFVariable.__len__ forwards to it.
+            msg = "len() of unsized object"
+            raise TypeError(msg)
+        return self.shape[0]
+
+    def deprecated_netcdf_member(self, name: str) -> Any:
+        """Return a netCDF4-only member of the object backing this variable.
+
+        The one-release compatibility route for code that reached netCDF4 API
+        through a ``CFVariable``. A store with no backing netCDF4 object raises
+        :class:`AttributeError`.
+
+        """
+        raise AttributeError(name)
+
+
+class CFDataset(ABC):
+    """A CF-conforming array store, open for reading or writing."""
+
+    @property
+    @abstractmethod
+    def location(self) -> str:
+        """The store's path or URL, for messages and data proxies."""
+
+    @property
+    @abstractmethod
+    def mode(self) -> str:
+        """The mode the store was opened in: ``r``, ``r+``, ``a``, ``w`` or ``w-``."""
+
+    @property
+    @abstractmethod
+    def format(self) -> str:
+        """The concrete format of this dataset.
+
+        Examples: ``NETCDF4``, ``NETCDF3_CLASSIC``, ``ZARR_V2`` or ``ZARR_V3``.
+
+        What the loader, the saver and ``LOAD_PROBLEMS`` *say* when they have
+        to name the format. Reconstructing it from the implementation class
+        would be the type test this interface exists to forbid.
+
+        """
+
+    @property
+    @abstractmethod
+    def storage_settings(self) -> Mapping:
+        """The store-wide settings this store holds, in the backend's spelling."""
+
+    @property
+    @abstractmethod
+    def closed(self) -> bool:
+        """Whether :meth:`close` has already released the store."""
+
+    @property
+    @abstractmethod
+    def variables(self) -> Mapping:
+        """The store's variables, by name."""
+
+    @property
+    @abstractmethod
+    def dimensions(self) -> Mapping:
+        """The store's dimension lengths, by name."""
+
+    @property
+    @abstractmethod
+    def attributes(self) -> MutableMapping:
+        """The store's global attributes."""
+
+    @abstractmethod
+    def create_dimension(self, name: str, size: int | None) -> None:
+        """Declare a dimension of the given length.
+
+        ``size=None`` requests an unlimited dimension. A store with no such
+        concept raises :class:`NotImplementedError`.
+
+        """
+
+    @abstractmethod
+    def create_variable(
+        self, name: str, dtype, dimensions=(), *, fill_value=None, **storage_settings
+    ) -> "CFDatasetVariable":
+        """Create and return a new variable.
+
+        ``**storage_settings`` is storage-specific: ``zlib``, ``complevel`` and
+        ``chunksizes`` for netCDF; ``compressors``, ``chunks`` and ``shards``
+        for Zarr.
+
+        """
+
+    @abstractmethod
+    def supports_dtype(self, dtype) -> bool:
+        """Whether this store can hold a variable of this dtype.
+
+        The capability question the saver asks before it narrows an integer
+        type. Asking it of the store, rather than testing the format, is what
+        keeps the saver free of format names.
+
+        Parameters
+        ----------
+        dtype : :class:`numpy.dtype`
+            The dtype a variable would be created with.
+
+        Returns
+        -------
+        bool
+
+        """
+
+    @abstractmethod
+    def sync(self) -> None:
+        """Flush buffered writes to the store."""
+
+    @abstractmethod
+    def finalise(self) -> None:
+        """Perform the store's one-shot completion step, after every write.
+
+        Deliberately **not** part of :meth:`close`: a worker that writes one
+        region of a store must close its handle without performing a completion
+        step that only one process may perform.
+
+        """
+
+    @abstractmethod
+    def close(self) -> None:
+        """Release the store's resources."""
+
+    def __enter__(self) -> "CFDataset":
+        """Return this dataset, for use as a context manager."""
+        return self
+
+    def __exit__(self, *exc_info) -> None:
+        """Close this dataset on leaving the context, whatever happened in it."""
+        self.close()

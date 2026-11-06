@@ -39,7 +39,7 @@ class AreaWeightedRegridder:
 
         Notes
         -----
-        .. Note::
+        .. note::
 
             Both source and target cubes must have an XY grid defined by
             separate X and Y dimensions with dimension coordinates.
@@ -392,18 +392,23 @@ def _regrid_area_weighted_rectilinear_src_and_grid__perform(
 
     tgt_shape = (len(grid_y.points), len(grid_x.points))
 
-    # Calculate new data array for regridded cube.
-    regrid = functools.partial(
-        _regrid_along_dims,
+    # Specify the output dtype
+    if np.issubdtype(src_cube.dtype, np.integer):
+        out_dtype = np.float64
+    else:
+        out_dtype = src_cube.dtype
+
+    new_data = map_complete_blocks(
+        src_cube,
+        func=_regrid_along_dims,
+        dims=(src_y_dim, src_x_dim),
+        out_sizes=meshgrid_x.shape,
+        dtype=out_dtype,
         x_dim=src_x_dim,
         y_dim=src_y_dim,
         weights=weights,
         tgt_shape=tgt_shape,
         mdtol=mdtol,
-    )
-
-    new_data = map_complete_blocks(
-        src_cube, regrid, (src_y_dim, src_x_dim), meshgrid_x.shape
     )
 
     # Wrap up the data as a Cube.

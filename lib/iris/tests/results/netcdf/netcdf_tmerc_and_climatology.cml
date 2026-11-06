@@ -11,49 +11,23 @@
     </attributes>
     <coords>
       <coord datadims="[1, 2]">
-        <auxCoord id="dab47bb1" long_name="latitude" points="[[60.66069645, 60.66811228, 60.67546835, ...,
-  61.00536575, 61.00169289, 60.99795737],
- [60.61661948, 60.62402203, 60.63136493, ...,
-  60.96066523, 60.95699909, 60.95327039],
- [60.57253997, 60.57992928, 60.58725903, ...,
-  60.91596387, 60.91230442, 60.90858254],
- ...,
- [47.93315976, 47.93779085, 47.94238398, ...,
-  48.14771191, 48.14543307, 48.14311518],
- [47.8886077 , 47.89323161, 47.89781761, ...,
-  48.10282557, 48.10055029, 48.09823603],
- [47.84405455, 47.84867128, 47.85325017, ...,
-  48.0579387 , 48.05566698, 48.05335634]]" shape="(290, 180)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="lat"/>
+        <auxCoord checksum="0xf0e1bd45" id="dab47bb1" long_name="latitude" mask_checksum="no-masked-elements" points="[60.66069645, 60.66811228, 60.67546835, ..., 48.0579387, 48.05566698, 48.05335634]" shape="(290, 180)" standard_name="latitude" units="Unit('degrees')" value_type="float64" var_name="lat"/>
       </coord>
       <coord datadims="[1, 2]">
-        <auxCoord id="c15a8e5b" long_name="longitude" points="[[-12.96700657, -12.87717356, -12.78729286, ...,
-    3.32110128,   3.4131607 ,   3.50519538],
- [-12.95185916, -12.86214419, -12.77238175, ...,
-    3.31361277,   3.40554416,   3.49745093],
- [-12.93675957, -12.84716228, -12.75751774, ...,
-    3.30614848,   3.39795225,   3.48973151],
- ...,
- [-10.00300598,  -9.93670241,  -9.87038223, ...,
-    1.86585443,   1.9329238 ,   1.99998477],
- [ -9.99609479,  -9.929847  ,  -9.86358265, ...,
-    1.86248246,   1.92949369,   1.99649655],
- [ -9.98920028,  -9.92300815,  -9.8567995 , ...,
-    1.85911871,   1.92607195,   1.99301684]]" shape="(290, 180)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
+        <auxCoord checksum="0xb1d102e9" id="c15a8e5b" long_name="longitude" mask_checksum="no-masked-elements" points="[-12.96700657, -12.87717356, -12.78729286, ..., 1.85911871, 1.92607195, 1.99301684]" shape="(290, 180)" standard_name="longitude" units="Unit('degrees')" value_type="float64" var_name="lon"/>
       </coord>
       <coord datadims="[2]">
-        <dimCoord id="641399ec" long_name="projection_x_coordinate" points="[-197500., -192500., -187500., ...,  687500.,
-  692500.,  697500.]" shape="(180,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
+        <dimCoord checksum="0x5c494822" id="641399ec" long_name="projection_x_coordinate" points="[-197500., -192500., -187500., ..., 687500., 692500., 697500.]" shape="(180,)" standard_name="projection_x_coordinate" units="Unit('m')" value_type="float64" var_name="x">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="0207c927" long_name="projection_y_coordinate" points="[1247500., 1242500., 1237500., ..., -187500.,
- -192500., -197500.]" shape="(290,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
+        <dimCoord checksum="0xa4b7f415" id="0207c927" long_name="projection_y_coordinate" points="[1247500., 1242500., 1237500., ..., -187500., -192500., -197500.]" shape="(290,)" standard_name="projection_y_coordinate" units="Unit('m')" value_type="float64" var_name="y">
           <transverseMercator ellipsoid="GeogCS(semi_major_axis=6377563.396, semi_minor_axis=6356256.91)" false_easting="400000.0" false_northing="-100000.0" latitude_of_projection_origin="49.0" longitude_of_central_meridian="-2.0" scale_factor_at_central_meridian="0.9996012717"/>
         </dimCoord>
       </coord>
       <coord datadims="[0]">
-        <dimCoord bounds="[[113225., 113589.]]" climatological="True" id="b8b34212" long_name="time" points="[113406.]" shape="(1,)" standard_name="time" units="Unit('days since 1600-1-1 0:0:0', calendar='standard')" value_type="float64" var_name="time"/>
+        <dimCoord bounds="[113225., 113589.]" checksum="0xe0edfdea" climatological="True" id="b8b34212" long_name="time" points="[113406.]" shape="(1,)" standard_name="time" units="Unit('days since 1600-1-1 0:0:0', calendar='standard')" value_type="float64" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

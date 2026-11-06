@@ -33,8 +33,24 @@ class TrajectoryInterpolation:
         # Realise the data
         out_cube.data
 
+    def tracemalloc_trajectory_linear(self) -> None:
+        # Regrid the cube onto the template.
+        out_cube = interpolate(self.cube, self.sample_points, method="linear")
+        # Realise the data
+        out_cube.data
+
+    tracemalloc_trajectory_linear.number = 3  # type: ignore[attr-defined]
+
     def time_trajectory_nearest(self) -> None:
         # Regrid the cube onto the template.
         out_cube = interpolate(self.cube, self.sample_points, method="nearest")
         # Realise the data
         out_cube.data
+
+    def tracemalloc_trajectory_nearest(self) -> None:
+        # Regrid the cube onto the template.
+        out_cube = interpolate(self.cube, self.sample_points, method="nearest")
+        # Realise the data
+        out_cube.data
+
+    tracemalloc_trajectory_nearest.number = 3  # type: ignore[attr-defined]

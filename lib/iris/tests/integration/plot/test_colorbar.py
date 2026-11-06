@@ -7,26 +7,24 @@
 
 """
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
 import numpy as np
+import pytest
 
 from iris.coords import AuxCoord
+from iris.tests import _shared_utils
 import iris.tests.stock
 
 # Run tests in no graphics mode if matplotlib is not available.
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import matplotlib.pyplot as plt
 
     from iris.plot import contour, contourf, pcolor, pcolormesh, points, scatter
 
 
-@tests.skip_plot
-class TestColorBarCreation(tests.GraphicsTest):
-    def setUp(self):
-        super().setUp()
+@_shared_utils.skip_plot
+class TestColorBarCreation(_shared_utils.GraphicsTest):
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.draw_functions = (contour, contourf, pcolormesh, pcolor)
         self.cube = iris.tests.stock.lat_lon_cube()
         self.cube.coord("longitude").guess_bounds()
@@ -46,12 +44,8 @@ class TestColorBarCreation(tests.GraphicsTest):
         for draw_function in self.draw_functions:
             mappable = draw_function(self.cube)
             cbar = plt.colorbar()
-            self.assertIs(
-                cbar.mappable,
-                mappable,
-                msg="Problem with draw function iris.plot.{}".format(
-                    draw_function.__name__
-                ),
+            assert cbar.mappable is mappable, (
+                "Problem with draw function iris.plot.{}".format(draw_function.__name__)
             )
 
     def test_common_draw_functions_specified_mappable(self):
@@ -59,36 +53,28 @@ class TestColorBarCreation(tests.GraphicsTest):
             mappable_initial = draw_function(self.cube, cmap="cool")
             _ = draw_function(self.cube)
             cbar = plt.colorbar(mappable_initial)
-            self.assertIs(
-                cbar.mappable,
-                mappable_initial,
-                msg="Problem with draw function iris.plot.{}".format(
-                    draw_function.__name__
-                ),
+            assert cbar.mappable is mappable_initial, (
+                "Problem with draw function iris.plot.{}".format(draw_function.__name__)
             )
 
     def test_points_with_c_kwarg(self):
         mappable = points(self.cube, c=self.cube.data)
         cbar = plt.colorbar()
-        self.assertIs(cbar.mappable, mappable)
+        assert cbar.mappable is mappable
 
     def test_points_with_c_kwarg_specified_mappable(self):
         mappable_initial = points(self.cube, c=self.cube.data, cmap="cool")
         _ = points(self.cube, c=self.cube.data)
         cbar = plt.colorbar(mappable_initial)
-        self.assertIs(cbar.mappable, mappable_initial)
+        assert cbar.mappable is mappable_initial
 
     def test_scatter_with_c_kwarg(self):
         mappable = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points)
         cbar = plt.colorbar()
-        self.assertIs(cbar.mappable, mappable)
+        assert cbar.mappable is mappable
 
     def test_scatter_with_c_kwarg_specified_mappable(self):
         mappable_initial = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points)
         _ = scatter(self.traj_lon, self.traj_lat, c=self.traj_lon.points, cmap="cool")
         cbar = plt.colorbar(mappable_initial)
-        self.assertIs(cbar.mappable, mappable_initial)
-
-
-if __name__ == "__main__":
-    tests.main()
+        assert cbar.mappable is mappable_initial

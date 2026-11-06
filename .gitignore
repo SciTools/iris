@@ -66,11 +66,12 @@ lib/iris/tests/results/imagerepo.lock
 docs/src/_build/*
 docs/src/generated
 docs/src/sg_execution_times.rst
+docs/src/gallery_carousel.txt
 
 # Example test results
 docs/iris_image_test_output/
 
-# Created by editiors
+# Created by editors
 *~
 \#*
 \.\#*
@@ -79,3 +80,6 @@ docs/iris_image_test_output/
 
 # Files generated during test runs.
 lib/iris/tests/results/**/*.dot
+
+# Uses of SciTools-incubator/nothing.
+**/.nothing

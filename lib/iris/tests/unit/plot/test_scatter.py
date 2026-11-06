@@ -4,29 +4,31 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the `iris.plot.scatter` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
+import pytest
+
+from iris.tests import _shared_utils
 from iris.tests.unit.plot import TestGraphicStringCoord
 
-if tests.MPL_AVAILABLE:
+if _shared_utils.MPL_AVAILABLE:
     import iris.plot as iplt
 
 
-@tests.skip_plot
+@_shared_utils.skip_plot
 class TestStringCoordPlot(TestGraphicStringCoord):
-    def setUp(self):
-        super().setUp()
+    parent_setup = TestGraphicStringCoord._setup
+
+    @pytest.fixture(autouse=True)
+    def _setup(self, parent_setup):
         self.cube = self.cube[0, :]
         self.lat_lon_cube = self.lat_lon_cube[0, :]
 
     def test_xaxis_labels(self):
         iplt.scatter(self.cube.coord("str_coord"), self.cube)
-        self.assertBoundsTickLabels("xaxis")
+        self.assert_bounds_tick_labels("xaxis")
 
     def test_yaxis_labels(self):
         iplt.scatter(self.cube, self.cube.coord("str_coord"))
-        self.assertBoundsTickLabels("yaxis")
+        self.assert_bounds_tick_labels("yaxis")
 
     def test_xaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -36,7 +38,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax.set_xlim(0, 3)
         iplt.scatter(self.cube.coord("str_coord"), self.cube, axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels("xaxis", ax)
+        self.assert_points_tick_labels("xaxis", ax)
 
     def test_yaxis_labels_with_axes(self):
         import matplotlib.pyplot as plt
@@ -46,7 +48,7 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax.set_ylim(0, 3)
         iplt.scatter(self.cube, self.cube.coord("str_coord"), axes=ax)
         plt.close(fig)
-        self.assertPointsTickLabels("yaxis", ax)
+        self.assert_points_tick_labels("yaxis", ax)
 
     def test_scatter_longitude(self):
         import matplotlib.pyplot as plt
@@ -55,7 +57,3 @@ class TestStringCoordPlot(TestGraphicStringCoord):
         ax = fig.add_subplot(111)
         iplt.scatter(self.lat_lon_cube, self.lat_lon_cube.coord("longitude"), axes=ax)
         plt.close(fig)
-
-
-if __name__ == "__main__":
-    tests.main()

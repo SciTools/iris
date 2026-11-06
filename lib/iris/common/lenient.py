@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Provides the infrastructure to support lenient client/service behaviour."""
+"""Provides the infrastructure to support lenient client/service behaviour.
+
+.. z_reference:: iris.common.lenient
+   :tags: topic_data_model;topic_maths_stats
+
+   API reference
+"""
 
 from collections.abc import Iterable
 from contextlib import contextmanager
@@ -72,16 +78,16 @@ def _lenient_client(*dargs, services=None):
     ndargs = len(dargs)
 
     if ndargs:
-        assert (
-            ndargs == 1
-        ), f"Invalid lenient client arguments, expecting 1 got {ndargs}."
-        assert callable(
-            dargs[0]
-        ), "Invalid lenient client argument, expecting a callable."
+        assert ndargs == 1, (
+            f"Invalid lenient client arguments, expecting 1 got {ndargs}."
+        )
+        assert callable(dargs[0]), (
+            "Invalid lenient client argument, expecting a callable."
+        )
 
-    assert not (
-        ndargs and services
-    ), "Invalid lenient client, got both arguments and keyword arguments."
+    assert not (ndargs and services), (
+        "Invalid lenient client, got both arguments and keyword arguments."
+    )
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.
@@ -164,12 +170,12 @@ def _lenient_service(*dargs):
     ndargs = len(dargs)
 
     if ndargs:
-        assert (
-            ndargs == 1
-        ), f"Invalid lenient service arguments, expecting 1 got {ndargs}."
-        assert callable(
-            dargs[0]
-        ), "Invalid lenient service argument, expecting a callable."
+        assert ndargs == 1, (
+            f"Invalid lenient service arguments, expecting 1 got {ndargs}."
+        )
+        assert callable(dargs[0]), (
+            "Invalid lenient service argument, expecting a callable."
+        )
 
     if ndargs:
         # The decorator has been used as a simple naked decorator.

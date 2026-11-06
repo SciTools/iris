@@ -35,11 +35,6 @@ doctest:
 		echo "Running doctest in $$i..."; \
 		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) doctest); done
 
-linkcheck:
-	@for i in $(SUBDIRS); do \
-		echo "Running linkcheck in $$i..."; \
-		(cd $$i; $(MAKE) $(MFLAGS) $(MYMAKEFLAGS) linkcheck); done
-
 show:
 	@for i in $(SUBDIRS); do \
 		echo "Running show in $$i..."; \

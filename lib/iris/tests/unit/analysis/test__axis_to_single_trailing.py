@@ -4,24 +4,21 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Unit tests for the :data:`iris.analysis._axis_to_single_trailing` function."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-import iris.tests as tests  # isort:skip
-
-from unittest import mock
-
 import dask.array as da
 import numpy as np
+import pytest
 
 from iris._lazy_data import as_concrete_data, as_lazy_data, is_lazy_data
 from iris.analysis import _axis_to_single_trailing
+from iris.tests import _shared_utils
 
 
-class TestInputReshape(tests.IrisTest):
+class TestInputReshape:
     """Tests to make sure correct array is passed into stat function."""
 
-    def setUp(self):
-        self.stat_func = mock.Mock()
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.stat_func = mocker.Mock()
 
     def check_input(self, data, axis, expected):
         """Given data and axis passed to the wrapped function, check that expected
@@ -32,7 +29,7 @@ class TestInputReshape(tests.IrisTest):
         wrapped_stat_func(data, axis=axis)
         # Can't use Mock.assert_called_with because array equality is ambiguous
         # get hold of the first arg instead.
-        self.assertArrayEqual(self.stat_func.call_args.args[0], expected)
+        _shared_utils.assert_array_equal(self.stat_func.call_args.args[0], expected)
 
     def test_1d_input(self):
         # Trailing axis chosen, so array should be unchanged.
@@ -89,17 +86,18 @@ class TestInputReshape(tests.IrisTest):
 
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         wrapped_stat_func(lazy_data, axis=axis)
-        self.assertTrue(is_lazy_data(self.stat_func.call_args.args[0]))
-        self.assertArrayEqual(
+        assert is_lazy_data(self.stat_func.call_args.args[0])
+        _shared_utils.assert_array_equal(
             as_concrete_data(self.stat_func.call_args.args[0]), expected
         )
 
 
-class TestOutputReshape(tests.IrisTest):
+class TestOutputReshape:
     """Tests to make sure array from stat function is handled correctly."""
 
-    def setUp(self):
-        self.stat_func = mock.Mock()
+    @pytest.fixture(autouse=True)
+    def _setup(self, mocker):
+        self.stat_func = mocker.Mock()
 
     def test_1d_input_1d_output(self):
         # If array is fully aggregated, result should be same as returned by stat
@@ -108,7 +106,7 @@ class TestOutputReshape(tests.IrisTest):
         self.stat_func.return_value = np.arange(2)
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         result = wrapped_stat_func(data, axis=0)
-        self.assertArrayEqual(result, self.stat_func.return_value)
+        _shared_utils.assert_array_equal(result, self.stat_func.return_value)
 
     def test_3d_input_middle_single_stat(self):
         # result shape should match non-aggregated input dims.
@@ -118,7 +116,7 @@ class TestOutputReshape(tests.IrisTest):
         expected = np.arange(8).reshape(2, 4)
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         result = wrapped_stat_func(data, axis=axis)
-        self.assertArrayEqual(result, expected)
+        _shared_utils.assert_array_equal(result, expected)
 
     def test_3d_input_middle_single_stat_lazy(self):
         # result shape should match non-aggregated input dims.  Lazy data should
@@ -129,8 +127,8 @@ class TestOutputReshape(tests.IrisTest):
         expected = np.arange(8).reshape(2, 4)
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         result = wrapped_stat_func(data, axis=axis)
-        self.assertTrue(is_lazy_data(result))
-        self.assertArrayEqual(as_concrete_data(result), expected)
+        assert is_lazy_data(result)
+        _shared_utils.assert_array_equal(as_concrete_data(result), expected)
 
     def test_3d_input_middle_multiple_stat(self):
         # result shape should match non-aggregated input dims, plus trailing dim
@@ -141,8 +139,4 @@ class TestOutputReshape(tests.IrisTest):
         expected = np.arange(40).reshape(2, 4, 5)
         wrapped_stat_func = _axis_to_single_trailing(self.stat_func)
         result = wrapped_stat_func(data, axis=axis)
-        self.assertArrayEqual(result, expected)
-
-
-if __name__ == "__main__":
-    tests.main()
+        _shared_utils.assert_array_equal(result, expected)

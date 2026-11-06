@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Cross Section Plots
 ===================
+
+.. how-to:: Cross Section Plots
+   :tags: topic_plotting;topic_slice_combine
+
+   How to visualise cross-sections of multi-dimensional Cubes.
 
 This example demonstrates contour plots of a cross-sectioned multi-dimensional
 cube which features a hybrid height vertical coordinate system.

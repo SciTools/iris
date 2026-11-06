@@ -2,7 +2,13 @@
 #
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
-"""Various utilities and numeric transformations relevant to cartography."""
+"""Various utilities and numeric transformations relevant to cartography.
+
+.. z_reference:: iris.analysis.cartography
+   :tags: topic_maths_stats
+
+   API reference
+"""
 
 from collections import namedtuple
 import copy
@@ -19,8 +25,9 @@ import iris.coord_systems
 import iris.coords
 import iris.exceptions
 from iris.util import _meshgrid
+import iris.warnings
 
-from ._grid_angles import gridcell_angles, rotate_grid_vectors
+from ._grid_angles import gridcell_angles, guess_2D_bounds, rotate_grid_vectors
 
 # List of contents to control Sphinx autodocs.
 # Unfortunately essential to get docs for the grid_angles functions.
@@ -32,6 +39,7 @@ __all__ = [
     "get_xy_contiguous_bounded_grids",
     "get_xy_grids",
     "gridcell_angles",
+    "guess_2D_bounds",
     "project",
     "rotate_grid_vectors",
     "rotate_pole",
@@ -59,6 +67,11 @@ def wrap_lons(lons, base, period):
     base :
     period :
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     .. testsetup::
@@ -71,15 +84,17 @@ def wrap_lons(lons, base, period):
         >>> print(wrap_lons(np.array([185, 30, -200, 75]), -180, 360))
         [-175.   30.  160.   75.]
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # It is important to use 64bit floating precision when changing a floats
-    # numbers range.
+    # numbers range, but the original floating-point dtype is preserved so that
+    # e.g. float32 longitudes are not promoted to float64 (see #4119). Integer
+    # (and other non-floating) inputs still return float64.
+    orig_dtype = lons.dtype
     lons = lons.astype(np.float64)
-    return ((lons - base) % period) + base
+    result = ((lons - base) % period) + base
+    if orig_dtype.kind == "f":
+        result = result.astype(orig_dtype)
+    return result
 
 
 def unrotate_pole(rotated_lons, rotated_lats, pole_lon, pole_lat):
@@ -269,16 +284,16 @@ def get_xy_grids(cube):
     cube :
         The cube for which to generate 2D X and Y points.
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
 
         x, y = get_xy_grids(cube)
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -307,16 +322,16 @@ def get_xy_contiguous_bounded_grids(cube):
     ----------
     cube : :class:`iris.cube.Cube`
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     ::
 
         xs, ys = get_xy_contiguous_bounded_grids(cube)
-
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
 
     """
     x_coord, y_coord = cube.coord(axis="X"), cube.coord(axis="Y")
@@ -346,11 +361,11 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     Parameters
     ----------
     radian_lat_bounds :
-        [n,2] array of latitude bounds (radians)
+        [n,2] array of latitude bounds (radians).
     radian_lon_bounds :
-        [n,2] array of longitude bounds (radians)
+        [n,2] array of longitude bounds (radians).
     radius_of_earth :
-        radius of the earth (currently assumed spherical)
+        Radius of the earth (currently assumed spherical).
 
     """
     # ensure pairs of bounds
@@ -375,13 +390,16 @@ def _quadrant_area(radian_lat_bounds, radian_lon_bounds, radius_of_earth):
     return np.abs(areas)
 
 
-def area_weights(cube, normalize=False):
+def area_weights(cube, normalize=False, compute=True, chunks=None):
     r"""Return an array of area weights, with the same dimensions as the cube.
 
     This is a 2D lat/lon area weights array, repeated over the non lat/lon
     dimensions.
 
-    The cube must have coordinates 'latitude' and 'longitude' with bounds.
+    The cube must include a 1-dimensional coordinate with 'latitude' in its
+    :meth:`~iris.coords.Coord.name`, and another 1-dimensional coordinate with
+    'longitude' in its :meth:`~iris.coords.Coord.name`. Both of these coordinates must
+    have bounds.
 
     Area weights are calculated for each lat/lon cell as:
 
@@ -400,6 +418,12 @@ def area_weights(cube, normalize=False):
     normalize : bool, default=False
         If False, weights are grid cell areas. If True, weights are grid
         cell areas divided by the total grid area.
+    compute : bool, default=True
+        If False, return a lazy dask array. If True, return a numpy array.
+    chunks : tuple, optional
+        If compute is False and a value is provided, then the result will use
+        these chunks. The values provided here will only be used along
+        dimensions that are not latitude or longitude.
 
     Returns
     -------
@@ -412,7 +436,7 @@ def area_weights(cube, normalize=False):
         if cs.inverse_flattening != 0.0:
             warnings.warn(
                 "Assuming spherical earth from ellipsoid.",
-                category=iris.exceptions.IrisDefaultingWarning,
+                category=iris.warnings.IrisDefaultingWarning,
             )
         radius_of_earth = cs.semi_major_axis
     elif isinstance(cs, iris.coord_systems.RotatedGeogCS) and (
@@ -421,13 +445,13 @@ def area_weights(cube, normalize=False):
         if cs.ellipsoid.inverse_flattening != 0.0:
             warnings.warn(
                 "Assuming spherical earth from ellipsoid.",
-                category=iris.exceptions.IrisDefaultingWarning,
+                category=iris.warnings.IrisDefaultingWarning,
             )
         radius_of_earth = cs.ellipsoid.semi_major_axis
     else:
         warnings.warn(
             "Using DEFAULT_SPHERICAL_EARTH_RADIUS.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
         radius_of_earth = DEFAULT_SPHERICAL_EARTH_RADIUS
 
@@ -475,7 +499,13 @@ def area_weights(cube, normalize=False):
 
     # Create 2D weights from bounds.
     # Use the geographical area as the weight for each cell
-    ll_weights = _quadrant_area(lat.bounds, lon.bounds, radius_of_earth)
+    if compute:
+        lat_bounds = lat.bounds
+        lon_bounds = lon.bounds
+    else:
+        lat_bounds = lat.lazy_bounds()
+        lon_bounds = lon.lazy_bounds()
+    ll_weights = _quadrant_area(lat_bounds, lon_bounds, radius_of_earth)
 
     # Normalize the weights if necessary.
     if normalize:
@@ -490,7 +520,9 @@ def area_weights(cube, normalize=False):
         if dim is not None:
             wshape.append(ll_weights.shape[idim])
     ll_weights = ll_weights.reshape(wshape)
-    broad_weights = iris.util.broadcast_to_shape(ll_weights, cube.shape, broadcast_dims)
+    broad_weights = iris.util.broadcast_to_shape(
+        ll_weights, cube.shape, broadcast_dims, chunks=chunks
+    )
 
     return broad_weights
 
@@ -518,6 +550,11 @@ def cosine_latitude_weights(cube):
     ----------
     cube : :class:`iris.cube.Cube`
 
+    Notes
+    -----
+    This function maintains laziness when called; it does not realise data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
     Examples
     --------
     Compute weights suitable for averaging type operations::
@@ -534,10 +571,6 @@ def cosine_latitude_weights(cube):
         cube = iris.load_cube(iris.sample_data_path('air_temp.pp'))
         weights = np.sqrt(cosine_latitude_weights(cube))
 
-    Notes
-    -----
-    This function maintains laziness when called; it does not realise data.
-    See more at :doc:`/userguide/real_and_lazy_data`.
     """
     # Find all latitude coordinates, we want one and only one.
     lat_coords = [coord for coord in cube.coords() if "latitude" in coord.name()]
@@ -569,7 +602,7 @@ def cosine_latitude_weights(cube):
     ):
         warnings.warn(
             "Out of range latitude values will be clipped to the valid range.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
     points = lat.points
     l_weights = np.cos(points).clip(0.0, 1.0)
@@ -641,7 +674,7 @@ def project(cube, target_proj, nx=None, ny=None):
     .. note::
 
         This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 
@@ -686,7 +719,7 @@ def project(cube, target_proj, nx=None, ny=None):
         warnings.warn(
             "Coordinate system of latitude and longitude "
             "coordinates is not specified. Assuming WGS84 Geodetic.",
-            category=iris.exceptions.IrisDefaultingWarning,
+            category=iris.warnings.IrisDefaultingWarning,
         )
         orig_cs = iris.coord_systems.GeogCS(
             semi_major_axis=6378137.0, inverse_flattening=298.257223563
@@ -877,7 +910,7 @@ def project(cube, target_proj, nx=None, ny=None):
                 lon_coord.name(),
                 [coord.name() for coord in discarded_coords],
             ),
-            category=iris.exceptions.IrisIgnoringWarning,
+            category=iris.warnings.IrisIgnoringWarning,
         )
 
     # TODO handle derived coords/aux_factories
@@ -893,10 +926,12 @@ def _transform_xy(crs_from, x, y, crs_to):
 
     Parameters
     ----------
-    crs_from, crs_to : :class:`cartopy.crs.Projection`
+    crs_from : :class:`cartopy.crs.Projection`
         The coordinate reference systems.
     x, y : array
-        point locations defined in 'crs_from'.
+        Point locations defined in 'crs_from'.
+    crs_to : :class:`cartopy.crs.Projection`
+        The coordinate reference systems.
 
     Returns
     -------
@@ -915,10 +950,13 @@ def _inter_crs_differentials(crs1, x, y, crs2):
 
     Parameters
     ----------
-    crs1, crs2 : :class:`cartopy.crs.Projection`
-        The coordinate systems, "from" and "to".
+    crs1 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "from".
     x, y : array
         Point locations defined in 'crs1'.
+    crs2 : :class:`cartopy.crs.Projection`
+        The coordinate systems for "to".
+
 
     Returns
     -------
@@ -1046,7 +1084,7 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     tgt_crs : `cartopy.crs.Projection`
         The target coordinate reference systems.
     ds : `DistanceDifferential`
-        Distance differentials for src_crs and tgt_crs at specified locations
+        Distance differentials for src_crs and tgt_crs at specified locations.
     dx2, dy2 : `PartialDifferential`
         Partial differentials from src_crs to tgt_crs.
 
@@ -1057,8 +1095,9 @@ def _transform_distance_vectors_tolerance_mask(src_crs, x, y, tgt_crs, ds, dx2, 
     """
     if x.shape != y.shape:
         raise ValueError(
-            "Arrays do not have matching shapes. "
-            "x.shape is {}, y.shape is {}.".format(x.shape, y.shape)
+            "Arrays do not have matching shapes. x.shape is {}, y.shape is {}.".format(
+                x.shape, y.shape
+            )
         )
     ones = np.ones(x.shape)
     zeros = np.zeros(x.shape)
@@ -1107,7 +1146,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
 
     Returns
     -------
-    (u', v') tuple of :class:`iris.cube.Cube`
+    tuple of :class:`iris.cube.Cube`
         A (u', v') tuple of :class:`iris.cube.Cube` instances that are the u
         and v components in the requested target coordinate system.
         The units are the same as the inputs.
@@ -1128,7 +1167,7 @@ def rotate_winds(u_cube, v_cube, target_cs):
     .. note::
 
             This function does not maintain laziness when called; it realises data.
-            See more at :doc:`/userguide/real_and_lazy_data`.
+            See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     .. warning::
 

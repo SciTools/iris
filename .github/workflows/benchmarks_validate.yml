@@ -1,0 +1,67 @@
+# Reference
+#    - https://github.com/actions/checkout
+#    - https://github.com/actions/cache
+
+name: benchmarks-validate
+run-name: Validate the benchmarking setup
+
+on:
+  push:
+    branches:
+      - "main"
+      - "v*x"
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - "*"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    env:
+      # Lets us manually bump the cache to rebuild
+      ENV_CACHE_BUILD: "1"
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install run dependencies
+        run: pip install asv nox!=2025.05.01
+
+      - name: Restore environment cache
+        id: cache-restore
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            .nox
+            benchmarks/.asv/env
+            $CONDA/pkgs
+          key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
+
+      - name: Validate setup
+        run: nox -s benchmarks -- validate
+
+      - name: Save environment cache
+        # Security: PRs are potentially malformed/malicious, so only allow runs on trunk
+        #  branches to update the cache, to avoid cache poisoning.
+        if: github.event_name == 'push'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: |
+            .nox
+            benchmarks/.asv/env
+            $CONDA/pkgs
+          key: ${{ steps.cache-restore.outputs.cache-primary-key }}

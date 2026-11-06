@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<cubes xmlns="urn:x-iris:cubeml-0.2">
+  <cube dtype="float64" long_name="snow_layer_temperature" units="K" var_name="snow_layer_temp">
+    <attributes>
+      <attribute name="Conventions" value="UGRID"/>
+      <attribute name="description" value="Created by xios"/>
+      <attribute name="interval_operation" value="300 s"/>
+      <attribute name="interval_write" value="21600 s"/>
+      <attribute name="name" value="lfric_ngvat_3D_snow_pseudo_levels_1t_face_half_levels_main_snow_layer_temp"/>
+      <attribute name="online_operation" value="instant"/>
+      <attribute name="timeStamp" value="2020-Oct-18 21:20:18 GMT"/>
+      <attribute name="title" value="Created by xios"/>
+      <attribute name="uuid" value="798b1d5b-05e3-4380-a3b9-822709b0b74c"/>
+    </attributes>
+    <coords>
+      <coord datadims="[2]">
+        <meshCoord bounds="[28.48346519, 31.33144188, 38.42684174, ..., -35.26438904, -38.42684174, -42.66117096]" checksum="0x20acc81e" id="72da1058" long_name="Characteristic latitude of mesh faces." mask_checksum="no-masked-elements" points="[33.43283463, 36.12255859, 38.20116043, ..., -44.79100418, -42.15829086, -38.81500626]" shape="(864,)" standard_name="latitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_y"/>
+      </coord>
+      <coord datadims="[2]">
+        <meshCoord bounds="[-45., -37.5, -37.5, ..., -135., -142.5, -135.]" checksum="0x1037ec45" id="b5c6bdeb" long_name="Characteristic longitude of mesh faces." mask_checksum="no-masked-elements" points="[-41.31520844, -33.80677032, -26.29604912, ..., -119.3769455, -127.3210144, -135.]" shape="(864,)" standard_name="longitude" units="Unit('degrees')" value_type="float32" var_name="Mesh2d_half_levels_face_x"/>
+      </coord>
+      <coord datadims="[0]">
+        <auxCoord bounds="[21600., 21600.]" checksum="0xfd845d6b" id="17a27d05" long_name="Time axis" mask_checksum="no-masked-elements" points="[21600.]" shape="(1,)" standard_name="time" units="Unit('seconds since 2016-01-01 15:00:00', calendar='standard')" value_type="float64" var_name="time_instant">
+          <attributes>
+            <attribute name="time_origin" value="2016-01-01 15:00:00"/>
+          </attributes>
+        </auxCoord>
+      </coord>
+    </coords>
+    <cellMethods>
+      <cellMethod method="point">
+        <coord interval="300 s" name="time"/>
+      </cellMethod>
+    </cellMethods>
+    <data checksum="0xb84aa0b6" dtype="float64" mask_checksum="no-masked-elements" shape="(1, 27, 864)"/>
+  </cube>
+</cubes>

@@ -4,9 +4,14 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Regridding functions.
 
-.. note::
+.. z_reference:: iris.experimental.regrid
+   :tags: topic_experimental;topic_regrid
 
-    .. deprecated:: 3.2.0
+   API reference
+
+Notes
+-----
+.. deprecated:: 3.2.0
 
     This package will be removed in a future release.
     The PointInCell class has now moved to :class:`iris.analysis.PointInCell`.
@@ -16,6 +21,7 @@
     discuss how to replace it or to retain it.
 
 """
+
 import copy
 import functools
 import warnings
@@ -37,8 +43,8 @@ from iris.analysis._regrid import (
 import iris.analysis.cartography
 import iris.coord_systems
 import iris.cube
-from iris.exceptions import IrisImpossibleUpdateWarning
 from iris.util import _meshgrid
+from iris.warnings import IrisImpossibleUpdateWarning
 
 wmsg = (
     "The 'iris.experimental.regrid' package is deprecated since version 3.2, "
@@ -57,32 +63,11 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
     mean of data values from src_grid regridded onto the horizontal grid of
     grid_cube.
 
-    .. note::
-
-        .. deprecated:: 3.2.0
-
-        This function is scheduled to be removed in a future release.
-        Please use :meth:`iris.cube.Cube.regrid` with the
-        :class:`iris.analysis.AreaWeighted` scheme instead : this is an exact
-        replacement.
-
-        For example :
-
-        .. code::
-
-            result = src_cube.regrid(grid_cube, AreaWeighted())
-
     This function requires that the horizontal grids of both cubes are
     rectilinear (i.e. expressed in terms of two orthogonal 1D coordinates)
     and that these grids are in the same coordinate system. This function
     also requires that the coordinates describing the horizontal grids
     all have bounds.
-
-    .. note::
-
-        Elements in data array of the returned cube that lie either partially
-        or entirely outside of the horizontal extent of the src_cube will
-        be masked irrespective of the value of mdtol.
 
     Parameters
     ----------
@@ -104,6 +89,25 @@ def regrid_area_weighted_rectilinear_src_and_grid(src_cube, grid_cube, mdtol=0):
     Returns
     -------
     A new :class:`iris.cube.Cube` instance.
+
+    Notes
+    -----
+    Elements in data array of the returned cube that lie either partially
+    or entirely outside of the horizontal extent of the src_cube will
+    be masked irrespective of the value of mdtol.
+
+    .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use :meth:`iris.cube.Cube.regrid` with the
+        :class:`iris.analysis.AreaWeighted` scheme instead : this is an exact
+        replacement.
+
+        For example :
+
+        .. code::
+
+            result = src_cube.regrid(grid_cube, AreaWeighted())
 
     """
     wmsg = (
@@ -131,21 +135,6 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     mean of data values from :data:`src_cube` and the weights from
     :data:`weights` regridded onto the horizontal grid of :data:`grid_cube`.
 
-    .. note ::
-
-        .. deprecated:: 3.2.0
-
-        This function is scheduled to be removed in a future release.
-        Please use :meth:`iris.cube.Cube.regrid` with the
-        :class:`iris.analysis.PointInCell` scheme instead : this is an exact
-        replacement.
-
-        For example :
-
-        .. code::
-
-            result = src_cube.regrid(grid_cube, PointInCell())
-
     This function requires that the :data:`src_cube` has a horizontal grid
     defined by a pair of X- and Y-axis coordinates which are mapped over the
     same cube dimensions, thus each point has an individually defined X and
@@ -165,11 +154,6 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     :math:`\sum (src\_cube.data_{ij} * weights_{ij}) / \sum weights_{ij}`, for
     all :math:`ij` :data:`src_cube` points that are bound by that cell.
 
-    .. warning::
-
-        All coordinates that span the :data:`src_cube` that don't define
-        the horizontal curvilinear grid will be ignored.
-
     Parameters
     ----------
     src_cube : :class:`iris.cube.Cube`
@@ -186,6 +170,26 @@ def regrid_weighted_curvilinear_to_rectilinear(src_cube, weights, grid_cube):
     Returns
     -------
     A :class:`iris.cube.Cube` instance.
+
+    Warnings
+    --------
+    All coordinates that span the :data:`src_cube` that don't define
+    the horizontal curvilinear grid will be ignored.
+
+    Notes
+    -----
+    .. deprecated:: 3.2.0
+
+        This function is scheduled to be removed in a future release.
+        Please use :meth:`iris.cube.Cube.regrid` with the
+        :class:`iris.analysis.PointInCell` scheme instead : this is an exact
+        replacement.
+
+        For example :
+
+        .. code::
+
+            result = src_cube.regrid(grid_cube, PointInCell())
 
     """
     wmsg = (
@@ -285,8 +289,7 @@ class _ProjectedUnstructuredRegridder:
             )
         if src_x_coord.coord_system is None:
             raise ValueError(
-                "'src_cube' lateral geographic coordinates have "
-                "no coordinate system."
+                "'src_cube' lateral geographic coordinates have no coordinate system."
             )
         tgt_x_coord, tgt_y_coord = get_xy_dim_coords(tgt_grid_cube)
         if tgt_x_coord.coord_system != tgt_y_coord.coord_system:
@@ -341,7 +344,7 @@ class _ProjectedUnstructuredRegridder:
         projection,
         method,
     ):
-        """Regrids input data from the source to the target. Calculation is."""
+        """Regrid input data from the source to the target. Calculation is."""
         # Transform coordinates into the projection the interpolation will be
         # performed in.
         src_projection = src_x_coord.coord_system.as_cartopy_projection()
@@ -622,22 +625,22 @@ class ProjectedUnstructuredLinear:
         Linear regridding scheme that uses scipy.interpolate.griddata on
         projected unstructured data.
 
-        .. note::
+        Parameters
+        ----------
+        projection : `cartopy.crs` instance, optional
+            The projection that the scipy calculation is performed in.
+            If None is given, a PlateCarree projection is used. Defaults to
+            None.
 
-            .. deprecated:: 3.2.0
+        Notes
+        -----
+        .. deprecated:: 3.2.0
 
             This class is scheduled to be removed in a future release, and no
             replacement is currently planned.
             If you make use of this functionality, please contact the Iris
             Developers to discuss how to retain it (which could include
             reversing the deprecation).
-
-        Parameters
-        ----------
-        projection : `cartopy.crs instance`, optional
-            The projection that the scipy calculation is performed in.
-            If None is given, a PlateCarree projection is used. Defaults to
-            None.
 
         """
         self.projection = projection
@@ -696,7 +699,7 @@ class ProjectedUnstructuredNearest:
     The source cube and the target cube will be projected into a common
     projection for the scipy calculation to be performed.
 
-    .. Note::
+    .. note::
           The :class:`iris.analysis.UnstructuredNearest` scheme performs
           essentially the same job.  That calculation is more rigorously
           correct and may be applied to larger data regions (including global).
@@ -707,9 +710,16 @@ class ProjectedUnstructuredNearest:
     def __init__(self, projection=None):
         """Nearest regridding scheme that uses scipy.interpolate.griddata on projected unstructured data.
 
-        .. note::
+        Parameters
+        ----------
+        projection : `cartopy.crs instance`, optional
+            The projection that the scipy calculation is performed in.
+            If None is given, a PlateCarree projection is used. Defaults to
+            None.
 
-            .. deprecated:: 3.2.0
+        Notes
+        -----
+        .. deprecated:: 3.2.0
 
             This class is scheduled to be removed in a future release, and no
             exact replacement is currently planned.
@@ -717,13 +727,6 @@ class ProjectedUnstructuredNearest:
             possible.  If you have a need for this exact functionality, please
             contact the Iris Developers to discuss how to retain it (which
             could include reversing the deprecation).
-
-        Parameters
-        ----------
-        projection : `cartopy.crs instance`, optional
-            The projection that the scipy calculation is performed in.
-            If None is given, a PlateCarree projection is used. Defaults to
-            None.
 
         """
         self.projection = projection

@@ -5,6 +5,8 @@
 Releases
 ========
 
+.. readingtime::
+
 A release of Iris is a `tag on the SciTools/Iris`_ Github repository.
 
 Below is :ref:`iris_development_releases_steps`, followed by some prose on the
@@ -88,6 +90,11 @@ New features shall not be included in a patch release, these are for bug fixes.
 A patch release does not require a release candidate, but the rest of the
 release process is to be followed.
 
+As mentioned in :ref:`release_branch`: branch/commit management is much simpler
+if the patch changes are **first merged into the release branch** -
+e.g. ``v1.9.x`` - and are only added to ``main`` during :ref:`merge_back` (post
+release).
+
 
 Before Release
 --------------
@@ -110,6 +117,8 @@ from the `latest CF standard names`_.
 
 The Release
 -----------
+
+.. _release_branch:
 
 Release Branch
 ~~~~~~~~~~~~~~
@@ -180,7 +189,7 @@ conda package on the `conda-forge Anaconda channel`_.
 Announcement
 ~~~~~~~~~~~~
 
-Iris uses Twitter (`@scitools_iris`_) to announce new releases, as well as any
+Iris uses Bluesky (`@scitools.bsky.social`_) to announce new releases, as well as any
 internal message boards that are accessible (e.g. at the UK Met Office).
 Announcements usually include a highlighted feature to hook readers' attention.
 
@@ -192,6 +201,8 @@ the latest [non-release-candidate] version, date and `Zenodo DOI`_
 of the new release. Ideally this would be updated before the release, but
 the DOI for the new version is only available once the release has been
 created in GitHub.
+
+.. _merge_back:
 
 Merge Back
 ~~~~~~~~~~
@@ -223,7 +234,7 @@ To do this perform the following steps.
 Create a conda environment with the appropriate conda packages to build the
 source distribution (``sdist``) and pure Python wheel (``bdist_wheel``)::
 
-    > conda create -n iris-pypi -c conda-forge --yes build twine
+    > conda create -n iris-pypi -c conda-forge --yes python-build twine
     > . activate iris-pypi
 
 Checkout the appropriate Iris ``<release>`` tag from the appropriate ``<repo>``.
@@ -258,7 +269,7 @@ Ensure that the artifacts are successfully uploaded and available on
 from PyPI::
 
     > conda deactivate
-    > conda env create --file ./requirements/iris.yml
+    > conda env create
     > . activate iris-dev
     > python -m pip install --no-deps scitools-iris
 
@@ -284,6 +295,6 @@ For further details on how to test Iris, see :ref:`developer_running_tests`.
 .. _setuptools-scm: https://github.com/pypa/setuptools_scm
 .. _Semantic Versioning: https://semver.org/
 .. _PEP 440: https://peps.python.org/pep-0440/
-.. _@scitools_iris: https://twitter.com/scitools_iris
+.. _@scitools.bsky.social: https://bsky.app/profile/scitools.bsky.social
 .. _GitHub Projects: https://github.com/SciTools/iris/projects
 .. _Zenodo DOI: https://doi.org/10.5281/zenodo.595182

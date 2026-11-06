@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Example of a Polar Stereographic Plot
 =====================================
+
+.. how-to:: Example of a Polar Stereographic Plot
+   :tags: topic_plotting
+
+   A demonstration of plotting data defined on an alternative map projection.
 
 Demonstrates plotting data that are defined on a polar stereographic
 projection.

@@ -8,17 +8,17 @@
     </attributes>
     <coords>
       <coord>
-        <dimCoord id="a2cbc1ea" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
+        <dimCoord checksum="0x0f2199e1" id="a2cbc1ea" points="[1.5]" shape="(1,)" standard_name="height" units="Unit('m')" value_type="float64" var_name="height">
           <attributes>
             <attribute name="positive" value="up"/>
           </attributes>
         </dimCoord>
       </coord>
       <coord datadims="[1]">
-        <dimCoord id="22225738" long_name="site_number" points="[1.]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
+        <dimCoord checksum="0xaca16a6a" id="22225738" long_name="site_number" points="[1.]" shape="(1,)" units="Unit('1')" value_type="float32" var_name="site_number"/>
       </coord>
       <coord datadims="[0]">
-        <dimCoord id="42c82ea7" points="[756690., 763890., 771090., 778290.]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
+        <dimCoord checksum="0x8ed61ab4" id="42c82ea7" points="[756690., 763890., 771090., 778290.]" shape="(4,)" standard_name="time" units="Unit('days since 0000-01-01 00:00:00', calendar='360_day')" value_type="float32" var_name="time"/>
       </coord>
     </coords>
     <cellMethods>

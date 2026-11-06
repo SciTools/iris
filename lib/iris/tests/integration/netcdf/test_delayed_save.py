@@ -3,22 +3,28 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """Integration tests for delayed saving."""
-import re
+
 import warnings
 
 from cf_units import Unit
 import dask.array as da
 import dask.config
-from dask.delayed import Delayed
 import distributed
 import numpy as np
 import pytest
 
 import iris
-from iris.exceptions import IrisSaverFillValueWarning
+import iris.fileformats.cf.loader
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
-import iris.tests
+from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
+
+
+def are_dask_collections(obj):
+    result = dask.is_dask_collection(obj)
+    if not result and hasattr(obj, "__len__"):
+        result = all([dask.is_dask_collection(item) for item in obj])
+    return result
 
 
 class Test__lazy_stream_data:
@@ -33,16 +39,16 @@ class Test__lazy_stream_data:
     def output_path(self, tmp_path):
         # A temporary output netcdf-file path, **unique to each test call**.
         self.temp_output_filepath = tmp_path / "tmp.nc"
-        yield self.temp_output_filepath
+        return self.temp_output_filepath
 
     @pytest.fixture(autouse=True, scope="module")
     def all_vars_lazy(self):
         # For the operation of these tests, we want to force all netcdf variables
         # to load as lazy data, i.e. **don't** use real data for 'small' ones.
-        old_value = iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES
-        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = 0
+        old_value = iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES
+        iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = 0
         yield
-        iris.fileformats.netcdf.loader._LAZYVAR_MIN_BYTES = old_value
+        iris.fileformats.cf.loader._LAZYVAR_MIN_BYTES = old_value
 
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["SaveImmediate", "SaveDelayed"])
@@ -113,8 +119,8 @@ class Test__lazy_stream_data:
             cube.add_cell_measure(cm, cm_dims)
         return cube
 
-    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path):
-        input_filepath = iris.tests.get_data_path(
+    def test_realfile_loadsave_equivalence(self, save_is_delayed, output_path, request):
+        input_filepath = _shared_utils.get_data_path(
             ["NetCDF", "global", "xyz_t", "GEMS_CO2_Apr2006.nc"]
         )
         original_cubes = iris.load(input_filepath)
@@ -131,14 +137,14 @@ class Test__lazy_stream_data:
         result = iris.save(original_cubes, output_path, compute=not save_is_delayed)
         if save_is_delayed:
             # In this case, must also "complete" the save.
-            result.compute()
+            dask.compute(result)
         reloaded_cubes = iris.load(output_path)
         reloaded_cubes = sorted(reloaded_cubes, key=lambda cube: cube.name())
         assert reloaded_cubes == original_cubes
         # NOTE: it might be nicer to use assertCDL, but unfortunately importing
         # unittest.TestCase seems to lose us the ability to use fixtures.
 
-    @classmethod
+    @staticmethod
     @pytest.fixture(
         params=[
             "ThreadedScheduler",
@@ -146,7 +152,7 @@ class Test__lazy_stream_data:
             "SingleThreadScheduler",
         ]
     )
-    def scheduler_type(cls, request):
+    def scheduler_type(request):
         sched_typename = request.param
         if sched_typename == "ThreadedScheduler":
             config_name = "threads"
@@ -184,39 +190,12 @@ class Test__lazy_stream_data:
         cube = self.make_testcube(
             include_lazy_content=True, ensure_fillvalue_collision=True
         )
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            result = iris.save(cube, output_path, compute=not save_is_delayed)
+        result = iris.save(cube, output_path, compute=not save_is_delayed)
 
         if not save_is_delayed:
             assert result is None
-            issued_warnings = [log.message for log in logged_warnings]
         else:
-            assert result is not None
-            assert len(logged_warnings) == 0
-            with warnings.catch_warnings(record=True) as logged_warnings:
-                # The compute *returns* warnings from the delayed operations.
-                issued_warnings = result.compute()
-            issued_warnings = [log.message for log in logged_warnings] + issued_warnings
-
-        warning_messages = [warning.args[0] for warning in issued_warnings]
-        if scheduler_type == "DistributedScheduler":
-            # Ignore any "large data transfer" messages generated,
-            # specifically when testing with the Distributed scheduler.
-            # These may not always occur and don't reflect something we want to
-            # test for.
-            large_transfer_message_regex = re.compile(
-                "Sending large graph.* may cause some slowdown", re.DOTALL
-            )
-            warning_messages = [
-                message
-                for message in warning_messages
-                if not large_transfer_message_regex.search(message)
-            ]
-
-        # In all cases, should get 2 fill value warnings overall.
-        assert len(warning_messages) == 2
-        expected_msg = "contains unmasked data points equal to the fill-value"
-        assert all(expected_msg in message for message in warning_messages)
+            assert are_dask_collections(result)
 
     def test_time_of_writing(self, save_is_delayed, output_path, scheduler_type):
         # Check when lazy data is *actually* written :
@@ -279,7 +258,7 @@ class Test__lazy_stream_data:
 
         if save_is_delayed:
             # Complete the write.
-            result.compute()
+            dask.compute(result)
 
             # Re-fetch the lazy arrays.  The data should now **not be masked**.
             data_mask, coord_mask, ancil_mask, cm_mask = fetch_masks()
@@ -289,54 +268,10 @@ class Test__lazy_stream_data:
             assert np.all(~ancil_mask)
             assert np.all(~cm_mask)
 
-    @pytest.mark.parametrize(
-        "warning_type", ["WarnMaskedBytes", "WarnFillvalueCollision"]
-    )
-    def test_fill_warnings(self, warning_type, output_path, save_is_delayed):
-        # Test collision warnings for data with fill-value collisions, or for masked
-        # byte data.
-        if warning_type == "WarnFillvalueCollision":
-            make_fv_collide = True
-            make_maskedbytes = False
-            expected_msg = "contains unmasked data points equal to the fill-value"
-        else:
-            assert warning_type == "WarnMaskedBytes"
-            make_fv_collide = False
-            make_maskedbytes = True
-            expected_msg = "contains byte data with masked points"
-
-        cube = self.make_testcube(
-            include_lazy_content=True,
-            ensure_fillvalue_collision=make_fv_collide,
-            data_is_maskedbytes=make_maskedbytes,
-        )
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            result = iris.save(cube, output_path, compute=not save_is_delayed)
-
-        result_warnings = [
-            log.message
-            for log in logged_warnings
-            if isinstance(log.message, IrisSaverFillValueWarning)
-        ]
-
-        if save_is_delayed:
-            # Should have had *no* fill-warnings in the initial save.
-            assert len(result_warnings) == 0
-            # Complete the operation now
-            with warnings.catch_warnings():
-                # NOTE: warnings should *not* be issued here, instead they are returned.
-                warnings.simplefilter("error", category=IrisSaverFillValueWarning)
-                result_warnings = result.compute()
-
-        # Either way, we should now have 2 similar warnings.
-        assert len(result_warnings) == 2
-        assert all(expected_msg in warning.args[0] for warning in result_warnings)
-
     def test_no_delayed_writes(self, output_path):
         # Just check that a delayed save returns a usable 'delayed' object, even when
         # there is no lazy content = no delayed writes to perform.
         cube = self.make_testcube(include_lazy_content=False)
         warnings.simplefilter("error")
         result = iris.save(cube, output_path, compute=False)
-        assert isinstance(result, Delayed)
-        assert result.compute() == []
+        assert are_dask_collections(result)

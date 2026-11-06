@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Colouring Anomaly Data With Logarithmic Scaling
 ===============================================
+
+.. how-to:: Colouring Anomaly Data With Logarithmic Scaling
+   :tags: topic_plotting;topic_maths_stats
+
+   How to visualise values using a logarithmic scale.
 
 In this example, we need to plot anomaly data where the values have a
 "logarithmic" significance  -- i.e. we want to give approximately equal ranges

@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Global Average Annual Temperature Plot
 ======================================
+
+.. how-to:: Global Average Annual Temperature Plot
+   :tags: topic_plotting;topic_slice_combine;topic_maths_stats
+
+   How to spatially constrain data, compute statistics and visualise a comparison.
 
 Produces a time-series plot of North American temperature forecasts for 2
 different emission scenarios. Constraining data to a limited spatial area also

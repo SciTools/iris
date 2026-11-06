@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Fitting a Polynomial
 ====================
+
+.. how-to:: Fitting a Polynomial
+   :tags: topic_plotting;topic_maths_stats;topic_data_model
+
+   How to compute and plot a polynomial fit to 1D data in an Iris cube.
 
 This example demonstrates computing a polynomial fit to 1D data from an Iris
 cube, adding the fit to the cube's metadata, and plotting both the 1D data and

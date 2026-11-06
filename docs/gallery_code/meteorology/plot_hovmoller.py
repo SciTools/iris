@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Hovmoller Diagram of Monthly Surface Temperature
 ================================================
+
+.. how-to:: Hovmoller Diagram of Monthly Surface Temperature
+   :tags: topic_plotting;topic_maths_stats
+
+   How to collapse and plot Cubes to create a Hovmoller diagram.
 
 This example demonstrates the creation of a Hovmoller diagram with fine control
 over plot ticks and labels. The data comes from the Met Office OSTIA project

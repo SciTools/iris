@@ -4,12 +4,6 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test function :func:`iris.util.new_axis`."""
 
-# Import iris.tests first so that some things can be initialised before
-# importing anything else.
-# isort: off
-import iris.tests as tests  # noqa
-
-# isort: on
 import copy
 
 import numpy as np

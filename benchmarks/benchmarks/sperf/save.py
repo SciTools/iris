@@ -3,12 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 """File saving benchmarks for the SPerf scheme of the UK Met Office's NG-VAT project."""
+
 import os.path
 
 from iris import save
-from iris.experimental.ugrid import save_mesh
+from iris.mesh import save_mesh
 
-from .. import TrackAddedMemoryAllocation, on_demand_benchmark
+from .. import on_demand_benchmark
 from ..generate_data.ugrid import make_cube_like_2d_cubesphere
 
 
@@ -35,8 +36,7 @@ class NetcdfSave:
     def time_save_cube(self, n_cubesphere, is_unstructured):
         self._save_cube(self.cube)
 
-    @TrackAddedMemoryAllocation.decorator
-    def track_addedmem_save_cube(self, n_cubesphere, is_unstructured):
+    def tracemalloc_save_cube(self, n_cubesphere, is_unstructured):
         self._save_cube(self.cube)
 
     def time_save_mesh(self, n_cubesphere, is_unstructured):

@@ -3,23 +3,22 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-# import iris tests first so that some things can be initialised before
-# importing anything else
-import iris.tests as tests  # isort:skip
-
-import unittest
-
 import numpy as np
 import numpy.ma as ma
+import pytest
 
 import iris
 import iris.analysis
 import iris.coord_systems
 import iris.coords
+from iris.tests import _shared_utils
 
 
-class TestAggregateBy(tests.IrisTest):
-    def setUp(self):
+class TestAggregateBy:
+    @pytest.fixture(autouse=True)
+    def _setup(self, request):
+        self.request = request
+
         #
         # common
         #
@@ -366,47 +365,67 @@ class TestAggregateBy(tests.IrisTest):
     def test_single(self):
         # mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
 
         # mean group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.MEAN
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
 
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
 
         # rms group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.RMS)
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single_rms.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "single_rms.cml"),
         )
 
         # rms group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.RMS
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "single_rms.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "single_rms.cml"),
         )
 
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_rms_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_rms_expected
+        )
 
     def test_str_aggregation_single_weights_none(self):
         # mean group-by with single coordinate name.
         aggregateby_cube = self.cube_single.aggregated_by(
             "height", iris.analysis.MEAN, weights=None
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
 
     def test_coord_aggregation_single_weights_none(self):
         # mean group-by with single coordinate.
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.MEAN, weights=None
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "single.cml"))
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "single.cml")
+        )
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
 
     def test_weighted_single(self):
         # weighted mean group-by with single coordinate name.
@@ -416,7 +435,8 @@ class TestAggregateBy(tests.IrisTest):
             weights=self.weights_single,
         )
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single.cml"),
         )
@@ -427,11 +447,12 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single.cml"),
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             self.weighted_single_expected,
         )
@@ -443,7 +464,8 @@ class TestAggregateBy(tests.IrisTest):
 
         # group-by with single coordinate name on shared axis.
         aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared.cml"),
         )
@@ -452,12 +474,15 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_single.aggregated_by(
             self.coord_z_single, iris.analysis.MEAN
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared.cml"),
         )
 
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
 
     def test_weighted_single_shared(self):
         z2_points = np.arange(36, dtype=np.int32)
@@ -470,7 +495,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single_shared.cml"),
         )
@@ -481,11 +507,12 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single_shared.cml"),
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data, self.weighted_single_expected
         )
 
@@ -498,7 +525,8 @@ class TestAggregateBy(tests.IrisTest):
 
         # group-by with single coordinate name on shared axis.
         aggregateby_cube = self.cube_single.aggregated_by("height", iris.analysis.MEAN)
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared_circular.cml"),
         )
@@ -506,11 +534,14 @@ class TestAggregateBy(tests.IrisTest):
         # group-by with single coordinate on shared axis.
         coord = self.cube_single.coords("height")
         aggregateby_cube = self.cube_single.aggregated_by(coord, iris.analysis.MEAN)
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_shared_circular.cml"),
         )
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.single_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.single_expected
+        )
 
     def test_weighted_single_shared_circular(self):
         points = np.arange(36) * 10.0
@@ -525,7 +556,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             (
                 "analysis",
@@ -541,7 +573,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_single,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             (
                 "analysis",
@@ -549,7 +582,7 @@ class TestAggregateBy(tests.IrisTest):
                 "weighted_single_shared_circular.cml",
             ),
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             self.weighted_single_expected,
         )
@@ -559,27 +592,37 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["height", "level"], iris.analysis.MEAN
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
+        )
 
         # group-by with multiple coordinate names (different order).
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["level", "height"], iris.analysis.MEAN
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
+        )
 
         # group-by with multiple coordinates.
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z1_multi, self.coord_z2_multi], iris.analysis.MEAN
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
+        )
 
         # group-by with multiple coordinates (different order).
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z2_multi, self.coord_z1_multi], iris.analysis.MEAN
         )
-        self.assertCML(aggregateby_cube, ("analysis", "aggregated_by", "multi.cml"))
+        _shared_utils.assert_CML(
+            self.request, aggregateby_cube, ("analysis", "aggregated_by", "multi.cml")
+        )
 
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.multi_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.multi_expected
+        )
 
     def test_weighted_multi(self):
         # weighted group-by with multiple coordinate names.
@@ -588,7 +631,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi.cml"),
         )
@@ -599,7 +643,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi.cml"),
         )
@@ -610,7 +655,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi.cml"),
         )
@@ -621,11 +667,12 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi.cml"),
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             self.weighted_multi_expected,
         )
@@ -643,8 +690,10 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["height", "level"], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi_shared.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "multi_shared.cml"),
         )
 
         # group-by with multiple coordinate names on shared axis (different
@@ -652,27 +701,35 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_multi.aggregated_by(
             ["level", "height"], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi_shared.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "multi_shared.cml"),
         )
 
         # group-by with multiple coordinates on shared axis.
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z1_multi, self.coord_z2_multi], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi_shared.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "multi_shared.cml"),
         )
 
         # group-by with multiple coordinates on shared axis (different order).
         aggregateby_cube = self.cube_multi.aggregated_by(
             [self.coord_z2_multi, self.coord_z1_multi], iris.analysis.MEAN
         )
-        self.assertCML(
-            aggregateby_cube, ("analysis", "aggregated_by", "multi_shared.cml")
+        _shared_utils.assert_CML(
+            self.request,
+            aggregateby_cube,
+            ("analysis", "aggregated_by", "multi_shared.cml"),
         )
 
-        np.testing.assert_almost_equal(aggregateby_cube.data, self.multi_expected)
+        _shared_utils.assert_array_almost_equal(
+            aggregateby_cube.data, self.multi_expected
+        )
 
     def test_weighted_multi_shared(self):
         z3_points = np.arange(20, dtype=np.int32)
@@ -689,7 +746,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi_shared.cml"),
         )
@@ -701,7 +759,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi_shared.cml"),
         )
@@ -712,7 +771,8 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi_shared.cml"),
         )
@@ -724,11 +784,12 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi_shared.cml"),
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             self.weighted_multi_expected,
         )
@@ -738,18 +799,19 @@ class TestAggregateBy(tests.IrisTest):
         # Easy mean aggregate test by each coordinate.
         #
         aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.MEAN)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[8.0, 15.0], [10.0, 17.0], [15.0, 8.0]], dtype=np.float32),
         )
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "easy.cml"),
         )
 
         aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.MEAN)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[7.0, 11.0, 13.0, 19.0], [18.0, 12.0, 10.0, 6.0]],
@@ -761,13 +823,13 @@ class TestAggregateBy(tests.IrisTest):
         # Easy max aggregate test by each coordinate.
         #
         aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.MAX)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[10.0, 18.0], [12.0, 20.0], [18.0, 10.0]], dtype=np.float32),
         )
 
         aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.MAX)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[8.0, 12.0, 14.0, 20.0], [18.0, 12.0, 10.0, 6.0]],
@@ -779,13 +841,13 @@ class TestAggregateBy(tests.IrisTest):
         # Easy sum aggregate test by each coordinate.
         #
         aggregateby_cube = self.cube_easy.aggregated_by("longitude", iris.analysis.SUM)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[16.0, 30.0], [20.0, 34.0], [30.0, 16.0]], dtype=np.float32),
         )
 
         aggregateby_cube = self.cube_easy.aggregated_by("latitude", iris.analysis.SUM)
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[14.0, 22.0, 26.0, 38.0], [18.0, 12.0, 10.0, 6.0]],
@@ -799,7 +861,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy.aggregated_by(
             "longitude", iris.analysis.PERCENTILE, percent=25
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[7.0, 13.5], [9.0, 15.5], [13.5, 7.0]], dtype=np.float32),
         )
@@ -807,7 +869,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy.aggregated_by(
             "latitude", iris.analysis.PERCENTILE, percent=25
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[6.5, 10.5, 12.5, 18.5], [18.0, 12.0, 10.0, 6.0]],
@@ -824,7 +886,7 @@ class TestAggregateBy(tests.IrisTest):
             list(np.sqrt([104.0, 298.0])),
             list(np.sqrt([234.0, 68.0])),
         ]
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data, np.array(row, dtype=np.float32)
         )
 
@@ -833,7 +895,7 @@ class TestAggregateBy(tests.IrisTest):
             list(np.sqrt([50.0, 122.0, 170.0, 362.0])),
             [18.0, 12.0, 10.0, 6.0],
         ]
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data, np.array(row, dtype=np.float32)
         )
 
@@ -852,11 +914,12 @@ class TestAggregateBy(tests.IrisTest):
             "longitude", iris.analysis.MEAN, weights=lon_weights
         )
 
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, 8.0], [0.2, 4.0]], dtype=np.float32),
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_easy.cml"),
         )
@@ -866,7 +929,7 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=lat_weights,
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[3.0, 5.0, 7.0, 9.0], [0.0, 2.0, 4.0, 6.0]],
@@ -880,7 +943,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
             "longitude", iris.analysis.SUM, weights=lon_weights
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, 16.0], [2.0, 8.0]], dtype=np.float32),
         )
@@ -890,7 +953,7 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.SUM,
             weights=lat_weights,
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[6.0, 10.0, 14.0, 18.0], [0.0, 4.0, 8.0, 12.0]],
@@ -909,7 +972,7 @@ class TestAggregateBy(tests.IrisTest):
             percent=50,
             weights=lon_weights,
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, 8.0], [0.2, 4.0]], dtype=np.float32),
         )
@@ -920,7 +983,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
             "longitude", iris.analysis.RMS, weights=lon_weights
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array([[3.0, np.sqrt(65.0)], [np.sqrt(0.4), 4.0]], dtype=np.float32),
         )
@@ -928,7 +991,7 @@ class TestAggregateBy(tests.IrisTest):
         aggregateby_cube = self.cube_easy_weighted.aggregated_by(
             "latitude", iris.analysis.RMS, weights=lat_weights
         )
-        np.testing.assert_almost_equal(
+        _shared_utils.assert_array_almost_equal(
             aggregateby_cube.data,
             np.array(
                 [[3.0, 5.0, 7.0, 9.0], [0.0, 2.0, 4.0, 6.0]],
@@ -986,11 +1049,14 @@ class TestAggregateBy(tests.IrisTest):
             "height", iris.analysis.MEAN
         )
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "single_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data, single_expected)
+        _shared_utils.assert_masked_array_almost_equal(
+            aggregateby_cube.data, single_expected
+        )
 
     def test_weighted_single_missing(self):
         # weighted aggregation correctly handles masked data
@@ -1044,11 +1110,12 @@ class TestAggregateBy(tests.IrisTest):
             weights=self.weights_single,
         )
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(
+        _shared_utils.assert_masked_array_almost_equal(
             aggregateby_cube.data,
             weighted_single_expected,
         )
@@ -1108,11 +1175,14 @@ class TestAggregateBy(tests.IrisTest):
             ["height", "level"], iris.analysis.MEAN
         )
 
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "multi_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(aggregateby_cube.data, multi_expected)
+        _shared_utils.assert_masked_array_almost_equal(
+            aggregateby_cube.data, multi_expected
+        )
 
     def test_weighted_multi_missing(self):
         # weighted aggregation correctly handles masked data
@@ -1170,11 +1240,12 @@ class TestAggregateBy(tests.IrisTest):
             iris.analysis.MEAN,
             weights=self.weights_multi,
         )
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi_missing.cml"),
         )
-        self.assertMaskedArrayAlmostEqual(
+        _shared_utils.assert_masked_array_almost_equal(
             aggregateby_cube.data,
             weighted_multi_expected,
         )
@@ -1186,10 +1257,11 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_single,
         )
-        self.assertTrue(isinstance(aggregateby_output, tuple))
+        assert isinstance(aggregateby_output, tuple)
 
         aggregateby_cube = aggregateby_output[0]
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_single.cml"),
         )
@@ -1207,7 +1279,7 @@ class TestAggregateBy(tests.IrisTest):
                 [[8.0, 8.0, 8.0], [8.0, 8.0, 8.0], [8.0, 8.0, 8.0]],
             ]
         )
-        np.testing.assert_almost_equal(aggregateby_weights, expected_weights)
+        _shared_utils.assert_array_almost_equal(aggregateby_weights, expected_weights)
 
     def test_returned_true_multi(self):
         aggregateby_output = self.cube_multi.aggregated_by(
@@ -1216,10 +1288,11 @@ class TestAggregateBy(tests.IrisTest):
             returned=True,
             weights=self.weights_multi,
         )
-        self.assertTrue(isinstance(aggregateby_output, tuple))
+        assert isinstance(aggregateby_output, tuple)
 
         aggregateby_cube = aggregateby_output[0]
-        self.assertCML(
+        _shared_utils.assert_CML(
+            self.request,
             aggregateby_cube,
             ("analysis", "aggregated_by", "weighted_multi.cml"),
         )
@@ -1238,10 +1311,10 @@ class TestAggregateBy(tests.IrisTest):
                 [[2.0, 2.0, 2.0], [2.0, 2.0, 2.0], [2.0, 2.0, 2.0]],
             ]
         )
-        np.testing.assert_almost_equal(aggregateby_weights, expected_weights)
+        _shared_utils.assert_array_almost_equal(aggregateby_weights, expected_weights)
 
     def test_returned_fails_with_non_weighted_aggregator(self):
-        self.assertRaises(
+        pytest.raises(
             TypeError,
             self.cube_single.aggregated_by,
             "height",
@@ -1250,7 +1323,7 @@ class TestAggregateBy(tests.IrisTest):
         )
 
     def test_weights_fail_with_non_weighted_aggregator(self):
-        self.assertRaises(
+        pytest.raises(
             TypeError,
             self.cube_single.aggregated_by,
             "height",
@@ -1267,9 +1340,9 @@ class TestAggregateBy(tests.IrisTest):
 
 
 class TestAggregateByWeightedByCube(TestAggregateBy):
-    def setUp(self):
-        super().setUp()
-
+    @pytest.fixture(autouse=True)
+    def _setup_subclass(self, _setup):
+        # Requests _setup to ensure this fixture runs AFTER _setup.
         self.weights_single = self.cube_single[:, 0, 0].copy(self.weights_single)
         self.weights_single.units = "m2"
         self.weights_multi = self.cube_multi[:, 0, 0].copy(self.weights_multi)
@@ -1281,7 +1354,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_single,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
     def test_coord_aggregation_weighted_sum_single(self):
         aggregateby_cube = self.cube_single.aggregated_by(
@@ -1289,7 +1362,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_single,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
     def test_str_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
@@ -1297,7 +1370,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_multi,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
     def test_str_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
@@ -1305,7 +1378,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_multi,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
     def test_coord_aggregation_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
@@ -1313,7 +1386,7 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_multi,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
     def test_coord_aggregation_rev_order_weighted_sum_multi(self):
         aggregateby_cube = self.cube_multi.aggregated_by(
@@ -1321,11 +1394,12 @@ class TestAggregateByWeightedByCube(TestAggregateBy):
             iris.analysis.SUM,
             weights=self.weights_multi,
         )
-        self.assertEqual(aggregateby_cube.units, "kelvin m2")
+        assert aggregateby_cube.units == "kelvin m2"
 
 
-class TestAggregateByWeightedByObj(tests.IrisTest):
-    def setUp(self):
+class TestAggregateByWeightedByObj:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
         self.dim_coord = iris.coords.DimCoord(
             [0, 1, 2], standard_name="latitude", units="degrees"
         )
@@ -1352,58 +1426,54 @@ class TestAggregateByWeightedByObj(tests.IrisTest):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights="latitude"
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 8])
-        self.assertEqual(res_cube.units, "K degrees")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 8])
+        assert res_cube.units == "K degrees"
 
     def test_weighting_with_str_aux_coord(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights="auxcoord"
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 5])
-        self.assertEqual(res_cube.units, "K kg")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 5])
+        assert res_cube.units == "K kg"
 
     def test_weighting_with_str_cell_measure(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights="cell_area"
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 0])
-        self.assertEqual(res_cube.units, "K m2")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 0])
+        assert res_cube.units == "K m2"
 
     def test_weighting_with_str_ancillary_variable(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights="ancvar"
         )
-        np.testing.assert_array_equal(res_cube.data, [1, 5])
-        self.assertEqual(res_cube.units, "K kg")
+        _shared_utils.assert_array_equal(res_cube.data, [1, 5])
+        assert res_cube.units == "K kg"
 
     def test_weighting_with_dim_coord(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights=self.dim_coord
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 8])
-        self.assertEqual(res_cube.units, "K degrees")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 8])
+        assert res_cube.units == "K degrees"
 
     def test_weighting_with_aux_coord(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights=self.aux_coord
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 5])
-        self.assertEqual(res_cube.units, "K kg")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 5])
+        assert res_cube.units == "K kg"
 
     def test_weighting_with_cell_measure(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights=self.cell_measure
         )
-        np.testing.assert_array_equal(res_cube.data, [0, 0])
-        self.assertEqual(res_cube.units, "K m2")
+        _shared_utils.assert_array_equal(res_cube.data, [0, 0])
+        assert res_cube.units == "K m2"
 
     def test_weighting_with_ancillary_variable(self):
         res_cube = self.cube.aggregated_by(
             "auxcoord", iris.analysis.SUM, weights=self.ancillary_variable
         )
-        np.testing.assert_array_equal(res_cube.data, [1, 5])
-        self.assertEqual(res_cube.units, "K kg")
-
-
-if __name__ == "__main__":
-    unittest.main()
+        _shared_utils.assert_array_equal(res_cube.data, [1, 5])
+        assert res_cube.units == "K kg"

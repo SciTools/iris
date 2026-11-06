@@ -3,7 +3,13 @@
 # This file is part of Iris and is released under the BSD license.
 # See LICENSE in the root of the repository for full licensing details.
 
-"""PP Save Rules."""
+"""PP Save Rules.
+
+.. z_reference:: iris.fileformats.pp_save_rules
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import warnings
 
@@ -11,9 +17,9 @@ import cftime
 
 import iris
 from iris.aux_factory import HybridHeightFactory, HybridPressureFactory
-from iris.exceptions import IrisPpClimModifiedWarning
 from iris.fileformats._ff_cross_references import STASH_TRANS
 from iris.fileformats._pp_lbproc_pairs import LBPROC_MAP
+import iris.fileformats.pp
 from iris.fileformats.rules import (
     aux_factory,
     has_aux_factory,
@@ -23,10 +29,11 @@ from iris.fileformats.rules import (
 )
 from iris.fileformats.um_cf_map import CF_TO_LBFC
 from iris.util import is_regular, regular_step
+from iris.warnings import IrisPpClimModifiedWarning
 
 
 def _basic_coord_system_rules(cube, pp):
-    """Rules for setting the coord system of the PP field.
+    """Rule for setting the coord system of the PP field.
 
     Parameters
     ----------
@@ -43,6 +50,27 @@ def _basic_coord_system_rules(cube, pp):
     if cube.coord_system("GeogCS") is not None or cube.coord_system(None) is None:
         pp.bplat = 90
         pp.bplon = 0
+
+        try:
+            # LAMs should have bplon of 180
+            x_coord = cube.coord(axis="x", dim_coords=True)
+            y_coord = cube.coord(axis="y", dim_coords=True)
+            if not iris.util._is_circular(
+                x_coord.points, 360.0, x_coord.bounds
+            ) or not iris.util._is_circular(y_coord.points, 180.0, y_coord.bounds):
+                if iris.FUTURE.lam_pole_offset:
+                    pp.bplon = 180.0
+                else:
+                    msg = (
+                        "Saving a cube defined on a Limited Area Model (LAM) grid to PP format "
+                        "will set the 'pole longitude' field (`bplon`) to 180.0 degrees in "
+                        "future iris releases. Enable this behaviour now with the Future flag "
+                        "`iris.FUTURE.lam_pole_offset = True`"
+                    )
+                    warnings.warn(msg, category=FutureWarning)
+
+        except iris.exceptions.CoordinateNotFoundError:
+            pass
     elif cube.coord_system("RotatedGeogCS") is not None:
         pp.bplat = cube.coord_system("RotatedGeogCS").grid_north_pole_latitude
         pp.bplon = cube.coord_system("RotatedGeogCS").grid_north_pole_longitude
@@ -80,7 +108,7 @@ def _um_version_rules(cube, pp):
 
 
 def _stash_rules(cube, pp):
-    """Attributes rules for setting the STASH attribute of the PP field.
+    """Attribute rules for setting the STASH attribute of the PP field.
 
     Parameters
     ----------
@@ -96,6 +124,8 @@ def _stash_rules(cube, pp):
     """
     if "STASH" in cube.attributes:
         stash = cube.attributes["STASH"]
+        if isinstance(stash, str):
+            stash = iris.fileformats.pp.STASH.from_msi(stash)
         if isinstance(stash, iris.fileformats.pp.STASH):
             pp.lbuser[3] = 1000 * (stash.section or 0) + (stash.item or 0)
             pp.lbuser[6] = stash.model or 0
@@ -103,7 +133,7 @@ def _stash_rules(cube, pp):
 
 
 def _general_time_rules(cube, pp):
-    """Rules for setting time metadata of the PP field.
+    """Rule for setting time metadata of the PP field.
 
     Parameters
     ----------
@@ -139,7 +169,7 @@ def _general_time_rules(cube, pp):
         pp.lbtim.ib = 1
         pp.t1 = time_coord.units.num2date(time_coord.points[0])
         pp.t2 = time_coord.units.num2date(time_coord.points[0] - fp_coord.points[0])
-        pp.lbft = fp_coord.points[0]
+        pp.lbft = fp_coord.units.convert(fp_coord.points[0], "hours")
 
     # Time mean (non-climatological).
     # XXX This only works when we have a single timestep.
@@ -377,7 +407,7 @@ def _general_time_rules(cube, pp):
 
 
 def _calendar_rules(cube, pp):
-    """Rules for setting the calendar of the PP field.
+    """Rule for setting the calendar of the PP field.
 
     Parameters
     ----------
@@ -403,7 +433,7 @@ def _calendar_rules(cube, pp):
 
 
 def _grid_and_pole_rules(cube, pp):
-    """Rules for setting the horizontal grid and pole location of the PP field.
+    """Rule for setting the horizontal grid and pole location of the PP field.
 
     Parameters
     ----------
@@ -485,7 +515,7 @@ def _grid_and_pole_rules(cube, pp):
 
 
 def _non_std_cross_section_rules(cube, pp):
-    """Rules for applying non-standard cross-sections to the PP field.
+    """Rule for applying non-standard cross-sections to the PP field.
 
     Parameters
     ----------
@@ -616,7 +646,7 @@ def _non_std_cross_section_rules(cube, pp):
 
 
 def _lbproc_rules(cube, pp):
-    """Rules for setting the processing code of the PP field.
+    """Rule for setting the processing code of the PP field.
 
     Note: `pp.lbproc` must be set to 0 before these rules are run.
 
@@ -663,8 +693,8 @@ def _lbproc_rules(cube, pp):
     return pp
 
 
-def _vertical_rules(cube, pp):
-    """Rules for setting vertical levels for the PP field.
+def _vertical_rules(cube, pp, label_surface_fields=False):
+    """Rule for setting vertical levels for the PP field.
 
     Parameters
     ----------
@@ -773,6 +803,22 @@ def _vertical_rules(cube, pp):
         pp.brsvd[0] = depth_coord.bounds[0, 0]
         pp.brlev = depth_coord.bounds[0, 1]
 
+    # Surface field.
+    if (
+        height_coord is None
+        and depth_coord is None
+        and pressure_coord is None
+        and soil_mln_coord is None
+        and apt_coord is None
+        and air_pres_coord is None
+        and level_height_coord is None
+        and mln_coord is None
+        and sigma_coord is None
+        and label_surface_fields
+    ):
+        pp.lbvc = 129
+        pp.lblev = 9999
+
     # Single potential-temperature level.
     if (
         apt_coord is not None
@@ -849,7 +895,7 @@ def _vertical_rules(cube, pp):
 
 
 def _all_other_rules(cube, pp):
-    """Fields currently managed by these rules.
+    """Field currently managed by these rules.
 
     * lbfc (field code)
     * lbrsvd[3] (ensemble member number)
@@ -883,7 +929,7 @@ def _all_other_rules(cube, pp):
     return pp
 
 
-def verify(cube, field):
+def verify(cube, field, label_surface_fields=False):
     # Rules functions.
     field = _basic_coord_system_rules(cube, field)
     field = _um_version_rules(cube, field)
@@ -893,7 +939,7 @@ def verify(cube, field):
     field = _grid_and_pole_rules(cube, field)
     field = _non_std_cross_section_rules(cube, field)
     field = _lbproc_rules(cube, field)
-    field = _vertical_rules(cube, field)
+    field = _vertical_rules(cube, field, label_surface_fields=label_surface_fields)
     field = _all_other_rules(cube, field)
 
     return field

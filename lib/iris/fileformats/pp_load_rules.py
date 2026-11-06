@@ -6,7 +6,13 @@
 # Historically this was auto-generated from
 # SciTools/iris-code-generators:tools/gen_rules.py
 
-"""PP Load Rules."""
+"""PP Load Rules.
+
+.. z_reference:: iris.fileformats.pp_load_rules
+   :tags: topic_load_save
+
+   API reference
+"""
 
 import calendar
 from functools import wraps
@@ -139,8 +145,15 @@ def _convert_vertical_coords(
         )
         coords_and_dims.append((coord, dim))
 
+    # Common calc for Depth
+    try:
+        svd_lev_eq = brsvd1 == brlev
+    except ValueError:
+        # In case of broadcasting errors.
+        svd_lev_eq = False
+
     # Depth - unbound.
-    if (len(lbcode) != 5) and (lbvc == 2) and np.all(brsvd1 == brlev):
+    if (len(lbcode) != 5) and (lbvc == 2) and np.all(svd_lev_eq):
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
@@ -150,7 +163,7 @@ def _convert_vertical_coords(
         coords_and_dims.append((coord, dim))
 
     # Depth - bound.
-    if (len(lbcode) != 5) and (lbvc == 2) and np.all(brsvd1 != brlev):
+    if (len(lbcode) != 5) and (lbvc == 2) and np.all(~svd_lev_eq):
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
@@ -164,10 +177,10 @@ def _convert_vertical_coords(
     if (
         (len(lbcode) != 5)
         and (lbvc == 2)
-        and (np.any(brsvd1 == brlev) and np.any(brsvd1 != brlev))
+        and (np.any(svd_lev_eq) and np.any(~svd_lev_eq))
     ):
-        lower = np.where(brsvd1 == brlev, blev, brsvd1)
-        upper = np.where(brsvd1 == brlev, blev, brlev)
+        lower = np.where(svd_lev_eq, blev, brsvd1)
+        upper = np.where(svd_lev_eq, blev, brlev)
         coord = _dim_or_aux(
             blev,
             standard_name="depth",
@@ -189,7 +202,7 @@ def _convert_vertical_coords(
                 units="1",
             )
             coords_and_dims.append((coord, dim))
-        elif np.any(brsvd1 != brlev):
+        elif np.any(~svd_lev_eq):
             # UM populates metadata CORRECTLY,
             # so treat it as the expected (bounded) soil depth.
             coord = _dim_or_aux(
@@ -308,7 +321,7 @@ def _reshape_vector_args(values_and_dims):
 
     Returns
     -------
-    reshaped_arrays : iterable of arrays
+    iterable object of arrays
         The inputs, transposed and reshaped onto common target dimensions.
 
     """
@@ -357,7 +370,7 @@ def _collapse_degenerate_points_and_bounds(points, bounds=None, rtol=1.0e-7):
     bounds : :class:`numpy.ndarray`, optional
         Array of bounds values. This array should have an additional vertex
         dimension (typically of length 2) when compared to the  points array
-        i.e. bounds.shape = points.shape + (nvertex,)
+        i.e. bounds.shape = points.shape + (nvertex,).
     rtol : optional, default=1.0e-7
 
     Returns
@@ -451,18 +464,18 @@ def _new_coord_and_dims(
 
     * dimensions with all points and bounds values the same are removed.
     * the result coordinate may be an AuxCoord if a DimCoord cannot be made
-        (e.g. if values are non-monotonic).
+      (e.g. if values are non-monotonic).
 
     Parameters
     ----------
     is_vector_operation : bool
         If True, perform 'vector' style operation.
-    points : array-like
-        Coordinate point values.
     name : str
         Standard name of coordinate.
     units : str or cf_unit.Unit
         Units of coordinate.
+    points : array-like
+        Coordinate point values.
     lower_and_upper_bounds : pair of array-like or None, optional
         Corresponding bounds values (lower, upper), if any.
 
@@ -560,7 +573,7 @@ def _epoch_date_hours_internals(epoch_hours_unit, datetime):
     return epoch_hours
 
 
-_epoch_date_hours_cache = {}
+_epoch_date_hours_cache: dict = {}
 _epoch_date_hours_cache_max_size = 128  # lru_cache default
 
 
@@ -932,7 +945,7 @@ def convert(f):
 
 
 def _all_other_rules(f):
-    """Deals with all the other rules.
+    """Deal with all the other rules.
 
     Deals with all the other rules that have not been factored into any of
     the other convert_scalar_coordinate functions above.

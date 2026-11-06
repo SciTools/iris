@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Plotting in Different Projections
 =================================
+
+.. how-to:: Plotting in Different Projections
+   :tags: topic_plotting;topic_interoperability
+
+   How to overlay data from two different map projections and add graphics.
 
 This example shows how to overlay data and graphics in different projections,
 demonstrating various features of Iris, Cartopy and matplotlib.

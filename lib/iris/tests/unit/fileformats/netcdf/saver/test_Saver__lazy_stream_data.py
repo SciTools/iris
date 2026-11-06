@@ -9,89 +9,84 @@ The testing of the dask delayed operations and file writing are instead covered 
 integration tests.
 
 """
-from unittest import mock
-import warnings
+
+from collections.abc import Iterator
 
 import dask.array as da
 import numpy as np
 import pytest
 
-from iris.exceptions import IrisMaskValueMatchWarning
-import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
-from iris.fileformats.netcdf.saver import Saver, _FillvalueCheckInfo
+import iris.fileformats.netcdf._dataset as dataset_module
+from iris.fileformats.netcdf.saver import Saver
 
 
 class Test__lazy_stream_data:
     @staticmethod
     @pytest.fixture(autouse=True)
-    def saver_patch():
+    def saver_patch(mocker):
         # Install patches, so we can create a Saver without opening a real output file.
         # Mock just enough of Dataset behaviour to allow a 'Saver.complete()' call.
-        mock_dataset = mock.MagicMock()
-        mock_dataset_class = mock.Mock(return_value=mock_dataset)
+        mock_dataset = mocker.MagicMock()
+        mock_dataset_class = mocker.Mock(return_value=mock_dataset)
         # Mock the wrapper within the netcdf saver
-        target1 = "iris.fileformats.netcdf.saver._thread_safe_nc.DatasetWrapper"
+        target1 = "iris.fileformats.netcdf._bytecoding_datasets.EncodedDataset"
         # Mock the real netCDF4.Dataset within the threadsafe-nc module, as this is
         # used by NetCDFDataProxy and NetCDFWriteProxy.
         target2 = "iris.fileformats.netcdf._thread_safe_nc.netCDF4.Dataset"
-        with mock.patch(target1, mock_dataset_class):
-            with mock.patch(target2, mock_dataset_class):
-                yield
+        mocker.patch(target1, mock_dataset_class)
+        mocker.patch(target2, mock_dataset_class)
+        return
 
     # A fixture to parametrise tests over delayed and non-delayed Saver type.
     # NOTE: this only affects the saver context-exit, which we do not test here, so
     # should make ***no difference to any of these tests***.
     @staticmethod
     @pytest.fixture(params=[False, True], ids=["nocompute", "compute"])
-    def compute(request) -> bool:
-        yield request.param
+    def compute(request) -> Iterator[bool]:
+        return request.param
 
     # A fixture to parametrise tests over real and lazy-type data.
     @staticmethod
     @pytest.fixture(params=["realdata", "lazydata", "emulateddata"])
-    def data_form(request) -> bool:
-        yield request.param
+    def data_form(request) -> Iterator[bool]:
+        return request.param
 
     @staticmethod
-    def saver(compute) -> Saver:
+    def saver(compute, data_form, tmp_path) -> Saver:
         # Create a test Saver object
-        return Saver(filename="<dummy>", netcdf_format="NETCDF4", compute=compute)
+        filepath = tmp_path / f"tmp_{compute}_{data_form}.nc"
+        return Saver(filename=filepath, netcdf_format="NETCDF4", compute=compute)
 
     @staticmethod
-    def mock_var(shape, with_data_array):
+    def mock_var(shape, with_data_array, mocker, dtype=np.dtype(np.float32)):
         # Create a test cf_var object.
-        # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
-        if with_data_array:
-            extra_properties = {"_data_array": mock.sentinel.initial_data_array}
-        else:
-            extra_properties = {}
-        mock_cfvar = mock.MagicMock(
-            spec=threadsafe_nc.VariableWrapper,
+        # 'is_emulated' is now a declared property rather than the presence of
+        # a '_data_array' member, so it can simply be set.
+        mock_cfvar = mocker.MagicMock(
+            spec=dataset_module.NetCDFDatasetVariable,
             shape=tuple(shape),
-            dtype=np.dtype(np.float32),
-            **extra_properties,
+            dtype=dtype,
+            is_emulated=with_data_array,
         )
+        mock_cfvar.write_handle.return_value = mocker.sentinel.write_handle
         # Give the mock cf-var a name property, as required by '_lazy_stream_data'.
         # This *can't* be an extra kwarg to MagicMock __init__, since that already
         # defines a specific 'name' kwarg, with a different purpose.
         mock_cfvar.name = "<mock_cfvar>"
         return mock_cfvar
 
-    def test_data_save(self, compute, data_form):
+    def test_data_save(self, compute, data_form, mocker, tmp_path):
         """Real data is transferred immediately, lazy data creates a delayed write."""
-        saver = self.saver(compute=compute)
+        saver = self.saver(compute, data_form, tmp_path)
 
         data = np.arange(5.0)
         if data_form == "lazydata":
             data = da.from_array(data)
 
         cf_var = self.mock_var(
-            data.shape, with_data_array=(data_form == "emulateddata")
+            data.shape, with_data_array=(data_form == "emulateddata"), mocker=mocker
         )
-        fill_value = -1.0  # not occurring in data
-        saver._lazy_stream_data(
-            data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
-        )
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
         if data_form == "lazydata":
             expect_n_setitem = 0
             expect_n_delayed = 1
@@ -107,73 +102,112 @@ class Test__lazy_stream_data:
         assert len(saver._delayed_writes) == expect_n_delayed
 
         if data_form == "lazydata":
-            result_data, result_writer, fill_info = saver._delayed_writes[0]
+            result_data, result_writer = saver._delayed_writes[0]
             assert result_data is data
-            assert isinstance(result_writer, threadsafe_nc.NetCDFWriteProxy)
-            assert isinstance(fill_info, _FillvalueCheckInfo)
+            # What kind of handle it is is the dataset's business, and is
+            # tested in test_NetCDFDataset__write.py.
+            assert result_writer is mocker.sentinel.write_handle
         elif data_form == "realdata":
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
-            cf_var._data_array == mock.sentinel.exact_data_array
+            assert cf_var.emulated_data_array is data
 
-    def test_warnings(self, compute, data_form):
-        """For real data, fill-value warnings are issued immediately.
-        For lazy data, warnings are returned from computing a delayed completion.
-        For 'emulated' data (direct array transfer), no checks + no warnings ever.
+    @pytest.mark.parametrize("is_realdata", [True, False], ids=["realdata", "lazydata"])
+    @pytest.mark.parametrize("is_string", [True, False], ids=["string", "numeric"])
+    def test_data_save_emulated_data_array(
+        self, is_realdata, is_string, mocker, tmp_path
+    ):
+        """Emulated variables receive arrays directly, with string data encoded."""
+        saver = self.saver(compute=False, data_form="emulateddata", tmp_path=tmp_path)
 
-        N.B. The 'compute' keyword has **no effect** on this :  It only causes delayed
-        writes to be automatically actioned on exiting a Saver context.
-        Streaming *always* creates delayed writes for lazy data, since this is required
-        to make dask distributed operation work.
-        """
-        saver = self.saver(compute=compute)
-
-        data = np.arange(5.0)
-        if data_form == "lazydata":
-            data = da.from_array(data)
-
-        fill_value = 2.0  # IS occurring in data
+        shape = (20, 30, 30)
+        dtype = np.dtype("U1") if is_string else np.dtype("f4")
+        data_spec = np.ndarray if is_realdata else da.Array
+        data = mocker.MagicMock(spec=data_spec, dtype=dtype, shape=shape)
         cf_var = self.mock_var(
-            data.shape, with_data_array=(data_form == "emulateddata")
+            shape,
+            with_data_array=True,
+            mocker=mocker,
+            dtype=dtype,
         )
 
-        # Do initial save.  When compute=True, this issues warnings
-        with warnings.catch_warnings(record=True) as logged_warnings:
-            saver._lazy_stream_data(
-                data=data, fill_value=fill_value, fill_warn=True, cf_var=cf_var
+        if is_string:
+            # The encoding is described by the file variable beneath the
+            #  emulation, which is 'char' where the data written is strings.
+            unencoded = mocker.Mock(
+                dtype=np.dtype("S1"),
+                dimensions=("x", "strlen"),
+                # None is what an absent _Encoding attribute yields: the
+                #  default encoding, and no "unsupported encoding" warning.
+                _Encoding=None,
             )
+            # .name is a Mock constructor keyword, so it has to be set after.
+            unencoded.name = "<mock_unencoded>"
+            unencoded.group.return_value = mocker.Mock(
+                dimensions={"strlen": mocker.Mock(size=5)}
+            )
+            cf_var.unencoded_variable = unencoded
 
-        # Check warnings issued by initial call.
-        issued_warnings = [log.message for log in logged_warnings]
-        if data_form == "lazydata":
-            n_expected_warnings = 0
-        elif data_form == "realdata":
-            n_expected_warnings = 1
+            ifnbd = "iris.fileformats.netcdf._bytecoding_datasets."
+            mock_encode = mocker.patch(ifnbd + "encode_stringarray_as_bytearray")
+            mock_mapblocks = mocker.patch("dask.array.map_blocks")
+
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
+
+        assert cf_var.__setitem__.call_count == 0
+        assert len(saver._delayed_writes) == 0
+        assert len(saver._nczarr_writes) == 0
+
+        if not is_string:
+            assert cf_var.emulated_data_array is data
         else:
-            # No checks in the emulated case
-            assert data_form == "emulateddata"
-            n_expected_warnings = 0
-        assert len(issued_warnings) == n_expected_warnings
+            if is_realdata:
+                assert mock_encode.call_count == 1
+                assert cf_var.emulated_data_array is mock_encode.return_value
+                call_args = mock_encode.call_args_list[0][0]
+                assert call_args[0] is data
+            else:
+                assert mock_mapblocks.call_count == 1
+                assert cf_var.emulated_data_array is mock_mapblocks.return_value
+                call_args = mock_mapblocks.call_args_list[0][0]
+                assert call_args[0] is mock_encode
+                assert call_args[1] is data
 
-        # Complete the write : any delayed warnings should be *returned*.
-        # NOTE:
-        #   (1) this still works when there are no delayed writes.
-        #   (2) the Saver 'compute' keyword makes no difference to this usage, as it
-        #       *only* affects what happens when the saver context exits.
-        result2 = saver.delayed_completion().compute()
-        issued_warnings += list(result2)
+    def test_lazy_data_save_nczarr_uses_preclose_write_list(
+        self, data_form, compute, mocker, tmp_path
+    ):
+        """NCZarr lazy data should not use deferred reopen writes."""
+        saver = self.saver(compute=compute, data_form=data_form, tmp_path=tmp_path)
+        saver._is_nczarr = True
 
-        # Check warnings issued during 'completion'.
-        if data_form == "emulateddata":
-            # No checks in this case, ever.
-            n_expected_warnings = 0
-        else:
-            # Otherwise, either way, a suitable warning should now have been produced.
-            n_expected_warnings = 1
-        assert len(issued_warnings) == n_expected_warnings
-        if n_expected_warnings > 0:
-            warning = issued_warnings[0]
-            msg = "contains unmasked data points equal to the fill-value, 2.0"
-            assert isinstance(warning, IrisMaskValueMatchWarning)
-            assert msg in warning.args[0]
+        data = da.from_array(np.arange(5.0))
+        cf_var = self.mock_var(data.shape, with_data_array=False, mocker=mocker)
+
+        saver._lazy_stream_data(data=data, cf_var=cf_var)
+
+        assert len(saver._delayed_writes) == 0
+        assert len(saver._nczarr_writes) == 1
+        result_data, result_target = saver._nczarr_writes[0]
+        assert result_data is data
+        assert result_target is cf_var
+        assert cf_var.__setitem__.call_count == 0
+
+    def test_exit_flushes_nczarr_writes(self, data_form, mocker, tmp_path):
+        """NCZarr lazy writes should be computed before file close in __exit__."""
+        saver = self.saver(compute=False, data_form=data_form, tmp_path=tmp_path)
+        saver._is_nczarr = True
+
+        source = mocker.sentinel.source
+        target = mocker.sentinel.target
+        saver._nczarr_writes.append((source, target))
+
+        store_patch = mocker.patch("iris.fileformats.netcdf.saver.da.store")
+
+        saver.__exit__(None, None, None)
+
+        store_patch.assert_called_once_with([source], [target])
+        # Saver._dataset is a NetCDFDataset now, so the mock that records the
+        # calls is the netCDF dataset it opened, one level down.
+        saver._dataset.dataset.sync.assert_called_once_with()
+        saver._dataset.dataset.close.assert_called_once_with()

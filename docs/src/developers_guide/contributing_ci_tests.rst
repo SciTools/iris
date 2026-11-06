@@ -5,6 +5,8 @@
 Continuous Integration (CI) Testing
 ===================================
 
+.. readingtime::
+
 .. note:: Iris is currently supported and tested against |python_support|
           running on Linux.  We do not currently actively test on other
           platforms such as Windows or macOS.
@@ -90,14 +92,27 @@ If any CI tasks fail, then the pull-request is unlikely to be merged to the
 Iris target branch by a core developer.
 
 
+Data Repositories
+-----------------
+
+Two other SciTools repositories support the CI tasks:
+
+* `iris-test-data`_ is a github project containing all the data to support the tests.
+* `iris-sample-data`_ is a github project containing all the data to support the gallery and examples.
+
+If new files are required by tests or code examples, they must be added to
+the appropriate supporting project via a suitable pull-request.  This pull
+request should be referenced in the main Iris pull request and must be
+accepted and merged before the Iris one can be.
+
+
 .. _testing_cla:
 
-SciTools CLA Checker
-********************
+`CLA Assistant`_
+****************
 
-A bot which checks that the GitHub author of the pull-request has signed the
-**SciTools Contributor's License Agreement (CLA)**.  For more information on
-this please see https://scitools.org.uk/organisation.html#governance.
+A bot which checks that the GitHub authors of the pull-request have signed the
+|SciTools Contributor's License Agreement (CLA)|_.
 
 
 .. _pre_commit_ci:
@@ -147,4 +162,6 @@ For more information on how to use `ruff`_ please see the `ruff documentation`_.
 
 .. _.pre-commit-config.yaml: https://github.com/SciTools/iris/blob/main/.pre-commit-config.yaml
 .. _pre-commit.ci dashboard: https://results.pre-commit.ci/repo/github/5312648
+.. _CLA Assistant: https://github.com/cla-assistant/cla-assistant
+.. |SciTools Contributor's License Agreement (CLA)| replace:: **SciTools Contributor's License Agreement (CLA)**
 .. _ruff documentation: https://docs.astral.sh/ruff/tutorial/

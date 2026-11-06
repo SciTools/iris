@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Zonal Mean Diagram of Air Temperature
 =====================================
+
+.. how-to:: Zonal Mean Diagram of Air Temperature
+   :tags: topic_plotting;topic_maths_stats
+
+   How to use aligned plots to visualise collapsed dimensional statistics.
 
 This example demonstrates aligning a linear plot and a cartographic plot
 using Matplotlib.

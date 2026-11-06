@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Applying a Filter to a Time-Series
 ==================================
+
+.. how-to:: Applying a Filter to a Time-Series
+   :tags: topic_plotting;topic_maths_stats
+
+   How to apply a low pass filter to an Iris Cube via rolling_window().
 
 This example demonstrates low pass filtering a time-series by applying a
 weighted running mean over the time dimension.

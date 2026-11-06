@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Load a Time Series of Data From the NEMO Model
 ==============================================
+
+.. how-to:: Load a Time Series of Data From the NEMO Model
+   :tags: topic_plotting;topic_load_save;topic_data_model;topic_slice_combine
+
+   How to concatenate data from multiple NEMO files.
 
 This example demonstrates how to load multiple files containing data output by
 the NEMO model and combine them into a time series in a single cube. The
@@ -45,11 +54,11 @@ def main():
 
     # Include the point's position in the plot's title
     lat_point = cube.coord("latitude").points[y_point_index, x_point_index]
-    lat_string = "{:.3f}\u00B0 {}".format(
+    lat_string = "{:.3f}\u00b0 {}".format(
         abs(lat_point), "N" if lat_point > 0.0 else "S"
     )
     lon_point = cube.coord("longitude").points[y_point_index, x_point_index]
-    lon_string = "{:.3f}\u00B0 {}".format(
+    lon_string = "{:.3f}\u00b0 {}".format(
         abs(lon_point), "E" if lon_point > 0.0 else "W"
     )
     plt.title("{} at {} {}".format(cube.long_name.capitalize(), lat_string, lon_string))

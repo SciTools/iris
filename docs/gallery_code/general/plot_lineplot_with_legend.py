@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Multi-Line Temperature Profile Plot
 ===================================
+
+.. how-to:: Multi-Line Temperature Profile Plot
+   :tags: topic_plotting
+
+   How to plot multiple lines on a single plot with a legend.
 
 """  # noqa: D205, D212, D400
 

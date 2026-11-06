@@ -1,6 +1,15 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
 """
 Test Data Showing Inset Plots
 =============================
+
+.. how-to:: Test Data Showing Inset Plots
+   :tags: topic_plotting;topic_maths_stats
+
+   How to create inset plots within a main plot.
 
 This example demonstrates the use of a single 3D data cube with time, latitude
 and longitude dimensions to plot a temperature series for a single latitude

@@ -4,6 +4,11 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Various utilities related to geometric operations.
 
+.. z_reference:: iris.analysis.geometry
+   :tags: topic_maths_stats
+
+   API reference
+
 .. note::
     This module requires :mod:`shapely`.
 
@@ -15,6 +20,7 @@ import numpy as np
 from shapely.geometry import Polygon
 
 import iris.exceptions
+import iris.warnings
 
 
 def _extract_relevant_cube_slice(cube, geometry):
@@ -71,7 +77,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's x dimension at the lower end.",
-            category=iris.exceptions.IrisGeometryExceedWarning,
+            category=iris.warnings.IrisGeometryExceedWarning,
         )
         x_min_ix = 0 if x_ascending else x_coord.points.size - 1
 
@@ -81,7 +87,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's x dimension at the upper end.",
-            category=iris.exceptions.IrisGeometryExceedWarning,
+            category=iris.warnings.IrisGeometryExceedWarning,
         )
         x_max_ix = x_coord.points.size - 1 if x_ascending else 0
 
@@ -91,7 +97,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's y dimension at the lower end.",
-            category=iris.exceptions.IrisGeometryExceedWarning,
+            category=iris.warnings.IrisGeometryExceedWarning,
         )
         y_min_ix = 0 if y_ascending else y_coord.points.size - 1
 
@@ -101,7 +107,7 @@ def _extract_relevant_cube_slice(cube, geometry):
     except ValueError:
         warnings.warn(
             "The geometry exceeds the cube's y dimension at the upper end.",
-            category=iris.exceptions.IrisGeometryExceedWarning,
+            category=iris.warnings.IrisGeometryExceedWarning,
         )
         y_max_ix = y_coord.points.size - 1 if y_ascending else 0
 
@@ -161,7 +167,7 @@ def geometry_area_weights(cube, geometry, normalize=False):
     .. note::
 
         This function does not maintain laziness when called; it realises data.
-        See more at :doc:`/userguide/real_and_lazy_data`.
+        See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
 
     Parameters
     ----------
