@@ -2944,6 +2944,9 @@ def make_gridcube(
     elif isinstance(coord_system, iris.coord_systems.RotatedGeogCS):
         x_name, y_name = "grid_longitude", "grid_latitude"
         units = "degrees"
+    elif isinstance(coord_system, iris.coord_systems.Geostationary):
+        x_name, y_name = "projection_x_angular_coordinate", "projection_y_angular_coordinate"
+        units = "radians"
     else:
         x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
         units = "m"
