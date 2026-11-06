@@ -1929,8 +1929,8 @@ def is_projection_x_coordinate(engine, cf_name):
 def is_projection_x_angular_coordinate(engine, cf_name):
     """Determine whether the CF coordinate variable is a projection_x_angular_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
-        cf_var, CF_ATTR_LONG_NAME, None
+    attr_name = cf_var.attributes.get(CF_ATTR_STD_NAME) or cf_var.attributes.get(
+        CF_ATTR_LONG_NAME
     )
     return attr_name == CF_VALUE_STD_NAME_PROJ_X_ANGULAR
 
@@ -1949,8 +1949,8 @@ def is_projection_y_coordinate(engine, cf_name):
 def is_projection_y_angular_coordinate(engine, cf_name):
     """Determine whether the CF coordinate variable is a projection_y_angular_coordinate variable."""
     cf_var = engine.cf_var.cf_group[cf_name]
-    attr_name = getattr(cf_var, CF_ATTR_STD_NAME, None) or getattr(
-        cf_var, CF_ATTR_LONG_NAME, None
+    attr_name = cf_var.attributes.get(CF_ATTR_STD_NAME) or cf_var.attributes.get(
+        CF_ATTR_LONG_NAME
     )
     return attr_name == CF_VALUE_STD_NAME_PROJ_Y_ANGULAR
 
