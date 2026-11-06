@@ -84,6 +84,7 @@ __all__ = (
     "PERCENTILE",
     "PROPORTION",
     "PercentileAggregator",
+    "Pchip",
     "PointInCell",
     "RMS",
     "STD_DEV",
@@ -2974,6 +2975,98 @@ class Nearest:
         return RectilinearRegridder(
             src_grid, target_grid, "nearest", self.extrapolation_mode
         )
+
+
+class Pchip:
+    """Describe the PCHIP interpolation scheme.
+
+    Describes the Piecewise Cubic Hermite Interpolating Polynomial (PCHIP)
+    interpolation scheme, for use with :meth:`iris.cube.Cube.interpolate()`.
+
+    This is a monotonic cubic interpolation method: unlike
+    :class:`Linear`, it does not overshoot the source data values, so is
+    well suited to interpolating over coordinates such as model levels or
+    depths, where values commonly must remain within physically
+    meaningful bounds.
+
+    .. note::
+        Currently only supports interpolation, not regridding.
+
+    """
+
+    def __init__(self, extrapolation_mode="extrapolate"):
+        """Pchip interpolation scheme.
+
+        Suitable for interpolating over one or more orthogonal coordinates.
+
+        Parameters
+        ----------
+        extrapolation_mode : str, default="extrapolate"
+            Must be one of the following strings:
+
+            * 'extrapolate' - The extrapolation points will be calculated
+              by extending the gradient of the closest polynomial piece.
+            * 'nan' - The extrapolation points will be be set to NaN.
+            * 'error' - A ValueError exception will be raised, notifying an
+              attempt to extrapolate.
+            * 'mask' - The extrapolation points will always be masked, even
+              if the source data is not a MaskedArray.
+            * 'nanmask' - If the source data is a MaskedArray the
+              extrapolation points will be masked. Otherwise they will be
+              set to NaN.
+            * The default mode of extrapolation is 'extrapolate'.
+
+        """
+        if extrapolation_mode not in EXTRAPOLATION_MODES:
+            msg = "Extrapolation mode {!r} not supported."
+            raise ValueError(msg.format(extrapolation_mode))
+        self.extrapolation_mode = extrapolation_mode
+
+    def __repr__(self):
+        return "Pchip({!r})".format(self.extrapolation_mode)
+
+    def interpolator(self, cube, coords):
+        """Create a pchip interpolator to perform interpolation.
+
+        Create a PCHIP interpolator to perform interpolation over the
+        given :class:`~iris.cube.Cube` specified by the dimensions of
+        the given coordinates.
+
+        Typically you should use :meth:`iris.cube.Cube.interpolate` for
+        interpolating a cube.
+
+        Parameters
+        ----------
+        cube : :class:`iris.cube.Cube`
+            The source :class:`iris.cube.Cube` to be interpolated.
+        coords : :class:`iris.cube.Cube`
+            The names or coordinate instances that are to be
+            interpolated over.
+
+        Returns
+        -------
+        A callable with the interface: ``callable(sample_points, collapse_scalar=True)``
+            Where `sample_points` is a sequence containing an array of values
+            for each of the coordinates passed to this method, and
+            ``collapse_scalar`` determines whether to remove length one
+            dimensions in the result cube caused by scalar values in
+            ``sample_points``.
+
+            The N arrays of values within ``sample_points`` will be used to
+            create an N-d grid of points that will then be sampled (rather than
+            just N points)
+
+            The values for coordinates that correspond to date/times
+            may optionally be supplied as datetime.datetime or
+            cftime.datetime instances.
+
+            For example, for the callable returned by:
+            ``Pchip().interpolator(cube, ['latitude', 'longitude'])``,
+            sample_points must have the form
+            ``[new_lat_values, new_lon_values]``.
+
+        """
+        return RectilinearInterpolator(cube, coords, "pchip", self.extrapolation_mode)
 
 
 class UnstructuredNearest:

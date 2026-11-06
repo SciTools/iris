@@ -175,10 +175,11 @@ def _interpolated_dtype(dtype, method):
 
 
 class RectilinearInterpolator:
-    """Provide support for performing nearest-neighbour or linear interpolation.
+    """Provide support for performing nearest-neighbour, linear or pchip interpolation.
 
-    This class provides support for performing nearest-neighbour or
-    linear interpolation over one or more orthogonal dimensions.
+    This class provides support for performing nearest-neighbour,
+    linear or pchip (Piecewise Cubic Hermite Interpolating Polynomial)
+    interpolation over one or more orthogonal dimensions.
 
     """
 
@@ -193,14 +194,15 @@ class RectilinearInterpolator:
             The names or coordinate instances which are to be
             interpolated over.
         method :
-            Either 'linear' or 'nearest'.
+            One of 'linear', 'nearest' or 'pchip'.
         extrapolation_mode : str
             Must be one of the following strings:
 
             * 'extrapolate' - The extrapolation points will be calculated
               according to the method. The 'linear' method extends the
               gradient of the closest two points. The 'nearest' method
-              uses the value of the closest point.
+              uses the value of the closest point. The 'pchip' method
+              extends the gradient of the nearest polynomial piece.
             * 'nan' - The extrapolation points will be be set to NaN.
             * 'error' - A ValueError exception will be raised, notifying an
               attempt to extrapolate.
@@ -216,8 +218,8 @@ class RectilinearInterpolator:
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
-        # Whether to use linear or nearest-neighbour interpolation.
-        if method not in ("linear", "nearest"):
+        # Whether to use linear, nearest-neighbour or pchip interpolation.
+        if method not in ("linear", "nearest", "pchip"):
             msg = "Interpolation method {!r} not supported".format(method)
             raise ValueError(msg)
         self._method = method
@@ -341,18 +343,37 @@ class RectilinearInterpolator:
 
         mode = EXTRAPOLATION_MODES[extrapolation_mode]
         _data = np.ma.getdata(data)
-        # NB. The constructor of the _RegularGridInterpolator class does
-        # some unnecessary checks on the fill_value parameter,
-        # so we set it afterwards instead. Sneaky. ;-)
-        interpolator = _RegularGridInterpolator(
-            src_points,
-            _data,
-            method=method,
-            bounds_error=mode.bounds_error,
-            fill_value=None,
-        )
-        interpolator.fill_value = mode.fill_value
-        result = interpolator(interp_points)
+
+        if method == "pchip":
+            # The lightweight `_RegularGridInterpolator` only supports
+            # 'linear' and 'nearest', so fall back to the full SciPy
+            # implementation, which supports 'pchip'.
+            from scipy.interpolate import RegularGridInterpolator
+
+            def _pchip_interpolator(values, fill_value):
+                return RegularGridInterpolator(
+                    src_points,
+                    values,
+                    method="pchip",
+                    bounds_error=mode.bounds_error,
+                    fill_value=fill_value,
+                )
+
+            interpolator = _pchip_interpolator(_data, mode.fill_value)
+            result = interpolator(interp_points)
+        else:
+            # NB. The constructor of the _RegularGridInterpolator class does
+            # some unnecessary checks on the fill_value parameter,
+            # so we set it afterwards instead. Sneaky. ;-)
+            interpolator = _RegularGridInterpolator(
+                src_points,
+                _data,
+                method=method,
+                bounds_error=mode.bounds_error,
+                fill_value=None,
+            )
+            interpolator.fill_value = mode.fill_value
+            result = interpolator(interp_points)
 
         # The interpolated result has now shape "points_shape + extra_shape"
         # where "points_shape" is the leading dimension of "interp_points"
@@ -370,10 +391,19 @@ class RectilinearInterpolator:
             # NB. np.ma.getmaskarray returns an array of `False` if
             # `data` is not a masked array.
             src_mask = np.ma.getmaskarray(data)
-            # Switch the extrapolation to work with mask values.
-            interpolator.fill_value = mode.mask_fill_value
-            interpolator.values = src_mask
-            mask_fraction = interpolator(interp_points)
+            if method == "pchip":
+                # The pchip spline coefficients are pre-computed from the
+                # data values at construction time, so a new interpolator
+                # must be built to evaluate the mask fraction.
+                mask_interpolator = _pchip_interpolator(
+                    src_mask.astype(_data.dtype), mode.mask_fill_value
+                )
+                mask_fraction = mask_interpolator(interp_points)
+            else:
+                # Switch the extrapolation to work with mask values.
+                interpolator.fill_value = mode.mask_fill_value
+                interpolator.values = src_mask
+                mask_fraction = interpolator(interp_points)
             new_mask = mask_fraction > 0
             result = np.ma.MaskedArray(result, new_mask)
         return result
