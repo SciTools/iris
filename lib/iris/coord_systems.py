@@ -433,7 +433,7 @@ class GeogCS(CoordSystem):
         if self._inverse_flattening is not None:
             return self._inverse_flattening
         else:
-            self._crs.ellipsoid.inverse_flattening
+            return self._crs.ellipsoid.inverse_flattening
 
     @inverse_flattening.setter
     def inverse_flattening(self, value):
