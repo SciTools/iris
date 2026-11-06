@@ -62,6 +62,16 @@ class TestAll:
         assert res.coord("projection_y_coordinate").coord_system is not self.tcs
         assert res.coord("projection_x_coordinate").coord_system is not self.tcs
 
+    def test_geostationary_coord_system(self):
+        cs = iris.coord_systems.Geostationary(0, 0, 7000000, "x")
+        res, _ = project(self.cube, cs)
+
+        assert res.coord("projection_y_angular_coordinate").coord_system == cs
+        assert res.coord("projection_x_angular_coordinate").coord_system == cs
+
+        assert res.coord("projection_y_angular_coordinate").coord_system is not cs
+        assert res.coord("projection_x_angular_coordinate").coord_system is not cs
+
     @_shared_utils.skip_data
     def test_bad_resolution_negative(self, low_res_4d):
         with pytest.raises(ValueError, match="must be non-negative"):

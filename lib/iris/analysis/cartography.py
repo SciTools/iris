@@ -856,18 +856,32 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube = iris.cube.Cube(new_data)
 
     # Add new grid coords
-    x_coord = iris.coords.DimCoord(
-        target_x[0, :],
-        "projection_x_coordinate",
-        units="m",
-        coord_system=copy.copy(target_cs),
-    )
-    y_coord = iris.coords.DimCoord(
-        target_y[:, 0],
-        "projection_y_coordinate",
-        units="m",
-        coord_system=copy.copy(target_cs),
-    )
+    if isinstance(target_cs, iris.coord_systems.Geostationary):
+        x_coord = iris.coords.DimCoord(
+            target_x[0, :],
+            "projection_x_angular_coordinate",
+            units="radians",
+            coord_system=copy.copy(target_cs),
+        )
+        y_coord = iris.coords.DimCoord(
+            target_y[:, 0],
+            "projection_y_angular_coordinate",
+            units="radians",
+            coord_system=copy.copy(target_cs),
+        )
+    else:
+        x_coord = iris.coords.DimCoord(
+            target_x[0, :],
+            "projection_x_coordinate",
+            units="m",
+            coord_system=copy.copy(target_cs),
+        )
+        y_coord = iris.coords.DimCoord(
+            target_y[:, 0],
+            "projection_y_coordinate",
+            units="m",
+            coord_system=copy.copy(target_cs),
+        )
 
     new_cube.add_dim_coord(x_coord, xdim)
     new_cube.add_dim_coord(y_coord, ydim)

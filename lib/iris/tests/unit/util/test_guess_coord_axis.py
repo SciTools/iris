@@ -16,9 +16,11 @@ class TestGuessCoord:
             ("longitude", "X"),
             ("grid_longitude", "X"),
             ("projection_x_coordinate", "X"),
+            ("projection_x_angular_coordinate", "X"),
             ("latitude", "Y"),
             ("grid_latitude", "Y"),
             ("projection_y_coordinate", "Y"),
+            ("projection_y_angular_coordinate", "Y"),
         ],
     )
     def test_coord(self, coordinate, axis, sample_coord):
