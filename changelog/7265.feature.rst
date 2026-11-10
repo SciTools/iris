@@ -1,0 +1,2 @@
+:user:`david-bentley` added :class:`iris.analysis.Pchip`, a new interpolation
+scheme using Piecewise Cubic Hermite Interpolating Polynomials (PCHIP).
