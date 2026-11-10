@@ -170,9 +170,19 @@ data:
 
 @pytest.fixture(autouse=True, scope="module")
 def _setup(tmp_path_factory):
-    if not hasattr(tlc, "TMP_DIR"):
+    # The tests here build files through `tlc.cdl_to_nc`, which reads
+    # `tlc.TMP_DIR`. That module sets it in a module-scoped fixture of its own,
+    # so it is already present whenever `tlc` has run earlier in this process -
+    # in which case leave it alone, and tear down only what was set here.
+    #
+    # The yield must stay outside the `if`: a generator fixture that returns
+    # without yielding raises "ValueError: _setup did not yield a value", which
+    # is what happened to every test in this module once `tlc` had run first.
+    borrowed = hasattr(tlc, "TMP_DIR")
+    if not borrowed:
         tlc.TMP_DIR = tmp_path_factory.mktemp("temp")
-        yield
+    yield
+    if not borrowed:
         delattr(tlc, "TMP_DIR")
 
 
