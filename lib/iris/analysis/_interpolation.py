@@ -175,10 +175,10 @@ def _interpolated_dtype(dtype, method):
 
 
 class RectilinearInterpolator:
-    """Provide support for performing nearest-neighbour, linear or pchip interpolation.
+    """Provide support for performing nearest-neighbour, linear or PCHIP interpolation.
 
     This class provides support for performing nearest-neighbour,
-    linear or pchip (Piecewise Cubic Hermite Interpolating Polynomial)
+    linear or PCHIP (Piecewise Cubic Hermite Interpolating Polynomial)
     interpolation over one or more orthogonal dimensions.
 
     """
@@ -218,7 +218,7 @@ class RectilinearInterpolator:
         self._src_cube = src_cube.copy()
         # Coordinates defining the dimensions to be interpolated.
         self._src_coords = [self._src_cube.coord(coord) for coord in coords]
-        # Whether to use linear, nearest-neighbour or pchip interpolation.
+        # Whether to use linear, nearest-neighbour or PCHIP interpolation.
         if method not in ("linear", "nearest", "pchip"):
             msg = "Interpolation method {!r} not supported".format(method)
             raise ValueError(msg)
@@ -392,7 +392,7 @@ class RectilinearInterpolator:
             # `data` is not a masked array.
             src_mask = np.ma.getmaskarray(data)
             if method == "pchip":
-                # The pchip spline coefficients are pre-computed from the
+                # The PCHIP spline coefficients are pre-computed from the
                 # data values at construction time, so a new interpolator
                 # must be built to evaluate the mask fraction.
                 mask_interpolator = _pchip_interpolator(

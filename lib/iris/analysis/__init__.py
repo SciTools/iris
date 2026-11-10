@@ -2995,7 +2995,7 @@ class Pchip:
     """
 
     def __init__(self, extrapolation_mode="extrapolate"):
-        """Pchip interpolation scheme.
+        """PCHIP interpolation scheme.
 
         Suitable for interpolating over one or more orthogonal coordinates.
 
@@ -3026,7 +3026,7 @@ class Pchip:
         return "Pchip({!r})".format(self.extrapolation_mode)
 
     def interpolator(self, cube, coords):
-        """Create a pchip interpolator to perform interpolation.
+        """Create a PCHIP interpolator to perform interpolation.
 
         Create a PCHIP interpolator to perform interpolation over the
         given :class:`~iris.cube.Cube` specified by the dimensions of
