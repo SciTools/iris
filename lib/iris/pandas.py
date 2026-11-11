@@ -64,7 +64,7 @@ def _get_dimensional_metadata(
     # value. A date-time value has no dtype and cannot be iterated, so give it
     # a dimension and treat it like any other column.
     # See https://github.com/SciTools/iris/issues/6955
-    if np.ndim(values) == 0:
+    if not isinstance(values, (np.ndarray, pd_index)):
         values = np.array([values])
 
     # Getting everything into a single datetime format is hard!
