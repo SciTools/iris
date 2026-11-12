@@ -63,7 +63,8 @@ class TestAll:
         assert res.coord("projection_x_coordinate").coord_system is not self.tcs
 
     def test_geostationary_coord_system(self):
-        cs = iris.coord_systems.Geostationary(0, 0, 7000000, "x")
+        # Note, this behaviour was introduced in PR #5745 in accordance with updated CF conventions.
+        cs = iris.coord_systems.Geostationary(0, 0, 35785831.0, "y")
         res, _ = project(self.cube, cs)
 
         assert res.coord("projection_y_angular_coordinate").coord_system == cs
