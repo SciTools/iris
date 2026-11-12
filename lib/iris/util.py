@@ -3126,7 +3126,7 @@ def _cf_transform_points(crs_from, x, y, crs_to):
         satellite_height = crs_from.proj4_params["h"]
         x *= satellite_height
         y *= satellite_height
-    pts = crs_from.transform_points(crs_to, x, y)
+    pts = crs_to.transform_points(crs_from, x, y)
     if isinstance(crs_to, ccrs.Geostationary):
         satellite_height = crs_to.proj4_params["h"]
         pts /= satellite_height

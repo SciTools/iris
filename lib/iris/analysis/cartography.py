@@ -888,7 +888,7 @@ def project(cube, target_proj, nx=None, ny=None):
 
     # Add resampled lat/lon in original coord system
     source_desired_xy = _cf_transform_points(
-        source_cs, target_x.flatten(), target_y.flatten(), target_proj
+        target_proj, target_x.flatten(), target_y.flatten(), source_cs
     )
     new_lon_points = source_desired_xy[:, 0].reshape(ny, nx)
     new_lat_points = source_desired_xy[:, 1].reshape(ny, nx)
