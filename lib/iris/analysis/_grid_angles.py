@@ -18,6 +18,7 @@ import numpy as np
 
 import iris
 from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.util import _cf_transform_points
 
 
 def _3d_xyz_from_latlon(lon, lat):
@@ -274,7 +275,7 @@ def gridcell_angles(x, y=None, cell_angle_boundpoints="mid-lhs, mid-rhs"):
                 # Note: flatten, as transform_points is limited to 2D arrays.
                 shape = x.shape
                 x, y = (arr.flatten() for arr in (x, y))
-                pts = crs_pc.transform_points(crs_src, x, y)
+                pts = _cf_transform_points(crs_src, x, y, crs_pc)
                 x = pts[..., 0].reshape(shape)
                 y = pts[..., 1].reshape(shape)
                 return x, y

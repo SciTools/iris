@@ -7,7 +7,7 @@
 import numpy as np
 import pytest
 
-from iris.coord_systems import GeogCS, LambertConformal, RotatedGeogCS
+from iris.coord_systems import GeogCS, Geostationary, LambertConformal, RotatedGeogCS
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
 from iris.util import make_gridcube
@@ -15,6 +15,12 @@ from iris.util import make_gridcube
 _GLOBE = GeogCS(EARTH_RADIUS)
 _CS_ROTATED = RotatedGeogCS(
     grid_north_pole_latitude=70.0, grid_north_pole_longitude=125.0, ellipsoid=_GLOBE
+)
+_GEOSTATIONARY = Geostationary(
+    latitude_of_projection_origin=0,
+    longitude_of_projection_origin=0,
+    perspective_point_height=35785831.0,
+    sweep_angle_axis="y",
 )
 _CS_LAMBERT = LambertConformal(
     central_lat=70.0, central_lon=130.0, secant_latitudes=[40.0, 60.0], ellipsoid=_GLOBE
@@ -281,7 +287,7 @@ class TestMakeGridcube:
             with pytest.raises(ValueError, match=self._POINTS_FAIL_MSG):
                 make_gridcube(x_points=pts)
 
-    @pytest.mark.parametrize("cs", ["latlon", "rotated", "projection"])
+    @pytest.mark.parametrize("cs", ["latlon", "rotated", "geostationary", "projection"])
     def test_coord_system(self, cs):
         """Test with different coord-system types.
 
@@ -290,6 +296,7 @@ class TestMakeGridcube:
         coord_system = {
             "latlon": _GLOBE,
             "rotated": _CS_ROTATED,
+            "geostationary": _GEOSTATIONARY,
             "projection": _CS_LAMBERT,
         }[cs]
 
@@ -301,6 +308,10 @@ class TestMakeGridcube:
         expect_names = {
             "latlon": ["longitude", "latitude"],
             "rotated": ["grid_longitude", "grid_latitude"],
+            "geostationary": [
+                "projection_x_angular_coordinate",
+                "projection_y_angular_coordinate",
+            ],
             "projection": ["projection_x_coordinate", "projection_y_coordinate"],
         }[cs]
         assert [co.standard_name for co in (co_x, co_y)] == expect_names
@@ -308,6 +319,7 @@ class TestMakeGridcube:
         expect_units = {
             "latlon": "degrees",
             "rotated": "degrees",
+            "geostationary": "radians",
             "projection": "m",
         }[cs]
         assert co_x.units == expect_units
