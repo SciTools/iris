@@ -19,7 +19,7 @@ from iris.analysis._interpolation import (
     snapshot_grid,
 )
 from iris.analysis._scipy_interpolate import _RegularGridInterpolator
-from iris.util import _meshgrid, guess_coord_axis
+from iris.util import _cf_transform_points, _meshgrid, guess_coord_axis
 from iris.warnings import IrisImpossibleUpdateWarning
 
 
@@ -43,7 +43,7 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
         Arrays of locations defined in 'crs_to' of (x, y).
 
     """
-    pts = crs_to.transform_points(crs_from, x, y)
+    pts = _cf_transform_points(crs_from, x, y, crs_to)
     return pts[..., 0], pts[..., 1]
 
 
@@ -599,7 +599,7 @@ class RectilinearRegridder:
         else:
             src_crs = src_coord_system.as_cartopy_crs()
             grid_crs = grid_x_coord.coord_system.as_cartopy_crs()
-            sample_xyz = src_crs.transform_points(grid_crs, grid_x, grid_y)
+            sample_xyz = _cf_transform_points(src_crs, grid_x, grid_y, grid_crs)
             sample_grid_x = sample_xyz[..., 0]
             sample_grid_y = sample_xyz[..., 1]
         return sample_grid_x, sample_grid_y

@@ -3119,6 +3119,19 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
     return s
 
 
+def _cf_transform_points(crs_from, x, y, crs_to):
+    import cartopy.crs as ccrs
+    if isinstance(crs_from, ccrs.Geostationary):
+        satellite_height = crs_from.proj4_params["h"]
+        x *= satellite_height
+        y *= satellite_height
+    pts = crs_to.transform_points(crs_from, x, y)
+    if isinstance(crs_to, ccrs.Geostationary):
+        satellite_height = crs_to.proj4_params["h"]
+        pts /= satellite_height
+    return pts
+
+
 @dataclass
 class CMLSettings(threading.local):
     """Settings for controlling the behaviour and formatting of the CML output.

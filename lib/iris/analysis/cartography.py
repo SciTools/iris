@@ -24,7 +24,7 @@ import numpy.ma as ma
 import iris.coord_systems
 import iris.coords
 import iris.exceptions
-from iris.util import _meshgrid
+from iris.util import _cf_transform_points, _meshgrid
 import iris.warnings
 
 from ._grid_angles import gridcell_angles, guess_2D_bounds, rotate_grid_vectors
@@ -858,13 +858,13 @@ def project(cube, target_proj, nx=None, ny=None):
     # Add new grid coords
     if isinstance(target_cs, iris.coord_systems.Geostationary):
         x_coord = iris.coords.DimCoord(
-            target_x[0, :],
+            target_x[0, :] / target_cs.perspective_point_height,
             "projection_x_angular_coordinate",
             units="radians",
             coord_system=copy.copy(target_cs),
         )
         y_coord = iris.coords.DimCoord(
-            target_y[:, 0],
+            target_y[:, 0] / target_cs.perspective_point_height,
             "projection_y_angular_coordinate",
             units="radians",
             coord_system=copy.copy(target_cs),
@@ -887,8 +887,8 @@ def project(cube, target_proj, nx=None, ny=None):
     new_cube.add_dim_coord(y_coord, ydim)
 
     # Add resampled lat/lon in original coord system
-    source_desired_xy = source_cs.transform_points(
-        target_proj, target_x.flatten(), target_y.flatten()
+    source_desired_xy = _cf_transform_points(
+        source_cs, target_x.flatten(), target_y.flatten(), target_proj
     )
     new_lon_points = source_desired_xy[:, 0].reshape(ny, nx)
     new_lat_points = source_desired_xy[:, 1].reshape(ny, nx)
