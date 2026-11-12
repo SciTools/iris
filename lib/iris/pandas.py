@@ -42,7 +42,12 @@ except ImportError:
 
 def _get_dimensional_metadata(
     name: str,
-    values: np.ndarray | DatetimeIndex | pd_index,
+    values: np.ndarray
+    | DatetimeIndex
+    | pd_index
+    | np.generic
+    | datetime.datetime
+    | cftime.datetime,
     calendar: Optional[str] = None,
     dm_class: Optional[AuxCoord | DimCoord] = None,
 ) -> AuxCoord | DimCoord:
@@ -54,6 +59,13 @@ def _get_dimensional_metadata(
     units = Unit("unknown")
     if calendar is None:
         calendar = cf_units.CALENDAR_STANDARD
+
+    # as_cubes passes a column with the same value in every row as that single
+    # value. A date-time value has no dtype and cannot be iterated, so give it
+    # a dimension and treat it like any other column.
+    # See https://github.com/SciTools/iris/issues/6955
+    if isinstance(values, (np.generic, datetime.datetime, cftime.datetime)):
+        values = np.array([values])
 
     # Getting everything into a single datetime format is hard!
 
