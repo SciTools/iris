@@ -43,7 +43,7 @@ def _transform_xy_arrays(crs_from, x, y, crs_to):
         Arrays of locations defined in 'crs_to' of (x, y).
 
     """
-    pts = _cf_transform_points(crs_from, x, y, crs_to)
+    pts = _cf_transform_points(crs_to, x, y, crs_from)
     return pts[..., 0], pts[..., 1]
 
 
