@@ -102,8 +102,7 @@ export CARTOPY_CACHE_DIR=~/.local/share/cartopy
 
 ## Code Style
 
-Linting and formatting are driven by pre-commit, not by invoking tools
-directly.
+Linting and formatting are driven by pre-commit, not by invoking tools directly.
 
 ```bash
 # Check and auto-fix the files you changed (preferred while iterating)
@@ -174,7 +173,6 @@ Base class: `iris.exceptions.IrisError`. Common subclasses:
 Version is derived from git tags via `setuptools_scm`. Do not hard-code version
 strings.
 
-
 ## Changelog
 
 Changelog fragments live under `changelog/` and are built with towncrier
@@ -186,6 +184,9 @@ via sphinx. See [`changelog/AGENTS.md`](changelog/AGENTS.md) for full rules.
 Documentation lives under `docs/` and is built with Sphinx. See
 [`docs/AGENTS.md`](docs/AGENTS.md) for full rules.
 
+Design specs and implementation plans (for frameworks like Obra Superpowers)
+live under `docs/src/developers_guide/specs/` and `/plans/` respectively. See
+[`specs/index.rst`](docs/src/developers_guide/specs/index.rst) for instructions.
 
 ## Lock-file Maintenance
 
@@ -238,10 +239,9 @@ are in [`.github/WRITING.md`](.github/WRITING.md).
 
 A reviewer has not read every `AGENTS.md`; you have. Before actioning a
 comment, check whether the thing objected to is something these files
-explicitly sanction. If it is, reply with the rule and the file it lives in,
-and let a human settle it — complying silently turns one reviewer's
-preference into a change against a written convention, and nothing catches it
-afterwards.
+explicitly sanction. If so, reply with the rule and the file it lives in, and
+let a human settle it — complying silently turns one reviewer's preference into
+a change against a written convention, and nothing catches it afterwards.
 
 
 ## Critical Development Gotchas
