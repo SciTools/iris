@@ -1,0 +1,2 @@
+:user:`trexfeathers` relocated design spec and implementation plans, and set
+the design specs to render as part of the documentation.
