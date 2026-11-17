@@ -381,6 +381,48 @@ data:
     """
 
 
+@pytest.fixture(scope="module")
+def geostationary_problem_cdl_2():
+    return """
+netcdf geostationary_problem_case {
+dimensions:
+    y = 2 ;
+    x = 3 ;
+variables:
+    short radiance(y, x) ;
+        radiance:standard_name = "toa_outgoing_radiance_per_unit_wavelength" ;
+        radiance:units = "W m-2 sr-1 um-1" ;
+        radiance:coordinates = "y x" ;
+        radiance:grid_mapping = "imager_grid_mapping" ;
+    short y(y) ;
+        y:units = "rad" ;
+        y:axis = "Y" ;
+        y:long_name = "fixed grid projection y-coordinate" ;
+        y:standard_name = "projection_y_angular_coordinate" ;
+    short x(x) ;
+        x:units = "rad" ;
+        x:axis = "X" ;
+        x:long_name = "fixed grid projection x-coordinate" ;
+        x:standard_name = "projection_x_angular_coordinate" ;
+    int imager_grid_mapping ;
+        imager_grid_mapping:grid_mapping_name = "geostationary" ;
+        imager_grid_mapping:perspective_point_height = 35786023. ;
+        imager_grid_mapping:semi_major_axis = 6378137. ;
+        imager_grid_mapping:semi_minor_axis = 6356752.31414 ;
+        imager_grid_mapping:latitude_of_projection_origin = 0. ;
+        imager_grid_mapping:longitude_of_projection_origin = -75. ;
+        imager_grid_mapping:sweep_angle_axis = "x" ;
+
+data:
+
+ // coord values, just so these can be dim-coords
+ y = 0, 1 ;
+ x = 0, 1, 2 ;
+
+}
+    """
+
+
 class TestLoadMinimalGeostationary:
     """Check we can load data with a geostationary grid-mapping, even when the
     'false-easting' and 'false_northing' properties are missing.
@@ -399,11 +441,50 @@ class TestLoadMinimalGeostationary:
         )
         return nc_path
 
+    @pytest.fixture(scope="class")
+    def geostationary_problem_angular_ncfile(
+        self, tmp_path_factory, geostationary_problem_cdl_2
+    ):
+        tmp_path = tmp_path_factory.mktemp("geos")
+        cdl_path = tmp_path / "geos_problem.cdl"
+        nc_path = tmp_path / "geos_problem.nc"
+        ncgen_from_cdl(
+            cdl_str=geostationary_problem_cdl_2,
+            cdl_path=cdl_path,
+            nc_path=nc_path,
+        )
+        return nc_path
+
     def test_geostationary_no_false_offsets(
         self, tmp_path, geostationary_problem_ncfile
     ):
         # Check we can load the test data and coordinate system properties are correct.
         cube = iris.load_cube(geostationary_problem_ncfile)
+        # Check that the coordinates standard name and units are loaded correctly.
+        xcoord = cube.coord(axis="X")
+        ycoord = cube.coord(axis="Y")
+        assert xcoord.units == "radians"
+        assert ycoord.units == "radians"
+        assert xcoord.standard_name == "projection_x_coordinate"
+        assert ycoord.standard_name == "projection_y_coordinate"
+        # Check the coordinate system properties has the correct default properties.
+        cs = cube.coord_system()
+        assert isinstance(cs, iris.coord_systems.Geostationary)
+        assert cs.false_easting == 0.0
+        assert cs.false_northing == 0.0
+
+    def test_geostationary_angular_no_false_offsets(
+        self, tmp_path, geostationary_problem_angular_ncfile
+    ):
+        # Check we can load the test data and coordinate system properties are correct.
+        cube = iris.load_cube(geostationary_problem_angular_ncfile)
+        # Check that the coordinates standard name and units are loaded correctly.
+        xcoord = cube.coord(axis="X")
+        ycoord = cube.coord(axis="Y")
+        assert xcoord.units == "radians"
+        assert ycoord.units == "radians"
+        assert xcoord.standard_name == "projection_x_angular_coordinate"
+        assert ycoord.standard_name == "projection_y_angular_coordinate"
         # Check the coordinate system properties has the correct default properties.
         cs = cube.coord_system()
         assert isinstance(cs, iris.coord_systems.Geostationary)

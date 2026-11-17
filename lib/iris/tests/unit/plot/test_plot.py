@@ -254,3 +254,27 @@ class TestTrajectoryWrap:
             grid_north_pole_longitude=120,
             north_pole_grid_longitude=45,
         )
+
+    @pytest.mark.parametrize(
+        "std_names",
+        [
+            ("projection_y_coordinate", "projection_x_coordinate"),
+            ("projection_y_angular_coordinate", "projection_x_angular_coordinate"),
+        ],
+        ids=["projection_coordinate", "projection_angular_coordinate"],
+    )
+    def test_geostationary(self, mocker, std_names):
+        # Test that shifting is properly skipped for all appropriate standard names
+        cs = ics.Geostationary(0, 0, 35785831.0, "y")
+        name_y, name_x = std_names
+        coord_y = coords.AuxCoord(
+            [-1e-5, 1e-5], name_y, units="radians", coord_system=cs
+        )
+        coord_x = coords.AuxCoord(
+            [-1e-5, 1e-5], name_x, units="radians", coord_system=cs
+        )
+
+        shift = mocker.patch("iris.plot._shift_plot_sections")
+        plt.figure()
+        _ = iplt.plot(coord_y, coord_x)
+        assert shift.call_count == 0

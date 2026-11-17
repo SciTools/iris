@@ -315,12 +315,14 @@ def guess_coord_axis(coord) -> Axis | None:
         "longitude",
         "grid_longitude",
         "projection_x_coordinate",
+        "projection_x_angular_coordinate",
     ):
         axis = "X"
     elif coord.standard_name in (
         "latitude",
         "grid_latitude",
         "projection_y_coordinate",
+        "projection_y_angular_coordinate",
     ):
         axis = "Y"
     elif coord.units.is_convertible("hPa") or coord.attributes.get("positive") in (
@@ -2942,6 +2944,12 @@ def make_gridcube(
     elif isinstance(coord_system, iris.coord_systems.RotatedGeogCS):
         x_name, y_name = "grid_longitude", "grid_latitude"
         units = "degrees"
+    elif isinstance(coord_system, iris.coord_systems.Geostationary):
+        x_name, y_name = (
+            "projection_x_angular_coordinate",
+            "projection_y_angular_coordinate",
+        )
+        units = "radians"
     else:
         x_name, y_name = "projection_x_coordinate", "projection_y_coordinate"
         units = "m"
@@ -3109,6 +3117,20 @@ def array_summary(data: ArrayLike, edgeitems: int = 3, precision: int = 8) -> st
         s = "[" + ", ".join(_format(x) for x in data) + "]"
 
     return s
+
+
+def _cf_transform_points(crs_from, x, y, crs_to):
+    import cartopy.crs as ccrs
+
+    if isinstance(crs_from, ccrs.Geostationary):
+        satellite_height = crs_from.proj4_params["h"]
+        x *= satellite_height
+        y *= satellite_height
+    pts = crs_to.transform_points(crs_from, x, y)
+    if isinstance(crs_to, ccrs.Geostationary):
+        satellite_height = crs_to.proj4_params["h"]
+        pts /= satellite_height
+    return pts
 
 
 @dataclass
