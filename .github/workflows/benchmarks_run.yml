@@ -7,6 +7,7 @@
 #    - https://github.com/MarceloPrado/has-changed-path
 #    - https://github.com/actions/cache
 #    - https://github.com/actions/upload-artifact
+#    - https://github.com/conda-incubator/setup-miniconda
 
 name: benchmarks-run
 run-name: Run benchmarks
@@ -89,6 +90,13 @@ jobs:
       - name: Install run dependencies
         run: pip install asv nox!=2025.05.01
 
+      - name: Conda install
+        uses: conda-incubator/setup-miniconda@be893c923ea9cf1cf7cd510fbdde27c7e18cbdcb
+        with:
+          miniforge-version: latest
+          channels: conda-forge
+          auto-update-conda: false
+
       - name: Cache environment directories
         id: cache-env-dir
         uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
@@ -96,7 +104,8 @@ jobs:
           path: |
             .nox
             benchmarks/.asv/env
-            $CONDA/pkgs
+            # Path chosen by setup-miniconda.
+            ~/conda_pkgs_dir
           key: ${{ runner.os }}-${{ hashFiles('requirements/') }}-${{ env.ENV_CACHE_BUILD }}
 
       - name: Cache test data directory
