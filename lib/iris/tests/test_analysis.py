@@ -1878,9 +1878,9 @@ class TestWeights:
     def test_init_with_list(self):
         list_in = [0, 1, 2]
         weights = _Weights(list_in, self.cube)
-        assert isinstance(weights.array, list)
+        assert isinstance(weights.array, np.ndarray)
         assert isinstance(weights.units, cf_units.Unit)
-        assert weights.array is list_in
+        _shared_utils.assert_array_equal(weights.array, list_in)
         assert weights.units == "1"
 
 
