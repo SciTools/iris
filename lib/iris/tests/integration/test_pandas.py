@@ -1200,3 +1200,54 @@ class TestPandasAsCubes:
 
     def test_cftime_coord_calendar(self):
         self._test_dates_common(mode="cftime", alt_calendar=True)
+
+    def _test_scalar_dates_common(self, mode=None, alt_calendar=False):
+        """Date-time column with one value in every row becomes a scalar coord.
+
+        Such a column reaches _get_dimensional_metadata as a single value,
+        with no dtype and not iterable (#6955).
+        """
+        df = self._create_pandas()
+        coord_name = "dates"
+        kwargs = dict(pandas_structure=df, aux_coord_cols=[coord_name])
+
+        if alt_calendar:
+            calendar = cf_units.CALENDAR_360_DAY
+            # Only pass this when non-default.
+            kwargs["calendars"] = {coord_name: calendar}
+            expected_points = [8640]
+        else:
+            calendar = cf_units.CALENDAR_STANDARD
+            expected_points = [8760]
+        expected_units = cf_units.Unit(
+            "hours since 1970-01-01 00:00:00", calendar=calendar
+        )
+
+        datetime_args = (1971, 1, 1, 0, 0, 0)
+        if mode == "numpy":
+            value = datetime.datetime(*datetime_args)
+        elif mode == "cftime":
+            value = cftime.datetime(*datetime_args, calendar=calendar)
+        else:
+            raise ValueError("mode needs to be set")
+        df[coord_name] = [value] * len(df)
+
+        result = iris.pandas.as_cubes(**kwargs)
+
+        (result_cube,) = result
+        result_coord = result_cube.coord(coord_name)
+        assert result_coord.units == expected_units
+        _shared_utils.assert_array_equal(result_coord.points, expected_points)
+        assert result_coord.cube_dims(result_cube) == tuple()
+
+    def test_scalar_numpy_datetime_coord(self):
+        self._test_scalar_dates_common(mode="numpy")
+
+    def test_scalar_numpy_datetime_coord_calendar(self):
+        self._test_scalar_dates_common(mode="numpy", alt_calendar=True)
+
+    def test_scalar_cftime_coord(self):
+        self._test_scalar_dates_common(mode="cftime")
+
+    def test_scalar_cftime_coord_calendar(self):
+        self._test_scalar_dates_common(mode="cftime", alt_calendar=True)

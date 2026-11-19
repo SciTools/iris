@@ -11,15 +11,21 @@ from iris.coords import AncillaryVariable
 from iris.cube import Cube
 from iris.exceptions import CannotAddError
 from iris.fileformats._nc_load_rules.helpers import build_and_add_ancil_var
-from iris.fileformats.cf import CFAncillaryDataVariable
 from iris.loading import LOAD_PROBLEMS
+from iris.tests.unit.fileformats.nc_load_rules.helpers import (
+    CFVariableStandIn,
+    RealArrayCfData,
+)
 
 
 @pytest.fixture
 def mock_engine(mocker):
     return mocker.Mock(
         cube=mocker.Mock(),
-        cf_var=mocker.Mock(dimensions=("foo", "bar")),
+        # A data variable has a shape as well as dimension names, because an
+        #  ancillary variable is attached to the dimensions it matches on
+        #  `(name, size)` - see `helpers._common_data_dims`.
+        cf_var=mocker.Mock(dimensions=("foo", "bar"), shape=(6, 2)),
         filename="DUMMY",
         cube_parts=dict(ancillary_variables=[]),
     )
@@ -28,22 +34,16 @@ def mock_engine(mocker):
 @pytest.fixture
 def mock_cf_av_var(mocker, monkeypatch, mock_engine):
     data = np.arange(6)
-    output = mocker.Mock(
-        spec=CFAncillaryDataVariable,
-        dimensions=("foo",),
-        scale_factor=1,
-        add_offset=0,
-        cf_name="wibble",
-        cf_data=mocker.MagicMock(chunking=mocker.Mock(return_value=None), spec=[]),
-        filename=mock_engine.filename,
-        standard_name=None,
-        long_name="wibble",
-        units="m2",
-        shape=data.shape,
-        size=np.prod(data.shape),
-        dtype=data.dtype,
-        __getitem__=lambda self, key: data[key],
-    )
+    output = CFVariableStandIn(standard_name=None, long_name="wibble", units="m2")
+    output.dimensions = ("foo",)
+    output.scale_factor = 1
+    output.add_offset = 0
+    output.cf_name = "wibble"
+    output.cf_data = RealArrayCfData(data)
+    output.filename = mock_engine.filename
+    output.shape = data.shape
+    output.size = np.prod(data.shape)
+    output.dtype = data.dtype
 
     # Create patch for deferred loading that prevents attempted
     # file access. This assumes that output is defined in the test case.

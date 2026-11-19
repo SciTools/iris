@@ -1,0 +1,3 @@
+:user:`trexfeathers` aligned all Iris' GitHub Actions to use the
+setup-miniconda action (which many were using already), to provide a Conda
+installation now that GitHub Actions runners don't include them by default.

@@ -2,7 +2,7 @@
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/codecov/codecov-action
-#   - https://github.com/marketplace/actions/setup-miniconda
+#   - https://github.com/conda-incubator/setup-miniconda
 
 name: ci-tests
 
@@ -54,7 +54,7 @@ jobs:
 
     env:
       # NOTE: IRIS_TEST_DATA_VERSION is also set in benchmarks_run.yml
-      IRIS_TEST_DATA_VERSION: "2.30"
+      IRIS_TEST_DATA_VERSION: "2.32"
       ENV_NAME: "ci-tests"
 
     steps:
