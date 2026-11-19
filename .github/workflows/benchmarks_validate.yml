@@ -1,6 +1,7 @@
 # Reference
 #    - https://github.com/actions/checkout
 #    - https://github.com/actions/cache
+#    - https://github.com/marketplace/actions/setup-miniconda
 
 name: benchmarks-validate
 run-name: Validate the benchmarking setup
@@ -41,7 +42,7 @@ jobs:
       - name: Install run dependencies
         run: pip install asv nox!=2025.05.01
 
-      - name: "conda install"
+      - name: Conda install
         uses: conda-incubator/setup-miniconda@be893c923ea9cf1cf7cd510fbdde27c7e18cbdcb
         with:
           miniforge-version: latest
