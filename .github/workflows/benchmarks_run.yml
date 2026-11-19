@@ -7,7 +7,7 @@
 #    - https://github.com/MarceloPrado/has-changed-path
 #    - https://github.com/actions/cache
 #    - https://github.com/actions/upload-artifact
-#    - https://github.com/marketplace/actions/setup-miniconda
+#    - https://github.com/conda-incubator/setup-miniconda
 
 name: benchmarks-run
 run-name: Run benchmarks
