@@ -1,0 +1,3 @@
+:user:`syahra712` fixed :attr:`~iris.coord_systems.GeogCS.inverse_flattening`
+returning ``None`` for a :class:`~iris.coord_systems.GeogCS` created from a
+datum, instead of the datum's inverse flattening. (:pull:`7355`)
