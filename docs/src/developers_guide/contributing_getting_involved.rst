@@ -52,6 +52,7 @@ If you are new to using GitHub we recommend reading the
    contributing_changes
    github_app
    release
+   specs/index
 
 
 .. toctree::
