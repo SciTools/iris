@@ -1,0 +1,4 @@
+:user:`Sulaiman-Dauda` made the UGRID loader default a connectivity's missing
+``start_index`` to 0, as the UGRID conventions allow, instead of loading the
+cube without its mesh. A connectivity with no ``cf_role`` now fails with a
+message naming the variable. (:issue:`7332`)

@@ -413,14 +413,17 @@ def _build_connectivity(connectivity_var, element_dims):
     attr_units = get_attr_units(connectivity_var, attributes)
     indices_data = cf_loader._get_cf_var_data(connectivity_var)
 
-    # UGRID requires both of these on a connectivity variable and Iris
-    # validates neither. CFUGridConnectivityVariable.identify finds this
-    # variable through the mesh variable's role attribute, never through
-    # anything on the variable itself, so neither name is guaranteed to be
-    # here. A file omitting either raises, and the mesh build is captured into
-    # LOAD_PROBLEMS - the cube then loads without a mesh. SciTools/iris#7332.
+    # CFUGridConnectivityVariable.identify never checks the variable's own
+    # cf_role, so a file can omit it. See SciTools/iris#7332.
+    if "cf_role" not in connectivity_var.attributes:
+        message = (
+            "UGRID connectivity variable has no cf_role attribute: "
+            f"{connectivity_var.cf_name}"
+        )
+        raise ValueError(message)
     cf_role = connectivity_var.attributes["cf_role"]
-    start_index = connectivity_var.attributes["start_index"]
+    # UGRID makes start_index optional, defaulting to 0.
+    start_index = connectivity_var.attributes.get("start_index", 0)
 
     dim_names = connectivity_var.dimensions
     # Connectivity arrays must have two dimensions.

@@ -469,14 +469,13 @@ class TestLoadingIsSilent:
 
         assert cube.mesh.face_node_connectivity.attributes == {}
 
-    def test_a_connectivity_without_start_index_loses_its_mesh(self, tmp_path):
-        """A UGRID file omitting the optional "start_index" loads without a mesh.
+    def test_a_connectivity_without_start_index_keeps_its_mesh(self, tmp_path):
+        """A UGRID file omitting the optional "start_index" loads with a mesh.
 
-        CF-UGRID makes start_index optional with a default of 0, and
-        iris.mesh.Connectivity defaults it to 0, but the loader requires it.
-        The mesh build fails and is recorded in iris.loading.LOAD_PROBLEMS.
-        Pinned because the loader reads start_index through the attribute
-        mapping. Invert this when SciTools/iris#7332 is fixed.
+        CF-UGRID makes start_index optional with a default of 0. The loader
+        used to require it, so the mesh build failed into
+        iris.loading.LOAD_PROBLEMS and the cube lost its mesh.
+        SciTools/iris#7332.
         """
         path = tmp_path / "mesh.nc"
         with iris.FUTURE.context(save_split_attrs=True):
@@ -490,7 +489,8 @@ class TestLoadingIsSilent:
         finally:
             dataset.close()
 
-        with pytest.warns(IrisLoadWarning):
-            cube = iris.load_cube(path)
+        cube = iris.load_cube(path)
 
-        assert cube.mesh is None
+        assert LOAD_PROBLEMS.problems_by_file.get(str(path), []) == []
+        assert cube.mesh.face_node_connectivity.start_index == 0
+        assert cube.mesh.edge_node_connectivity.start_index == 0
