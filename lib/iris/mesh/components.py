@@ -416,13 +416,14 @@ class Connectivity(_DimensionalMetadata):
                 f"dtype must be numpy integer subtype, got: {indices_dtype} ."
             )
 
-        indices_min = indices.min()
-        if _lazy.is_lazy_data(indices_min):
-            indices_min = indices_min.compute()
-        if indices_min < self.start_index:
-            indices_error(
-                f"Lowest index: {indices_min} < start_index: {self.start_index} ."
-            )
+        if indices.size > 0:
+            indices_min = indices.min()
+            if _lazy.is_lazy_data(indices_min):
+                indices_min = indices_min.compute()
+            if indices_min < self.start_index:
+                indices_error(
+                    f"Lowest index: {indices_min} < start_index: {self.start_index} ."
+                )
 
         indices_shape = indices.shape
         if len(indices_shape) != 2:
