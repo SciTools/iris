@@ -634,6 +634,27 @@ class Test_unusual_connectivities:
             edge_set._calculate_face_indices(), np.array([], dtype=int)
         )
 
+    def test_node_selection_ignores_masked_slot_values(self, varied_mesh):
+        """Masked face slots can hold out-of-range data, as when loaded from netCDF.
+
+        Face [9, 10, 12, 11, <999999>] indexed the node mask with 999999: IndexError.
+        """
+        mesh: MeshXY = varied_mesh
+        face_nodes = mesh.face_node_connectivity
+        indices = face_nodes.indices
+        indices = np.ma.masked_array(
+            np.where(np.ma.getmaskarray(indices), 999999, np.ma.getdata(indices)),
+            mask=np.ma.getmaskarray(indices),
+        )
+        mesh.add_connectivities(
+            Connectivity(indices=indices, cf_role="face_node_connectivity")
+        )
+
+        node_set = _MeshIndexSet(indices=[0, 1, 2, 5, 6], mesh=mesh, location="node")
+        _shared_utils.assert_array_equal(
+            node_set._calculate_face_indices(), np.array([3])
+        )
+
 
 class Test_as_mesh:
     def test_creation(self, meshes_locs_all):

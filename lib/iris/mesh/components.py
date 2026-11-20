@@ -3645,7 +3645,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 _lazy.as_concrete_data(self._calculate_node_bool_index())
             )
             slot_is_masked = np.ma.getmaskarray(face_nodes)
-            slot_is_kept = node_mask[np.ma.getdata(face_nodes)] | slot_is_masked
+            slot_is_kept = node_mask[np.ma.filled(face_nodes, 0)] | slot_is_masked
             faces_kept = slot_is_kept.all(axis=1)
         else:
             edge_nodes = _zero_based_by_location(self.mesh.edge_node_connectivity)
