@@ -3351,8 +3351,8 @@ def _edge_keys(edge_nodes: np.ndarray, n_nodes: int) -> np.ndarray:
 def _face_side_keys(face_nodes: np.ndarray, n_nodes: int) -> np.ma.MaskedArray:
     """Return a key for each side of each face, matching :func:`_edge_keys`.
 
-    Slot ``k`` pairs with slot ``k + 1`` when that slot is unmasked, and with
-    slot 0 otherwise. Masked slots are assumed to trail.
+    Each unmasked slot pairs with the next unmasked slot in its row, and the
+    last unmasked slot wraps to the first.
 
     Parameters
     ----------
@@ -3366,12 +3366,20 @@ def _face_side_keys(face_nodes: np.ndarray, n_nodes: int) -> np.ma.MaskedArray:
     numpy.ma.MaskedArray
         Shape ``(n_faces, n_slots)``, masked wherever ``face_nodes`` is.
     """
-    nodes = np.ma.getdata(face_nodes).astype(np.int64)
     slot_is_masked = np.ma.getmaskarray(face_nodes)
-    next_is_valid = np.zeros_like(slot_is_masked)
-    next_is_valid[:, :-1] = ~slot_is_masked[:, 1:]
+    # Stable sort brings unmasked slots to the front, in their original order.
+    order = np.argsort(slot_is_masked, axis=1, kind="stable")
+    nodes = np.ma.getdata(face_nodes).astype(np.int64)
+    nodes = np.take_along_axis(nodes, order, axis=1)
+    sorted_is_masked = np.take_along_axis(slot_is_masked, order, axis=1)
+    next_is_valid = np.zeros_like(sorted_is_masked)
+    next_is_valid[:, :-1] = ~sorted_is_masked[:, 1:]
     next_nodes = np.where(next_is_valid, np.roll(nodes, -1, axis=1), nodes[:, :1])
-    keys = np.minimum(nodes, next_nodes) * n_nodes + np.maximum(nodes, next_nodes)
+    sorted_keys = np.minimum(nodes, next_nodes) * n_nodes + np.maximum(
+        nodes, next_nodes
+    )
+    keys = np.empty_like(sorted_keys)
+    np.put_along_axis(keys, order, sorted_keys, axis=1)
     return np.ma.masked_array(keys, mask=slot_is_masked)
 
 

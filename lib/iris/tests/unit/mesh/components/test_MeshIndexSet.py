@@ -323,6 +323,32 @@ class Test_index_calculations:
             assert np.issubdtype(result.dtype, np.integer)
             _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
 
+    @pytest.mark.parametrize(
+        ("location", "indices", "edges", "faces"),
+        [
+            ("face", [0], [0, 3, 6, 7], [0]),
+            ("edge", [0, 3, 6, 7], [0, 3, 6, 7], [0]),
+        ],
+    )
+    def test_mid_row_masked_slots(self, lazy_values, location, indices, edges, faces):
+        """Masked slots anywhere in a row are skipped, not only trailing ones.
+
+        Face [0, --, 1, 5, 4] has side 0-1; no side 0-0.
+        """
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        face_nodes = np.ma.masked_less(
+            [[0, -1, 1, 5, 4], [1, 2, 6, 5, -1], [2, 3, -1, 7, 6]], 0
+        )
+        if lazy_values:
+            face_nodes = da.from_array(face_nodes)
+        mesh.add_connectivities(
+            Connectivity(indices=face_nodes, cf_role="face_node_connectivity")
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        _shared_utils.assert_array_equal(index_set._calculate_edge_indices(), edges)
+        _shared_utils.assert_array_equal(index_set._calculate_face_indices(), faces)
+
     def test_no_edges_gives_none(self, lazy_values):
         mesh = sample_mesh(n_edges=0, lazy_values=lazy_values)
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
