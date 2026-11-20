@@ -639,42 +639,47 @@ class Test_as_mesh:
     def test_creation(self, meshes_locs_all):
         mesh, location = meshes_locs_all
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
-        if location == "node":
-            with pytest.raises(NotImplementedError, match="with no edge or face"):
-                _ = index_set.as_mesh()
-        else:
-            new_mesh = index_set.as_mesh()
+        new_mesh = index_set.as_mesh()
 
-            assert isinstance(new_mesh, MeshXY)
-            assert new_mesh is not mesh
-            match location:
-                case "node":
-                    assert (
-                        new_mesh.node_coords.node_x.shape
-                        == index_set.node_coords.node_x.shape
-                    )
-                    assert (
-                        new_mesh.node_coords.node_y.shape
-                        == index_set.node_coords.node_x.shape
-                    )
-                case "edge":
-                    assert (
-                        new_mesh.edge_coords.edge_x.shape
-                        == index_set.edge_coords.edge_x.shape
-                    )
-                    assert (
-                        new_mesh.edge_coords.edge_y.shape
-                        == index_set.edge_coords.edge_y.shape
-                    )
-                case "face":
-                    assert (
-                        new_mesh.face_coords.face_x.shape
-                        == index_set.face_coords.face_x.shape
-                    )
-                    assert (
-                        new_mesh.face_coords.face_y.shape
-                        == index_set.face_coords.face_y.shape
-                    )
+        assert isinstance(new_mesh, MeshXY)
+        assert new_mesh is not mesh
+        match location:
+            case "node":
+                assert (
+                    new_mesh.node_coords.node_x.shape
+                    == index_set.node_coords.node_x.shape
+                )
+                assert (
+                    new_mesh.node_coords.node_y.shape
+                    == index_set.node_coords.node_y.shape
+                )
+            case "edge":
+                assert (
+                    new_mesh.edge_coords.edge_x.shape
+                    == index_set.edge_coords.edge_x.shape
+                )
+                assert (
+                    new_mesh.edge_coords.edge_y.shape
+                    == index_set.edge_coords.edge_y.shape
+                )
+            case "face":
+                assert (
+                    new_mesh.face_coords.face_x.shape
+                    == index_set.face_coords.face_x.shape
+                )
+                assert (
+                    new_mesh.face_coords.face_y.shape
+                    == index_set.face_coords.face_y.shape
+                )
+
+    def test_zero_length_face_coords(self, mesh_2d):
+        # Edges 0 and 2 enclose no face.
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="edge")
+        new_mesh = index_set.as_mesh()
+
+        assert new_mesh.face_coords.face_x.shape == (0,)
+        assert new_mesh.face_coords.face_y.shape == (0,)
+        assert new_mesh.edge_coords.edge_x.shape == (2,)
 
     def test_deep_copy_not_view(self, mesh_2d):
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")

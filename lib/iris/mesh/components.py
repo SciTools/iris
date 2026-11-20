@@ -2596,7 +2596,11 @@ class _MeshCoordinateManagerBase(ABC):
                 and (indexing := indices_dict[key.split("_")[0]]) is not None
             ):
                 if frozen:
-                    indexed = coord.copy()[indexing]
+                    # Indexing the arrays directly allows zero-length results.
+                    points = coord.core_points()[indexing]
+                    bounds = coord.core_bounds()
+                    bounds = bounds[indexing] if bounds is not None else None
+                    indexed = coord.copy(points, bounds)
                 else:
                     lazy_points = coord.lazy_points()
                     lazy_bounds = coord.lazy_bounds()
