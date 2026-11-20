@@ -3634,7 +3634,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         else:
             face_nodes = _zero_based_by_location(self.mesh.face_node_connectivity)
             face_indices = np.asarray(_lazy.as_concrete_data(self.indices))
-            side_keys = _face_side_keys(face_nodes, n_nodes)[face_indices].compressed()
+            side_keys = _face_side_keys(face_nodes[face_indices], n_nodes).compressed()
             edges_kept = np.isin(_edge_keys(edge_nodes, n_nodes), side_keys)
         return np.flatnonzero(edges_kept)
 
@@ -3671,21 +3671,42 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             faces_kept = side_is_kept.all(axis=1)
         return np.flatnonzero(faces_kept)
 
+    def _edge_and_face_indices(self) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """Return the edge and face selections, cached until the connectivities change.
+
+        Returns
+        -------
+        tuple of (numpy.ndarray or None)
+            As :meth:`_calculate_edge_indices` and
+            :meth:`_calculate_face_indices`. Realises data when (re)deriving.
+        """
+        connectivity_dt = self.mesh._connectivity_manager.timestamp._dt
+        cache = getattr(self, "_edge_and_face_indices_cache", None)
+        if cache is None or cache[0] != connectivity_dt:
+            cache = (
+                connectivity_dt,
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+            )
+            self._edge_and_face_indices_cache = cache
+        return cache[1], cache[2]
+
     @property
     def _coord_manager(self) -> _MeshCoordinateManagerBase:
         mesh_man: _MeshCoordinateManagerBase = self.mesh._coord_manager
         self_man: Optional[_MeshCoordinateManagerBase] = getattr(
             self, "_coord_manager_attr", None
         )
-        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
+        # Edge and face selections also depend on the connectivities.
+        mesh_dt = self.mesh._last_modified
+        update = self_man is None or mesh_dt != self_man.timestamp._dt
         if update:
             self._coord_manager_attr = mesh_man.indexed(
                 self._calculate_node_bool_index(),
-                self._calculate_edge_indices(),
-                self._calculate_face_indices(),
+                *self._edge_and_face_indices(),
                 mesh_id=id(self.mesh),
             )
-            self._coord_manager_attr.timestamp._dt = mesh_man.timestamp._dt
+            self._coord_manager_attr.timestamp._dt = mesh_dt
         return super()._coord_manager
 
     @_coord_manager.setter
@@ -3706,8 +3727,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         if update:
             self._connectivity_manager_attr = mesh_man.indexed(
                 self._calculate_node_bool_index(),
-                self._calculate_edge_indices(),
-                self._calculate_face_indices(),
+                *self._edge_and_face_indices(),
                 mesh_id=id(self.mesh),
             )
             self._connectivity_manager_attr.timestamp._dt = mesh_man.timestamp._dt
@@ -3761,8 +3781,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         """
         indices = [
             self._calculate_node_bool_index(),
-            self._calculate_edge_indices(),
-            self._calculate_face_indices(),
+            *self._edge_and_face_indices(),
         ]
         Kwargs = TypedDict("Kwargs", {"mesh_id": int, "frozen": bool})
         kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}

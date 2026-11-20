@@ -6,6 +6,7 @@
 
 import itertools
 import re
+from unittest import mock
 
 from dask import array as da
 import numpy as np
@@ -1085,3 +1086,76 @@ class Test_deferred_views:
         _shared_utils.assert_array_equal(
             conn_after.indices, [[3, 2, 1, 0], [7, 6, 5, 4]]
         )
+
+    def test_edge_coords_follow_connectivity_change(self, lazy_values):
+        """Derived edge coords depend on face_node, not only on the mesh coords.
+
+        Reads core points: realising a view refreshes the cache and hides staleness.
+        """
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh, location="face")
+
+        def edge_x():
+            coord = index_set.coord(location="edge", axis="x")
+            return as_concrete_data(coord.core_points())
+
+        _shared_utils.assert_array_equal(edge_x(), [0.5, 0.5, 0, 1])
+
+        # Swap faces 0 and 2: face 0 now has edges 2, 5, 8 and 9.
+        mesh.add_connectivities(
+            mesh.face_node_connectivity.copy(
+                np.array([[2, 3, 7, 6], [1, 2, 6, 5], [0, 1, 5, 4]])
+            )
+        )
+        _shared_utils.assert_array_equal(edge_x(), [2.5, 2.5, 2, 3])
+
+
+class Test_selection_cache:
+    @pytest.fixture
+    def spies(self):
+        with (
+            mock.patch.object(
+                _MeshIndexSet,
+                "_calculate_edge_indices",
+                autospec=True,
+                side_effect=_MeshIndexSet._calculate_edge_indices,
+            ) as edge_spy,
+            mock.patch.object(
+                _MeshIndexSet,
+                "_calculate_face_indices",
+                autospec=True,
+                side_effect=_MeshIndexSet._calculate_face_indices,
+            ) as face_spy,
+        ):
+            yield edge_spy, face_spy
+
+    @pytest.mark.parametrize("location", ["node", "edge", "face"])
+    def test_derived_once(self, lazy_values, spies, location):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
+
+        _ = index_set._coord_manager
+        _ = index_set._connectivity_manager
+        _ = index_set.as_mesh()
+
+        assert [spy.call_count for spy in spies] == [1, 1]
+
+    def test_rederived_after_connectivity_change(self, lazy_values, spies):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        _ = index_set._connectivity_manager
+
+        mesh.add_connectivities(mesh.face_node_connectivity.copy())
+        _ = index_set._coord_manager
+        _ = index_set._connectivity_manager
+
+        assert [spy.call_count for spy in spies] == [2, 2]
+
+    def test_cache_excluded_from_state_and_equality(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        used = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        unused = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        _ = used._connectivity_manager
+
+        assert used == unused
+        assert len(used.__getstate__()) == 2
