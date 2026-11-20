@@ -11,7 +11,7 @@ from dask import array as da
 import numpy as np
 import pytest
 
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.coords import AuxCoord
 from iris.mesh import MeshCoord, MeshXY
 from iris.mesh.components import Connectivity, _MeshIndexSet
@@ -654,6 +654,187 @@ class Test_unusual_connectivities:
         _shared_utils.assert_array_equal(
             node_set._calculate_face_indices(), np.array([3])
         )
+
+
+def _by_location_zero_based(connectivity):
+    indices = connectivity.indices_by_location(connectivity.core_indices())
+    return np.ma.asanyarray(as_concrete_data(indices)) - connectivity.start_index
+
+
+def _masked_rows(rows, width):
+    return np.ma.masked_less(np.array(rows, dtype=int).reshape(-1, width), 0)
+
+
+class Test_strip_connectivities:
+    @pytest.mark.parametrize("start_index", [0, 1])
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    @pytest.mark.parametrize(
+        ("location", "indices", "expected"),
+        [
+            pytest.param(
+                "face",
+                [0, 2],
+                dict(
+                    face_node=_masked_rows([[0, 1, 5, 4], [2, 3, 7, 6]], 4),
+                    edge_node=_masked_rows(
+                        [
+                            [0, 1],
+                            [2, 3],
+                            [4, 5],
+                            [6, 7],
+                            [0, 4],
+                            [1, 5],
+                            [2, 6],
+                            [3, 7],
+                        ],
+                        2,
+                    ),
+                    face_edge=_masked_rows([[0, 5, 2, 4], [1, 7, 3, 6]], 4),
+                    face_face=_masked_rows([[-1] * 4] * 2, 4),
+                    edge_face=_masked_rows(
+                        [
+                            [0, -1],
+                            [1, -1],
+                            [0, -1],
+                            [1, -1],
+                            [0, -1],
+                            [0, -1],
+                            [-1, 1],
+                            [1, -1],
+                        ],
+                        2,
+                    ),
+                ),
+                id="face-0-2",
+            ),
+            pytest.param(
+                "face",
+                [1, 0],
+                dict(
+                    face_node=_masked_rows([[1, 2, 5, 4], [0, 1, 4, 3]], 4),
+                    edge_node=_masked_rows(
+                        [[0, 1], [1, 2], [3, 4], [4, 5], [0, 3], [1, 4], [2, 5]], 2
+                    ),
+                    face_edge=_masked_rows([[1, 6, 3, 5], [0, 5, 2, 4]], 4),
+                    face_face=_masked_rows([[-1, -1, -1, 1], [-1, 0, -1, -1]], 4),
+                    edge_face=_masked_rows(
+                        [[1, -1], [0, -1], [1, -1], [0, -1], [1, -1], [1, 0], [0, -1]],
+                        2,
+                    ),
+                ),
+                id="face-1-0",
+            ),
+            pytest.param(
+                "edge",
+                [0, 3, 6, 7, 9],
+                dict(
+                    face_node=_masked_rows([[0, 1, 4, 3]], 4),
+                    edge_node=_masked_rows([[0, 1], [3, 4], [0, 3], [1, 4], [2, 5]], 2),
+                    face_edge=_masked_rows([[0, 3, 1, 2]], 4),
+                    face_face=_masked_rows([[-1] * 4], 4),
+                    edge_face=_masked_rows(
+                        [[0, -1], [0, -1], [0, -1], [0, -1], [-1, -1]], 2
+                    ),
+                ),
+                id="edge-5",
+            ),
+            pytest.param(
+                "edge",
+                [1, 4],
+                dict(
+                    face_node=_masked_rows([], 4),
+                    edge_node=_masked_rows([[0, 1], [2, 3]], 2),
+                    face_edge=_masked_rows([], 4),
+                    face_face=_masked_rows([], 4),
+                    edge_face=_masked_rows([[-1, -1]] * 2, 2),
+                ),
+                id="edge-no-faces",
+            ),
+            pytest.param(
+                "node",
+                [0, 1, 4, 5],
+                dict(
+                    face_node=_masked_rows([[0, 1, 3, 2]], 4),
+                    edge_node=_masked_rows([[0, 1], [2, 3], [0, 2], [1, 3]], 2),
+                    face_edge=_masked_rows([[0, 3, 1, 2]], 4),
+                    face_face=_masked_rows([[-1] * 4], 4),
+                    edge_face=_masked_rows([[0, -1]] * 4, 2),
+                ),
+                id="node-4",
+            ),
+        ],
+    )
+    def test_strip_cases(
+        self, lazy_values, start_index, location_axis, location, indices, expected
+    ):
+        mesh = sample_strip_mesh(
+            lazy_values=lazy_values,
+            start_index=start_index,
+            location_axis=location_axis,
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        # One manager access: reading `.indices` would realise a view.
+        results = index_set._connectivity_manager.all_members._asdict()
+        assert set(results) - {"boundary_node"} == set(expected)
+        assert results["boundary_node"] is None
+        for name, expected_indices in expected.items():
+            connectivity = results[name]
+            original = getattr(mesh, f"{name}_connectivity")
+            assert connectivity.start_index == original.start_index
+            assert connectivity.location_axis == original.location_axis
+            actual = _by_location_zero_based(connectivity)
+            assert actual.shape == expected_indices.shape
+            _shared_utils.assert_masked_array_equal(actual, expected_indices)
+
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    def test_strip_repeated_faces(self, lazy_values, location_axis):
+        mesh = sample_strip_mesh(lazy_values=lazy_values, location_axis=location_axis)
+        index_set = _MeshIndexSet(indices=[0, 0], mesh=mesh, location="face")
+
+        results = index_set._connectivity_manager.all_members
+        _shared_utils.assert_masked_array_equal(
+            _by_location_zero_based(results.face_node),
+            _masked_rows([[0, 1, 3, 2]] * 2, 4),
+        )
+        face_face = _by_location_zero_based(results.face_face)
+        assert face_face.shape == (2, 4)
+        assert np.ma.getmaskarray(face_face).all()
+
+    def test_strip_stays_lazy(self):
+        mesh = sample_strip_mesh(lazy_values=True)
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        connectivities = [
+            c for c in index_set._connectivity_manager.all_members if c is not None
+        ]
+        assert len(connectivities) == 5
+        for connectivity in connectivities:
+            assert is_lazy_data(connectivity.core_indices()), connectivity.cf_role
+
+    def test_boundary_node_dropped(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        mesh.add_connectivities(
+            Connectivity(
+                indices=[[0, 1], [1, 2]],
+                cf_role="boundary_node_connectivity",
+            )
+        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        assert index_set._connectivity_manager.boundary_node is None
+
+    def test_no_edge_node_drops_edge_connectivities(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        mesh.remove_connectivities(cf_role="edge_node_connectivity")
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        results = index_set._connectivity_manager.all_members
+        assert results.edge_node is None
+        assert results.face_edge is None
+        assert results.edge_face is None
+        assert results.face_node is not None
+        assert results.face_face is not None
 
 
 class Test_as_mesh:

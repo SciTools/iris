@@ -3111,22 +3111,34 @@ class _MeshConnectivityManagerBase(ABC):
             "face": face_indices,
         }
 
-        # Prep an inverse-lookup table (original node id -> new node id) for later
-        #  node indices remapping. ``node_bool_index`` is a fixed-shape boolean
-        #  membership array over the original nodes (see _calculate_node_bool_index).
+        # Inverse-lookup tables (original element id -> new element id), one per
+        #  element type, to remap the values of each connectivity.
+        #  ``node_bool_index`` is a fixed-shape boolean membership array over the
+        #  original nodes (see _calculate_node_bool_index).
         node_mask = node_bool_index
         al = da if _lazy.is_lazy_data(node_mask) else np
         node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
         # Mask unselected nodes - for graceful handling of unexpected scenarios;
         #  we normally expect downstream indexing to remove these anyway.
-        node_lookup = al.ma.masked_array(node_lookup_data, ~node_mask)
+        lookups = {"node": al.ma.masked_array(node_lookup_data, ~node_mask)}
+        for location in ("edge", "face"):
+            selection = indices_dict[location]
+            if selection is not None:
+                (n_elements,) = {
+                    c.shape[c.location_axis]
+                    for _, c in self
+                    if c is not None and c.location == location
+                }
+                lookup = np.ma.masked_all(n_elements, dtype=np.intp)
+                lookup[selection] = np.arange(len(selection))
+                lookups[location] = lookup
 
         indexed_members = {}
         for key, connectivity in self:
             indexing = None
             indexed = None
-            if connectivity is not None:
-                indexing = indices_dict[connectivity.location]
+            if connectivity is not None and connectivity.connected in lookups:
+                indexing = indices_dict.get(connectivity.location)
             if indexing is not None:
                 if frozen:
                     connectivity = connectivity.copy()
@@ -3139,11 +3151,14 @@ class _MeshConnectivityManagerBase(ABC):
                 indices_indexed = connectivity.indices_by_location(indices)[indexing]
                 indices_indexed -= connectivity.start_index
 
-                # Map node indices in "values" to their new zero-based positions
-                #  via the inverse-lookup table. This creates a contiguous
-                #  collection of nodes, and collapses duplicates.
+                # Map the connected elements in "values" to their new zero-based
+                #  positions via the inverse-lookup table. Elements outside the
+                #  selection become masked.
+                lookup = lookups[connectivity.connected]
+                if _lazy.is_lazy_data(indices_indexed):
+                    lookup = _lazy.as_lazy_data(lookup)
                 indices_remapped = _index_conn_array(
-                    array=node_lookup,
+                    array=lookup,
                     indexing=indices_indexed,
                 )
 
