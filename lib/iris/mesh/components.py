@@ -3088,8 +3088,9 @@ class _MeshConnectivityManagerBase(ABC):
             Array of boolean membership, over the full length of original nodes,
             to support the construction of indexed connectivities.
         edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
-            The indices to use when indexing member connectivities with edge or
-            face :attr:`~Connectivity.location` respectively.
+            Concrete integer indices of the original edges or faces to keep, in
+            output order. ``None`` drops every connectivity located at, or
+            connected to, that element type.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
