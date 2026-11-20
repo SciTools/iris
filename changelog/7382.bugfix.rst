@@ -1,0 +1,3 @@
+:user:`syahra712` fixed :data:`~iris.analysis.GMEAN` and :data:`~iris.analysis.HMEAN`
+returning an unmasked NaN, instead of a masked point, where every point being
+collapsed is masked. (:pull:`7382`)
