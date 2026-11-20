@@ -343,7 +343,7 @@ storage characteristics of character data are relevant:
 The NetCDF documentation does also briefly mention that an ``_Encoding`` attribute may be
 used to represent non-ascii strings, but only to state that it is "reserved for future use",
 and its valid values and effects are not explicitly defined.
-See : `here in the NetCDF v3 description <https://docs.unidata.ucar.edu/n ug/current/file_format_specifications.html>`_
+See : `here in the NetCDF v3 description <https://docs.unidata.ucar.edu/nug/current/file_format_specifications.html>`_
 : "The variable attribute '_Encoding' is reserved ...".
 
 However, it is also notable that the standard ``ncgen`` and ``ncdump`` tools *do*
