@@ -16,7 +16,7 @@ from iris.coords import AuxCoord
 from iris.mesh import MeshCoord, MeshXY
 from iris.mesh.components import Connectivity, _MeshIndexSet
 from iris.tests import _shared_utils
-from iris.tests.stock.mesh import sample_mesh
+from iris.tests.stock.mesh import sample_mesh, sample_strip_mesh
 
 
 @pytest.fixture(params=[False, True], ids=["real", "lazy"], autouse=True)
@@ -278,19 +278,58 @@ class Test_index_calculations:
         index_set = _MeshIndexSet(indices=[1], mesh=mesh, location=location)
         result = index_set._calculate_edge_indices()
 
-        if location == "edge":
-            _shared_utils.assert_array_equal(result, np.array([1]))
-        else:
-            assert result is None
+        # Face 1 has side (5, 6), which is edge 0.
+        expected = {"edge": [1], "face": [0], "node": []}[location]
+        assert isinstance(result, np.ndarray)
+        _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
 
     def test_calculate_face_indices(self, mesh_2d, locations_all):
         index_set = _MeshIndexSet(indices=[1], mesh=mesh_2d, location=locations_all)
         result = index_set._calculate_face_indices()
 
-        if locations_all == "face":
-            _shared_utils.assert_array_equal(result, np.array([1]))
-        else:
-            assert result is None
+        expected = {"face": [1], "edge": [], "node": []}[locations_all]
+        assert isinstance(result, np.ndarray)
+        _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
+
+    @pytest.mark.parametrize("start_index", [0, 1])
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    @pytest.mark.parametrize(
+        ("location", "indices", "edges", "faces"),
+        [
+            ("face", [0, 2], [0, 2, 3, 5, 6, 7, 8, 9], [0, 2]),
+            ("face", [1, 0], [0, 1, 3, 4, 6, 7, 8], [1, 0]),
+            ("edge", [0, 3, 6, 7, 9], [0, 3, 6, 7, 9], [0]),
+            ("edge", [1, 4], [1, 4], []),
+            ("node", [0, 1, 4, 5], [0, 3, 6, 7], [0]),
+        ],
+    )
+    def test_strip_derived_selections(
+        self, lazy_values, start_index, location_axis, location, indices, edges, faces
+    ):
+        mesh = sample_strip_mesh(
+            lazy_values=lazy_values,
+            start_index=start_index,
+            location_axis=location_axis,
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        edge_result = index_set._calculate_edge_indices()
+        face_result = index_set._calculate_face_indices()
+
+        for result, expected in [(edge_result, edges), (face_result, faces)]:
+            assert isinstance(result, np.ndarray)
+            assert result.ndim == 1
+            assert np.issubdtype(result.dtype, np.integer)
+            _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
+
+    def test_no_edges_gives_none(self, lazy_values):
+        mesh = sample_mesh(n_edges=0, lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+        assert index_set._calculate_edge_indices() is None
+
+    def test_1d_mesh_no_faces(self, mesh_1d):
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_1d, location="node")
+        assert index_set._calculate_face_indices() is None
 
 
 class Test_managers_and_views:
@@ -330,17 +369,23 @@ class Test_managers_and_views:
         assert connectivity_manager.is_view
         match location:
             case "node":
-                assert len(connectivity_manager.all_members) == 0
+                assert connectivity_manager.edge_node.shape[0] == 0
+                if mesh.topology_dimension == 2:
+                    assert connectivity_manager.face_node.shape[0] == 0
             case "edge":
                 assert connectivity_manager.edge_node is not None
-                assert not hasattr(connectivity_manager, "face_node")
+                if mesh.topology_dimension == 2:
+                    assert connectivity_manager.face_node.shape[0] == 0
+                else:
+                    assert not hasattr(connectivity_manager, "face_node")
                 assert (
                     connectivity_manager.edge_node.shape[0]
                     < mesh.edge_node_connectivity.shape[0]
                 )
             case "face":
                 assert connectivity_manager.face_node is not None
-                assert connectivity_manager.edge_node is None
+                # Edge 2 (nodes 9, 10) is a side of face 2.
+                assert connectivity_manager.edge_node.shape[0] == 1
                 assert (
                     connectivity_manager.face_node.shape[0]
                     < mesh.face_node_connectivity.shape[0]
@@ -569,6 +614,24 @@ class Test_unusual_connectivities:
         _shared_utils.assert_array_equal(
             index_set.node_coords[1].points,
             np.array([-2, -3, -4, 0, -1]),
+        )
+
+    @pytest.mark.parametrize(
+        "fixture",
+        ["varied_mesh", "varied_mesh_1_indexed"],
+    )
+    def test_varied_derived_selections(self, fixture, request):
+        mesh: MeshXY = request.getfixturevalue(fixture)
+
+        face_set = _MeshIndexSet(indices=[3], mesh=mesh, location="face")
+        _shared_utils.assert_array_equal(
+            face_set._calculate_edge_indices(), np.array([0, 1, 2, 3])
+        )
+
+        # The pentagon's closing side (5, 0) has no edge, so no face is kept.
+        edge_set = _MeshIndexSet(indices=[0, 1, 2, 3], mesh=mesh, location="edge")
+        _shared_utils.assert_array_equal(
+            edge_set._calculate_face_indices(), np.array([], dtype=int)
         )
 
 

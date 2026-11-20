@@ -3310,6 +3310,58 @@ class _Mesh2DConnectivityManager(_Mesh1DConnectivityManager):
 Location = Literal["edge", "node", "face"]
 
 
+def _edge_keys(edge_nodes: np.ndarray, n_nodes: int) -> np.ndarray:
+    """Return one int64 key per edge, identical for either node order.
+
+    Parameters
+    ----------
+    edge_nodes : numpy.ndarray
+        Concrete zero-based ``(n_edges, 2)`` node indices.
+    n_nodes : int
+        Number of nodes in the mesh.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(n_edges,)``.
+    """
+    nodes = np.ma.getdata(edge_nodes).astype(np.int64)
+    return nodes.min(axis=1) * n_nodes + nodes.max(axis=1)
+
+
+def _face_side_keys(face_nodes: np.ndarray, n_nodes: int) -> np.ma.MaskedArray:
+    """Return a key for each side of each face, matching :func:`_edge_keys`.
+
+    Slot ``k`` pairs with slot ``k + 1`` when that slot is unmasked, and with
+    slot 0 otherwise. Masked slots are assumed to trail.
+
+    Parameters
+    ----------
+    face_nodes : numpy.ndarray
+        Concrete zero-based ``(n_faces, n_slots)`` node indices, location-major.
+    n_nodes : int
+        Number of nodes in the mesh.
+
+    Returns
+    -------
+    numpy.ma.MaskedArray
+        Shape ``(n_faces, n_slots)``, masked wherever ``face_nodes`` is.
+    """
+    nodes = np.ma.getdata(face_nodes).astype(np.int64)
+    slot_is_masked = np.ma.getmaskarray(face_nodes)
+    next_is_valid = np.zeros_like(slot_is_masked)
+    next_is_valid[:, :-1] = ~slot_is_masked[:, 1:]
+    next_nodes = np.where(next_is_valid, np.roll(nodes, -1, axis=1), nodes[:, :1])
+    keys = np.minimum(nodes, next_nodes) * n_nodes + np.maximum(nodes, next_nodes)
+    return np.ma.masked_array(keys, mask=slot_is_masked)
+
+
+def _zero_based_by_location(connectivity: Connectivity) -> np.ndarray:
+    """Realise a connectivity as zero-based, location-major, concrete indices."""
+    indices = connectivity.indices_by_location(connectivity.core_indices())
+    return np.ma.asanyarray(_lazy.as_concrete_data(indices)) - connectivity.start_index
+
+
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
     """A sub-mesh defined by an index set into a parent :class:`MeshXY`.
 
@@ -3537,23 +3589,68 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 result = node_mask
         return result
 
-    def _calculate_edge_indices(self):
-        # Use self.location and self.indices to work out the indices to use
-        #  when indexing the edges of self.mesh.
-        if self.location == "edge":
-            result = self.indices
-        else:
-            result = None
-        return result
+    def _calculate_edge_indices(self) -> np.ndarray | None:
+        """Return the original edges kept by this index set.
 
-    def _calculate_face_indices(self):
-        # Use self.location and self.indices to work out the indices to use
-        #  when indexing the faces of self.mesh.
-        if self.location == "face":
-            result = self.indices
+        Returns
+        -------
+        numpy.ndarray or None
+            1-D integer indices into the original edges, in original order
+            unless the index set is at edge location. ``None`` if the mesh has
+            no ``edge_node_connectivity``. Realises data.
+        """
+        edge_node = self.mesh.edge_node_connectivity
+        if edge_node is None:
+            return None  # type: ignore[unreachable]
+        if self.location == "edge":
+            return np.asarray(_lazy.as_concrete_data(self.indices))
+
+        n_nodes = self.mesh.node_coords.node_x.shape[0]  # type: ignore[union-attr]
+        edge_nodes = _zero_based_by_location(edge_node)
+        if self.location == "node":
+            node_mask = np.asarray(
+                _lazy.as_concrete_data(self._calculate_node_bool_index())
+            )
+            edges_kept = node_mask[np.ma.getdata(edge_nodes)].all(axis=1)
         else:
-            result = None
-        return result
+            face_nodes = _zero_based_by_location(self.mesh.face_node_connectivity)
+            face_indices = np.asarray(_lazy.as_concrete_data(self.indices))
+            side_keys = _face_side_keys(face_nodes, n_nodes)[face_indices].compressed()
+            edges_kept = np.isin(_edge_keys(edge_nodes, n_nodes), side_keys)
+        return np.flatnonzero(edges_kept)
+
+    def _calculate_face_indices(self) -> np.ndarray | None:
+        """Return the original faces kept by this index set.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            1-D integer indices into the original faces, in original order
+            unless the index set is at face location. ``None`` if the mesh has
+            no faces. Realises data.
+        """
+        if self.mesh.topology_dimension < 2:
+            return None
+        if self.location == "face":
+            return np.asarray(_lazy.as_concrete_data(self.indices))
+
+        n_nodes = self.mesh.node_coords.node_x.shape[0]  # type: ignore[union-attr]
+        face_nodes = _zero_based_by_location(self.mesh.face_node_connectivity)
+        if self.location == "node":
+            node_mask = np.asarray(
+                _lazy.as_concrete_data(self._calculate_node_bool_index())
+            )
+            slot_is_masked = np.ma.getmaskarray(face_nodes)
+            slot_is_kept = node_mask[np.ma.getdata(face_nodes)] | slot_is_masked
+            faces_kept = slot_is_kept.all(axis=1)
+        else:
+            edge_nodes = _zero_based_by_location(self.mesh.edge_node_connectivity)
+            edge_indices = np.asarray(_lazy.as_concrete_data(self.indices))
+            kept_keys = _edge_keys(edge_nodes, n_nodes)[edge_indices]
+            side_keys = _face_side_keys(face_nodes, n_nodes)
+            side_is_kept = np.isin(side_keys.data, kept_keys) | side_keys.mask
+            faces_kept = side_is_kept.all(axis=1)
+        return np.flatnonzero(faces_kept)
 
     @property
     def _coord_manager(self) -> _MeshCoordinateManagerBase:

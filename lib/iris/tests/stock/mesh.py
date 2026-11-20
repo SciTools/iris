@@ -136,6 +136,102 @@ def sample_mesh(
     return mesh
 
 
+def sample_strip_mesh(lazy_values=False, start_index=0, location_axis=0):
+    """Make a test mesh of 3 square faces in a row, with all connectivities.
+
+    Nodes 0-3 lie along y=0 and nodes 4-7 along y=1, at x=0-3.
+    Faces A, B and C (0, 1, 2) sit between them::
+
+        4---5---6---7
+        | A | B | C |
+        0---1---2---3
+
+    Edges 0-2 run along the bottom, 3-5 along the top, and 6-9 are the
+    verticals.  Face coords are face centres; edge coords are edge midpoints.
+
+    Parameters
+    ----------
+    lazy_values : bool, default=False
+        If True, all content values of coords and connectivities are lazy.
+    start_index : 0 or 1, default=0
+        Added to every unmasked connectivity index.
+    location_axis : 0 or 1, default=0
+        If 1, each connectivity is stored transposed.
+
+    Returns
+    -------
+    MeshXY
+    """
+    face_node = [[0, 1, 5, 4], [1, 2, 6, 5], [2, 3, 7, 6]]
+    edge_node = [
+        [0, 1],
+        [1, 2],
+        [2, 3],
+        [4, 5],
+        [5, 6],
+        [6, 7],
+        [0, 4],
+        [1, 5],
+        [2, 6],
+        [3, 7],
+    ]
+    face_edge = [[0, 7, 3, 6], [1, 8, 4, 7], [2, 9, 5, 8]]
+    face_face = [[-1, 1, -1, -1], [-1, 2, -1, 0], [-1, -1, -1, 1]]
+    edge_face = [
+        [0, -1],
+        [1, -1],
+        [2, -1],
+        [0, -1],
+        [1, -1],
+        [2, -1],
+        [0, -1],
+        [0, 1],
+        [1, 2],
+        [2, -1],
+    ]
+
+    node_xy = np.array([[x, 0] for x in range(4)] + [[x, 1] for x in range(4)])
+    edge_xy = node_xy[edge_node].mean(axis=1)
+    face_xy = node_xy[face_node].mean(axis=1)
+
+    def make_coords(xy, to_lazy):
+        x = AuxCoord(xy[:, 0], standard_name="longitude")
+        y = AuxCoord(xy[:, 1], standard_name="latitude")
+        if to_lazy:
+            x.points = x.lazy_points()
+            y.points = y.lazy_points()
+        return [(x, "x"), (y, "y")]
+
+    def make_connectivity(values, cf_role):
+        indices = np.ma.masked_less(np.array(values), 0) + start_index
+        if location_axis == 1:
+            indices = indices.T
+        if lazy_values:
+            import dask.array as da
+
+            indices = da.from_array(indices)
+        return Connectivity(
+            indices,
+            cf_role=cf_role,
+            start_index=start_index,
+            location_axis=location_axis,
+        )
+
+    return MeshXY(
+        topology_dimension=2,
+        node_coords_and_axes=make_coords(node_xy, lazy_values),
+        edge_coords_and_axes=make_coords(edge_xy, lazy_values),
+        face_coords_and_axes=make_coords(face_xy, lazy_values),
+        connectivities=[
+            make_connectivity(face_node, "face_node_connectivity"),
+            make_connectivity(edge_node, "edge_node_connectivity"),
+            make_connectivity(face_edge, "face_edge_connectivity"),
+            make_connectivity(face_face, "face_face_connectivity"),
+            make_connectivity(edge_face, "edge_face_connectivity"),
+        ],
+    )
+
+
 def sample_meshcoord(mesh=None, location="face", axis="x", **extra_kwargs):
     """Create a test MeshCoord.
 
