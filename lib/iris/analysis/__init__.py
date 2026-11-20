@@ -1877,7 +1877,9 @@ and lazy data.
 MAX_RUN.name = lambda: "max_run"  # type: ignore[method-assign]
 
 
-def _mask_where_all_masked(result, data, axis):
+def _mask_where_all_masked(
+    result: np.ndarray, data: np.ndarray, axis: int | tuple[int, ...] | None
+) -> np.ndarray:
     """Mask ``result`` wherever every point of ``data`` along ``axis`` is masked.
 
     ``scipy.stats.mstats.gmean`` and ``hmean`` return a plain array holding NaN
@@ -1888,12 +1890,16 @@ def _mask_where_all_masked(result, data, axis):
     return ma.masked_array(result, mask=ma.getmaskarray(data).all(axis=axis))
 
 
-def _masked_gmean(data, axis=None, **kwargs):
+def _masked_gmean(
+    data: np.ndarray, axis: int | tuple[int, ...] | None = None, **kwargs
+) -> np.ndarray:
     result = scipy.stats.mstats.gmean(data, axis=axis, **kwargs)
     return _mask_where_all_masked(result, data, axis)
 
 
-def _masked_hmean(data, axis=None, **kwargs):
+def _masked_hmean(
+    data: np.ndarray, axis: int | tuple[int, ...] | None = None, **kwargs
+) -> np.ndarray:
     result = scipy.stats.mstats.hmean(data, axis=axis, **kwargs)
     return _mask_where_all_masked(result, data, axis)
 
