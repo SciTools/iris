@@ -6,13 +6,14 @@
 import numpy as np
 import pytest
 
+import iris
 from iris.coords import AuxCoord, Coord
 from iris.cube import Cube
 from iris.experimental import mesh_coord_indexing
 from iris.loading import load_cube
 from iris.mesh.components import MeshCoord, MeshXY, _MeshIndexSet
 from iris.tests import _shared_utils
-from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube
+from iris.tests.stock.mesh import sample_mesh, sample_mesh_cube, sample_strip_mesh
 
 
 @pytest.fixture
@@ -98,11 +99,9 @@ def test_subset_indexing_auxcoord(fixture, request):
     change_and_assert_no_change_in_right(original_lon, indexed_lon, value)
 
 
-# Excluding "cube_mesh_node" from this test because it is an invalid thing to do
-# Test for the raised exception exists in unit tests
 @pytest.mark.parametrize(
     "fixture",
-    ["cube_mesh_from_file", "cube_mesh_edge", "cube_mesh_face"],
+    ["cube_mesh_from_file", "cube_mesh_node", "cube_mesh_edge", "cube_mesh_face"],
 )
 def test_subset_indexing_new_mesh(fixture, request):
     cube: Cube
@@ -199,6 +198,57 @@ def test_subset_indexing_mesh_index_set(fixture, request):
     change_original_mesh_reflected_in_index_set(
         cube, indexed_cube, "longitude", location, value
     )
+
+
+STRIP_CF_ROLES = {
+    "face_node_connectivity",
+    "edge_node_connectivity",
+    "face_edge_connectivity",
+    "face_face_connectivity",
+    "edge_face_connectivity",
+}
+
+
+@pytest.mark.parametrize(
+    ("location", "indices"),
+    [
+        ("face", [0, 2]),
+        ("edge", [0, 3, 6, 7, 9]),
+        ("node", [0, 1, 4, 5]),
+    ],
+)
+def test_strip_submesh_keeps_connectivities(location, indices):
+    cube = sample_mesh_cube(mesh=sample_strip_mesh(), location=location)
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
+        submesh = cube[:, indices].mesh
+
+    assert submesh.topology_dimension == 2
+    cf_roles = {conn.cf_role for conn in submesh.all_connectivities if conn is not None}
+    assert cf_roles == STRIP_CF_ROLES
+
+
+def make_zero_face_cube():
+    cube = sample_mesh_cube(mesh=sample_strip_mesh(), location="edge")
+    with mesh_coord_indexing.SETTING.context(mesh_coord_indexing.Options.NEW_MESH):
+        return cube[:, [1, 4]]
+
+
+def test_strip_submesh_zero_faces():
+    submesh = make_zero_face_cube().mesh
+
+    assert submesh.topology_dimension == 2
+    assert submesh.face_node_connectivity.shape == (0, 4)
+    assert len(submesh.face_coords.face_x.points) == 0
+    assert len(submesh.face_coords.face_y.points) == 0
+
+
+def test_strip_submesh_zero_faces_save(tmp_path):
+    path = tmp_path / "zero_faces.nc"
+    iris.save(make_zero_face_cube(), path)
+    reloaded_mesh = iris.load_cube(path).mesh
+
+    assert reloaded_mesh.topology_dimension == 2
+    assert reloaded_mesh.face_node_connectivity.shape[0] == 0
 
 
 @pytest.mark.parametrize(

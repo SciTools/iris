@@ -874,6 +874,16 @@ class Test_as_mesh:
                     == index_set.face_coords.face_y.shape
                 )
 
+    @pytest.mark.parametrize("location", ["node", "edge"])
+    def test_1d_mesh_stays_1d(self, mesh_1d, location):
+        new_mesh = _MeshIndexSet(
+            indices=[0, 2], mesh=mesh_1d, location=location
+        ).as_mesh()
+
+        assert new_mesh.topology_dimension == 1
+        assert new_mesh.edge_node_connectivity is not None
+        assert new_mesh.connectivities(contains_face=True) == []
+
     def test_zero_length_face_coords(self, mesh_2d):
         # Edges 0 and 2 enclose no face.
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="edge")
