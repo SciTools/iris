@@ -175,3 +175,19 @@ class TestGeoTransform:
         export_geotiff(cube, temp_filename)
         dataset = gdal.Open(temp_filename, gdal.GA_ReadOnly)
         assert dataset.GetGeoTransform() == (-12.5, 5, 0, 55, 0, -10)
+
+    def test_values_are_scalar(self, tmp_path, mocker):
+        data = np.arange(12).reshape(3, 4).astype(np.uint8)
+        cube = Cube(data, "air_pressure_anomaly")
+        coord = DimCoord([30, 40, 50], "latitude", units="degrees")
+        coord.guess_bounds()
+        cube.add_dim_coord(coord, 0)
+        coord = DimCoord([-10, -5, 0, 5], "longitude", units="degrees")
+        coord.guess_bounds()
+        cube.add_dim_coord(coord, 1)
+        write = mocker.patch("iris.experimental.raster._gdal_write_array")
+        export_geotiff(cube, str(tmp_path / "tmp.tif"))
+        x_min, x_step, y_max, y_step = write.call_args.args[:4]
+        assert (x_min, x_step, y_max, y_step) == (-12.5, 5, 55, -10)
+        for value in (x_min, x_step, y_max, y_step):
+            assert np.ndim(value) == 0

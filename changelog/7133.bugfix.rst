@@ -1,0 +1,2 @@
+:user:`anubhavlal07` fixed :func:`iris.experimental.raster.export_geotiff` failing
+with ``TypeError: not a number`` under NumPy 2.4 or later. (:issue:`7133`)
