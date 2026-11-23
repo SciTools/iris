@@ -256,6 +256,22 @@ class Test:
             result, (9, 8, 5), expected_mean, expected_std
         )
 
+    def test_integer_bounds(self):
+        # Integer degree bounds must not be truncated in radians.
+        src = Cube(np.array([[10.0, 20.0], [30.0, 40.0]]))
+        lat = DimCoord([-1, 1], "latitude", units="degrees", bounds=[[-2, 0], [0, 2]])
+        lon = DimCoord([1, 3], "longitude", units="degrees", bounds=[[0, 2], [2, 4]])
+        src.add_dim_coord(lat, 0)
+        src.add_dim_coord(lon, 1)
+        tgt = Cube(np.zeros((1, 1)))
+        lat = DimCoord([0], "latitude", units="degrees", bounds=[[-2, 2]])
+        lon = DimCoord([2], "longitude", units="degrees", bounds=[[0, 4]])
+        tgt.add_dim_coord(lat, 0)
+        tgt.add_dim_coord(lon, 1)
+        result = AreaWeightedRegridder(src, tgt)(src)
+        assert not np.ma.is_masked(result.data)
+        assert result.data == pytest.approx(25.0)
+
 
 @_shared_utils.skip_data
 class TestLazy:
