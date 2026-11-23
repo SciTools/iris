@@ -1638,6 +1638,9 @@ def _lazy_median(data, axis=None, **kwargs):
 
 
 def _rms(array, axis, **kwargs):
+    # Square in floating point, as integer squares can overflow.
+    if np.issubdtype(array.dtype, np.integer):
+        array = array.astype(np.float64)
     rval = np.sqrt(ma.average(array**2, axis=axis, **kwargs))
 
     return rval
@@ -1648,6 +1651,9 @@ def _lazy_rms(array, axis, **kwargs):
     # weights correctly with masked data, we cannot rely on NEP13/18 and need
     # to implement a separate lazy RMS function.
 
+    # Square in floating point, as integer squares can overflow.
+    if np.issubdtype(array.dtype, np.integer):
+        array = array.astype(np.float64)
     rval = da.sqrt(da.ma.average(array**2, axis=axis, **kwargs))
 
     return rval
