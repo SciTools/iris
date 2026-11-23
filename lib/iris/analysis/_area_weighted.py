@@ -627,7 +627,8 @@ def _standard_regrid(data, weights, tgt_shape, mdtol):
         # from unmasked sources, so we can skip this calculation
         weight_sums = np.ones(data_shape[:-2] + tgt_shape)
     mdtol = max(mdtol, 1e-8)
-    tgt_mask = weight_sums > 1 - mdtol
+    # Mask where the missing fraction exceeds mdtol, or nothing is valid.
+    tgt_mask = (weight_sums >= 1 - mdtol) & (weight_sums > 0)
     # If out of bounds sources are treated the same as masked sources this
     # will already have been calculated above, so we can skip this calculation.
     if oob_invalid or not ma.is_masked(data):
