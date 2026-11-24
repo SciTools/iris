@@ -3127,7 +3127,7 @@ class _MeshConnectivityManagerBase(ABC):
             if selection is not None:
                 (n_elements,) = {
                     c.shape[c.location_axis]
-                    for _, c in self
+                    for c in self._members.values()
                     if c is not None and c.location == location
                 }
                 lookup = np.ma.masked_all(n_elements, dtype=np.intp)
