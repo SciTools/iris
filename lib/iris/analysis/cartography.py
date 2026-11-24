@@ -732,11 +732,12 @@ def project(cube, target_proj, nx=None, ny=None):
 
     # Obtain coordinate arrays (ignoring bounds) and convert to 2d
     # if not already.
+    # Note: if these coordinates could have a Geostationary coordinate system
+    # this would need to be accounted for here by multiplying source_x and
+    # source_y by the sattelite height. Since we're dealing with lat/lon
+    # coordinates we do not expect orig_cs to be Geostationary.
     source_x = lon_coord.points
     source_y = lat_coord.points
-    if isinstance(orig_cs, iris.coord_systems.Geostationary):
-        source_x *= orig_cs.perspective_point_height
-        source_y *= orig_cs.perspective_point_height
     if source_x.ndim != 2 or source_y.ndim != 2:
         source_x, source_y = _meshgrid(source_x, source_y)
 
