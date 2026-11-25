@@ -2,7 +2,7 @@
 #   - https://github.com/actions/cache
 #   - https://github.com/actions/checkout
 #   - https://github.com/codecov/codecov-action
-#   - https://github.com/marketplace/actions/setup-miniconda
+#   - https://github.com/conda-incubator/setup-miniconda
 
 name: ci-tests
 
