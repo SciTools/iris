@@ -17,7 +17,7 @@ import numpy.ma as ma
 from iris import mesh as ugrid
 from iris.analysis import cartography
 import iris.aux_factory
-from iris.coord_systems import GeogCS, RotatedGeogCS, Geostationary
+from iris.coord_systems import GeogCS, Geostationary, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
