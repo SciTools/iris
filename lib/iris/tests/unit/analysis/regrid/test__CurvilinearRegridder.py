@@ -15,7 +15,7 @@ from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.fileformats.pp import EARTH_RADIUS
 from iris.tests import _shared_utils
-from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
+from iris.tests.stock import geostationary_cube, global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -370,3 +370,68 @@ class Test__call__multidimensional:
         assert result.coord("longitude") == grid_cube.coord("longitude")
         assert result.coord("latitude") == grid_cube.coord("latitude")
         _shared_utils.assert_masked_array_almost_equal(result.data, expected_result)
+
+
+class Test___call__geostationary:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.tgt_gs = geostationary_cube()
+        self.tgt_gs.coord(axis="X").guess_bounds()
+        self.tgt_gs.coord(axis="Y").guess_bounds()
+        self.src_gs = self._make_curvilinear(geostationary_cube())
+
+    def _make_curvilinear(self, cube):
+        # Replace the source-grid x and y coords with equivalent 2d versions.
+        x_coord = cube.coord(axis="X")
+        y_coord = cube.coord(axis="Y")
+        xx, yy = np.meshgrid(x_coord.points, y_coord.points)
+        cube.remove_coord(x_coord)
+        cube.remove_coord(y_coord)
+        x_coord_2d = AuxCoord(
+            xx,
+            standard_name=x_coord.standard_name,
+            units=x_coord.units,
+            coord_system=x_coord.coord_system,
+        )
+        y_coord_2d = AuxCoord(
+            yy,
+            standard_name=y_coord.standard_name,
+            units=y_coord.units,
+            coord_system=y_coord.coord_system,
+        )
+        cube.add_aux_coord(x_coord_2d, (0, 1))
+        cube.add_aux_coord(y_coord_2d, (0, 1))
+        return cube
+
+    def _grid_subset(self, lonmax=9, latmax=6):
+        grid = global_pp()[:4, :5]
+        grid.coord("longitude").points = np.linspace(0, lonmax, 5)
+        grid.coord("longitude").guess_bounds()
+        grid.coord("latitude").points = np.linspace(0, latmax, 4)
+        grid.coord("latitude").guess_bounds()
+        return grid
+
+    def test_geostationary_to_latlon(self):
+        src = self.src_gs
+        tgt = self._grid_subset()
+        regridder = Regridder(src, tgt)
+        result = regridder(src)
+        expected_data = [
+            [0.0, 1.0, np.ma.masked, 2.0, 3.0],
+            [np.ma.masked, np.ma.masked, np.ma.masked, np.ma.masked, np.ma.masked],
+            [4.0, 5.0, np.ma.masked, 6.0, 7.0],
+            [8.0, 9.0, np.ma.masked, 10.0, 11.0],
+        ]
+        assert np.allclose(result.data, expected_data)
+
+    def test_latlon_to_geostationary(self):
+        src = self._make_curvilinear(self._grid_subset())
+        tgt = self.tgt_gs
+        regridder = Regridder(src, tgt)
+        result = regridder(src)
+        expected_data = [
+            [254.64399719, 254.64399719, 254.64399719, 254.64399719],
+            [255.48542023, 255.70389557, 255.73715973, 255.69288635],
+            [256.86761475, 258.46177673, 258.61523438, 257.71343994],
+        ]
+        assert np.allclose(result.data, expected_data)

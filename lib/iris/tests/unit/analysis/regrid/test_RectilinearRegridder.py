@@ -15,7 +15,7 @@ from iris.coord_systems import OSGB, GeogCS, Geostationary
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests import _shared_utils
-from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
+from iris.tests.stock import geostationary_cube, global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -746,27 +746,6 @@ def uk_cube():
     return uk
 
 
-def gs_cube():
-    data = np.arange(12, dtype=np.float32).reshape(3, 4)
-    gs = Cube(data)
-    cs = Geostationary(0, 0, 35785831.0, "y")
-    y_coord = DimCoord(
-        np.arange(3) * 0.01,
-        "projection_y_angular_coordinate",
-        units="radians",
-        coord_system=cs,
-    )
-    x_coord = DimCoord(
-        np.arange(4) * 0.01,
-        "projection_x_angular_coordinate",
-        units="radians",
-        coord_system=cs,
-    )
-    gs.add_dim_coord(y_coord, 0)
-    gs.add_dim_coord(x_coord, 1)
-    return gs
-
-
 class Test___call____bad_linear_units:
     def ok_bad(self):
         # Defines `bad` with an x coordinate in km.
@@ -1310,7 +1289,7 @@ class Test___call____rotated_to_lat_lon:
 class Test___call____geostationary_to_lat_lon:
     @pytest.fixture(autouse=True)
     def _setup(self):
-        self.src = gs_cube()
+        self.src = geostationary_cube()
         self.mode = "mask"
         self.methods = ("linear", "nearest")
 
