@@ -1,0 +1,4 @@
+:user:`stephenworsley` fixed the handling of :class:`~iris.coord_systems.Geostationary`
+to better reflect the CF conventions for this coordinate system. Changes have been applied
+to loading, regridding, :func:`~iris.analysis.cartography.gridcell_angles` and
+:func:`~iris.analysis.cartography.project`. (:pull:`5745`)

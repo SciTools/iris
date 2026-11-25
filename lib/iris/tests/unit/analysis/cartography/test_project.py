@@ -77,28 +77,47 @@ class TestAll:
         cs = iris.coord_systems.Geostationary(0, 0, 35785831.0, "y")
         res, extent = project(self.cube, cs)
 
-        expected_extent = [-0.15185277703584402, 0.15185277703584402, -0.15125909404529478, 0.1512590940452948]
-        expected_y = [-1.21007275e-01, -6.05036376e-02, -1.30124486e-17, 6.05036376e-02, 1.21007275e-01]
-        expected_x = [-0.12148222, -0.06074111, 0., 0.06074111, 0.12148222]
+        expected_extent = [
+            -0.15185277703584402,
+            0.15185277703584402,
+            -0.15125909404529478,
+            0.1512590940452948,
+        ]
+        expected_y = [
+            -1.21007275e-01,
+            -6.05036376e-02,
+            -1.30124486e-17,
+            6.05036376e-02,
+            1.21007275e-01,
+        ]
+        expected_x = [-0.12148222, -0.06074111, 0.0, 0.06074111, 0.12148222]
         expected_longitude = [
-            [np.nan, -33.08409654, 0., 33.08409654, np.nan],
-            [-52.62705622, -21.88100926, 0., 21.88100926, 52.62705622],
-            [-46.27571736, -20.17892351, 0., 20.17892351, 46.27571736],
-            [-52.62705622, -21.88100926, 0., 21.88100926, 52.62705622],
-            [np.nan, -33.08409654, 0., 33.08409654, np.nan],
+            [np.nan, -33.08409654, 0.0, 33.08409654, np.nan],
+            [-52.62705622, -21.88100926, 0.0, 21.88100926, 52.62705622],
+            [-46.27571736, -20.17892351, 0.0, 20.17892351, 46.27571736],
+            [-52.62705622, -21.88100926, 0.0, 21.88100926, 52.62705622],
+            [np.nan, -33.08409654, 0.0, 33.08409654, np.nan],
         ]
         expected_latitude = [
             [np.nan, -47.7483773, -46.33083969, -47.7483773, np.nan],
             [-21.79817783, -20.52650045, -20.2290364, -20.52650045, -21.79817783],
-            [0., 0., 0., 0., 0.],
+            [0.0, 0.0, 0.0, 0.0, 0.0],
             [21.79817783, 20.52650045, 20.2290364, 20.52650045, 21.79817783],
             [np.nan, 47.7483773, 46.33083969, 47.7483773, np.nan],
         ]
         assert extent == expected_extent
-        assert np.allclose(res.coord("projection_y_angular_coordinate").points, expected_y)
-        assert np.allclose(res.coord("projection_x_angular_coordinate").points, expected_x)
-        assert np.allclose(res.coord("longitude").points, expected_longitude, equal_nan=True)
-        assert np.allclose(res.coord("latitude").points, expected_latitude, equal_nan=True)
+        assert np.allclose(
+            res.coord("projection_y_angular_coordinate").points, expected_y
+        )
+        assert np.allclose(
+            res.coord("projection_x_angular_coordinate").points, expected_x
+        )
+        assert np.allclose(
+            res.coord("longitude").points, expected_longitude, equal_nan=True
+        )
+        assert np.allclose(
+            res.coord("latitude").points, expected_latitude, equal_nan=True
+        )
 
     @_shared_utils.skip_data
     def test_bad_resolution_negative(self, low_res_4d):
