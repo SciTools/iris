@@ -4,6 +4,7 @@
 # See LICENSE in the root of the repository for full licensing details.
 """Test the function :func:`iris._lazy data.as_lazy_data`."""
 
+from types import SimpleNamespace
 from unittest import mock
 
 import dask.array as da
@@ -12,7 +13,8 @@ import numpy as np
 import numpy.ma as ma
 import pytest
 
-from iris._lazy_data import _optimum_chunksize, as_lazy_data
+from iris._lazy_data import CACHE, _optimum_chunksize, as_lazy_data
+from iris.fileformats.netcdf._thread_safe_nc import NetCDFDataProxy
 
 
 class Test_as_lazy_data:
@@ -64,6 +66,67 @@ class Test_as_lazy_data:
             r"or Dask array.",
         ):
             as_lazy_data(data)
+
+
+class Test_as_lazy_data__cache_key:
+    @staticmethod
+    def _proxy(shape=(2, 3, 4), dtype="f4"):
+        # NetCDFDataProxy reads only `shape` and `name` from what it is given,
+        # so it can be built without a file as long as it is never indexed.
+        return NetCDFDataProxy(
+            SimpleNamespace(shape=shape, name="air_temperature"),
+            np.dtype(dtype),
+            "/does/not/exist.nc",
+            -1.0,
+        )
+
+    def test_key_is_the_caller_s_string(self):
+        proxy = self._proxy()
+        CACHE._cache.clear()
+        as_lazy_data(proxy, meta=proxy.dask_meta, cache_key=repr(proxy))
+        (key,) = CACHE._cache
+        assert key == (
+            repr(proxy),
+            (2, 3, 4),
+            False,
+            proxy.dask_meta.dtype,
+            type(proxy.dask_meta),
+        )
+
+    def test_no_key_means_no_caching(self):
+        proxy = self._proxy()
+        CACHE._cache.clear()
+        as_lazy_data(proxy, meta=proxy.dask_meta)
+        assert len(CACHE._cache) == 0
+
+    def test_second_call_reuses_the_cached_array(self, mocker):
+        proxy = self._proxy()
+        CACHE._cache.clear()
+        from_array = mocker.patch("iris._lazy_data.da.from_array", wraps=da.from_array)
+        as_lazy_data(proxy, meta=proxy.dask_meta, cache_key=repr(proxy))
+        as_lazy_data(proxy, meta=proxy.dask_meta, cache_key=repr(proxy))
+        assert from_array.call_count == 1
+
+    def test_key_without_meta_is_refused(self):
+        data = np.arange(24).reshape((2, 3, 4))
+        with pytest.raises(ValueError, match="cache_key"):
+            as_lazy_data(data, cache_key="anything")
+
+
+def test_lazy_data_imports_no_file_format():
+    """Pin spec section 4.4: `_lazy_data` knows about no file format at all."""
+    import inspect
+    import re
+
+    import iris._lazy_data
+
+    source = inspect.getsource(iris._lazy_data)
+    offenders = [
+        line
+        for line in source.splitlines()
+        if re.match(r"\s*(from|import)\s", line) and "iris.fileformats" in line
+    ]
+    assert offenders == []
 
 
 class Test__optimised_chunks:

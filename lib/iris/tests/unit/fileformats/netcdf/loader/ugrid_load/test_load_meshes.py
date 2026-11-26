@@ -168,7 +168,7 @@ class TestLoadErrors:
 
     @_shared_utils.skip_data
     def test_non_nc(self, caplog):
-        log_regex = r"Ignoring non-NetCDF file:.*"
+        log_regex = r"Ignoring file of a format that holds no mesh:.*"
         with _shared_utils.assert_logs(
             caplog, logger, level="INFO", msg_regex=log_regex
         ):
@@ -189,6 +189,19 @@ class TestLoadErrors:
         destination = load_problem.destination
         assert destination.iris_class is CFVariableMixin
         assert destination.identifier == "NOT_APPLICABLE"
+
+    def test_connectivity_without_cf_role(self, tmp_path):
+        cdl = self.ref_cdl.replace(
+            'face_nodes:cf_role = "face_node_connectivity" ;', ""
+        )
+        nc_path = cdl_to_nc(cdl, tmp_path)
+        _ = load_meshes(nc_path)
+
+        load_problem = LOAD_PROBLEMS.problems[-1]
+        assert (
+            "UGRID connectivity variable has no cf_role attribute: face_nodes"
+            in "".join(load_problem.stack_trace.format())
+        )
 
 
 class TestsHttp:

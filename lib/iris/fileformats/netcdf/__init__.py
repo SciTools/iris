@@ -18,6 +18,7 @@ Also : `CF Conventions <https://cfconventions.org/>`_.
 
 import logging
 
+from iris._deprecation import warn_deprecated
 import iris.config
 
 # Note: *must* be done before importing from submodules, as they also use this !
@@ -32,14 +33,7 @@ from ._bytecoding_datasets import (
     SUPPORTED_ENCODINGS,
 )
 from .loader import DEBUG, NetCDFDataProxy, load_cubes
-from .saver import (
-    CF_CONVENTIONS_VERSION,
-    MESH_ELEMENTS,
-    SPATIO_TEMPORAL_AXES,
-    CFNameCoordMap,
-    Saver,
-    save,
-)
+from .saver import Saver, save
 
 # Export all public elements from the loader and saver submodules.
 # NOTE: the separation is purely for neatness and developer convenience; from
@@ -61,3 +55,57 @@ __all__ = (
     "parse_cell_methods",
     "save",
 )
+
+
+def __getattr__(name):
+    """Forward a relocated name to :mod:`iris.fileformats.cf.saver`.
+
+    .. deprecated:: 3.17
+        Four saver names moved to :mod:`iris.fileformats.cf.saver`, because
+        they are not specific to netCDF. Reading them here still works, and
+        warns.
+
+    Parameters
+    ----------
+    name : str
+        The attribute being looked up.
+
+    Returns
+    -------
+    Any
+        The object of that name - the same object, not a copy.
+
+    Raises
+    ------
+    AttributeError
+        If ``name`` is not one of the relocated names.
+
+    """
+    from .saver import _RELOCATED_NAMES
+
+    if name not in _RELOCATED_NAMES:
+        raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+    from iris.fileformats.cf import saver as cf_saver
+
+    warn_deprecated(
+        f"iris.fileformats.netcdf.{name} has moved to "
+        f"iris.fileformats.cf.saver.{name}, because it is not specific to "
+        "netCDF. The name here will be removed in a future release.",
+        stacklevel=3,
+    )
+    return getattr(cf_saver, name)
+
+
+def __dir__():
+    """List module attributes, including the relocated names.
+
+    Returns
+    -------
+    list of str
+        The real module globals, unioned with the relocated names.
+
+    """
+    from .saver import _RELOCATED_NAMES
+
+    return sorted(set(globals()) | _RELOCATED_NAMES)

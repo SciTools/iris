@@ -84,6 +84,58 @@ class TestDecodeUri:
         assert iris.io.decode_uri(Path(uri)) == expected
 
 
+class TestCategoriseUri:
+    """`_categorise_uri` groups URIs by the handler that will take them.
+
+    `iris.loading._generate_cubes` and
+    `iris.fileformats.netcdf.ugrid_load.load_meshes` both group on the
+    category, so the two must agree about what an NCZarr target is.
+    """
+
+    @pytest.mark.parametrize(
+        ("uri", "expected"),
+        [
+            (
+                "/data/forecast.nc",
+                ("file", "file", "/data/forecast.nc"),
+            ),
+            (
+                "/data/forecast.zarr",
+                ("file", "file", "/data/forecast.zarr"),
+            ),
+            (
+                "s3://bucket/forecast.zarr",
+                ("s3", "s3", "//bucket/forecast.zarr"),
+            ),
+            (
+                "https://example.com/forecast.nc",
+                ("https", "https", "//example.com/forecast.nc"),
+            ),
+            (
+                "file:///data/forecast.zarr#mode=nczarr,file",
+                ("nczarr", "file", "///data/forecast.zarr#mode=nczarr,file"),
+            ),
+        ],
+    )
+    def test_categorise_uri(self, uri, expected):
+        assert iris.io._categorise_uri(uri) == expected
+
+    def test_an_nczarr_fragment_outranks_its_scheme(self):
+        # The whole reason the category is not simply the scheme: these two
+        # share one and need different handlers.
+        plain = iris.io._categorise_uri("file:///data/forecast.zarr")
+        nczarr = iris.io._categorise_uri("file:///data/forecast.zarr#mode=nczarr,file")
+        assert plain[1] == nczarr[1] == "file"
+        assert plain[0] != nczarr[0]
+
+    def test_the_fragment_is_folded_back_into_the_part(self):
+        # A handler is handed a URI to reopen, so it needs the fragment.
+        _category, _scheme, part = iris.io._categorise_uri(
+            "file:///data/forecast.zarr#mode=nczarr,file"
+        )
+        assert part.endswith("#mode=nczarr,file")
+
+
 class TestFileFormatPicker:
     def test_known_formats(self, request):
         _shared_utils.assert_string(

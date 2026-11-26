@@ -1,7 +1,9 @@
 .. tutorial:: Loading From and Saving To S3 Buckets
    :tags: topic_load_save
 
-   A lesson on using s3-fuse with Iris to load/save data from/to S3 buckets.
+   A lesson on using s3-fuse with Iris to load/save netCDF, PP and GRIB
+   data from/to S3 buckets, and on loading from and saving to a Zarr store
+   on S3 directly.
 
 .. _s3_io:
 
@@ -19,14 +21,43 @@ objects.  S3 access URLs can also contain a nested
 `'prefix string' <https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-prefixes.html>`_
 structure, which naturally mirrors sub-directories in a file-system.
 
-While it would be possible for Iris to support S3 access directly, as it does the
-"OpenDAP" protocol for netCDF data, this approach has some serious limitations : most
-notably, each supported file format would have to be separately extended to support S3
-URLs in the place of file paths for loading and saving.
+Zarr stores are accessed directly
+---------------------------------
 
-Instead, we have found that it is most practical to perform this access using a virtual
-file system approach.  However, one drawback is that this is best controlled *outside*
-the Python code -- see details below.
+Everything below concerns **files** -- netCDF, PP, GRIB -- which Iris reaches
+through a file-system path. A :ref:`Zarr store <zarr_io_loading>` is
+different: Iris passes an ``s3://`` URL straight to zarr-python, which reads
+the objects it needs over the network::
+
+    cubes = iris.load("s3://my-bucket/data.zarr")
+
+That needs ``s3fs`` installed and configured, and no mount. If your data is in
+Zarr, prefer this to the FUSE approach described below.
+
+Saving works the same way::
+
+    iris.save(cubes, "s3://bucket/forecast.zarr")
+
+The same store library and credentials apply, and the same defaults: an
+existing store is not overwritten unless you pass ``mode="w"``, and the
+metadata is consolidated when the save completes, which is what makes the store
+cheap to open again over the network.
+
+Other filetypes via a virtual file system
+-----------------------------------------
+
+While it would be possible for Iris to support S3 access directly, as it does the
+"OpenDAP" protocol for netCDF data, this approach has some serious limitations for
+netCDF, PP and GRIB : most notably, each supported file format would have to be
+separately extended to support S3 URLs in the place of file paths for loading and
+saving. The Zarr route above is that direct approach, made practical because
+zarr-python is already a URL-aware store library; netCDF, PP and GRIB have no
+equivalent, so that limitation still applies to them.
+
+Instead, for netCDF, PP and GRIB, we have found that it is most practical to
+perform this access using a virtual file system approach.  However, one
+drawback is that this is best controlled *outside* the Python code -- see
+details below.
 
 
 TL;DR

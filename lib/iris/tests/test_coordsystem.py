@@ -304,6 +304,11 @@ class Test_GeogCS_mutation:
         new_crs = cs.as_cartopy_crs()
         assert new_crs is initial_crs
 
+    def test_inverse_flattening_from_datum(self):
+        # No explicit value, so it comes from the datum's ellipsoid
+        cs = GeogCS.from_datum("OSGB 1936")
+        assert cs.inverse_flattening == pytest.approx(299.3249646)
+
     def test_datum_change(self):
         # Semi-major axis changes
         # All internal ellipoid values set to None

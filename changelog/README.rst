@@ -59,12 +59,16 @@ For example, a file named ``7146.feature.rst`` might contain::
 
 Notes
 -----
+* Before recording a removal, check whether the name predates your branch:
+  ``git log -S<name> <base-branch> -- <path>``. Removing something your own
+  branch added needs no fragment; removing something already released is an
+  API change, and does.
 * You do not need to include the PR number in the fragment as it is already in
   the fragment filename.
 * Multiple fragments may reference the same PR number if the PR makes
   changes across different categories.
 * For multiple PRs that reference the same change, simply create a separate
-  changlog fragment file for each PR with **identical** contents.
+  changelog fragment file for each PR with **identical** contents.
 * Use ``:issue:`NNNN``` for issue references, ``:pull:`NNNN``` for PR
   references, and ``:user:`github-name``` for user references.
 * The rendered changelog can be previewed with::

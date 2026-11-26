@@ -1,0 +1,3 @@
+:user:`Shakhtar-Sankur` fixed :func:`iris.pandas.as_cubes` failing when a
+date-time column has the same value in every row, so it now becomes a scalar
+time coordinate. (:issue:`6955`)

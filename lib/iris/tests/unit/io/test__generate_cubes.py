@@ -22,7 +22,10 @@ class TestGenerateCubes:
         decode_uri_mock = mocker.patch(
             "iris.iris.io.decode_uri", return_value=("file", None, None)
         )
-        mocker.patch("iris.iris.io.load_files")
+        # `decode_uri` always reporting a `None` part is not a real path, so
+        # the file-or-store partition has nothing to resolve or classify.
+        mocker.patch("iris.iris.io.expand_filespecs", return_value=[])
+        mocker.patch("iris.iris.io._load_files")
 
         for gc_arg, du_arg in test_variants:
             decode_uri_mock.reset_mock()
@@ -38,7 +41,7 @@ class TestGenerateCubes:
         ],
     )
     def test_nczarr_uri(self, uri, mocker):
-        load_files_mock = mocker.patch("iris.iris.io.load_files", return_value=[])
+        load_files_mock = mocker.patch("iris.iris.io._load_files", return_value=[])
         load_http_mock = mocker.patch("iris.iris.io.load_http", return_value=[])
 
         list(_generate_cubes(uri, None, None))
@@ -48,7 +51,12 @@ class TestGenerateCubes:
 
     def test_non_nczarr_uri(self, mocker):
         uri = "file:///foo#bar=baz"
-        load_files_mock = mocker.patch("iris.iris.io.load_files", return_value=[])
+        # The partition needs a real-looking part name to classify, not a
+        # file-system lookup against a path that was never written.
+        mocker.patch("iris.iris.io.expand_filespecs", side_effect=lambda names: names)
+        # The "file" branch calls the private, non-expanding `_load_files`
+        # directly, since it has already expanded - see its docstring.
+        load_files_mock = mocker.patch("iris.iris.io._load_files", return_value=[])
         load_http_mock = mocker.patch("iris.iris.io.load_http", return_value=[])
 
         list(_generate_cubes(uri, None, None))
