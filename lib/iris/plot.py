@@ -868,16 +868,23 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
     v_object1, _ = v_objects
     v1, v2 = vs
 
+    # fill_betweenx takes the object for the vertical axis first, so the
+    # first argument is plotted against y rather than x.
+    if draw_method_name == "fill_betweenx":
+        x_object, y_object = v_object1, u_object
+    else:
+        x_object, y_object = u_object, v_object1
+
     # if both u_object and v_object are coordinates then check if a map
     # should be drawn
     if (
-        isinstance(u_object, iris.coords.Coord)
-        and isinstance(v_object1, iris.coords.Coord)
-        and _can_draw_map([v_object1, u_object])
+        isinstance(x_object, iris.coords.Coord)
+        and isinstance(y_object, iris.coords.Coord)
+        and _can_draw_map([y_object, x_object])
     ):
         # Replace non-cartopy subplot/axes with a cartopy alternative and set
         # the transform keyword.
-        kwargs = _ensure_cartopy_axes_and_determine_kwargs(u_object, v_object1, kwargs)
+        kwargs = _ensure_cartopy_axes_and_determine_kwargs(x_object, y_object, kwargs)
 
     axes = kwargs.pop("axes", None)
     draw_method = getattr(axes or plt, draw_method_name)
@@ -888,7 +895,7 @@ def _draw_two_1d_from_points(draw_method_name, arg_func, *args, **kwargs):
         result = draw_method(u, v1, v2, *args, **kwargs)
 
     # Invert y-axis if necessary.
-    _invert_yaxis(v_object1, axes)
+    _invert_yaxis(y_object, axes)
 
     return result
 
@@ -1730,6 +1737,45 @@ def fill_between(x, y1, y2, *args, **kwargs):
     args = (x, y1, y2) + args
     _plot_args = None
     return _draw_two_1d_from_points("fill_between", _plot_args, *args, **kwargs)
+
+
+def fill_betweenx(y, x1, x2, *args, **kwargs):
+    """Plot x1 and x2 against y, and fills the space between them.
+
+    The horizontal counterpart of :func:`fill_between`, useful for vertical
+    profiles such as a range of values against depth or height.
+
+    Parameters
+    ----------
+    y : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        A cube or a coordinate to plot on the y-axis.
+    x1 : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        First cube or a coordinate to plot on the x-axis.
+    x2 : :class:`~iris.cube.Cube` or :class:`~iris.coords.Coord`
+        Second cube or a coordinate to plot on the x-axis.
+    axes : :class:`matplotlib.axes.Axes`, optional
+        The axes to use for drawing.  Defaults to the current axes if none
+        provided.
+    **kwargs : dict, optional
+        See :func:`matplotlib.pyplot.fill_betweenx` for details of additional
+        valid keyword arguments.
+
+    Notes
+    -----
+    This function does not maintain laziness when called; it realises data.
+    See more at :doc:`/user_manual/explanation/real_and_lazy_data`.
+
+    """
+    # here we are more specific about argument types than generic 1d plotting
+    if not isinstance(y, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("y must be a cube or a coordinate.")
+    if not isinstance(x1, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("x1 must be a cube or a coordinate.")
+    if not isinstance(x2, (iris.cube.Cube, iris.coords.Coord)):
+        raise TypeError("x2 must be a cube or a coordinate.")
+    args = (y, x1, x2) + args
+    _plot_args = None
+    return _draw_two_1d_from_points("fill_betweenx", _plot_args, *args, **kwargs)
 
 
 def hist(x, *args, **kwargs):
