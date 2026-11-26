@@ -1,0 +1,3 @@
+:user:`rmz-oz` fixed :meth:`~iris.coords.Coord.guess_bounds` so that
+``yearly=True`` works on a single point, as ``monthly=True`` already did.
+(:issue:`7311`)
