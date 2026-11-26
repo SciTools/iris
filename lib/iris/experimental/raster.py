@@ -174,7 +174,7 @@ def export_geotiff(cube, fname):
             )
         if not coord.is_contiguous():
             raise ValueError("Coordinate {!r} bounds must be contiguous.".format(name))
-        xy_step.append(np.diff(coord.bounds[0]))
+        xy_step.append(np.diff(coord.bounds[0]).item())
         if not np.allclose(np.diff(coord.bounds), xy_step[-1]):
             msg = "Coordinate {!r} bounds must be regularly spaced.".format(name)
             raise ValueError(msg)
