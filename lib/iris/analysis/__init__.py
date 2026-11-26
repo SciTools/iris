@@ -1877,7 +1877,34 @@ and lazy data.
 MAX_RUN.name = lambda: "max_run"  # type: ignore[method-assign]
 
 
-GMEAN = Aggregator("geometric_mean", scipy.stats.mstats.gmean)
+def _mask_where_all_masked(
+    result: np.ndarray, data: np.ndarray, axis: int | tuple[int, ...] | None
+) -> np.ndarray:
+    """Mask ``result`` wherever every point of ``data`` along ``axis`` is masked.
+
+    ``scipy.stats.mstats.gmean`` and ``hmean`` return a plain array holding NaN
+    at such points, so their results would otherwise lose the mask.
+    """
+    if not ma.isMaskedArray(data):
+        return result
+    return ma.masked_array(result, mask=ma.getmaskarray(data).all(axis=axis))
+
+
+def _masked_gmean(
+    data: np.ndarray, axis: int | tuple[int, ...] | None = None, **kwargs
+) -> np.ndarray:
+    result = scipy.stats.mstats.gmean(data, axis=axis, **kwargs)
+    return _mask_where_all_masked(result, data, axis)
+
+
+def _masked_hmean(
+    data: np.ndarray, axis: int | tuple[int, ...] | None = None, **kwargs
+) -> np.ndarray:
+    result = scipy.stats.mstats.hmean(data, axis=axis, **kwargs)
+    return _mask_where_all_masked(result, data, axis)
+
+
+GMEAN = Aggregator("geometric_mean", _masked_gmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 geometric mean over a :class:`~iris.cube.Cube`, as computed by
@@ -1894,7 +1921,7 @@ This aggregator handles masked data, but NOT lazy data.
 """
 
 
-HMEAN = Aggregator("harmonic_mean", scipy.stats.mstats.hmean)
+HMEAN = Aggregator("harmonic_mean", _masked_hmean)
 """
 An :class:`~iris.analysis.Aggregator` instance that calculates the
 harmonic mean over a :class:`~iris.cube.Cube`, as computed by
