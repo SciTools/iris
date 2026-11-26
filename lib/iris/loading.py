@@ -13,6 +13,7 @@
 from contextlib import contextmanager
 from dataclasses import dataclass
 import itertools
+from pathlib import Path
 import threading
 from traceback import TracebackException
 from typing import Any, Iterable, Type
@@ -83,25 +84,37 @@ def _generate_cubes(uris, callback, constraints):
         # Make a string, Dataset, or other single item, into an iterable.
         uris = [uris]
 
-    def _categorise(decoded: tuple[str, str, str | None]) -> tuple[str, str, str]:
-        scheme, part, fragment = decoded
-        category = "nczarr" if iris.io._is_nczarr_fragment(fragment) else scheme
-        if fragment:
-            part = f"{part}#{fragment}"
-        return category, scheme, part
-
     # Group collections of uris by their iris handler
     # Create list of tuples relating schemes to part names
-    uri_tuples = sorted(_categorise(iris.io.decode_uri(uri)) for uri in uris)
+    uri_tuples = sorted(iris.io._categorise_uri(uri) for uri in uris)
     for category, groups in itertools.groupby(uri_tuples, key=lambda x: x[0]):
         # Call each scheme handler with the appropriate URIs
         if category == "file":
             part_names = [part for _cat, _scheme, part in groups]
-            for cube in iris.io.load_files(part_names, callback, constraints):
-                yield cube
+            # The file-or-store decision has to happen after glob expansion
+            # and before format dispatch, because a glob may match both.
+            # Neither routine below learns about the other's kind of target.
+            # iris.fileformats.netcdf.ugrid_load.load_meshes makes this same
+            # distinction independently, for mesh loading - keep both in step.
+            expanded = iris.io.expand_filespecs(part_names)
+            files = [name for name in expanded if not Path(name).is_dir()]
+            stores = [name for name in expanded if Path(name).is_dir()]
+            if files:
+                # `expanded` is already the result of `expand_filespecs`, so
+                # the private, non-expanding `_load_files` is used here - see
+                # its docstring for why expanding twice would be wrong.
+                for cube in iris.io._load_files(files, callback, constraints):
+                    yield cube
+            if stores:
+                for cube in iris.io.load_stores(stores, callback, constraints):
+                    yield cube
         elif category in ["http", "https", "nczarr"]:
             urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
             for cube in iris.io.load_http(urls, callback):
+                yield cube
+        elif category in iris.io._REMOTE_STORE_SCHEMES:
+            urls = [f"{scheme}:{part}" for _cat, scheme, part in groups]
+            for cube in iris.io.load_stores(urls, callback, constraints):
                 yield cube
         elif category == "data":
             data_objects = [part for _cat, _scheme, part in groups]

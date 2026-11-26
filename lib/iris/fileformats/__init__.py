@@ -10,7 +10,9 @@
    API reference
 """
 
-from iris.io import _is_nczarr_fragment
+from pathlib import Path
+
+from iris.io import _REMOTE_STORE_SCHEMES, _is_nczarr_fragment, decode_uri
 from iris.io.format_picker import (
     DataSourceObjectProtocol,
     FileExtension,
@@ -19,6 +21,7 @@ from iris.io.format_picker import (
     LeadingLine,
     MagicNumber,
     UriProtocol,
+    ZarrStore,
 )
 
 from . import name, netcdf, nimrod, pp, um
@@ -42,6 +45,53 @@ def _uri_is_http_not_nczarr(uri_parts):
 def _uri_is_nczarr(uri_parts):
     _scheme, _part, fragment = uri_parts
     return _is_nczarr_fragment(fragment)
+
+
+#: What a version 3 and a version 2 Zarr store put at the root of a store.
+_ZARR_MARKERS = ("zarr.json", ".zgroup")
+
+
+def _is_zarr_store(target):
+    """Whether `target` names a native Zarr store.
+
+    Locally the test is a marker file, which costs one stat and is what tells
+    a real store from a directory someone named ``.zarr``. Remotely it is the
+    scheme and the suffix, because reading a marker file would cost a network
+    round trip before Iris knows it wants the target at all; a remote
+    ``.zarr`` that turns out not to be a store fails when zarr-python opens
+    it, with zarr-python's message.
+
+    These are two tests for two kinds of target, not two chances for one. A
+    third rule matching any path ending in ``.zarr`` would subsume the remote
+    one and leave the scheme test unreachable.
+    """
+    if not isinstance(target, str):
+        # iris.io.load_data_objects passes open datasets, not paths.
+        return False
+
+    scheme, part, fragment = decode_uri(target)
+    if _is_nczarr_fragment(fragment):
+        # The user asked for netCDF-c's Zarr driver by name. The store on
+        # disk is a real one, so the local test below would otherwise claim it.
+        return False
+
+    if scheme in _REMOTE_STORE_SCHEMES:
+        return part.rstrip("/").endswith(".zarr")
+
+    directory = Path(part)
+    return any((directory / marker).is_file() for marker in _ZARR_MARKERS)
+
+
+def _load_zarr(*args, **kwargs):
+    """Load from Zarr stores.
+
+    ``iris.fileformats.zarr``'s own ``__getattr__`` raises a clear
+    ``ImportError`` - naming the package and the version floor - if ``zarr``
+    is absent or too old; nothing here needs to repeat that.
+    """
+    from iris.fileformats.zarr import load_cubes
+
+    return load_cubes(*args, **kwargs)
 
 
 #
@@ -169,6 +219,18 @@ FORMAT_AGENT.add_spec(
 #
 # Zarr files.
 #
+FORMAT_AGENT.add_spec(
+    FormatSpecification(
+        "Zarr",
+        ZarrStore(),
+        _is_zarr_store,
+        _load_zarr,
+        priority=5,
+        constraint_aware_handler=True,
+    )
+)
+
+
 FORMAT_AGENT.add_spec(
     FormatSpecification(
         "NcZarr",

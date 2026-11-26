@@ -377,6 +377,33 @@ class UriProtocol(FileElement):
         return decode_uri(basename)
 
 
+class ZarrStore(FileElement):
+    """A :class:`FileElement` that returns a target that may be a Zarr store.
+
+    Carries the whole target rather than its basename, because recognising a
+    local store means reading a marker file inside it, and recognising a
+    remote one means reading its scheme.
+
+    """
+
+    def __init__(self):
+        FileElement.__init__(self, requires_fh=False)
+
+    def get_element(self, basename, file_handle):
+        """Return the target, which here is the whole path or URL.
+
+        ``None`` when a file handle is supplied, which no store ever has: a
+        store is a directory or a URL, so the caller that opened a single
+        seekable file has already settled the question. That caller also
+        passes a basename rather than a path, which resolved against the
+        working directory could name an unrelated store that happens to share
+        the file's name.
+        """
+        if file_handle is not None:
+            return None
+        return basename
+
+
 class DataSourceObjectProtocol(FileElement):
     """A :class:`FileElement` that simply returns the URI entry itself.
 

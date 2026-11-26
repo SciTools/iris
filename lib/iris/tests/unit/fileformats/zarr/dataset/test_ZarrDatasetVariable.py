@@ -1,0 +1,286 @@
+# Copyright Iris contributors
+#
+# This file is part of Iris and is released under the BSD license.
+# See LICENSE in the root of the repository for full licensing details.
+"""Unit tests for :class:`iris.fileformats.zarr._dataset.ZarrDatasetVariable`."""
+
+import json
+from types import SimpleNamespace
+
+import numcodecs
+import numpy as np
+import pytest
+import zarr
+
+from iris.exceptions import TranslationError
+from iris.fileformats.zarr._dataset import ZarrDatasetVariable
+from iris.warnings import IrisCfLoadWarning
+
+from .. import stores
+
+
+def wrap(array, location="store.zarr"):
+    """Return the ZarrDatasetVariable over `array`, naming its own format."""
+    zarr_format = array.metadata.zarr_format
+    return ZarrDatasetVariable(array, location, f"ZARR_V{zarr_format}")
+
+
+@pytest.fixture(params=[2, 3], ids=["v2", "v3"])
+def zarr_format(request):
+    return request.param
+
+
+@pytest.fixture
+def group(tmp_path, zarr_format):
+    return zarr.open_group(
+        store=tmp_path / "probe.zarr", mode="w", zarr_format=zarr_format
+    )
+
+
+def test_named_dimensions(group, zarr_format):
+    array = stores.make_array(
+        group, "v", (3, 2), "f8", zarr_format, dimensions=("y", "x")
+    )
+    assert wrap(array).dimensions == ("y", "x")
+
+
+def test_unnamed_dimensions_are_anonymous(group, zarr_format):
+    array = stores.make_array(group, "v", (3, 2), "f8", zarr_format)
+    assert wrap(array).dimensions == (None, None)
+
+
+def test_scalar_has_no_dimensions(group, zarr_format):
+    array = stores.make_array(group, "v", (), "i4", zarr_format)
+    assert wrap(array).dimensions == ()
+
+
+def test_partially_named_dimensions_version_3(tmp_path):
+    # The version 3 core specification: "an unnamed dimension is indicated by
+    # the null object". A store may name some dimensions and not others.
+    group = zarr.open_group(store=tmp_path / "p.zarr", mode="w", zarr_format=3)
+    array = group.create_array(
+        "v", shape=(3, 2), dtype="f8", dimension_names=("y", None)
+    )
+    assert wrap(array).dimensions == ("y", None)
+
+
+def test_repeated_name_within_one_array(tmp_path):
+    # "It is recommended but not required that all non-null dimension names
+    # are distinct." Recommended is not required, so this must not raise.
+    group = zarr.open_group(store=tmp_path / "p.zarr", mode="w", zarr_format=3)
+    array = group.create_array(
+        "v", shape=(2, 2), dtype="f8", dimension_names=("d", "d")
+    )
+    assert wrap(array).dimensions == ("d", "d")
+
+
+def test_an_unsupported_zarr_format_raises():
+    """Iris names the Zarr versions it reads, and refuses others.
+
+    The array is a stand-in because zarr-python cannot produce the input,
+    which is the point of the companion test below.
+    """
+    array = SimpleNamespace(
+        ndim=1,
+        basename="v",
+        attrs={},
+        metadata=SimpleNamespace(zarr_format=4, dimension_names=("t",)),
+    )
+    with pytest.raises(TranslationError, match="declares Zarr version 4"):
+        wrap(array)
+
+
+def test_zarr_python_rejects_an_unsupported_zarr_format(tmp_path):
+    """zarr-python is what makes the branch above unreachable in practice.
+
+    It parses `zarr_format` as a `Literal` and raises on anything else -
+    `expected Literal[3], got 4` for an array in a version 3 group. If it
+    ever widens that, the branch above starts earning its keep.
+    """
+    group = zarr.open_group(store=tmp_path / "v4.zarr", mode="w", zarr_format=3)
+    stores.make_array(group, "v", (2,), "f8", 3, dimensions=("t",))
+
+    metadata_path = tmp_path / "v4.zarr" / "v" / "zarr.json"
+    metadata = json.loads(metadata_path.read_text())
+    metadata["zarr_format"] = 4
+    metadata_path.write_text(json.dumps(metadata))
+
+    with pytest.raises(Exception, match="zarr_format"):
+        zarr.open_group(store=tmp_path / "v4.zarr", mode="r")["v"]
+
+
+def test_wrong_length_dimension_names_warns_and_loads_anonymous(tmp_path):
+    """A dimension-name count that disagrees with `ndim` is a malformation.
+
+    Version 2 only: the version 3 core specification says `dimension_names`
+    "must" be the same length as `shape`, and zarr-python enforces that on
+    every read, not just on write - a hand-edited `zarr.json` with the wrong
+    length raises `ValueError` from `Array.open` itself, before Iris sees an
+    array at all. `_ARRAY_DIMENSIONS` carries no such validation, so this is
+    reachable only through a version 2 store.
+    """
+    group = zarr.open_group(store=tmp_path / "bad.zarr", mode="w", zarr_format=2)
+    array = stores.make_array(group, "v", (3, 2), "f8", 2, dimensions=("y", "x"))
+    array.attrs[stores.ARRAY_DIMENSIONS] = ["y"]
+
+    with pytest.warns(IrisCfLoadWarning, match="dimension_names"):
+        dimensions = wrap(array).dimensions
+    assert dimensions == (None, None)
+
+
+def test_plain_properties(tmp_path, zarr_format):
+    location = stores.make_store(tmp_path / "s.zarr", zarr_format=zarr_format)
+    array = zarr.open_group(store=location, mode="r")["air_temperature"]
+    variable = wrap(array, location)
+
+    assert variable.name == "air_temperature"
+    assert variable.location == location
+    assert variable.format == f"ZARR_V{zarr_format}"
+    assert variable.shape == stores.DATA.shape
+    assert variable.dtype == np.dtype("f8")
+    assert variable.size == stores.DATA.size
+    assert variable.ndim == stores.DATA.ndim
+    assert len(variable) == stores.DATA.shape[0]
+    np.testing.assert_array_equal(variable[:], stores.DATA)
+    np.testing.assert_array_equal(variable[1], stores.DATA[1])
+
+
+def test_fill_value_is_the_storage_field(tmp_path, zarr_format):
+    """`fill_value` is what unwritten storage reads as, not `_FillValue`.
+
+    zarr-python defaults the field to zero, so an array that declares no CF
+    sentinel still reports one here. Reading it as a mask source is what
+    masks every valid zero.
+    """
+    group = zarr.open_group(
+        store=tmp_path / "f.zarr", mode="w", zarr_format=zarr_format
+    )
+    array = stores.make_array(group, "v", (3,), "i2", zarr_format)
+    assert wrap(array).fill_value == 0
+
+    declared = stores.make_array(group, "w", (3,), "i2", zarr_format, fill_value=-999)
+    assert wrap(declared).fill_value == -999
+
+
+def test_chunking_is_the_inner_chunk_not_the_shard(tmp_path):
+    """A sharded array reports `Array.chunks`.
+
+    Zarr's sharding codec is indexed: a reader fetches the shard index, then
+    byte ranges for only the inner chunks it needs. The inner chunk is the
+    independently decodable unit.
+    """
+    group = zarr.open_group(store=tmp_path / "sh.zarr", mode="w", zarr_format=3)
+    array = group.create_array(
+        "v", shape=(1024,), dtype="i4", chunks=(8,), shards=(1024,)
+    )
+    variable = wrap(array)
+    assert variable.chunking == (8,)
+    assert variable.storage_settings["shards"] == (1024,)
+
+
+def test_storage_settings_reports_the_store(tmp_path, zarr_format):
+    location = stores.make_store(tmp_path / "e.zarr", zarr_format=zarr_format)
+    array = zarr.open_group(store=location, mode="r")["air_temperature"]
+    storage_settings = wrap(array, location).storage_settings
+    assert storage_settings["chunks"] == array.chunks
+    assert storage_settings["zarr_format"] == zarr_format
+
+
+def test_storage_settings_reports_the_compression_on_both_versions(
+    tmp_path, zarr_format
+):
+    """The two versions record compression in different metadata fields.
+
+    A version 3 array carries `codecs`; a version 2 array carries
+    `compressor` and `filters` and has no `codecs` field at all. Read from
+    the raw metadata, a compressed version 2 array therefore reports nothing
+    about how it is compressed. zarr-python's own `Array` properties answer
+    for both, so a caller asking how an array is stored need not first
+    establish which version wrote it.
+    """
+    group = zarr.open_group(
+        store=tmp_path / "z.zarr", mode="w", zarr_format=zarr_format
+    )
+    compressors = numcodecs.GZip() if zarr_format == 2 else zarr.codecs.GzipCodec()
+    array = group.create_array("v", shape=(4,), dtype="i2", compressors=compressors)
+
+    storage_settings = wrap(array).storage_settings
+    assert "gzip" in str(storage_settings["compressors"]).lower()
+    assert storage_settings["filters"] == ()
+    assert "codecs" not in storage_settings
+
+
+def test_storage_settings_reports_the_serializer(tmp_path, zarr_format):
+    """Version 3 names the bytes codec; version 2 has no such concept."""
+    group = zarr.open_group(
+        store=tmp_path / "z.zarr", mode="w", zarr_format=zarr_format
+    )
+    array = group.create_array("v", shape=(4,), dtype="i2")
+
+    serializer = wrap(array).storage_settings["serializer"]
+    if zarr_format == 2:
+        assert serializer is None
+    else:
+        assert "bytes" in str(serializer).lower()
+
+
+def test_array_dimensions_is_not_a_cf_attribute(tmp_path):
+    """`_ARRAY_DIMENSIONS` is storage, so it must not reach `attributes`.
+
+    It is how a version 2 store records dimension names. Every attribute the
+    loading rules do not consume reaches `cube.attributes`, so leaving it in
+    would put it on every cube loaded from a version 2 store, and make that
+    cube unequal to the same data loaded from version 3.
+    """
+    group = zarr.open_group(store=tmp_path / "v2.zarr", mode="w", zarr_format=2)
+    array = stores.make_array(
+        group,
+        "v",
+        (3, 2),
+        "f8",
+        2,
+        dimensions=("y", "x"),
+        attributes={"units": "K"},
+    )
+    variable = wrap(array)
+
+    assert variable.dimensions == ("y", "x")
+    assert stores.ARRAY_DIMENSIONS in array.attrs
+    assert stores.ARRAY_DIMENSIONS not in variable.attributes
+    assert dict(variable.attributes) == {"units": "K"}
+
+
+def test_version_2_and_version_3_present_the_same_attributes(tmp_path):
+    v2 = stores.make_store(tmp_path / "a2.zarr", zarr_format=2)
+    v3 = stores.make_store(tmp_path / "a3.zarr", zarr_format=3)
+    from_2 = zarr.open_group(store=v2, mode="r")["air_temperature"]
+    from_3 = zarr.open_group(store=v3, mode="r")["air_temperature"]
+    assert dict(wrap(from_2, v2).attributes) == dict(wrap(from_3, v3).attributes)
+
+
+def test_structured_attribute_values_are_carried_unchanged(tmp_path):
+    """A JSON object or array attribute is carried, not interpreted.
+
+    The version 3 specification allows an attribute to be any JSON literal,
+    and CF cannot express a nested one at any rank. Two independent producers
+    write them - NOAA GFS gives `valid_time` a `statistics_approximate`
+    object, and the ESA EOPF product root carries `stac_discovery`.
+    A flat numeric array is an ordinary CF vector attribute and is not special.
+    """
+    group = zarr.open_group(store=tmp_path / "n.zarr", mode="w", zarr_format=3)
+    array = stores.make_array(
+        group,
+        "v",
+        (2,),
+        "f8",
+        3,
+        attributes={
+            "statistics_approximate": {"min": 0.0, "max": 1.0},
+            "valid_range": [0.0, 1.0],
+            "nested_list": [[1, 2], [3, 4]],
+        },
+    )
+    attributes = wrap(array).attributes
+    assert attributes["statistics_approximate"] == {"min": 0.0, "max": 1.0}
+    assert attributes["valid_range"] == [0.0, 1.0]
+    assert attributes["nested_list"] == [[1, 2], [3, 4]]

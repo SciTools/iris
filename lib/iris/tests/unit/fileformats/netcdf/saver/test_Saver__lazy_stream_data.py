@@ -16,8 +16,7 @@ import dask.array as da
 import numpy as np
 import pytest
 
-import iris.fileformats.netcdf._bytecoding_datasets as bytecoding_datasets
-import iris.fileformats.netcdf._thread_safe_nc as threadsafe_nc
+import iris.fileformats.netcdf._dataset as dataset_module
 from iris.fileformats.netcdf.saver import Saver
 
 
@@ -61,18 +60,15 @@ class Test__lazy_stream_data:
     @staticmethod
     def mock_var(shape, with_data_array, mocker, dtype=np.dtype(np.float32)):
         # Create a test cf_var object.
-        # N.B. using 'spec=' so we can control whether it has a '_data_array' property.
-        if with_data_array:
-            extra_properties = {"_data_array": mocker.sentinel.initial_data_array}
-        else:
-            extra_properties = {}
+        # 'is_emulated' is now a declared property rather than the presence of
+        # a '_data_array' member, so it can simply be set.
         mock_cfvar = mocker.MagicMock(
-            spec=threadsafe_nc.VariableWrapper,
+            spec=dataset_module.NetCDFDatasetVariable,
             shape=tuple(shape),
             dtype=dtype,
-            _contained_instance=mocker.Mock(dtype="f4"),
-            **extra_properties,
+            is_emulated=with_data_array,
         )
+        mock_cfvar.write_handle.return_value = mocker.sentinel.write_handle
         # Give the mock cf-var a name property, as required by '_lazy_stream_data'.
         # This *can't* be an extra kwarg to MagicMock __init__, since that already
         # defines a specific 'name' kwarg, with a different purpose.
@@ -108,12 +104,14 @@ class Test__lazy_stream_data:
         if data_form == "lazydata":
             result_data, result_writer = saver._delayed_writes[0]
             assert result_data is data
-            assert isinstance(result_writer, threadsafe_nc.NetCDFWriteProxy)
+            # What kind of handle it is is the dataset's business, and is
+            # tested in test_NetCDFDataset__write.py.
+            assert result_writer is mocker.sentinel.write_handle
         elif data_form == "realdata":
             cf_var.__setitem__.assert_called_once_with(slice(None), data)
         else:
             assert data_form == "emulateddata"
-            assert cf_var._data_array is data
+            assert cf_var.emulated_data_array is data
 
     @pytest.mark.parametrize("is_realdata", [True, False], ids=["realdata", "lazydata"])
     @pytest.mark.parametrize("is_string", [True, False], ids=["string", "numeric"])
@@ -135,13 +133,21 @@ class Test__lazy_stream_data:
         )
 
         if is_string:
-            contained = cf_var._contained_instance
-            contained.name = "<mock_contained>"
-            contained.dtype = np.dtype("S1")
-            contained.dimensions = ("x", "strlen")
-            mock_group = mocker.Mock()
-            mock_group.dimensions = {"strlen": mocker.Mock(size=5)}
-            contained.group.return_value = mock_group
+            # The encoding is described by the file variable beneath the
+            #  emulation, which is 'char' where the data written is strings.
+            unencoded = mocker.Mock(
+                dtype=np.dtype("S1"),
+                dimensions=("x", "strlen"),
+                # None is what an absent _Encoding attribute yields: the
+                #  default encoding, and no "unsupported encoding" warning.
+                _Encoding=None,
+            )
+            # .name is a Mock constructor keyword, so it has to be set after.
+            unencoded.name = "<mock_unencoded>"
+            unencoded.group.return_value = mocker.Mock(
+                dimensions={"strlen": mocker.Mock(size=5)}
+            )
+            cf_var.unencoded_variable = unencoded
 
             ifnbd = "iris.fileformats.netcdf._bytecoding_datasets."
             mock_encode = mocker.patch(ifnbd + "encode_stringarray_as_bytearray")
@@ -154,16 +160,16 @@ class Test__lazy_stream_data:
         assert len(saver._nczarr_writes) == 0
 
         if not is_string:
-            assert cf_var._data_array is data
+            assert cf_var.emulated_data_array is data
         else:
             if is_realdata:
                 assert mock_encode.call_count == 1
-                assert cf_var._data_array is mock_encode.return_value
+                assert cf_var.emulated_data_array is mock_encode.return_value
                 call_args = mock_encode.call_args_list[0][0]
                 assert call_args[0] is data
             else:
                 assert mock_mapblocks.call_count == 1
-                assert cf_var._data_array is mock_mapblocks.return_value
+                assert cf_var.emulated_data_array is mock_mapblocks.return_value
                 call_args = mock_mapblocks.call_args_list[0][0]
                 assert call_args[0] is mock_encode
                 assert call_args[1] is data
@@ -201,5 +207,7 @@ class Test__lazy_stream_data:
         saver.__exit__(None, None, None)
 
         store_patch.assert_called_once_with([source], [target])
-        saver._dataset.sync.assert_called_once_with()
-        saver._dataset.close.assert_called_once_with()
+        # Saver._dataset is a NetCDFDataset now, so the mock that records the
+        # calls is the netCDF dataset it opened, one level down.
+        saver._dataset.dataset.sync.assert_called_once_with()
+        saver._dataset.dataset.close.assert_called_once_with()

@@ -15,7 +15,7 @@ as used by our code to translate each data cube.
 
 engine.get_kb() also returns a FactEntity object, which mimics *just enough*
 API of a Pyke.knowlege_base, so that we can list its case-specific facts, as
-used in :meth:`iris.fileformats.netcdf._actions_activation_stats`.
+used in :meth:`iris.fileformats.cf.loader._actions_activation_stats`.
 
 """
 
