@@ -2327,6 +2327,34 @@ class Test_intersection__ModulusBounds:
             assert result.data[0, 0, 0] == 181
             assert result.data[0, 0, -1] == 180
 
+    @pytest.mark.parametrize("decreasing", [False, True])
+    def test_threshold_wrapped_first_edge_cell(self, decreasing):
+        # A threshold that moves only the edge cell next to `minimum` up by
+        # the modulus must roll that cell to the other end (#7391).
+        points = np.array([0.0, 120.0, 240.0])
+        bounds = np.array([[-60.0, 60.0], [60.0, 180.0], [180.0, 300.0]])
+        data = np.array([10.0, 20.0, 30.0])
+        if decreasing:
+            points, bounds, data = points[::-1], bounds[::-1, ::-1], data[::-1]
+        coord = iris.coords.DimCoord(
+            points,
+            standard_name="longitude",
+            units="degrees",
+            bounds=bounds,
+            circular=True,
+        )
+        cube = Cube(data)
+        cube.add_dim_coord(coord, 0)
+        result = cube.intersection(longitude=(30.0, 390.0), threshold=0.5)
+        expected_points = [120.0, 240.0, 360.0]
+        expected_data = [20.0, 30.0, 10.0]
+        if decreasing:
+            expected_points, expected_data = expected_points[::-1], expected_data[::-1]
+        _shared_utils.assert_array_equal(
+            result.coord("longitude").points, expected_points
+        )
+        _shared_utils.assert_array_equal(result.data, expected_data)
+
 
 def unrolled_cube(dataless=False):
     if dataless:
