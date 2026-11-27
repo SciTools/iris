@@ -7,6 +7,7 @@
 from platform import python_version
 from xml.dom import minidom
 
+import dask.array as da
 import numpy as np
 from numpy import ma
 from packaging import version
@@ -327,3 +328,25 @@ class TestValidations:
         connectivity = Connectivity(**kwargs)
         with pytest.raises(ValueError, match="Not all faces meet requirement: len>=3"):
             connectivity.validate_indices()
+
+    def test_zero_length_real(self):
+        connectivity = Connectivity(
+            np.zeros((0, 4), dtype=int), cf_role="face_node_connectivity"
+        )
+        assert connectivity.shape == (0, 4)
+
+    def test_zero_length_lazy(self):
+        connectivity = Connectivity(
+            da.zeros((0, 4), dtype=int), cf_role="face_node_connectivity"
+        )
+        assert connectivity.has_lazy_indices()
+        assert connectivity.shape == (0, 4)
+
+    def test_zero_length_transposed(self):
+        # Faces need at least 3 nodes, so shape (2, 0) can only be edges.
+        connectivity = Connectivity(
+            np.zeros((2, 0), dtype=int),
+            cf_role="edge_node_connectivity",
+            location_axis=1,
+        )
+        assert connectivity.shape == (2, 0)

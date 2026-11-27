@@ -1,0 +1,4 @@
+:user:`stephenworsley` fixed the indexing behaviour of :class:`~iris.mesh.components._MeshIndexSet`
+when handling non-node connectivities, e.g. `face_face_connectivity`. A side effect of this
+work is that zero length connectivities are now allowed, since these may be created when
+indexing a mesh-cube. (:pull:`7384`)

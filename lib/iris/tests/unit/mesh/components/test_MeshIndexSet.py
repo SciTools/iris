@@ -6,17 +6,18 @@
 
 import itertools
 import re
+from unittest import mock
 
 from dask import array as da
 import numpy as np
 import pytest
 
-from iris._lazy_data import is_lazy_data
+from iris._lazy_data import as_concrete_data, is_lazy_data
 from iris.coords import AuxCoord
 from iris.mesh import MeshCoord, MeshXY
 from iris.mesh.components import Connectivity, _MeshIndexSet
 from iris.tests import _shared_utils
-from iris.tests.stock.mesh import sample_mesh
+from iris.tests.stock.mesh import sample_mesh, sample_strip_mesh
 
 
 @pytest.fixture(params=[False, True], ids=["real", "lazy"], autouse=True)
@@ -278,19 +279,84 @@ class Test_index_calculations:
         index_set = _MeshIndexSet(indices=[1], mesh=mesh, location=location)
         result = index_set._calculate_edge_indices()
 
-        if location == "edge":
-            _shared_utils.assert_array_equal(result, np.array([1]))
-        else:
-            assert result is None
+        # Face 1 has side (5, 6), which is edge 0.
+        expected = {"edge": [1], "face": [0], "node": []}[location]
+        assert isinstance(result, np.ndarray)
+        _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
 
     def test_calculate_face_indices(self, mesh_2d, locations_all):
         index_set = _MeshIndexSet(indices=[1], mesh=mesh_2d, location=locations_all)
         result = index_set._calculate_face_indices()
 
-        if locations_all == "face":
-            _shared_utils.assert_array_equal(result, np.array([1]))
-        else:
-            assert result is None
+        expected = {"face": [1], "edge": [], "node": []}[locations_all]
+        assert isinstance(result, np.ndarray)
+        _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
+
+    @pytest.mark.parametrize("start_index", [0, 1])
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    @pytest.mark.parametrize(
+        ("location", "indices", "edges", "faces"),
+        [
+            ("face", [0, 2], [0, 2, 3, 5, 6, 7, 8, 9], [0, 2]),
+            ("face", [1, 0], [0, 1, 3, 4, 6, 7, 8], [1, 0]),
+            ("edge", [0, 3, 6, 7, 9], [0, 3, 6, 7, 9], [0]),
+            ("edge", [1, 4], [1, 4], []),
+            ("node", [0, 1, 4, 5], [0, 3, 6, 7], [0]),
+        ],
+    )
+    def test_strip_derived_selections(
+        self, lazy_values, start_index, location_axis, location, indices, edges, faces
+    ):
+        mesh = sample_strip_mesh(
+            lazy_values=lazy_values,
+            start_index=start_index,
+            location_axis=location_axis,
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        edge_result = index_set._calculate_edge_indices()
+        face_result = index_set._calculate_face_indices()
+
+        for result, expected in [(edge_result, edges), (face_result, faces)]:
+            assert isinstance(result, np.ndarray)
+            assert result.ndim == 1
+            assert np.issubdtype(result.dtype, np.integer)
+            _shared_utils.assert_array_equal(result, np.array(expected, dtype=int))
+
+    @pytest.mark.parametrize(
+        ("location", "indices", "edges", "faces"),
+        [
+            ("face", [0], [0, 3, 6, 7], [0]),
+            ("edge", [0, 3, 6, 7], [0, 3, 6, 7], [0]),
+        ],
+    )
+    def test_mid_row_masked_slots(self, lazy_values, location, indices, edges, faces):
+        """Masked slots anywhere in a row are skipped, not only trailing ones.
+
+        Face [0, --, 1, 5, 4] has side 0-1; no side 0-0.
+        """
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        face_nodes = np.ma.masked_less(
+            [[0, -1, 1, 5, 4], [1, 2, 6, 5, -1], [2, 3, -1, 7, 6]], 0
+        )
+        if lazy_values:
+            face_nodes = da.from_array(face_nodes)
+        mesh.add_connectivities(
+            Connectivity(indices=face_nodes, cf_role="face_node_connectivity")
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        _shared_utils.assert_array_equal(index_set._calculate_edge_indices(), edges)
+        _shared_utils.assert_array_equal(index_set._calculate_face_indices(), faces)
+
+    def test_no_edges_gives_none(self, lazy_values):
+        mesh = sample_mesh(n_edges=0, lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+        assert index_set._calculate_edge_indices() is None
+
+    def test_1d_mesh_no_faces(self, mesh_1d):
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_1d, location="node")
+        assert index_set._calculate_face_indices() is None
 
 
 class Test_managers_and_views:
@@ -330,17 +396,23 @@ class Test_managers_and_views:
         assert connectivity_manager.is_view
         match location:
             case "node":
-                assert len(connectivity_manager.all_members) == 0
+                assert connectivity_manager.edge_node.shape[0] == 0
+                if mesh.topology_dimension == 2:
+                    assert connectivity_manager.face_node.shape[0] == 0
             case "edge":
                 assert connectivity_manager.edge_node is not None
-                assert not hasattr(connectivity_manager, "face_node")
+                if mesh.topology_dimension == 2:
+                    assert connectivity_manager.face_node.shape[0] == 0
+                else:
+                    assert not hasattr(connectivity_manager, "face_node")
                 assert (
                     connectivity_manager.edge_node.shape[0]
                     < mesh.edge_node_connectivity.shape[0]
                 )
             case "face":
                 assert connectivity_manager.face_node is not None
-                assert connectivity_manager.edge_node is None
+                # Edge 2 (nodes 9, 10) is a side of face 2.
+                assert connectivity_manager.edge_node.shape[0] == 1
                 assert (
                     connectivity_manager.face_node.shape[0]
                     < mesh.face_node_connectivity.shape[0]
@@ -571,47 +643,282 @@ class Test_unusual_connectivities:
             np.array([-2, -3, -4, 0, -1]),
         )
 
+    @pytest.mark.parametrize(
+        "fixture",
+        ["varied_mesh", "varied_mesh_1_indexed"],
+    )
+    def test_varied_derived_selections(self, fixture, request):
+        mesh: MeshXY = request.getfixturevalue(fixture)
+
+        face_set = _MeshIndexSet(indices=[3], mesh=mesh, location="face")
+        _shared_utils.assert_array_equal(
+            face_set._calculate_edge_indices(), np.array([0, 1, 2, 3])
+        )
+
+        # The pentagon's closing side (5, 0) has no edge, so no face is kept.
+        edge_set = _MeshIndexSet(indices=[0, 1, 2, 3], mesh=mesh, location="edge")
+        _shared_utils.assert_array_equal(
+            edge_set._calculate_face_indices(), np.array([], dtype=int)
+        )
+
+    def test_node_selection_ignores_masked_slot_values(self, varied_mesh):
+        """Masked face slots can hold out-of-range data, as when loaded from netCDF.
+
+        Face [9, 10, 12, 11, <999999>] indexed the node mask with 999999: IndexError.
+        """
+        mesh: MeshXY = varied_mesh
+        face_nodes = mesh.face_node_connectivity
+        indices = face_nodes.indices
+        indices = np.ma.masked_array(
+            np.where(np.ma.getmaskarray(indices), 999999, np.ma.getdata(indices)),
+            mask=np.ma.getmaskarray(indices),
+        )
+        mesh.add_connectivities(
+            Connectivity(indices=indices, cf_role="face_node_connectivity")
+        )
+
+        node_set = _MeshIndexSet(indices=[0, 1, 2, 5, 6], mesh=mesh, location="node")
+        _shared_utils.assert_array_equal(
+            node_set._calculate_face_indices(), np.array([3])
+        )
+
+
+def _by_location_zero_based(connectivity):
+    indices = connectivity.indices_by_location(connectivity.core_indices())
+    return np.ma.asanyarray(as_concrete_data(indices)) - connectivity.start_index
+
+
+def _masked_rows(rows, width):
+    return np.ma.masked_less(np.array(rows, dtype=int).reshape(-1, width), 0)
+
+
+class Test_strip_connectivities:
+    @pytest.mark.parametrize("start_index", [0, 1])
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    @pytest.mark.parametrize(
+        ("location", "indices", "expected"),
+        [
+            pytest.param(
+                "face",
+                [0, 2],
+                dict(
+                    face_node=_masked_rows([[0, 1, 5, 4], [2, 3, 7, 6]], 4),
+                    edge_node=_masked_rows(
+                        [
+                            [0, 1],
+                            [2, 3],
+                            [4, 5],
+                            [6, 7],
+                            [0, 4],
+                            [1, 5],
+                            [2, 6],
+                            [3, 7],
+                        ],
+                        2,
+                    ),
+                    face_edge=_masked_rows([[0, 5, 2, 4], [1, 7, 3, 6]], 4),
+                    face_face=_masked_rows([[-1] * 4] * 2, 4),
+                    edge_face=_masked_rows(
+                        [
+                            [0, -1],
+                            [1, -1],
+                            [0, -1],
+                            [1, -1],
+                            [0, -1],
+                            [0, -1],
+                            [-1, 1],
+                            [1, -1],
+                        ],
+                        2,
+                    ),
+                ),
+                id="face-0-2",
+            ),
+            pytest.param(
+                "face",
+                [1, 0],
+                dict(
+                    face_node=_masked_rows([[1, 2, 5, 4], [0, 1, 4, 3]], 4),
+                    edge_node=_masked_rows(
+                        [[0, 1], [1, 2], [3, 4], [4, 5], [0, 3], [1, 4], [2, 5]], 2
+                    ),
+                    face_edge=_masked_rows([[1, 6, 3, 5], [0, 5, 2, 4]], 4),
+                    face_face=_masked_rows([[-1, -1, -1, 1], [-1, 0, -1, -1]], 4),
+                    edge_face=_masked_rows(
+                        [[1, -1], [0, -1], [1, -1], [0, -1], [1, -1], [1, 0], [0, -1]],
+                        2,
+                    ),
+                ),
+                id="face-1-0",
+            ),
+            pytest.param(
+                "edge",
+                [0, 3, 6, 7, 9],
+                dict(
+                    face_node=_masked_rows([[0, 1, 4, 3]], 4),
+                    edge_node=_masked_rows([[0, 1], [3, 4], [0, 3], [1, 4], [2, 5]], 2),
+                    face_edge=_masked_rows([[0, 3, 1, 2]], 4),
+                    face_face=_masked_rows([[-1] * 4], 4),
+                    edge_face=_masked_rows(
+                        [[0, -1], [0, -1], [0, -1], [0, -1], [-1, -1]], 2
+                    ),
+                ),
+                id="edge-5",
+            ),
+            pytest.param(
+                "edge",
+                [1, 4],
+                dict(
+                    face_node=_masked_rows([], 4),
+                    edge_node=_masked_rows([[0, 1], [2, 3]], 2),
+                    face_edge=_masked_rows([], 4),
+                    face_face=_masked_rows([], 4),
+                    edge_face=_masked_rows([[-1, -1]] * 2, 2),
+                ),
+                id="edge-no-faces",
+            ),
+            pytest.param(
+                "node",
+                [0, 1, 4, 5],
+                dict(
+                    face_node=_masked_rows([[0, 1, 3, 2]], 4),
+                    edge_node=_masked_rows([[0, 1], [2, 3], [0, 2], [1, 3]], 2),
+                    face_edge=_masked_rows([[0, 3, 1, 2]], 4),
+                    face_face=_masked_rows([[-1] * 4], 4),
+                    edge_face=_masked_rows([[0, -1]] * 4, 2),
+                ),
+                id="node-4",
+            ),
+        ],
+    )
+    def test_strip_cases(
+        self, lazy_values, start_index, location_axis, location, indices, expected
+    ):
+        mesh = sample_strip_mesh(
+            lazy_values=lazy_values,
+            start_index=start_index,
+            location_axis=location_axis,
+        )
+        index_set = _MeshIndexSet(indices=indices, mesh=mesh, location=location)
+
+        # One manager access: reading `.indices` would realise a view.
+        results = index_set._connectivity_manager.all_members._asdict()
+        assert set(results) - {"boundary_node"} == set(expected)
+        assert results["boundary_node"] is None
+        for name, expected_indices in expected.items():
+            connectivity = results[name]
+            original = getattr(mesh, f"{name}_connectivity")
+            assert connectivity.start_index == original.start_index
+            assert connectivity.location_axis == original.location_axis
+            actual = _by_location_zero_based(connectivity)
+            assert actual.shape == expected_indices.shape
+            _shared_utils.assert_masked_array_equal(actual, expected_indices)
+
+    @pytest.mark.parametrize("location_axis", [0, 1])
+    def test_strip_repeated_faces(self, lazy_values, location_axis):
+        mesh = sample_strip_mesh(lazy_values=lazy_values, location_axis=location_axis)
+        index_set = _MeshIndexSet(indices=[0, 0], mesh=mesh, location="face")
+
+        results = index_set._connectivity_manager.all_members
+        _shared_utils.assert_masked_array_equal(
+            _by_location_zero_based(results.face_node),
+            _masked_rows([[0, 1, 3, 2]] * 2, 4),
+        )
+        face_face = _by_location_zero_based(results.face_face)
+        assert face_face.shape == (2, 4)
+        assert np.ma.getmaskarray(face_face).all()
+
+    def test_strip_stays_lazy(self):
+        mesh = sample_strip_mesh(lazy_values=True)
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        connectivities = [
+            c for c in index_set._connectivity_manager.all_members if c is not None
+        ]
+        assert len(connectivities) == 5
+        for connectivity in connectivities:
+            assert is_lazy_data(connectivity.core_indices()), connectivity.cf_role
+
+    def test_boundary_node_dropped(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        mesh.add_connectivities(
+            Connectivity(
+                indices=[[0, 1], [1, 2]],
+                cf_role="boundary_node_connectivity",
+            )
+        )
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        assert index_set._connectivity_manager.boundary_node is None
+
+    def test_no_edge_node_drops_edge_connectivities(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        mesh.remove_connectivities(cf_role="edge_node_connectivity")
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location="face")
+
+        results = index_set._connectivity_manager.all_members
+        assert results.edge_node is None
+        assert results.face_edge is None
+        assert results.edge_face is None
+        assert results.face_node is not None
+        assert results.face_face is not None
+
 
 class Test_as_mesh:
     def test_creation(self, meshes_locs_all):
         mesh, location = meshes_locs_all
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh, location=location)
-        if location == "node":
-            with pytest.raises(NotImplementedError, match="with no edge or face"):
-                _ = index_set.as_mesh()
-        else:
-            new_mesh = index_set.as_mesh()
+        new_mesh = index_set.as_mesh()
 
-            assert isinstance(new_mesh, MeshXY)
-            assert new_mesh is not mesh
-            match location:
-                case "node":
-                    assert (
-                        new_mesh.node_coords.node_x.shape
-                        == index_set.node_coords.node_x.shape
-                    )
-                    assert (
-                        new_mesh.node_coords.node_y.shape
-                        == index_set.node_coords.node_x.shape
-                    )
-                case "edge":
-                    assert (
-                        new_mesh.edge_coords.edge_x.shape
-                        == index_set.edge_coords.edge_x.shape
-                    )
-                    assert (
-                        new_mesh.edge_coords.edge_y.shape
-                        == index_set.edge_coords.edge_y.shape
-                    )
-                case "face":
-                    assert (
-                        new_mesh.face_coords.face_x.shape
-                        == index_set.face_coords.face_x.shape
-                    )
-                    assert (
-                        new_mesh.face_coords.face_y.shape
-                        == index_set.face_coords.face_y.shape
-                    )
+        assert isinstance(new_mesh, MeshXY)
+        assert new_mesh is not mesh
+        match location:
+            case "node":
+                assert (
+                    new_mesh.node_coords.node_x.shape
+                    == index_set.node_coords.node_x.shape
+                )
+                assert (
+                    new_mesh.node_coords.node_y.shape
+                    == index_set.node_coords.node_y.shape
+                )
+            case "edge":
+                assert (
+                    new_mesh.edge_coords.edge_x.shape
+                    == index_set.edge_coords.edge_x.shape
+                )
+                assert (
+                    new_mesh.edge_coords.edge_y.shape
+                    == index_set.edge_coords.edge_y.shape
+                )
+            case "face":
+                assert (
+                    new_mesh.face_coords.face_x.shape
+                    == index_set.face_coords.face_x.shape
+                )
+                assert (
+                    new_mesh.face_coords.face_y.shape
+                    == index_set.face_coords.face_y.shape
+                )
+
+    @pytest.mark.parametrize("location", ["node", "edge"])
+    def test_1d_mesh_stays_1d(self, mesh_1d, location):
+        new_mesh = _MeshIndexSet(
+            indices=[0, 2], mesh=mesh_1d, location=location
+        ).as_mesh()
+
+        assert new_mesh.topology_dimension == 1
+        assert new_mesh.edge_node_connectivity is not None
+        assert new_mesh.connectivities(contains_face=True) == []
+
+    def test_zero_length_face_coords(self, mesh_2d):
+        # Edges 0 and 2 enclose no face.
+        index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="edge")
+        new_mesh = index_set.as_mesh()
+
+        assert new_mesh.face_coords.face_x.shape == (0,)
+        assert new_mesh.face_coords.face_y.shape == (0,)
+        assert new_mesh.edge_coords.edge_x.shape == (2,)
 
     def test_deep_copy_not_view(self, mesh_2d):
         index_set = _MeshIndexSet(indices=[0, 2], mesh=mesh_2d, location="face")
@@ -805,3 +1112,76 @@ class Test_deferred_views:
         _shared_utils.assert_array_equal(
             conn_after.indices, [[3, 2, 1, 0], [7, 6, 5, 4]]
         )
+
+    def test_edge_coords_follow_connectivity_change(self, lazy_values):
+        """Derived edge coords depend on face_node, not only on the mesh coords.
+
+        Reads core points: realising a view refreshes the cache and hides staleness.
+        """
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0], mesh=mesh, location="face")
+
+        def edge_x():
+            coord = index_set.coord(location="edge", axis="x")
+            return as_concrete_data(coord.core_points())
+
+        _shared_utils.assert_array_equal(edge_x(), [0.5, 0.5, 0, 1])
+
+        # Swap faces 0 and 2: face 0 now has edges 2, 5, 8 and 9.
+        mesh.add_connectivities(
+            mesh.face_node_connectivity.copy(
+                np.array([[2, 3, 7, 6], [1, 2, 6, 5], [0, 1, 5, 4]])
+            )
+        )
+        _shared_utils.assert_array_equal(edge_x(), [2.5, 2.5, 2, 3])
+
+
+class Test_selection_cache:
+    @pytest.fixture
+    def spies(self):
+        with (
+            mock.patch.object(
+                _MeshIndexSet,
+                "_calculate_edge_indices",
+                autospec=True,
+                side_effect=_MeshIndexSet._calculate_edge_indices,
+            ) as edge_spy,
+            mock.patch.object(
+                _MeshIndexSet,
+                "_calculate_face_indices",
+                autospec=True,
+                side_effect=_MeshIndexSet._calculate_face_indices,
+            ) as face_spy,
+        ):
+            yield edge_spy, face_spy
+
+    @pytest.mark.parametrize("location", ["node", "edge", "face"])
+    def test_derived_once(self, lazy_values, spies, location):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location=location)
+
+        _ = index_set._coord_manager
+        _ = index_set._connectivity_manager
+        _ = index_set.as_mesh()
+
+        assert [spy.call_count for spy in spies] == [1, 1]
+
+    def test_rederived_after_connectivity_change(self, lazy_values, spies):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        index_set = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        _ = index_set._connectivity_manager
+
+        mesh.add_connectivities(mesh.face_node_connectivity.copy())
+        _ = index_set._coord_manager
+        _ = index_set._connectivity_manager
+
+        assert [spy.call_count for spy in spies] == [2, 2]
+
+    def test_cache_excluded_from_state_and_equality(self, lazy_values):
+        mesh = sample_strip_mesh(lazy_values=lazy_values)
+        used = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        unused = _MeshIndexSet(indices=[0, 1], mesh=mesh, location="face")
+        _ = used._connectivity_manager
+
+        assert used == unused
+        assert len(used.__getstate__()) == 2

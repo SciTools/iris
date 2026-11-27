@@ -416,13 +416,14 @@ class Connectivity(_DimensionalMetadata):
                 f"dtype must be numpy integer subtype, got: {indices_dtype} ."
             )
 
-        indices_min = indices.min()
-        if _lazy.is_lazy_data(indices_min):
-            indices_min = indices_min.compute()
-        if indices_min < self.start_index:
-            indices_error(
-                f"Lowest index: {indices_min} < start_index: {self.start_index} ."
-            )
+        if indices.size > 0:
+            indices_min = indices.min()
+            if _lazy.is_lazy_data(indices_min):
+                indices_min = indices_min.compute()
+            if indices_min < self.start_index:
+                indices_error(
+                    f"Lowest index: {indices_min} < start_index: {self.start_index} ."
+                )
 
         indices_shape = indices.shape
         if len(indices_shape) != 2:
@@ -2597,7 +2598,11 @@ class _MeshCoordinateManagerBase(ABC):
                 and (indexing := indices_dict[key.split("_")[0]]) is not None
             ):
                 if frozen:
-                    indexed = coord.copy()[indexing]
+                    # Indexing the arrays directly allows zero-length results.
+                    points = coord.core_points()[indexing]
+                    bounds = coord.core_bounds()
+                    bounds = bounds[indexing] if bounds is not None else None
+                    indexed = coord.copy(points, bounds)
                 else:
                     lazy_points = coord.lazy_points()
                     lazy_bounds = coord.lazy_bounds()
@@ -3087,8 +3092,9 @@ class _MeshConnectivityManagerBase(ABC):
             Array of boolean membership, over the full length of original nodes,
             to support the construction of indexed connectivities.
         edge_indices, face_indices : :obj:`~numpy.typing.ArrayLike`, optional
-            The indices to use when indexing member connectivities with edge or
-            face :attr:`~Connectivity.location` respectively.
+            Concrete integer indices of the original edges or faces to keep, in
+            output order. ``None`` drops every connectivity located at, or
+            connected to, that element type.
         mesh_id : int
             The ID of the mesh that these indices refer to - used to
             produce a meaningful read-only error.
@@ -3110,22 +3116,34 @@ class _MeshConnectivityManagerBase(ABC):
             "face": face_indices,
         }
 
-        # Prep an inverse-lookup table (original node id -> new node id) for later
-        #  node indices remapping. ``node_bool_index`` is a fixed-shape boolean
-        #  membership array over the original nodes (see _calculate_node_bool_index).
+        # Inverse-lookup tables (original element id -> new element id), one per
+        #  element type, to remap the values of each connectivity.
+        #  ``node_bool_index`` is a fixed-shape boolean membership array over the
+        #  original nodes (see _calculate_node_bool_index).
         node_mask = node_bool_index
         al = da if _lazy.is_lazy_data(node_mask) else np
         node_lookup_data = al.cumsum(node_mask.astype(np.intp)) - 1
         # Mask unselected nodes - for graceful handling of unexpected scenarios;
         #  we normally expect downstream indexing to remove these anyway.
-        node_lookup = al.ma.masked_array(node_lookup_data, ~node_mask)
+        lookups = {"node": al.ma.masked_array(node_lookup_data, ~node_mask)}
+        for location in ("edge", "face"):
+            selection = indices_dict[location]
+            if selection is not None:
+                (n_elements,) = {
+                    c.shape[c.location_axis]
+                    for c in self._members.values()
+                    if c is not None and c.location == location
+                }
+                lookup = np.ma.masked_all(n_elements, dtype=np.intp)
+                lookup[selection] = np.arange(len(selection))
+                lookups[location] = lookup
 
         indexed_members = {}
         for key, connectivity in self:
             indexing = None
             indexed = None
-            if connectivity is not None:
-                indexing = indices_dict[connectivity.location]
+            if connectivity is not None and connectivity.connected in lookups:
+                indexing = indices_dict.get(connectivity.location)
             if indexing is not None:
                 if frozen:
                     connectivity = connectivity.copy()
@@ -3138,11 +3156,14 @@ class _MeshConnectivityManagerBase(ABC):
                 indices_indexed = connectivity.indices_by_location(indices)[indexing]
                 indices_indexed -= connectivity.start_index
 
-                # Map node indices in "values" to their new zero-based positions
-                #  via the inverse-lookup table. This creates a contiguous
-                #  collection of nodes, and collapses duplicates.
+                # Map the connected elements in "values" to their new zero-based
+                #  positions via the inverse-lookup table. Elements outside the
+                #  selection become masked.
+                lookup = lookups[connectivity.connected]
+                if _lazy.is_lazy_data(indices_indexed):
+                    lookup = _lazy.as_lazy_data(lookup)
                 indices_remapped = _index_conn_array(
-                    array=node_lookup,
+                    array=lookup,
                     indexing=indices_indexed,
                 )
 
@@ -3311,6 +3332,66 @@ class _Mesh2DConnectivityManager(_Mesh1DConnectivityManager):
 
 
 Location = Literal["edge", "node", "face"]
+
+
+def _edge_keys(edge_nodes: np.ndarray, n_nodes: int) -> np.ndarray:
+    """Return one int64 key per edge, identical for either node order.
+
+    Parameters
+    ----------
+    edge_nodes : numpy.ndarray
+        Concrete zero-based ``(n_edges, 2)`` node indices.
+    n_nodes : int
+        Number of nodes in the mesh.
+
+    Returns
+    -------
+    numpy.ndarray
+        Shape ``(n_edges,)``.
+    """
+    nodes = np.ma.getdata(edge_nodes).astype(np.int64)
+    return nodes.min(axis=1) * n_nodes + nodes.max(axis=1)
+
+
+def _face_side_keys(face_nodes: np.ndarray, n_nodes: int) -> np.ma.MaskedArray:
+    """Return a key for each side of each face, matching :func:`_edge_keys`.
+
+    Each unmasked slot pairs with the next unmasked slot in its row, and the
+    last unmasked slot wraps to the first.
+
+    Parameters
+    ----------
+    face_nodes : numpy.ndarray
+        Concrete zero-based ``(n_faces, n_slots)`` node indices, location-major.
+    n_nodes : int
+        Number of nodes in the mesh.
+
+    Returns
+    -------
+    numpy.ma.MaskedArray
+        Shape ``(n_faces, n_slots)``, masked wherever ``face_nodes`` is.
+    """
+    slot_is_masked = np.ma.getmaskarray(face_nodes)
+    # Stable sort brings unmasked slots to the front, in their original order.
+    order = np.argsort(slot_is_masked, axis=1, kind="stable")
+    nodes = np.ma.getdata(face_nodes).astype(np.int64)
+    nodes = np.take_along_axis(nodes, order, axis=1)
+    sorted_is_masked = np.take_along_axis(slot_is_masked, order, axis=1)
+    next_is_valid = np.zeros_like(sorted_is_masked)
+    next_is_valid[:, :-1] = ~sorted_is_masked[:, 1:]
+    next_nodes = np.where(next_is_valid, np.roll(nodes, -1, axis=1), nodes[:, :1])
+    sorted_keys = np.minimum(nodes, next_nodes) * n_nodes + np.maximum(
+        nodes, next_nodes
+    )
+    keys = np.empty_like(sorted_keys)
+    np.put_along_axis(keys, order, sorted_keys, axis=1)
+    return np.ma.masked_array(keys, mask=slot_is_masked)
+
+
+def _zero_based_by_location(connectivity: Connectivity) -> np.ndarray:
+    """Realise a connectivity as zero-based, location-major, concrete indices."""
+    indices = connectivity.indices_by_location(connectivity.core_indices())
+    return np.ma.asanyarray(_lazy.as_concrete_data(indices)) - connectivity.start_index
 
 
 class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
@@ -3540,23 +3621,88 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
                 result = node_mask
         return result
 
-    def _calculate_edge_indices(self):
-        # Use self.location and self.indices to work out the indices to use
-        #  when indexing the edges of self.mesh.
-        if self.location == "edge":
-            result = self.indices
-        else:
-            result = None
-        return result
+    def _calculate_edge_indices(self) -> np.ndarray | None:
+        """Return the original edges kept by this index set.
 
-    def _calculate_face_indices(self):
-        # Use self.location and self.indices to work out the indices to use
-        #  when indexing the faces of self.mesh.
-        if self.location == "face":
-            result = self.indices
+        Returns
+        -------
+        numpy.ndarray or None
+            1-D integer indices into the original edges, in original order
+            unless the index set is at edge location. ``None`` if the mesh has
+            no ``edge_node_connectivity``. Realises data.
+        """
+        edge_node = self.mesh.edge_node_connectivity
+        if edge_node is None:
+            return None  # type: ignore[unreachable]
+        if self.location == "edge":
+            return np.asarray(_lazy.as_concrete_data(self.indices))
+
+        n_nodes = self.mesh.node_coords.node_x.shape[0]  # type: ignore[union-attr]
+        edge_nodes = _zero_based_by_location(edge_node)
+        if self.location == "node":
+            node_mask = np.asarray(
+                _lazy.as_concrete_data(self._calculate_node_bool_index())
+            )
+            edges_kept = node_mask[np.ma.getdata(edge_nodes)].all(axis=1)
         else:
-            result = None
-        return result
+            face_nodes = _zero_based_by_location(self.mesh.face_node_connectivity)
+            face_indices = np.asarray(_lazy.as_concrete_data(self.indices))
+            side_keys = _face_side_keys(face_nodes[face_indices], n_nodes).compressed()
+            edges_kept = np.isin(_edge_keys(edge_nodes, n_nodes), side_keys)
+        return np.flatnonzero(edges_kept)
+
+    def _calculate_face_indices(self) -> np.ndarray | None:
+        """Return the original faces kept by this index set.
+
+        Returns
+        -------
+        numpy.ndarray or None
+            1-D integer indices into the original faces, in original order
+            unless the index set is at face location. ``None`` if the mesh has
+            no faces. Realises data.
+        """
+        if self.mesh.topology_dimension < 2:
+            return None
+        if self.location == "face":
+            return np.asarray(_lazy.as_concrete_data(self.indices))
+
+        n_nodes = self.mesh.node_coords.node_x.shape[0]  # type: ignore[union-attr]
+        face_nodes = _zero_based_by_location(self.mesh.face_node_connectivity)
+        if self.location == "node":
+            node_mask = np.asarray(
+                _lazy.as_concrete_data(self._calculate_node_bool_index())
+            )
+            slot_is_masked = np.ma.getmaskarray(face_nodes)
+            slot_is_kept = node_mask[np.ma.filled(face_nodes, 0)] | slot_is_masked
+            faces_kept = slot_is_kept.all(axis=1)
+        else:
+            edge_nodes = _zero_based_by_location(self.mesh.edge_node_connectivity)
+            edge_indices = np.asarray(_lazy.as_concrete_data(self.indices))
+            kept_keys = _edge_keys(edge_nodes, n_nodes)[edge_indices]
+            side_keys = _face_side_keys(face_nodes, n_nodes)
+            side_is_kept = np.isin(side_keys.data, kept_keys) | side_keys.mask
+            faces_kept = side_is_kept.all(axis=1)
+        return np.flatnonzero(faces_kept)
+
+    def _edge_and_face_indices(self) -> tuple[np.ndarray | None, np.ndarray | None]:
+        """Return the edge and face selections, cached until the connectivities change.
+
+        Returns
+        -------
+        tuple of (numpy.ndarray or None)
+            As :meth:`_calculate_edge_indices` and
+            :meth:`_calculate_face_indices`. Realises data when (re)deriving.
+        """
+        connectivity_dt = self.mesh._connectivity_manager.timestamp._dt
+        cache = getattr(self, "_edge_and_face_indices_cache", None)
+        if cache is None or cache[0] != connectivity_dt:
+            cache = (
+                connectivity_dt,
+                self._calculate_edge_indices(),
+                self._calculate_face_indices(),
+            )
+            self._edge_and_face_indices_cache = cache
+        return cache[1], cache[2]
 
     @property
     def _coord_manager(self) -> _MeshCoordinateManagerBase:
@@ -3564,15 +3710,16 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         self_man: Optional[_MeshCoordinateManagerBase] = getattr(
             self, "_coord_manager_attr", None
         )
-        update = self_man is None or mesh_man.timestamp._dt != self_man.timestamp._dt
+        # Edge and face selections also depend on the connectivities.
+        mesh_dt = self.mesh._last_modified
+        update = self_man is None or mesh_dt != self_man.timestamp._dt
         if update:
             self._coord_manager_attr = mesh_man.indexed(
                 self._calculate_node_bool_index(),
-                self._calculate_edge_indices(),
-                self._calculate_face_indices(),
+                *self._edge_and_face_indices(),
                 mesh_id=id(self.mesh),
             )
-            self._coord_manager_attr.timestamp._dt = mesh_man.timestamp._dt
+            self._coord_manager_attr.timestamp._dt = mesh_dt
         return super()._coord_manager
 
     @_coord_manager.setter
@@ -3593,8 +3740,7 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         if update:
             self._connectivity_manager_attr = mesh_man.indexed(
                 self._calculate_node_bool_index(),
-                self._calculate_edge_indices(),
-                self._calculate_face_indices(),
+                *self._edge_and_face_indices(),
                 mesh_id=id(self.mesh),
             )
             self._connectivity_manager_attr.timestamp._dt = mesh_man.timestamp._dt
@@ -3648,25 +3794,15 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
         """
         indices = [
             self._calculate_node_bool_index(),
-            self._calculate_edge_indices(),
-            self._calculate_face_indices(),
+            *self._edge_and_face_indices(),
         ]
         Kwargs = TypedDict("Kwargs", {"mesh_id": int, "frozen": bool})
         kwargs: Kwargs = {"mesh_id": id(self.mesh), "frozen": True}
         coord_man = self.mesh._coord_manager.indexed(*indices, **kwargs)
         conn_man = self.mesh._connectivity_manager.indexed(*indices, **kwargs)
-        has_edges = hasattr(conn_man, "edge_node")
-        has_faces = hasattr(conn_man, "face_node")
-        if has_faces:
-            topology_dimension = 2
-        elif has_edges:
-            topology_dimension = 1
-        else:
-            message = (
-                f"Cannot create a MeshXY from a MeshIndexSet with no edge or face "
-                f"connectivities. This is a *{self.location}* MeshIndexSet."
-            )
-            raise NotImplementedError(message)
+        has_edges = getattr(conn_man, "edge_node", None) is not None
+        has_edge_coords = has_edges and coord_man.edge_x is not None
+        has_face_coords = getattr(coord_man, "face_x", None) is not None
 
         def _coords_and_axes(
             location: Literal["node", "edge", "face"],
@@ -3675,11 +3811,11 @@ class _MeshIndexSet(_MeshXYMixin, _DimensionalMetadata):
             return [(getattr(coords, f"{location}_{axis}"), axis) for axis in self.AXES]
 
         return MeshXY(
-            topology_dimension=topology_dimension,
+            topology_dimension=self.mesh.topology_dimension,
             node_coords_and_axes=_coords_and_axes("node"),
             connectivities=[conn for conn in conn_man.all_members if conn is not None],
-            edge_coords_and_axes=_coords_and_axes("edge") if has_edges else None,
-            face_coords_and_axes=_coords_and_axes("face") if has_faces else None,
+            edge_coords_and_axes=_coords_and_axes("edge") if has_edge_coords else None,
+            face_coords_and_axes=_coords_and_axes("face") if has_face_coords else None,
             standard_name=self.standard_name,
             long_name=self.long_name,
             var_name=self.var_name,
