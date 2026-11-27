@@ -14,6 +14,12 @@ import pytest
 from iris.coord_systems import GeogCS
 from iris.coords import DimCoord
 from iris.cube import Cube
+# Suppress deprecation warnings for experimental.regrid, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.regrid.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid,
 )

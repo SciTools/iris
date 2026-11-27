@@ -13,6 +13,12 @@ import numpy.ma as ma
 import pytest
 
 import iris.analysis._interpolation
+# Suppress deprecation warnings for experimental.regrid, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.regrid.*:iris._deprecation.IrisDeprecation"
+)
+
 from iris.experimental.regrid import (
     regrid_area_weighted_rectilinear_src_and_grid as regrid_area_weighted,
 )

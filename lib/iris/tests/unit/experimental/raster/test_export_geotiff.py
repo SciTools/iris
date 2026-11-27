@@ -8,6 +8,12 @@ import re
 
 import numpy as np
 import pytest
+# Suppress deprecation warnings for experimental.raster, which is the subject
+# of these tests.
+pytestmark = pytest.mark.filterwarnings(
+    "ignore:.*experimental.raster.*:iris._deprecation.IrisDeprecation"
+)
+
 
 try:
     from osgeo import gdal
