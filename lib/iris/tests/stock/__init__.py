@@ -17,7 +17,7 @@ import numpy.ma as ma
 from iris import mesh as ugrid
 from iris.analysis import cartography
 import iris.aux_factory
-from iris.coord_systems import GeogCS, RotatedGeogCS
+from iris.coord_systems import GeogCS, Geostationary, RotatedGeogCS
 import iris.coords
 import iris.coords as icoords
 from iris.coords import AncillaryVariable, AuxCoord, CellMeasure, CellMethod, DimCoord
@@ -1116,3 +1116,24 @@ def climatology_3d():
     cube.add_cell_method(CellMethod("mean over years", coords="time"))
 
     return cube
+
+
+def geostationary_cube():
+    data = np.arange(12, dtype=np.float32).reshape(3, 4)
+    gs = Cube(data)
+    cs = Geostationary(0, 0, 35785831.0, "y")
+    y_coord = DimCoord(
+        np.arange(3) * 0.01,
+        "projection_y_angular_coordinate",
+        units="radians",
+        coord_system=cs,
+    )
+    x_coord = DimCoord(
+        np.arange(4) * 0.01,
+        "projection_x_angular_coordinate",
+        units="radians",
+        coord_system=cs,
+    )
+    gs.add_dim_coord(y_coord, 0)
+    gs.add_dim_coord(x_coord, 1)
+    return gs

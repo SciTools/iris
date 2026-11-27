@@ -11,11 +11,11 @@ import pytest
 
 from iris.analysis._regrid import RectilinearRegridder as Regridder
 from iris.aux_factory import HybridHeightFactory
-from iris.coord_systems import OSGB, GeogCS
+from iris.coord_systems import OSGB, GeogCS, Geostationary
 from iris.coords import AuxCoord, DimCoord
 from iris.cube import Cube
 from iris.tests import _shared_utils
-from iris.tests.stock import global_pp, lat_lon_cube, realistic_4d
+from iris.tests.stock import geostationary_cube, global_pp, lat_lon_cube, realistic_4d
 
 RESULT_DIR = ("analysis", "regrid")
 
@@ -1284,6 +1284,60 @@ class Test___call____rotated_to_lat_lon:
             result = regridder(src)
             cml = RESULT_DIR + ("{}_masked_altitude.cml".format(method),)
             _shared_utils.assert_CML(request, result, cml, approx_data=True)
+
+
+class Test___call____geostationary_to_lat_lon:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.src = geostationary_cube()
+        self.mode = "mask"
+        self.methods = ("linear", "nearest")
+
+    def _grid_subset(self, lonmax=9, latmax=6):
+        grid = global_pp()[:4, :5]
+        grid.coord("longitude").points = np.linspace(0, lonmax, 5)
+        grid.coord("latitude").points = np.linspace(0, latmax, 4)
+        return grid
+
+    def test_regrid(self):
+        grid = self._grid_subset()
+        expected = {
+            "linear": [
+                [0.0, 0.6996232, 1.3975238, 2.0919883, 2.7813218],
+                [2.471122, 3.169847, 3.8660536, 4.5580354, 5.2441077],
+                [4.937509, 5.634342, 6.3278704, 7.0163975, 7.6982527],
+                [7.394445, 8.0884, 8.778277, 9.462395, 10.139099],
+            ],
+            "nearest": [
+                [0.0, 1.0, 1.0, 2.0, 3.0],
+                [4.0, 5.0, 5.0, 6.0, 7.0],
+                [4.0, 5.0, 5.0, 6.0, 7.0],
+                [8.0, 9.0, 9.0, 10.0, 11.0],
+            ],
+        }
+        for method in self.methods:
+            regridder = Regridder(self.src, grid, method, self.mode)
+            result = regridder(self.src)
+            assert np.allclose(result.data, expected[method])
+
+    def test_reverse(self):
+        grid = self._grid_subset(10, 7)
+        expected = {
+            "linear": [
+                [254.644, 254.644, 254.644, 254.644],
+                [255.37126, 255.5192, 255.5795, 255.55066],
+                [256.67877, 257.87833, 258.25595, 257.49435],
+            ],
+            "nearest": [
+                [254.644, 254.644, 254.644, 254.644],
+                [254.97499, 254.96767, 254.96635, 255.0209],
+                [256.8676, 258.03842, 258.61523, 257.71344],
+            ],
+        }
+        for method in self.methods:
+            regridder = Regridder(grid, self.src, method, self.mode)
+            result = regridder(grid)
+            assert np.allclose(result.data, expected[method])
 
 
 @_shared_utils.skip_data
