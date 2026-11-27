@@ -1,0 +1,3 @@
+:user:`rcomer` fixed :func:`~iris.util.mask_cube_from_shape` when the cube's longitude
+points extend above 180 degrees but do not span the whole circumference of the Earth.
+(:issue:`7324`)

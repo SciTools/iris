@@ -163,18 +163,68 @@ def create_shape_mask(
         err_msg = "Minimum weight must be between 0.0 and 1.0"
         raise ValueError(err_msg)
 
+    return _create_shape_mask_no_checks(
+        geometry, cube, geometry_crs, cube_crs, minimum_weight, all_touched, invert
+    )
+
+
+def _create_shape_mask_no_checks(
+    geometry: shapely.Geometry,
+    cube: iris.cube.Cube,
+    geometry_crs: ccrs.CRS | CRS,
+    cube_crs: iris.coord_systems.CoordSystem,
+    minimum_weight: float,
+    all_touched: bool | None,
+    invert: bool | None,
+) -> np.array:
+    """Make a mask for a cube from a shape geometry.
+
+    See create_shape_mask docstring for details.  This helper function performs the mask
+    calculation but, for efficiency, assumes parameter checks have already been
+    completed.
+
+    """
     # Get cube coordinates
     axes: tuple[Axis, Axis] = ("X", "Y")
     x_coord, y_coord = [cube.coord(axis=a, dim_coords=True) for a in axes]
+    x_roll = 0
     # Check if cube lons units are in degrees, and if so do they exist in [0, 360] or [-180, 180]
     if x_coord.units.origin == "radians":
         x_coord.convert_units("degrees")
         y_coord.convert_units("degrees")
     if (x_coord.units.origin == "degrees") and (x_coord.points.max() > 180):
+        original_x_point = x_coord.points[0]
+        if not x_coord.circular and original_x_point < 180:  # type: ignore[union-attr]
+            # Masking only works when the coordinates are regular.  This will not be the
+            # case if we map a non-circular coordinate that spans the dateline to the
+            # [-180, 180] domain. Instead, split the cube into two and mask each part.
+            extent1 = iris.coords.CoordExtent(x_coord.name(), original_x_point, 180)
+            extent2 = iris.coords.CoordExtent(
+                x_coord.name(), -180, original_x_point, max_inclusive=False
+            )
+
+            masks = [
+                _create_shape_mask_no_checks(
+                    geometry,
+                    cube.intersection(extent),
+                    geometry_crs,
+                    cube_crs,
+                    minimum_weight,
+                    all_touched,
+                    invert,
+                )
+                for extent in [extent1, extent2]
+            ]
+
+            return np.concatenate(masks, axis=1)
+
         # Convert to [-180, 180] domain
         cube = cube.intersection(iris.coords.CoordExtent(x_coord.name(), -180, 180))
         # Get revised x coordinate
         x_coord = cube.coord(axis="X", dim_coords=True)
+        # Record the offset so we can roll back later
+        x_offsets = (x_coord.points - original_x_point) % x_coord.units.modulus
+        x_roll = -int(np.flatnonzero(x_offsets == 0)[0])
 
     assert isinstance(x_coord, DimCoord)
     assert isinstance(y_coord, DimCoord)
@@ -221,10 +271,9 @@ def create_shape_mask(
             all_touched=all_touched,
         )
 
-    # If cube was on circular domain, then the transformed
-    # mask template needs shifting to match the cube domain
-    if x_coord.circular:  # type: ignore[union-attr]
-        mask_template = np.roll(mask_template, w // 2, axis=1)
+    if x_roll:
+        # Roll the mask to align with the original x-coordinate points
+        mask_template = np.roll(mask_template, x_roll, axis=1)
 
     if invert:
         # Invert the mask
