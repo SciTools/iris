@@ -5347,8 +5347,9 @@ x            -               -
             :class:`~iris.cube.Cube` to the given sample points. The
             interpolation schemes currently available in Iris are:
 
-            * :class:`iris.analysis.Linear`, and
-            * :class:`iris.analysis.Nearest`.
+            * :class:`iris.analysis.Linear`,
+            * :class:`iris.analysis.Nearest`, and
+            * :class:`iris.analysis.Pchip`.
         collapse_scalar : bool, default=True
             Whether to collapse the dimension of scalar sample points
             in the resulting cube. Default is True.

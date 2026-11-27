@@ -592,3 +592,53 @@ class Test___call___time:
         _shared_utils.assert_array_equal(
             result.data, [[3, 4, 5], [3, 4, 5], [6, 7, 8], [6, 7, 8]]
         )
+
+
+class Test___call___pchip:
+    @pytest.fixture(autouse=True)
+    def _setup(self):
+        self.z = iris.coords.DimCoord(
+            np.arange(5, dtype=np.float64), long_name="z", units="1"
+        )
+        self.data = np.arange(5, dtype=np.float64) ** 2
+        cube = iris.cube.Cube(self.data, long_name="x")
+        cube.add_dim_coord(self.z, 0)
+        self.cube = cube
+        self.interpolator = RectilinearInterpolator(
+            self.cube, ["z"], "pchip", EXTRAPOLATE
+        )
+
+    def test_interpolate_at_source_points(self):
+        # At the source points, pchip should reproduce the source data.
+        result = self.interpolator([np.arange(5, dtype=np.float64)])
+        _shared_utils.assert_array_almost_equal(result.data, self.data)
+
+    def test_interpolate_between_points(self):
+        result = self.interpolator([[0.5, 1.5, 2.5, 3.5]])
+        # Values should lie strictly between their neighbouring source
+        # values, i.e. no overshoot, unlike a naive cubic interpolant.
+        assert np.all(result.data > self.data[:-1])
+        assert np.all(result.data < self.data[1:])
+
+    def test_extrapolate(self):
+        result = self.interpolator([[-1, 5]])
+        assert result.data.size == 2
+        assert np.all(np.isfinite(result.data))
+
+    def test_nan_extrapolation_mode(self):
+        interpolator = RectilinearInterpolator(self.cube, ["z"], "pchip", "nan")
+        result = interpolator([[-1, 5]])
+        assert np.all(np.isnan(result.data))
+
+    def test_masked_data(self):
+        masked_data = np.ma.masked_array(
+            self.data, mask=[False, False, True, False, False]
+        )
+        cube = iris.cube.Cube(masked_data, long_name="x")
+        cube.add_dim_coord(self.z, 0)
+        interpolator = RectilinearInterpolator(cube, ["z"], "pchip", EXTRAPOLATE)
+        result = interpolator([[0.5, 2.0, 3.5]])
+        assert np.ma.is_masked(result.data)
+        # The point requested exactly at the masked source point should
+        # remain masked in the result.
+        assert result.data.mask[1]
