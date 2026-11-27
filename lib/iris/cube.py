@@ -3687,23 +3687,29 @@ class Cube(CFVariableMixin):
             index_of_second_chunk = inside_indices[end_of_first_chunk + 1]
             final_index = points.size - 1
 
+            # Increasing coord
+            if coord.points[-1] > coord.points[0]:
+                index_end = -1
+                index_start = 0
+                # The edge cell (the one that may be unwrapped below) is
+                # the last one, so it must be the whole second block.
+                edge_chunk_index = final_index
+            # Decreasing coord
+            else:
+                index_end = 0
+                index_start = -1
+                # The edge cell is the first one, so it must be the whole
+                # first block.
+                edge_chunk_index = 1
+
             # Condition1: The two blocks don't themselves wrap
             #             (inside_indices is contiguous).
-            # Condition2: Are we chunked at either extreme edge.
+            # Condition2: The edge cell, and only it, is chunked off.
             edge_wrap = (
                 index_of_second_chunk == inside_indices[end_of_first_chunk] + 1
-            ) and index_of_second_chunk in (final_index, 1)
+            ) and index_of_second_chunk == edge_chunk_index
             subsets = None
             if edge_wrap:
-                # Increasing coord
-                if coord.points[-1] > coord.points[0]:
-                    index_end = -1
-                    index_start = 0
-                # Decreasing coord
-                else:
-                    index_end = 0
-                    index_start = -1
-
                 # Unwrap points and bounds (if present and equal base + period)
                 if bounds is not None:
                     edge_equal_base_period = np.isclose(

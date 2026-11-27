@@ -1,0 +1,3 @@
+:user:`syahra712` fixed :meth:`~iris.cube.Cube.intersection` raising a
+``MonotonicityError`` when a ``threshold`` wraps only the first cell of a
+circular dimension coordinate to the other end of the range. (:pull:`7393`)
