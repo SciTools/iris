@@ -9,6 +9,7 @@ import warnings
 from cf_units import Unit
 import dask.array as da
 import dask.config
+from dask.delayed import Delayed
 import distributed
 import numpy as np
 import pytest
@@ -18,13 +19,6 @@ import iris.fileformats.cf.loader
 from iris.fileformats.netcdf._thread_safe_nc import default_fillvals
 from iris.tests import _shared_utils
 from iris.tests.stock import realistic_4d
-
-
-def are_dask_collections(obj):
-    result = dask.is_dask_collection(obj)
-    if not result and hasattr(obj, "__len__"):
-        result = all([dask.is_dask_collection(item) for item in obj])
-    return result
 
 
 class Test__lazy_stream_data:
@@ -195,7 +189,7 @@ class Test__lazy_stream_data:
         if not save_is_delayed:
             assert result is None
         else:
-            assert are_dask_collections(result)
+            assert isinstance(result, Delayed)
 
     def test_time_of_writing(self, save_is_delayed, output_path, scheduler_type):
         # Check when lazy data is *actually* written :
@@ -257,8 +251,7 @@ class Test__lazy_stream_data:
             assert np.all(~cm_mask)
 
         if save_is_delayed:
-            # Complete the write.
-            dask.compute(result)
+            result.compute()
 
             # Re-fetch the lazy arrays.  The data should now **not be masked**.
             data_mask, coord_mask, ancil_mask, cm_mask = fetch_masks()
@@ -274,4 +267,4 @@ class Test__lazy_stream_data:
         cube = self.make_testcube(include_lazy_content=False)
         warnings.simplefilter("error")
         result = iris.save(cube, output_path, compute=False)
-        assert are_dask_collections(result)
+        assert isinstance(result, Delayed)
