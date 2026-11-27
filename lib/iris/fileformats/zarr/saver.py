@@ -363,23 +363,10 @@ class Saver(_CFSaver):
         store's last write: a store whose deferred save never runs should not
         carry a metadata document claiming it did.
 
-        Returns
-        -------
-        :class:`dask.delayed.Delayed`
-            A real one. The inherited
-            ``_CFSaver.delayed_completion``
-            returns a :class:`dask.array.core.Array` for one delayed write,
-            or a tuple of them for several - never actually a
-            :class:`~dask.delayed.Delayed`, despite its own annotation -
-            which is what makes the documented ``result.compute()`` fail on
-            the netCDF path
-            (`SciTools/iris#7291 <https://github.com/SciTools/iris/issues/7291>`_).
-            Wrapping it here is what keeps the promise this saver's docstring
-            makes. Plain ``pickle`` survives the round trip too, not only
-            cloudpickle: the completion is :func:`_complete`, a module-level
-            function with the dataset and the consolidation flag bound as
-            plain values, never reached through ``self`` - the saver holds
-            cubes, which must not be dragged into the graph.
+        Notes
+        -----
+        The task binds the dataset and the consolidation flag to the
+        module-level :func:`_complete` so plain ``pickle`` can serialise it.
 
         """
         complete = dask.delayed(_complete)

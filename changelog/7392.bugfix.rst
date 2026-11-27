@@ -1,0 +1,2 @@
+Deferred netCDF saves again return a Dask ``Delayed`` that supports
+``result.compute()`` when writing several lazy arrays. (:issue:`7291`)

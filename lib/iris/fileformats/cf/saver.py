@@ -2704,9 +2704,8 @@ class _CFSaver:
         result can be computed, otherwise computation will hang (never return).
         """
         if self._delayed_writes:
-            # Create a single delayed da.store operation to complete the file.
             sources, targets = zip(*self._delayed_writes)
-            result = da.store(sources, targets, compute=False, lock=False)
+            result = dask.delayed(da.store(sources, targets, compute=False, lock=False))
 
         else:
             # Return a do-nothing delayed, for usage consistency.
