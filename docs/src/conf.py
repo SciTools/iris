@@ -155,6 +155,10 @@ extensions = [
     "maintainer_notes",
     "matplotlib.sphinxext.mathmpl",
     "matplotlib.sphinxext.plot_directive",
+    # Markdown is reserved for developer design specs, see
+    # developers_guide/specs/index.  All other documentation remains
+    # reStructuredText.
+    "myst_parser",
     "page_metadata_validator",
     "readingtime",
     "sphinx.ext.autodoc",
@@ -465,6 +469,13 @@ html_css_files = [
 # list of sources to exclude from the build.
 exclude_patterns = [
     "**/highlights.rst",
+    # Implementation plans are tracked in the repository but not published;
+    # see developers_guide/specs/index.
+    "developers_guide/plans/**",
+    # myst-parser makes ".md" a source suffix, which would otherwise pull the
+    # README of each of these non-document directories into the build.
+    "_build/**",
+    "_static/**",
 ]
 
 # -- sphinx-gallery config ----------------------------------------------------
