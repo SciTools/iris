@@ -803,9 +803,9 @@ def setup(app: Sphinx) -> None:
 
 def linkcode_resolve(domain, info):
     if domain != "py":
-        return None
+        return
     if not info["module"]:
-        return None
+        return
 
     modname = info["module"]
     fullname = info["fullname"]
@@ -813,14 +813,35 @@ def linkcode_resolve(domain, info):
     # Get hold of the python object
     submod = sys.modules.get(modname)
     if submod is None:
-        return None
+        return
 
     obj = submod
     for part in fullname.split("."):
         try:
             obj = getattr(obj, part)
         except AttributeError:
-            return None
+            return
+
+    # Use the original function object if it is wrapped e.g. with contextlib decorator
+    if inspect.isfunction(obj):
+        obj = inspect.unwrap(obj)
+
+    # Get the file where the object is defined
+    try:
+        sourcefile = inspect.getsourcefile(obj)
+    except (OSError, TypeError):
+        return
+    if sourcefile is None:
+        return
+
+    # Get the file relative to the Iris path
+    (iris_path,) = iris.__path__
+    try:
+        filename = Path(sourcefile).relative_to(iris_path).as_posix()
+    except ValueError:
+        # Object is not defined in Iris; most likely it is a method on an upstream
+        # class that we subclassed
+        return
 
     # Get the line numbers as a string
     try:
@@ -834,5 +855,4 @@ def linkcode_resolve(domain, info):
     version = parse_version(iris.__version__)
     tag = "main" if version.is_devrelease else f"v{version.public}"
 
-    filename = info["module"].replace(".", "/")
-    return f"https://github.com/SciTools/iris/tree/{tag}/lib/{filename}.py{linespec}"
+    return f"https://github.com/SciTools/iris/tree/{tag}/lib/iris/{filename}{linespec}"
