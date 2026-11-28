@@ -2804,13 +2804,11 @@ class AreaWeighted:
         Parameters
         ----------
         mdtol : float
-            Tolerance of missing data. The value returned in each element of
-            the returned array will be masked if the fraction of missing data
-            exceeds mdtol. This fraction is calculated based on the area of
-            masked cells within each target cell. mdtol=0 means no masked
-            data is tolerated while mdtol=1 will mean the resulting element
-            will be masked if and only if all the overlapping elements of the
-            source grid are masked. Defaults to 1.
+            Tolerance of missing data. A target cell is masked if the fraction
+            of its area covered by masked source cells is greater than or equal
+            to mdtol. Values below 1e-8 are treated as 1e-8 to allow for
+            numerical imprecision. With mdtol=1, a cell is masked if all its
+            overlapping source cells are masked. Defaults to 1.
 
             .. note::
                 Both sourge and target cubes must have an XY grid defined by

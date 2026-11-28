@@ -1,0 +1,2 @@
+:user:`vera-rubin` clarified the missing data tolerance boundary for
+:class:`iris.analysis.AreaWeighted`. (:issue:`7389`)
