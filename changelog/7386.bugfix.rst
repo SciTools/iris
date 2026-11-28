@@ -1,0 +1,2 @@
+:user:`vera-rubin` fixed integer overflow when calculating
+:data:`iris.analysis.RMS` by squaring integer data in floating point.
