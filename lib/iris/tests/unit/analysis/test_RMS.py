@@ -75,6 +75,12 @@ class Test_aggregate:
         rms = RMS.aggregate(data, 0, weights=weights)
         assert rms == pytest.approx(expected_rms)
 
+    def test_integer_overflow(self):
+        # 300**2 does not fit in int16.
+        data = np.array([300, 300], dtype=np.int16)
+        rms = RMS.aggregate(data, 0)
+        assert rms == pytest.approx(300.0)
+
 
 class Test_lazy_aggregate:
     def test_1d(self):
@@ -150,6 +156,12 @@ class Test_lazy_aggregate:
         expected_rms = 8.0
         rms = RMS.lazy_aggregate(data, 0, weights=weights)
         assert rms == pytest.approx(expected_rms)
+
+    def test_integer_overflow(self):
+        # 300**2 does not fit in int16.
+        data = as_lazy_data(np.array([300, 300], dtype=np.int16))
+        rms = RMS.lazy_aggregate(data, 0)
+        assert rms.compute() == pytest.approx(300.0)
 
 
 class Test_name:
