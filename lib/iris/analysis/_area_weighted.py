@@ -305,6 +305,9 @@ def _regrid_area_weighted_rectilinear_src_and_grid__prepare(src_cube, grid_cube)
     src_dtype = np.promote_types(src_x.bounds.dtype, src_y.bounds.dtype)
     grid_dtype = np.promote_types(grid_x.bounds.dtype, grid_y.bounds.dtype)
     dtype = np.promote_types(src_dtype, grid_dtype)
+    # Integer bounds would be truncated by the conversion to radians.
+    if np.issubdtype(dtype, np.integer):
+        dtype = np.float64
 
     src_x_bounds = _get_bounds_in_units(src_x, x_units, dtype)
     src_y_bounds = _get_bounds_in_units(src_y, y_units, dtype)

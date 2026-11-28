@@ -1,0 +1,3 @@
+:user:`vera-rubin` fixed :class:`~iris.analysis.AreaWeighted` regridding with
+integer degree bounds, which could incorrectly mask covered target cells.
+(:issue:`7387`)
