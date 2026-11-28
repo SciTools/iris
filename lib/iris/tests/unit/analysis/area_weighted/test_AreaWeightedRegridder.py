@@ -103,6 +103,33 @@ class Test:
         with pytest.raises(ValueError, match=msg):
             AreaWeightedRegridder(src, target, mdtol=-0.2)
 
+    @pytest.mark.parametrize("mdtol", [0.25, 0.5, 0.75])
+    def test_mdtol_boundary(self, mdtol):
+        # Half the target cell's source area is missing.
+        def grid(data, x, x_bounds):
+            cube = Cube(data)
+            cube.add_dim_coord(
+                DimCoord(
+                    [1.0], "projection_y_coordinate", units="m", bounds=[[0.0, 2.0]]
+                ),
+                0,
+            )
+            cube.add_dim_coord(
+                DimCoord(x, "projection_x_coordinate", units="m", bounds=x_bounds), 1
+            )
+            return cube
+
+        src = grid(
+            np.ma.array([[10.0, 20.0]], mask=[[False, True]]),
+            [0.5, 1.5],
+            [[0.0, 1.0], [1.0, 2.0]],
+        )
+        target = grid(np.zeros((1, 1)), [1.0], [[0.0, 2.0]])
+        result = AreaWeightedRegridder(src, target, mdtol=mdtol)(src)
+        assert np.ma.is_masked(result.data) == (mdtol <= 0.5)
+        if mdtol > 0.5:
+            assert result.data == pytest.approx(10.0)
+
     def test_mismatched_src_coord_systems(self, mocker):
         src = Cube(np.zeros((3, 4)))
         cs = GeogCS(6543210)
